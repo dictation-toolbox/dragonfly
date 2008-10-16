@@ -24,8 +24,12 @@
 """
 
 
+try:
+	import natlinkutils
+except ImportError:
+	natlinkutils = None
+
 import copy
-import natlinkutils
 import dragonfly.log as log_
 
 

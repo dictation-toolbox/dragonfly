@@ -642,17 +642,15 @@ class Empty(ElementBase):
 
 class Dictation(ElementBase):
 
-#   _dictation_rule = rule_.ImportedRule(name="dgndictation")
     _rule_name = "dgndictation"
 
-    def __init__(self, key=None, format=True, actions=(), name=None):
+    def __init__(self, name=None, format=True, actions=()):
         ElementBase.__init__(self, actions, name)
-        self._key = key
         self._format_words = format
 
     def __str__(self):
-        if self._key:
-            return "%s('%s')" % (self.__class__.__name__, self._key)
+        if self.name:
+            return "%s(%r)" % (self.__class__.__name__, self.name)
         else:
             return "%s()" % (self.__class__.__name__)
 
@@ -698,33 +696,40 @@ class Dictation(ElementBase):
         if self._log_eval: self._log_eval.debug( \
             "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
 
-        # If a key was set, store the matched words in the data dictionary.
-        if self._key:
+        # If a name was set, store the matched words in the data dictionary.
+        if self.name:
             if self._format_words:
                 formatter = wordinfo.FormatState()
-                data[self._key] = formatter.format_words(node.words())
+                data[self.name] = formatter.format_words(node.words())
                 if self._log_eval: self._log_eval.debug( \
-                                "%s%s: formatted '%s'" \
-                                % ("  "*node.depth, self, data[self._key]))
+                    "%s%s: formatted '%s'" \
+                     % ("  "*node.depth, self, data[self.name]))
             else:
-                data[self._key] = node.words()
+                data[self.name] = node.words()
 
         # Finally, evaluate this element's actions.
         self._evaluate_actions(self._actions, node, data)
+
+    def value(self, node):
+        if self._format_words:
+            formatter = wordinfo.FormatState()
+            return formatter.format_words(node.words())
+        else:
+            return node.words()
 
 
 #---------------------------------------------------------------------------
 
 class LiteralChoice(Alternative):
 
-    def __init__(self, key, choices, actions=(), name=None):
+    def __init__(self, name, choices, actions=()):
 
         # Build children elements with appropriate Insert actions.
         assert isinstance(choices, dict)
         self.choices = choices
         children = []
         for k, v in choices.items():
-            action = Insert(key, v)
+            action = Insert(name, v)
             child = Literal(k, actions=(action,))
             children.append(child)
 

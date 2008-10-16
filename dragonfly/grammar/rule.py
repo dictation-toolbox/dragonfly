@@ -176,3 +176,6 @@ class Rule(object):
 
     def process_results(self, data):
         pass
+
+    def process_recognition(self, node):
+        pass

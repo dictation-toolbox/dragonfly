@@ -66,9 +66,12 @@ class State(object):
         i = self._index + delta
         if 0 <= i < len(self._results):
             rule_id = self._results[i][1]
-            if rule_id >= len(self._rule_names):
+            if 0 <= rule_id < len(self._rule_names):
+                return self._rule_names[rule_id]
+            elif rule_id == 1000000:
+                return "dgndictation"
+            else:
                 raise grammar_.GrammarError("Malformed recognition data.")
-            return self._rule_names[rule_id]
         else:
             return None
 
@@ -208,13 +211,13 @@ class State(object):
                 node = node.parent
             parent = node
             node = Node(parent, frame.actor, self._results,
-                            frame.begin, frame.end, frame.depth)
+                        frame.begin, frame.end, frame.depth)
             if parent: parent.children.append(node)
             else: root = node
 
         data = {}
         root.actor.i_evaluate(root, data)
-        return data
+        return (root, data)
 
 #---------------------------------------------------------------------------
 

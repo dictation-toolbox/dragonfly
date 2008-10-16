@@ -21,15 +21,16 @@
 """
     This module is a simple example of Dragonfly use.
 
-    It shows how to use Dragonfly's Grammar, AppContext, and ActionRule
+    It shows how to use Dragonfly's Grammar, AppContext, and MappingRule
     classes.  This module can be activated in the same way as other
-    Natlink macros by placing it in the My Documents\Natlink folder.
+    Natlink macros by placing it in the "My Documents\Natlink folder" or
+    "Program Files\NetLink/MacroSystem".
 """
 
 
 from dragonfly.grammar.grammar     import Grammar
 from dragonfly.grammar.context     import AppContext
-from dragonfly.grammar.actionrule  import ActionRule
+from dragonfly.grammar.mappingrule import MappingRule
 from dragonfly.grammar.elements    import Dictation
 from dragonfly.actions.actions     import Key, Text
 
@@ -42,24 +43,29 @@ grammar = Grammar("notepad_example", context=grammar_context)
 
 
 #---------------------------------------------------------------------------
-# Create an action rule which maps things you can say to actions.
+# Create a mapping rule which maps things you can say to actions.
+#
+# Note the relationship between the *mapping* and *extras* keyword
+#  arguments.  The extras is a list of Dragonfly elements which are
+#  available to be used in the specs of the mapping.  In this example
+#  the Dictation("text")* extra makes it possible to use "<text>"
+#  within a mapping spec and "%(text)s" within the associated action.
 
-command_rule = ActionRule(
-        name="commands",    # Name of this rule.
-        action_map={        # Dict of things to say -> actions.
-                "save [file]":            Key("c-s"),
-                "save [file] as":         Key("a-f, a"),
-                "save [file] as <dict>":  Key("a-f, a/20") + Text("%(text)s"),
-                "find <dict>":            Key("c-f/20") + Text("%(text)s\n"),
-                },
-        elements={          # Special elements in the keys of action_map.
-                "dict": Dictation("text"),
-                },
-        exported=True       # Export this rule.
-        )
+example_rule = MappingRule(
+    name="example",    # The name of the rule.
+    mapping={          # The mapping dict: spec -> action.
+             "save [file]":            Key("c-s"),
+             "save [file] as":         Key("a-f, a"),
+             "save [file] as <text>":  Key("a-f, a/20") + Text("%(text)s"),
+             "find <text>":            Key("c-f/20") + Text("%(text)s\n"),
+            },
+    extras=[           # Special elements in the specs of the mapping.
+            Dictation("text"),
+           ],
+    )
 
 # Add the action rule to the grammar instance.
-grammar.add_rule(command_rule)
+grammar.add_rule(example_rule)
 
 
 #---------------------------------------------------------------------------

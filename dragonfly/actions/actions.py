@@ -26,6 +26,8 @@
 """
 
 
+from dragonfly.actions.actionbase import ActionBase
+
 import dragonfly.actions.keyboard as keyboard_
 Key = keyboard_.KeyAction
 Text = keyboard_.TextAction

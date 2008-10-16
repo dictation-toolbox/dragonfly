@@ -24,13 +24,18 @@
 """
 
 
+try:
+	import natlink
+	import natlinkutils
+except ImportError:
+	natlink = None
+	natlinkutils = None
+
 # The trailing underscore in imported module names allows the original
 # module names to be used conveniently for local variables.
 # Done systematically, this leads to less confusion for readers of this
 # source code.
 #
-import natlink
-import natlinkutils
 import state as state_
 import rule as rule_
 import list as list_
@@ -287,8 +292,9 @@ class Grammar(object):
             s.initialize_decoding()
             for result in r.i_decode(s):
                 if s.finished():
-                    data = s.evaluate()
+                    root, data = s.evaluate()
                     r.process_results(data)
+                    r.process_recognition(root)
                     return
 
         if self._log_results: self._log_results.warning("Grammar %s:" \

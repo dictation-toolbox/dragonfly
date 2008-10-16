@@ -34,8 +34,8 @@ class NumBase(elements_.Alternative):
 
     _element_builders = ()
 
-    def __init__(self, key=None, minimum=None, maximum=None, name=None):
-        self._key = key; self._minimum = minimum; self._maximum = maximum
+    def __init__(self, name=None, minimum=None, maximum=None):
+        self._minimum = minimum; self._maximum = maximum
         children = self._build_children(minimum, maximum)
         elements_.Alternative.__init__(self, children, name=name)
 
@@ -43,7 +43,7 @@ class NumBase(elements_.Alternative):
     # Methods for runtime introspection.
 
     def __str__(self):
-        if self._key is not None: arguments = ["'%s'" % self._key]
+        if self.name is not None: arguments = ["'%s'" % self.name]
         else: arguments = []
         if self._minimum is not None or self._maximum is not None:
             arguments.append("%s" % self._minimum)
@@ -66,12 +66,12 @@ class NumBase(elements_.Alternative):
             "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
 
         assert len(node.children) == 1
-        if self._key:
+        if self.name:
             child = node.children[0]
             value = child.actor.i_value(child)
             if self._log_eval: self._log_eval.debug( \
                 "%s%s: value %s" % ("  "*node.depth, self, value))
-            data[self._key] = value
+            data[self.name] = value
 
     def value(self, node):
         child = node.children[0]
@@ -84,10 +84,9 @@ class NumBase(elements_.Alternative):
 class DigitsBase(elements_.Repetition):
 
     _digits = None
+    _digit_name = "_digit"
 
-    def __init__(self, key=None, min=1, max=None):
-        self._key = key
-
+    def __init__(self, name=None, min=1, max=None):
         pairs = []
         for value, word in enumerate(self._digits):
             if isinstance(word, str):
@@ -97,17 +96,17 @@ class DigitsBase(elements_.Repetition):
             else:
                 raise ValueError("Invalid type in digit list: %s" % word)
 
-        alternatives = [_ValueLit(w, v) for w, v in pairs]
+        alternatives = [_ValueLit(w, v, name= self._digit_name) for w, v in pairs]
         child = elements_.Alternative(alternatives)
-        elements_.Repetition.__init__(self, child, min, max)
+        elements_.Repetition.__init__(self, child, min, max, name=name)
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
     def __str__(self):
         arguments = "%d-%d" % (self._min, self._max)
-        if self._key is not None:
-            arguments = "'%s', %s" % (self._key, arguments)
+        if self.name is not None:
+            arguments = "'%s', %s" % (self.name, arguments)
         return "%s(%s)" % (self.__class__.__name__, arguments)
 
     #-----------------------------------------------------------------------
@@ -118,13 +117,18 @@ class DigitsBase(elements_.Repetition):
             "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
 
         assert len(node.children) == self._min + 1
-        if self._key:
+        if self.name:
             repetitions = node.actor.get_repetitions(node)
             values = [child.children[0].actor.i_value(child)
                             for child in repetitions]
             if self._log_eval: self._log_eval.debug( \
                 "%s%s: values %s" % ("  "*node.depth, self, values))
-            data[self._key] = values
+            data[self.name] = values
+
+    def value(self, node):
+        children = node.get_children_by_name(self._digit_name)
+        digits = [c.value() for c in children]
+        return digits
 
 
 #---------------------------------------------------------------------------
@@ -274,11 +278,13 @@ class MagnitudeNumBuilder(NumBuilderBase):
 
 class _ValueLit(elements_.Literal):
 
-    def __init__(self, word, value):
-        elements_.Literal.__init__(self, word)
+    def __init__(self, word, value, name=None):
+        elements_.Literal.__init__(self, word, name=name)
         self._value = value
 
     def i_value(self, node):
+        return self._value
+    def value(self, node):
         return self._value
 
 

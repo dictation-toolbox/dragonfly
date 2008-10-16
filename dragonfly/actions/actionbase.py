@@ -42,7 +42,10 @@ class ActionBase(object):
         self._following = []
 
     def __str__(self):
-        return "%s(%s)" % (self.__class__.__name__, self._str)
+        s = "%s(%s)" % (self.__class__.__name__, self._str)
+        if self._following:
+            s += "+".join([str(a) for a in self._following])
+        return s
 
     def copy(self):
         return copy_.deepcopy(self)

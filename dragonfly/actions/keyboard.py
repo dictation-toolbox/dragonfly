@@ -160,6 +160,7 @@ keycodes = {
         "del":          win32con.VK_DELETE,
         "apps":         win32con.VK_APPS,
         "popup":        win32con.VK_APPS,
+        "win":          win32con.VK_LWIN,
         "escape":       win32con.VK_ESCAPE,
         "npmul":        win32con.VK_MULTIPLY,
         "npadd":        win32con.VK_ADD,
@@ -212,6 +213,7 @@ class KeyAction(actionbase_.DynStrActionBase):
         'a': keycodes["alt"],
         'c': keycodes["control"],
         's': keycodes["shift"],
+        'w': keycodes["win"],
         }
     _pause_factor = 0.02
     _keyboard = Keyboard()

@@ -1,0 +1,12 @@
+Dragonfly MappingRule
+=====================
+
+Class reference
+---------------
+
+.. autoclass:: dragonfly.grammar.mappingrule.MappingRule
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+   .. automethod:: dragonfly.grammar.mappingrule.MappingRule._process_recognition()

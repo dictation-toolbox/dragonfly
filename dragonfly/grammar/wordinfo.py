@@ -24,7 +24,11 @@
 """
 
 
-import natlink
+try:
+	import natlink
+except ImportError:
+	natlink = None
+
 import dragonfly.log as log_
 
 class Word(object):
