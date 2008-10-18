@@ -30,7 +30,7 @@
 from dragonfly.grammar.grammar       import Grammar
 from dragonfly.grammar.context       import AppContext
 from dragonfly.grammar.compoundrule  import CompoundRule
-from dragonfly.grammar.elements      import Choice
+from dragonfly.grammar.elements      import Choice, Dictation
 
 
 #---------------------------------------------------------------------------
@@ -45,7 +45,7 @@ grammar = Grammar("notepad_example", context=grammar_context)
 
 class FoodGroupRule(CompoundRule):
 
-    spec   = "(I ate <food> <time> | <time> I ate <food>)"
+    spec   = "(I ate <food> <time> | <time> I ate <food>) [and thought it was <opinion>]"
     time   = {
               "(two days ago | day before yesterday)":  2,
               "yesterday":                              1,
@@ -60,12 +60,15 @@ class FoodGroupRule(CompoundRule):
     extras = [
               Choice("time", time),
               Choice("food", food),
+              Dictation("opinion"),
              ]
 
     def _process_recognition(self, node, extras):
         days_ago  = extras["time"]
         foodgroup = extras["food"]
         print "You ate %s %d days ago." % (foodgroup, days_ago)
+        if "opinion" in extras:
+            print "You thought it was %s." % (extras["opinion"])
 
 grammar.add_rule(FoodGroupRule())
 
