@@ -56,9 +56,10 @@ LiteralChoice   = basic_.LiteralChoice
 
 
 #---------------------------------------------------------------------------
-# Compound element class.
+# Compound element classes.
 
 Compound        = compound_.Compound
+Choice          = compound_.Choice
 
 
 #===========================================================================

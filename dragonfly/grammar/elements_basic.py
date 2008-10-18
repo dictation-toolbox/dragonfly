@@ -58,6 +58,20 @@ class ElementBase(object):
     children = property(lambda self: self._get_children(),
                         doc="Read-only access to child elements.")
 
+    def element_tree_string(self):
+        indent = "  "
+        tree = []
+        stack = [(self, 0)]
+        while stack:
+            element, index = stack.pop()
+            if index == 0:
+                tree.append((element, len(stack)))
+            if len(element.children) > index:
+                stack.append((element, index + 1))
+                stack.append((element.children[index], 0))
+        lines = (indent*depth + str(element) for element, depth in tree)
+        return "\n".join(lines)
+
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 

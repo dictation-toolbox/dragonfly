@@ -63,7 +63,7 @@ class _Stuff(parser_.Sequence):
 
         alternatives = []
         for repetition in repetitions:
-            if len(alternatives) == 1:
+            if len(repetition) == 1:
                 alternatives.append(repetition[0])
             else:
                 element = elements_.Sequence(repetition)
@@ -202,23 +202,65 @@ class _Group(parser_.Sequence):
 stuff.initialize()
 
 
+#---------------------------------------------------------------------------
+# The Compound class.
 
 class Compound(elements_.Alternative):
 
     _log = log_.get_log("compound.parse")
     _parser = parser_.Parser(stuff, _log)
 
-    def __init__(self, spec, elements={}, actions={}, name=None, value=None):
+    def __init__(self, spec, extras={}, actions={}, name=None, value=None, elements={}):
+        self._spec = spec
         self._value = value
 
-        stuff.set_elements(elements)
+        # Temporary transition code so that both "elements" and "extras"
+        #  are supported as keyword arguments.
+        if extras and elements:
+            extras = dict(extras)
+            extras.update(elements)
+        elif elements:
+            extras = elements
+
+        # This solution is non-ideal as "stuff" is a global instance.
+        stuff.set_elements(extras)
         stuff.set_actions(actions)
 
         element = self._parser.parse(spec)
         elements_.Alternative.__init__(self, (element,), name=name)
+
+    def __str__(self):
+        arguments = ["%r" % self._spec]
+        if self.name: arguments.append("name=%r" % self.name)
+        arguments = ", ".join(arguments)
+        return "%s(%s)" % (self.__class__.__name__, arguments)
 
     def value(self, node):
         if self._value is None:
             elements_.Alternative.value(self, node)
         else:
             return self._value
+
+
+#---------------------------------------------------------------------------
+# The Choice class which maps multiple Compound instances to values.
+
+class Choice(elements_.Alternative):
+
+    def __init__(self, name, choices):
+
+        # Argument type checking.
+        assert isinstance(name, str)
+        assert isinstance(choices, dict)
+        for k, v in choices.iteritems():
+            assert isinstance(k, str)
+
+        # Construct children from the given choice keys and values.
+        self._choices = choices
+        children = []
+        for k, v in choices.iteritems():
+            child = Compound(spec=k, value=v)
+            children.append(child)
+
+        # Initialize super class.
+        elements_.Alternative.__init__(self, children=children, name=name)
