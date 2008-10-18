@@ -20,3 +20,4 @@
 
 recursive-include dragonfly/examples *.py
 include dragonfly/documentation/*
+exclude dragonfly/documentation/.svn*
