@@ -19,7 +19,7 @@
 #
 
 """
-    This file implements a basic multiplexing interface to the natlink timer.
+    This file implements Dragonfly's internal logging system.
 """
 
 
@@ -27,6 +27,8 @@ import sys
 import os.path
 import logging
 import logging.handlers
+import win32gui
+from win32com.shell import shell, shellcon
 
 
 #---------------------------------------------------------------------------
@@ -34,32 +36,26 @@ import logging.handlers
 
 log_handlers = ["stdout", "file"]
 log_names = {
-    "":                     (logging.DEBUG, logging.DEBUG),
-    "grammar.load":         (None, logging.INFO), 
-    "grammar.begin":        (None, logging.INFO),
-    "grammar.results":      (None, logging.DEBUG),
-    "grammar.decode":       (None, logging.INFO),
-    "grammar.eval":         (None, logging.DEBUG),
-    "grammar.process":      (logging.DEBUG, logging.DEBUG),
-    "compound.parse":       (None, logging.INFO),
-    "dictation.formatter":  (logging.DEBUG, logging.DEBUG),
-    "action.init":          (logging.DEBUG, logging.DEBUG),
-    "action.exec":          (None, logging.DEBUG),
-    "context.match":        (None, logging.INFO),
+    "":                     (logging.WARNING, logging.WARNING),
+    "grammar.load":         (logging.WARNING, logging.INFO), 
+    "grammar.begin":        (logging.WARNING, logging.INFO),
+    "grammar.results":      (logging.WARNING, logging.WARNING),
+    "grammar.decode":       (logging.WARNING, logging.INFO),
+    "grammar.eval":         (logging.WARNING, logging.WARNING),
+    "grammar.process":      (logging.WARNING, logging.WARNING),
+    "compound.parse":       (logging.WARNING, logging.INFO),
+    "dictation.formatter":  (logging.WARNING, logging.WARNING),
+    "action.init":          (logging.WARNING, logging.WARNING),
+    "action.exec":          (logging.WARNING, logging.WARNING),
+    "context.match":        (logging.WARNING, logging.INFO),
     }
 
-log_file_path = os.path.join(os.path.expanduser("~"),
-                                r"My Documents\dragonfly.txt")
+# Lookup path the user's personal folder in which to log Dragonfly messages.
+mydocs_pidl = shell.SHGetFolderLocation (0, shellcon.CSIDL_PERSONAL, 0, 0)
+mydocs_path = shell.SHGetPathFromIDList (mydocs_pidl)
+log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
 log_file_size = 128*1024
 log_file_count = 9
-
-# Nonportable code above, should be something like:
-#import os
-#import win32gui
-#from win32com.shell import shell, shellcon
-#mydocs_pidl = shell.SHGetFolderLocation (0, shellcon.CSIDL_PERSONAL, 0, 0)
-#path = shell.SHGetPathFromIDList (mydocs_pidl)
-#print "Opening", path
 
 
 #---------------------------------------------------------------------------
