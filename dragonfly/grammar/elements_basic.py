@@ -594,6 +594,12 @@ class List(ElementBase):
         # Finally, evaluate this element's actions.
         self._evaluate_actions(self._actions, node, data)
 
+    def value(self, node):
+        words = node.words()
+        if len(words) != 1: raise ValueError("Decoding stack broken,"
+                    " received multiple list words: %r." % words)
+        return words[0]
+
 #---------------------------------------------------------------------------
 
 class DictList(List):
@@ -620,6 +626,10 @@ class DictList(List):
 
         # Finally, evaluate this element's actions.
         self._evaluate_actions(self._actions, node, data)
+
+    def value(self, node):
+        key = List.value(self, node)
+        return self._list[key]
 
 #---------------------------------------------------------------------------
 
