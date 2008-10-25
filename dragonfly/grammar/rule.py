@@ -36,6 +36,7 @@ class Rule(object):
     _log_load = log_.get_log("grammar.load")
     _log_eval = log_.get_log("grammar.eval")
     _log_proc = log_.get_log("grammar.process")
+    _log      = log_.get_log("rule")
 
     def __init__(self, name, element, context=None,
                     imported=False, exported=False):

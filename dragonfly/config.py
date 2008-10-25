@@ -23,9 +23,13 @@
     configuration framework.
 """
 
+import sys
 import os.path
 import inspect
 import textwrap
+import traceback
+
+import dragonfly.log as log_
 
 
 #---------------------------------------------------------------------------
@@ -41,6 +45,8 @@ _init, _load, _done = range(3)
 # Config class; this manages a command module's configuration.
 
 class Config(object):
+
+    _log = log_.get_log("config")
 
     def __init__(self, name):
         set_ = object.__setattr__
@@ -86,7 +92,37 @@ class Config(object):
 
     def load_from_file(self, path):
         namespace = dict(self._sections)
-        execfile(path, namespace)
+        try:
+            execfile(path, namespace)
+#        except ConfigError, e:
+        except Exception, e:
+            print "exception:", e
+            t, v, tb = sys.exc_info()
+            frames = traceback.extract_tb(tb)
+            relevant_frames = []
+            error_line = "<unknown>"
+            include_all = False
+            for frame in frames:
+                filename, line, function, text = frame
+                print "frame:", frame
+
+                if not include_all:
+                    file1 = os.path.basename(filename)
+                    file2 = os.path.basename(path)
+                    if file1 == file2:
+                        include_all = True
+                        error_line = line
+
+                if include_all:
+                    relevant_frames.append(frame)
+
+            self._log.error("An error occurred in the %s file at line %s."
+                            % (path, error_line))
+            self._log.error("The error message was: %s" % e)
+            formatted = traceback.format_list(relevant_frames)
+            lines = "\n".join(formatted).splitlines()
+            for line in lines:
+                self._log.error("    " + line)
 
     _comment_wrapper = textwrap.TextWrapper(
                                    width=70,
