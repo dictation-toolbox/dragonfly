@@ -36,11 +36,29 @@ class KeyboardInput(Structure):
                 ("time", c_ulong),
                 ("dwExtraInfo", POINTER(c_ulong))]
 
+    # Nasty behavior of Win32 shift-navkey requires the navigation keys
+    #  always to to be treated as extended.  See:
+    #  http://www.xtremevbtalk.com/archive/index.php/t-203863.html
+    #  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/winui/windowsuserinterface/userinput/keyboardinput/aboutkeyboardinput.asp
+    extended_keys = (
+                     win32con.VK_UP,
+                     win32con.VK_DOWN,
+                     win32con.VK_LEFT,
+                     win32con.VK_RIGHT,
+                     win32con.VK_HOME,
+                     win32con.VK_END,
+                     win32con.VK_PRIOR,
+                     win32con.VK_NEXT,
+                    )
+
     def __init__(self, virtual_keycode, down):
         scancode = windll.user32.MapVirtualKeyA(virtual_keycode, 0)
 
-        if down:    flags = 0
-        else:       flags = win32con.KEYEVENTF_KEYUP
+        flags = 0
+        if not down:
+            flags |= win32con.KEYEVENTF_KEYUP
+        if virtual_keycode in self.extended_keys:
+            flags |= win32con.KEYEVENTF_EXTENDEDKEY
 
         extra = pointer(c_ulong(0))
         Structure.__init__(self, virtual_keycode, scancode, flags, 0, extra)
