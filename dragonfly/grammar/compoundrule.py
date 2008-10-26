@@ -31,6 +31,7 @@ from dragonfly.grammar.elements import ElementBase, Compound
 
 class CompoundRule(Rule):
 
+    _name = None
     spec = None
     extras = []
     exported = True
@@ -38,7 +39,7 @@ class CompoundRule(Rule):
     #-----------------------------------------------------------------------
 
     def __init__(self, name=None, spec=None, extras=None, exported=None):
-        if name     is None: name     = self.__class__.__name__
+        if name     is None: name     = self._name or self.__class__.__name__
         if spec     is None: spec     = self.spec
         if extras   is None: extras   = self.extras
         if exported is None: exported = self.exported

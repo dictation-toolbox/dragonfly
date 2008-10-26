@@ -483,7 +483,7 @@ class Literal(ElementBase):
 
 #---------------------------------------------------------------------------
 
-class Rule(ElementBase):
+class RuleRef(ElementBase):
 
     def __init__(self, rule, actions=(), name=None):
         ElementBase.__init__(self, actions, name)
@@ -530,12 +530,15 @@ class Rule(ElementBase):
         state.decode_failure(self)
         return
 
+    def value(self, node):
+        return node.children[0].value()
+
 #---------------------------------------------------------------------------
 
-class List(ElementBase):
+class ListRef(ElementBase):
 
-    def __init__(self, list, key=None, actions=(), name=None):
-        ElementBase.__init__(self, actions, name)
+    def __init__(self, name, list, key=None, actions=()):
+        ElementBase.__init__(self, name=name, actions=actions)
 
         if not isinstance(list, list_.ListBase):
             raise TypeError("List object of %s object must be a"
@@ -602,13 +605,13 @@ class List(ElementBase):
 
 #---------------------------------------------------------------------------
 
-class DictList(List):
+class DictListRef(ListRef):
 
-    def __init__(self, dict, key=None, actions=(), name=None):
+    def __init__(self, name, dict, key=None, actions=()):
         if not isinstance(dict, list_.DictList):
             raise TypeError("Dict object of %s object must be a"
                             " Dragonfly DictList." % self)
-        List.__init__(self, dict, key, actions, name)
+        ListRef.__init__(self, name, dict, key, actions)
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
@@ -628,7 +631,7 @@ class DictList(List):
         self._evaluate_actions(self._actions, node, data)
 
     def value(self, node):
-        key = List.value(self, node)
+        key = ListRef.value(self, node)
         return self._list[key]
 
 #---------------------------------------------------------------------------

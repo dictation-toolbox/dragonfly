@@ -58,8 +58,8 @@ class ConnectionGrammar(Grammar):
         self.connection_down()
 
     def process_begin(self, executable, title, handle):
-        # If not connected yet, retry.  If we connect fails after single
-        #  attempt, give up.
+        # If not connected yet, retry.  If the connection fails after
+        #  single attempt, give up.
         if not self._application:
             if not self.connect():
                 return False
@@ -77,7 +77,8 @@ class ConnectionGrammar(Grammar):
         except com_error, e:
             if self._log_begin:
                 self._log_begin.warning("Grammar %s: failed to"
-                                        " connect to word: %s." % (self, e))
+                                        " connect to %r: %s."
+                                        % (self, self._app_name, e))
             return False
         else:
             return True

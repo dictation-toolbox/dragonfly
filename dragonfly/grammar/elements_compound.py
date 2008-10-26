@@ -214,6 +214,24 @@ class Compound(elements_.Alternative):
         self._spec = spec
         self._value = value
 
+        # Convert extras argument from sequence to mapping.
+        if isinstance(extras, (tuple, list)):
+            mapping = {}
+            for element in extras:
+                if not isinstance(element, elements_.ElementBase):
+                    self._log.error("Invalid extras item: %s" % element)
+                    raise TypeError("Invalid extras item: %s" % element)
+                if not element.name:
+                    self._log.error("Extras item does not have a name: %s" % element)
+                    raise TypeError("Extras item does not have a name: %s" % element)
+                if element.name in mapping:
+                    self._log.warning("Multiple extras items with the same name: %s" % element)
+                mapping[element.name] = element
+            extras = mapping
+        elif not isinstance(extras, dict):
+            self._log.error("Invalid extras argument: %s" % extras)
+            raise TypeError("Invalid extras argument: %s" % extras)
+
         # Temporary transition code so that both "elements" and "extras"
         #  are supported as keyword arguments.
         if extras and elements:
