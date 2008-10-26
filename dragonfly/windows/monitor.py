@@ -25,12 +25,24 @@
 
 
 import win32gui
-import dragonfly.windows.rectangle as rectangle_
+import ctypes
+
+import dragonfly.log as log_
+from dragonfly.windows.rectangle import Rectangle
+
+
+#---------------------------------------------------------------------------
+# List of monitors that will be filled when this module is loaded.
+
+monitors = []
 
 
 #===========================================================================
+# Monitor class for storing info about single display monitor.
 
 class Monitor(object):
+
+    _log = log_.get_log("monitor.init")
 
     #-----------------------------------------------------------------------
     # Methods for initialization and introspection.
@@ -38,7 +50,7 @@ class Monitor(object):
     def __init__(self, handle, rectangle):
         assert isinstance(handle, int)
         self._handle = handle
-        assert isinstance(rectangle, rectangle_.Rectangle)
+        assert isinstance(rectangle, Rectangle)
         self._rectangle = rectangle
 
     def __str__(self):
@@ -55,7 +67,7 @@ class Monitor(object):
                       doc="Protected access to handle attribute.")
 
     def _set_rectangle(self, rectangle):
-        assert isinstance(rectangle, rectangle_.Rectangle)
+        assert isinstance(rectangle, Rectangle)
         self._rectangle = rectangle # Should make a copy??
     rectangle = property(fget=lambda self: self._rectangle,
                       fset=_set_rectangle,
@@ -63,21 +75,61 @@ class Monitor(object):
 
 
 #===========================================================================
+# Monitor info retrieval below lightly inspired by the following recipe:
+#  http://code.activestate.com/recipes/460509/ by Martin Dengler (2005)
+#  More info available here:
+#  http://msdn.microsoft.com/en-us/library/ms534809.aspx
 
-monitors = [
-    Monitor(0, rectangle_.Rectangle(   0, 0, 1920, 1200)),
-    Monitor(0, rectangle_.Rectangle(1920, 0, 1600, 1200)),
-    ]
+class _rect_t(ctypes.Structure):
+    _fields_ = [
+                ('left',    ctypes.c_long),
+                ('top',     ctypes.c_long),
+                ('right',   ctypes.c_long),
+                ('bottom',  ctypes.c_long)
+               ]
+
+class _monitor_info_t(ctypes.Structure):
+    _fields_ = [
+                ('cbSize',     ctypes.c_ulong),
+                ('rcMonitor',  _rect_t),
+                ('rcWork',     _rect_t),
+                ('dwFlags',    ctypes.c_ulong)
+               ]
+
+callback_t = ctypes.WINFUNCTYPE(
+                                ctypes.c_int,
+                                ctypes.c_ulong,
+                                ctypes.c_ulong,
+                                ctypes.POINTER(_rect_t),
+                                ctypes.c_double
+                               )
+
+def _callback(
+              hMonitor,     # Handle to display monitor
+              hdcMonitor,   # Handle to monitor DC
+              lprcMonitor,  # Intersection rectangle of monitor
+              dwData        # Data
+             ):
+    # Retrieves monitor info.
+    info = _monitor_info_t()
+    info.cbSize     = ctypes.sizeof(_monitor_info_t)
+    info.rcMonitor  = _rect_t()
+    info.rcWork     = _rect_t()
+    res = ctypes.windll.user32.GetMonitorInfoA(hMonitor, ctypes.byref(info))
+
+    # Store monitor info.
+    handle = int(hMonitor)
+    r = info.rcWork
+    rectangle = Rectangle(r.left, r.top, r.right - r.left, r.bottom - r.top)
+    monitor = Monitor(handle, rectangle)
+    Monitor._log.debug("Found monitor %s with geometry %s."
+                       % (monitor, rectangle))
+    monitors.append(monitor)
+
+    # Continue enumerating monitors.
+    return True
 
 
-# Public Const SM_XVIRTUALSCREEN = 76    'virtual desktop left
-# Public Const SM_YVIRTUALSCREEN = 77    'virtual top
-# Public Const SM_CXVIRTUALSCREEN = 78   'virtual width
-# Public Const SM_CYVIRTUALSCREEN = 79   'virtual height
-# Public Const SM_CMONITORS = 80         'number of monitors
-# Public Const SM_SAMEDISPLAYFORMAT = 81
-# numMonitors = GetSystemMetrics(SM_CMONITORS)
-# GetSystemMetrics(SM_XVIRTUALSCREEN)
-# GetSystemMetrics(SM_YVIRTUALSCREEN)
-# GetSystemMetrics(SM_CYVIRTUALSCREEN)
-# GetSystemMetrics(SM_CXVIRTUALSCREEN)
+# Enumerate monitors and build Dragonfly's monitor list when this
+#  module is loaded.
+res = ctypes.windll.user32.EnumDisplayMonitors(0, 0, callback_t(_callback), 0)

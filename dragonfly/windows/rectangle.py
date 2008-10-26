@@ -38,7 +38,6 @@ class Rectangle(Point):
     def __init__(self, x1=None, y1=None, dx=None, dy=None):
         Point.__init__(self, x1, y1)
         self._size = Point(dx, dy)
-        print "init rectangle", self
 
     def copy(self):
         return copy.deepcopy(self)
@@ -105,13 +104,10 @@ class Rectangle(Point):
     def renormalize(self, src, dst):
         p1 = self.p1.renormalize(src, dst)
         p2 = self.p2.renormalize(src, dst)
-        print "p1",p1, "p2",p2
-        print "re-normalizing", self, "->",
         self._x = p1.x
         self._y = p1.y
         self._size._x = p2.x - p1.x
         self._size._y = p2.y - p1.y
-        print self
 
     #-----------------------------------------------------------------------
     # Methods for various rectangle related operations.

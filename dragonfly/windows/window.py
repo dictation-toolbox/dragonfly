@@ -44,6 +44,8 @@ class Window(object):
 
     def get_foreground(cls):
         handle = win32gui.GetForegroundWindow()
+        if handle in cls._windows_by_handle:
+            return cls._windows_by_handle[handle]
         window = Window(handle=handle)
         return window
     get_foreground = classmethod(get_foreground)
@@ -52,12 +54,14 @@ class Window(object):
     #=======================================================================
     # Methods for initialization and introspection.
 
-    def __init__(self, handle=None):
-        assert isinstance(handle, int)      # or handle == None
-        self._handle = handle
+    def __init__(self, handle):
+        self._handle = None
+        self._names = set()
+        self.handle = handle
 
     def __str__(self):
-        return "%s(%d)" % (self.__class__.__name__, self._handle)
+        args = ["handle=%d" % self._handle] + list(self._names)
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(args))
 
     #-----------------------------------------------------------------------
     # Methods that control attribute access.
@@ -65,9 +69,21 @@ class Window(object):
     def _set_handle(self, handle):
         assert isinstance(handle, int)
         self._handle = handle
+        self._windows_by_handle[handle] = self
     handle = property(fget=lambda self: self._handle,
                       fset=_set_handle,
                       doc="Protected access to handle attribute.")
+
+    def _get_name(self):
+        if self._names:  return self._names[0]
+        else:            return None
+    def _set_name(self, name):
+        assert isinstance(name, basestring)
+        self._names.add(name)
+        self._windows_by_name[name] = self
+    name = property(fget=_get_name,
+                    fset=_set_name,
+                    doc="Protected access to name attribute.")
 
     #-----------------------------------------------------------------------
     # Direct access to various Win32 methods.
@@ -102,13 +118,11 @@ class Window(object):
     def get_position(self):
         l, t, r, b = self._get_rect()
         w = r - l; h = b - t
-        print "dimensions", l, t, w, h
         return rectangle_.Rectangle(l, t, w, h)
 
     def set_position(self, rectangle):
         assert isinstance(rectangle, rectangle_.Rectangle)
         l, t, w, h = rectangle.ltwh
-        print "dimensions", l, t, w, h
         win32gui.MoveWindow(self._handle, l, t, w, h, 1)
 
     def get_containing_monitor(self):
@@ -129,3 +143,10 @@ class Window(object):
         if not monitor: monitor = self.get_containing_monitor()
         rectangle.renormalize(rectangle_.unit, monitor.rectangle)
         self.set_position(rectangle)
+
+    #-----------------------------------------------------------------------
+    # Methods for miscellaneous window control.
+
+    def set_foreground(self):
+        self._set_foreground()
+        self._bring_to_top()
