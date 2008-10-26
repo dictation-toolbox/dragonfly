@@ -124,11 +124,12 @@ class Config(object):
             for line in lines:
                 self._log.error("    " + line)
 
+    _comment_indent = " "*20
     _comment_wrapper = textwrap.TextWrapper(
                                    width=70,
                                    break_long_words=False,
-                                   initial_indent="# ",
-                                   subsequent_indent="#  ",
+                                   initial_indent=_comment_indent+"# ",
+                                   subsequent_indent=_comment_indent+"#  ",
                                   )
 
     def _format_file_head(self):
@@ -154,10 +155,11 @@ class Config(object):
                 "value":    item.value,
                 "path":     path,
                }
-        header = "%(doc)s" % data
-        lines = self._comment_wrapper.wrap(header)
-        lines.append("# Default: %(default)r" % data)
+        lines = []
         lines.append("%(path)s = %(value)r" % data)
+        header = "%(doc)s" % data
+        lines.extend(self._comment_wrapper.wrap(header))
+        lines.extend(self._comment_wrapper.wrap("Default: %(default)r" % data))
         lines.append("")
         return lines
 
