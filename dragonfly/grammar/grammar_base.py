@@ -67,7 +67,10 @@ class Grammar(object):
         self._loaded = False
         self._enabled = True
         self._in_context = False
-        self._grammar_object = natlink.GramObj()
+
+        self._grammar_object = None
+        if natlink:
+            self._grammar_object = natlink.GramObj()
 
     def __del__(self):
         self.unload()
@@ -194,6 +197,7 @@ class Grammar(object):
 
         # Prevent loading the same grammar multiple times.
         if self._loaded: return
+        if not self._grammar_object: return
         if self._log_load: self._log_load.debug("Grammar %s: loading." \
                             % (self._name))
 
@@ -213,8 +217,14 @@ class Grammar(object):
 #       print c.debug_state_string()
         all_results = False
         hypothesis = False
-        self._grammar_object.load(compiled_grammar, all_results, hypothesis)
-        self._loaded = True
+
+        try:
+            self._grammar_object.load(compiled_grammar, all_results, hypothesis)
+            self._loaded = True
+        except natlink.NatError, e:
+            self._log_load.warning("Grammar %s: failed to load: %s."
+                                   % (self._name, e))
+            return
 
         # Update all lists loaded in this grammar.
         for lst in self._lists:
