@@ -245,6 +245,9 @@ class Compound(elements_.Alternative):
         stuff.set_actions(actions)
 
         element = self._parser.parse(spec)
+        if not element:
+            self._log.error("Invalid compound spec: %r" % spec)
+            raise SyntaxError("Invalid compound spec: %r" % spec)
         elements_.Alternative.__init__(self, (element,), name=name)
 
     def __str__(self):

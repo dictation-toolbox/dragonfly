@@ -92,6 +92,9 @@ class Config(object):
 
     def load_from_file(self, path):
         namespace = dict(self._sections)
+        for name, section in self._sections_list:
+            section.update_namespace(namespace)
+
         try:
             execfile(path, namespace)
 #        except ConfigError, e:
@@ -247,16 +250,23 @@ class Section(object):
         else:
             raise AttributeError(name)
 
+    def update_namespace(self, namespace):
+        for name, item in self._items_list:
+            item.update_namespace(namespace)
+        for name, section in self._sections_list:
+            section.update_namespace(namespace)
+
 
 #---------------------------------------------------------------------------
 # Item classes which represent config values.
 
 class Item(object):
 
-    def __init__(self, default, doc):
+    def __init__(self, default, doc, namespace=None):
         self._default = default
         self._value = default
         self.doc = doc
+        self._namespace = namespace
 
     def get_default(self):
         return self._default
@@ -275,3 +285,7 @@ class Item(object):
 
     value = property(get_value, set_value)
     default = property(get_default)
+
+    def update_namespace(self, namespace):
+        if self._namespace:
+            namespace.update(self._namespace)

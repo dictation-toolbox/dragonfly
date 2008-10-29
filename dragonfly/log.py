@@ -50,7 +50,7 @@ log_names = {
     "context.match":        (logging.WARNING, logging.INFO),
     "rule":                 (logging.WARNING, logging.INFO),
     "config":               (logging.WARNING, logging.INFO),
-    "monitor.init":         (logging.DEBUG, logging.INFO),#(logging.WARNING, logging.INFO),
+    "monitor.init":         (logging.WARNING, logging.INFO),
     }
 
 # Lookup path the user's personal folder in which to log Dragonfly messages.
