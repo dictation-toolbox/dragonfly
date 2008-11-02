@@ -110,7 +110,6 @@ class MappingRule(Rule):
               extras list contained within this recognition.
               Maps element name -> element value.
         """
-        print "recognition values:", value, extras
         if isinstance(value, ActionBase):
             value.execute(extras)
         elif self._log_proc:

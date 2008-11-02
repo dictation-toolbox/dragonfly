@@ -160,9 +160,10 @@ class Config(object):
                }
         lines = []
         lines.append("%(path)s = %(value)r" % data)
-        header = "%(doc)s" % data
-        lines.extend(self._comment_wrapper.wrap(header))
-        lines.extend(self._comment_wrapper.wrap("Default: %(default)r" % data))
+        if item.doc:
+            header = "%(doc)s" % data
+            lines.extend(self._comment_wrapper.wrap(header))
+            lines.extend(self._comment_wrapper.wrap("Default: %(default)r" % data))
         lines.append("")
         return lines
 
@@ -262,7 +263,7 @@ class Section(object):
 
 class Item(object):
 
-    def __init__(self, default, doc, namespace=None):
+    def __init__(self, default, doc=None, namespace=None):
         self._default = default
         self._value = default
         self.doc = doc
