@@ -46,7 +46,27 @@ _init, _load, _done = range(3)
 
 class Config(object):
 
+    _configs_by_name = {}
     _log = log_.get_log("config")
+
+
+    #-----------------------------------------------------------------------
+
+    @classmethod
+    def get_by_name(cls, name):
+        try:
+            return cls._configs_by_name[name]
+        except KeyError:
+            return None
+
+    @classmethod
+    def get_instances(cls):
+        instances = cls._configs_by_name.items()
+        instances.sort()
+        return [instance for name, instance in instances]
+        
+
+    #-----------------------------------------------------------------------
 
     def __init__(self, name):
         set_ = object.__setattr__
@@ -54,6 +74,10 @@ class Config(object):
         set_(self, "_sections", {})
         set_(self, "_sections_list", [])
         set_(self, "_mode", _init)
+        set_(self, "module_path", None)
+        set_(self, "config_path", None)
+
+        Config._configs_by_name[name] = self
 
     def _set_mode(self, mode):
         object.__setattr__(self, "_mode", mode)
@@ -80,14 +104,15 @@ class Config(object):
         if not path:
             caller_frame = inspect.currentframe().f_back
             caller_file = caller_frame.f_globals["__file__"]
-            module_base = os.path.splitext(caller_file)[0]
+            module_base, module_ext = os.path.splitext(caller_file)
             path = module_base + ".txt"
+            if module_ext in (".pyc", ".pyo"):
+                module_ext = ".py"
+            object.__setattr__(self, "module_path", module_base + module_ext)
+        object.__setattr__(self, "config_path", path)
 
-        if not os.path.exists(path):
-            self._set_mode(_done)
-            return
-
-        self.load_from_file(path)
+        if os.path.exists(path):
+            self.load_from_file(path)
         self._set_mode(_done)
 
     def load_from_file(self, path):

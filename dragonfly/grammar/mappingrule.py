@@ -32,20 +32,24 @@ from dragonfly.actions.actions  import ActionBase
 
 class MappingRule(Rule):
 
-    mapping = {}
-    extras = []
+    mapping  = {}
+    extras   = []
+    defaults = {}
     exported = True
 
     _key = "_MappingRule_item"
 
     #-----------------------------------------------------------------------
 
-    def __init__(self, name=None, mapping=None, extras=None, exported=None):
+    def __init__(self, name=None, mapping=None, extras=None, defaults=None,
+                 exported=None):
         if name     is None: name     = self.__class__.__name__
         if mapping  is None: mapping  = self.mapping
         if extras   is None: extras   = self.extras
+        if defaults is None: defaults = self.defaults
         if exported is None: exported = self.exported
 
+        # Type checking of initialization values.
         assert isinstance(name, (str, unicode))
         assert isinstance(mapping, dict)
         for key, value in mapping.iteritems():
@@ -55,9 +59,11 @@ class MappingRule(Rule):
             assert isinstance(item, ElementBase)
         assert exported == True or exported == False
 
-        self._name    = name
-        self._mapping = mapping
-        self._extras  = dict([(element.name, element) for element in extras])
+        self._name     = name
+        self._mapping  = mapping
+        self._extras   = dict([(element.name, element)
+                     	       for element in extras])
+        self._defaults = defaults
 
         children = []
         for spec, value in self._mapping.iteritems():
@@ -84,7 +90,7 @@ class MappingRule(Rule):
         item_node = node.get_child_by_name(self._key)
         item_value = item_node.value()
 
-        extras = {}
+        extras = self._defaults
         for name, element in self._extras.iteritems():
             extra_node = node.get_child_by_name(name)
             if not extra_node: continue

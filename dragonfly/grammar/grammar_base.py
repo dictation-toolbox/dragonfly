@@ -31,16 +31,12 @@ except ImportError:
 	natlink = None
 	natlinkutils = None
 
+
 # The trailing underscore in imported module names allows the original
 # module names to be used conveniently for local variables.
 # Done systematically, this leads to less confusion for readers of this
 # source code.
 #
-import state as state_
-import rule as rule_
-import list as list_
-import compiler as compiler_
-import context as context_
 import dragonfly.log as log_
 
 
@@ -330,3 +326,15 @@ class Grammar(object):
 
         if self._log_results: self._log_results.warning("Grammar %s:" \
             " failed to decode recognition %s." % (self._name, words))
+
+
+# The trailing underscore in imported module names allows the original
+# module names to be used conveniently for local variables.
+# Done systematically, this leads to less confusion for readers of this
+# source code.
+#
+import state as state_
+import rule as rule_
+import list as list_
+import compiler as compiler_
+import context as context_
