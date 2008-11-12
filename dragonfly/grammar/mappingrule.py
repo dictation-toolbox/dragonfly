@@ -90,7 +90,7 @@ class MappingRule(Rule):
         item_node = node.get_child_by_name(self._key)
         item_value = item_node.value()
 
-        extras = self._defaults
+        extras = dict(self._defaults)
         for name, element in self._extras.iteritems():
             extra_node = node.get_child_by_name(name)
             if not extra_node: continue

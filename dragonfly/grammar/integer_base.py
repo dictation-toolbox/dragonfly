@@ -54,28 +54,28 @@ class NumBase(elements_.Alternative):
     # Methods for load-time setup.
 
     def _build_children(self, minimum, maximum):
-        children = [c.i_build_element(minimum, maximum) \
+        children = [c.build_element(minimum, maximum) \
                         for c in self._element_builders]
         return [c for c in children if c]
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_evaluate(self, node, data):
+    def evaluate(self, node, data):
         if self._log_eval: self._log_eval.debug( \
             "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
 
         assert len(node.children) == 1
         if self.name:
             child = node.children[0]
-            value = child.actor.i_value(child)
+            value = child.actor.value(child)
             if self._log_eval: self._log_eval.debug( \
                 "%s%s: value %s" % ("  "*node.depth, self, value))
             data[self.name] = value
 
     def value(self, node):
         child = node.children[0]
-        return child.actor.i_value(child)
+        return child.actor.value(child)
 
 
 #---------------------------------------------------------------------------
@@ -112,14 +112,14 @@ class DigitsBase(elements_.Repetition):
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_evaluate(self, node, data):
+    def evaluate(self, node, data):
         if self._log_eval: self._log_eval.debug( \
             "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
 
         assert len(node.children) == self._min + 1
         if self.name:
             repetitions = node.actor.get_repetitions(node)
-            values = [child.children[0].actor.i_value(child)
+            values = [child.children[0].actor.value(child)
                             for child in repetitions]
             if self._log_eval: self._log_eval.debug( \
                 "%s%s: values %s" % ("  "*node.depth, self, values))
@@ -139,8 +139,8 @@ class NumBuilderBase(object):
     def __init__(self):
         pass
 
-    def i_build_element(self, minimum, maximum):
-        raise NotImplementedError("Call to virtual method i_build_element()"
+    def build_element(self, minimum, maximum):
+        raise NotImplementedError("Call to virtual method build_element()"
                                   " in base class NumBuilderBase")
 
 
@@ -149,7 +149,7 @@ class LitNumBuilder(NumBuilderBase):
     def __init__(self, words, values):
         self._words_values = zip(words, values)
 
-    def i_build_element(self, minimum, maximum):
+    def build_element(self, minimum, maximum):
         elements = [(word, value)
                     for word, value in self._words_values
                     if minimum <= value < maximum]
@@ -165,7 +165,7 @@ class SetNumBuilder(NumBuilderBase):
     def __init__(self, set, prefix=None, suffix=None):
         self._set = set; self._prefix = prefix; self._suffix = suffix
 
-    def i_build_element(self, minimum, maximum):
+    def build_element(self, minimum, maximum):
         element = self._build_range_set(self._set, minimum, maximum)
         if not element: return None
         elif not self._prefix and not self._suffix: return element
@@ -175,7 +175,7 @@ class SetNumBuilder(NumBuilderBase):
 
     def _build_range_set(self, set, minimum, maximum):
         # Iterate through the set allowing each item to build an element.
-        children = [c.i_build_element(minimum, maximum) for c in set]
+        children = [c.build_element(minimum, maximum) for c in set]
         children = [c for c in children if c]
 
         # Wrap up results appropriately.
@@ -194,7 +194,7 @@ class MagnitudeNumBuilder(NumBuilderBase):
         self._remainders = remainders
         self._optional_multiplier = optional_multiplier
 
-    def i_build_element(self, minimum, maximum):
+    def build_element(self, minimum, maximum):
 
         # Sanity check.
         if minimum >= maximum: return None
@@ -264,7 +264,7 @@ class MagnitudeNumBuilder(NumBuilderBase):
 
     def _build_range_set(self, set, minimum, maximum):
         # Iterate through the set allowing each item to build an element.
-        children = [c.i_build_element(minimum, maximum) for c in set]
+        children = [c.build_element(minimum, maximum) for c in set]
         children = [c for c in children if c]
 
         # Wrap up results appropriately.
@@ -282,7 +282,7 @@ class _ValueLit(elements_.Literal):
         elements_.Literal.__init__(self, word, name=name)
         self._value = value
 
-    def i_value(self, node):
+    def value(self, node):
         return self._value
     def value(self, node):
         return self._value
@@ -293,46 +293,29 @@ class _ValueAlt(elements_.Alternative):
     def __init__(self, children):
         elements_.Alternative.__init__(self, children)
 
-    def i_value(self, node):
+    def value(self, node):
         assert len(node.children) == 1
         child = node.children[0]
-        return child.actor.i_value(child)
+        return child.actor.value(child)
 
 
-class _ValueLitMap(elements_.ElementBase):
+class _ValueLitMap(elements_.Alternative):
 
     def __init__(self, words_values):
         elements_.ElementBase.__init__(self)
         self._word_keys = [w for w, v in words_values]
         self._words = dict(words_values)
+        children = [elements_.Literal(w) for w, v in words_values]
+        elements_.Alternative.__init__(self, children)
 
     def __str__(self):
         return "%s('%s')" % (self.__class__.__name__,
                         "', '".join(self._word_keys))
 
-    def _get_children(self):
-        return ()
-
-    #-----------------------------------------------------------------------
-    # Methods for load-time setup.
-
-    def i_gstring(self):
-        return "(" \
-             + " | ".join([w for w in self._word_keys]) \
-             + ")"
-
-    def i_compile(self, compiler):
-        if len(self._words) > 1:
-            compiler.start_alternative()
-            [compiler.add_word(w) for w in self._word_keys]
-            compiler.end_alternative()
-        elif len(self._words) == 1:
-            compiler.add_word(self._word_keys[0])
-
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
+    def decode(self, state):
         state.decode_attempt(self)
 
         word = state.word()
@@ -345,7 +328,7 @@ class _ValueLitMap(elements_.ElementBase):
         state.decode_failure(self)
         return
 
-    def i_value(self, node):
+    def value(self, node):
         word = node.words()[0]
         return self._words[word]
 
@@ -359,9 +342,9 @@ class _ValueSeq(elements_.Sequence):
     def __str__(self):
         return "%s(index=%s)" % (self.__class__.__name__, self._index)
 
-    def i_value(self, node):
+    def value(self, node):
         child = node.children[self._index]
-        return child.actor.i_value(child)
+        return child.actor.value(child)
 
 
 class _ValueOpt(elements_.Optional):
@@ -373,10 +356,10 @@ class _ValueOpt(elements_.Optional):
     def __str__(self):
         return "%s(default=%s)" % (self.__class__.__name__, self._value)
 
-    def i_value(self, node):
+    def value(self, node):
         if len(node.children) == 1:
             child = node.children[0]
-            return child.actor.i_value(child)
+            return child.actor.value(child)
         else:
             return self._value
 
@@ -397,11 +380,11 @@ class _Magnitude(elements_.Sequence):
     def __str__(self):
         return "%s(%s)" % (self.__class__.__name__, self._magnitude)
 
-    def i_value(self, node):
+    def value(self, node):
         multiplier = node.children[self._multiplier_index]
         remainder = node.children[self._remainder_index]
 
-        multiplier = multiplier.actor.i_value(multiplier)
-        remainder = remainder.actor.i_value(remainder)
+        multiplier = multiplier.actor.value(multiplier)
+        remainder = remainder.actor.value(remainder)
 
         return multiplier * self._magnitude + remainder

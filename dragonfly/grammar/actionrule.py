@@ -49,7 +49,8 @@ class ActionRule(rule_.Rule):
         for key, value in action_map.items():
             element = elements_.Compound(key, elements, actions)
             action = elements_.Insert(self._action_key, value)
-            element.add_action(action)
+#            element.add_action(action)
+            self._log_proc.error("DEPRECATED add action: %s" % action)
             alternatives.append(element)
         if len(alternatives) > 1:
             element = elements_.Alternative(alternatives)

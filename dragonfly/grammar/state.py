@@ -105,49 +105,17 @@ class State(object):
         self._stack = []
         self._previous_index = None
 
-    def rule_attempt(self, rule):
-        assert isinstance(rule, rule_.Rule)
-        self._depth += 1
-        frame = State._Frame(self._depth, rule, self._index)
-        self._stack.append(frame)
-        self._log_step(rule, "attempt")
-
-    def rule_retry(self, rule):
-        assert isinstance(rule, rule_.Rule)
-        frame = self._get_frame_from_actor(rule)
-        self._depth = frame.depth
-        self._log_step(rule, "retry")
-
-    def rule_success(self, rule):
-        assert isinstance(rule, rule_.Rule)
-        self._log_step(rule, "success")
-        frame = self._get_frame_from_depth()
-        if not frame or frame.actor != rule:
-            raise grammar_.GrammarError("Recognition decoding stack broken.")
-        frame.end = self._index
-        self._depth -= 1
-
-    def rule_failure(self, rule):
-        assert isinstance(rule, rule_.Rule)
-        frame = self._stack.pop()
-        self._index = frame.begin
-        self._log_step(rule, "failure")
-        self._depth = frame.depth - 1
-
     def decode_attempt(self, element):
-        assert isinstance(element, elements_.ElementBase)
         self._depth += 1
         self._stack.append(State._Frame(self._depth, element, self._index))
         self._log_step(element, "attempt")
 
     def decode_retry(self, element):
-        assert isinstance(element, elements_.ElementBase)
         frame = self._get_frame_from_actor(element)
         self._depth = frame.depth
         self._log_step(element, "retry")
 
     def decode_rollback(self, element):
-        assert isinstance(element, elements_.ElementBase)
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
             raise grammar_.GrammarError("Recognition decoding stack broken")
@@ -159,7 +127,6 @@ class State(object):
         self._log_step(element, "rollback")
 
     def decode_success(self, element):
-        assert isinstance(element, elements_.ElementBase)
         self._log_step(element, "success")
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
@@ -168,7 +135,6 @@ class State(object):
         self._depth -= 1
 
     def decode_failure(self, element):
-        assert isinstance(element, elements_.ElementBase)
         frame = self._stack.pop()
         self._index = frame.begin
         self._depth = frame.depth
@@ -202,7 +168,7 @@ class State(object):
     #-----------------------------------------------------------------------
     # Methods for evaluation.
 
-    def evaluate(self):
+    def build_parse_tree(self):
 
         root = None
         node = None
@@ -215,9 +181,8 @@ class State(object):
             if parent: parent.children.append(node)
             else: root = node
 
-        data = {}
-        root.actor.i_evaluate(root, data)
-        return (root, data)
+        return root
+
 
 #---------------------------------------------------------------------------
 

@@ -40,9 +40,9 @@ class ElementBase(object):
     _log_decode = log_.get_log("grammar.decode")
     _log_eval = log_.get_log("grammar.eval")
 
-    def __init__(self, actions=(), name=None):
-        self._actions = self._copy_sequence(actions,
-                                            "actions", ActionBase)
+    def __init__(self, name=None):
+        if not name:
+            name = self.__class__.__name__
         self.name = name
 
     #-----------------------------------------------------------------------
@@ -75,40 +75,23 @@ class ElementBase(object):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def i_dependencies(self):
+    def dependencies(self):
         return []
 
-    def i_compile(self, compiler):
-        raise NotImplementedError("Call to virtual method i_compile()"
+    def compile(self, compiler):
+        raise NotImplementedError("Call to virtual method compile()"
                                   " in base class ElementBase")
 
-    def i_gstring(self):
-        raise NotImplementedError("Call to virtual method i_gstring()"
+    def gstring(self):
+        raise NotImplementedError("Call to virtual method gstring()"
                                   " in base class ElementBase")
-
-    def add_action(self, action):
-        assert isinstance(action, ActionBase)
-        self._actions = self._actions + (action,)
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
-        raise NotImplementedError("Call to virtual method i_decode()"
+    def decode(self, state):
+        raise NotImplementedError("Call to virtual method decode()"
                                   " in base class ElementBase")
-
-    def i_evaluate(self, node, data):
-        if self._log_eval: self._log_eval.debug( \
-            "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
-
-        # First, evaluate all this element's children.
-        [c.actor.i_evaluate(c, data) for c in node.children]
-
-        # Second, evaluate this element's actions.
-        self._evaluate_actions(self._actions, node, data)
-
-    def _evaluate_actions(self, actions, node, data):
-        [a.evaluate(node, data) for a in actions]
 
     def value(self, node):
         return node.words()
@@ -141,7 +124,7 @@ class ElementBase(object):
 class Sequence(ElementBase):
 
     def __init__(self, children=(), actions=(), name=None):
-        ElementBase.__init__(self, actions, name=name)
+        ElementBase.__init__(self, name=name)
         self._children = self._copy_sequence(children,
                                              "children", ElementBase)
 
@@ -154,29 +137,21 @@ class Sequence(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def i_dependencies(self):
+    def dependencies(self):
         dependencies = []
         for c in self._children:
-            dependencies.extend(c.i_dependencies())
+            dependencies.extend(c.dependencies())
         return dependencies
 
-    def i_compile(self, compiler):
-        if len(self._children) > 1:
-            compiler.start_sequence()
-            [c.i_compile(compiler) for c in self._children]
-            compiler.end_sequence()
-        elif len(self._children) == 1:
-            self._children[0].i_compile(compiler)
-
-    def i_gstring(self):
+    def gstring(self):
         return "(" \
-             + " ".join(map(lambda e: e.i_gstring(), self._children)) \
+             + " ".join(map(lambda e: e.gstring(), self._children)) \
              + ")"
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
+    def decode(self, state):
         state.decode_attempt(self)
 
         # Special case for an empty sequence.
@@ -189,7 +164,7 @@ class Sequence(ElementBase):
 
         # Attempt to walk a path through the entire sequence of children
         #  so that each one decodes successfully.
-        path = [self._children[0].i_decode(state)]
+        path = [self._children[0].decode(state)]
         while path:
             # Allow the last child to attempt decoding.
             try: path[-1].next()
@@ -201,7 +176,7 @@ class Sequence(ElementBase):
                 # Last child successfully decoded.
                 if len(path) < len(self._children):
                     # Sequence not yet complete, append the next child.
-                    path.append(self._children[len(path)].i_decode(state))
+                    path.append(self._children[len(path)].decode(state))
                 else:
                     # Sequence complete, all children decoded successfully.
                     state.decode_success(self)
@@ -218,7 +193,7 @@ class Sequence(ElementBase):
 class Optional(ElementBase):
 
     def __init__(self, child, actions=(), name=None):
-        ElementBase.__init__(self, actions, name)
+        ElementBase.__init__(self, name)
 
         if not isinstance(child, ElementBase):
             raise TypeError("Child of %s object must be an"
@@ -235,26 +210,21 @@ class Optional(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def i_dependencies(self):
-        return self._child.i_dependencies()
+    def dependencies(self):
+        return self._child.dependencies()
 
-    def i_compile(self, compiler):
-        compiler.start_optional()
-        self._child.i_compile(compiler)
-        compiler.end_optional()
-
-    def i_gstring(self):
-        return "[" + self._child.i_gstring() + "]"
+    def gstring(self):
+        return "[" + self._child.gstring() + "]"
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
+    def decode(self, state):
         state.decode_attempt(self)
 
         # If in greedy mode, allow the child to decode before.
         if self._greedy:
-            for result in self._child.i_decode(state):
+            for result in self._child.decode(state):
                 state.decode_success(self)
                 yield state
                 state.decode_retry(self)
@@ -269,7 +239,7 @@ class Optional(ElementBase):
 
         # If not in greedy mode, allow the child to decode after.
         if not self._greedy:
-            for result in self._child.i_decode(state):
+            for result in self._child.decode(state):
                 state.decode_success(self)
                 yield state
                 state.decode_retry(self)
@@ -283,7 +253,7 @@ class Optional(ElementBase):
 class Alternative(ElementBase):
 
     def __init__(self, children=(), actions=(), name=None):
-        ElementBase.__init__(self, actions, name)
+        ElementBase.__init__(self, name)
         self._children = self._copy_sequence(children,
                                              "children", ElementBase)
 
@@ -296,29 +266,21 @@ class Alternative(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def i_gstring(self):
+    def gstring(self):
         return "(" \
-             + " | ".join(map(lambda e: e.i_gstring(), self._children)) \
+             + " | ".join(map(lambda e: e.gstring(), self._children)) \
              + ")"
 
-    def i_dependencies(self):
+    def dependencies(self):
         dependencies = []
         for c in self._children:
-            dependencies.extend(c.i_dependencies())
+            dependencies.extend(c.dependencies())
         return dependencies
-
-    def i_compile(self, compiler):
-        if len(self._children) > 1:
-            compiler.start_alternative()
-            [c.i_compile(compiler) for c in self._children]
-            compiler.end_alternative()
-        elif len(self._children) == 1:
-            self._children[0].i_compile(compiler)
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
+    def decode(self, state):
         state.decode_attempt(self)
 
         # Special case for an empty list of alternatives.
@@ -333,7 +295,7 @@ class Alternative(ElementBase):
         for child in self._children:
 
             # Iterate through this child's possible decoding states.
-            for result in child.i_decode(state):
+            for result in child.decode(state):
                 state.decode_success(self)
                 yield state
                 state.decode_retry(self)
@@ -385,8 +347,8 @@ class Repetition(Sequence):
 
         Sequence.__init__(self, children, actions, name=name)
 
-    def i_dependencies(self):
-        return self._child.i_dependencies()
+    def dependencies(self):
+        return self._child.dependencies()
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
@@ -426,7 +388,7 @@ class Repetition(Sequence):
 class Literal(ElementBase):
 
     def __init__(self, text, actions=(), name=None, value=None):
-        ElementBase.__init__(self, actions, name)
+        ElementBase.__init__(self, name)
         self._value = value
 
         if not isinstance(text, (str, unicode)):
@@ -438,26 +400,20 @@ class Literal(ElementBase):
     # Methods for runtime introspection.
 
     def __str__(self):
-        return "%s('%s')" % (self.__class__.__name__, " ".join(self._words))
+        return "%s(%r)" % (self.__class__.__name__, self.words)
+
+    words = property(lambda self: self._words)
 
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def i_compile(self, compiler):
-        if len(self._words) == 1:
-            compiler.add_word(self._words[0])
-        elif len(self._words) > 1:
-            compiler.start_sequence()
-            [compiler.add_word(w) for w in self._words]
-            compiler.end_sequence()
-
-    def i_gstring(self):
+    def gstring(self):
         return " ".join(self._words)
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
+    def decode(self, state):
         state.decode_attempt(self)
 
         # Iterate through this element's words.
@@ -486,7 +442,7 @@ class Literal(ElementBase):
 class RuleRef(ElementBase):
 
     def __init__(self, rule, actions=(), name=None):
-        ElementBase.__init__(self, actions, name)
+        ElementBase.__init__(self, name)
 
         if not isinstance(rule, rule_.Rule):
             raise TypeError("Rule object of %s object must be a"
@@ -501,27 +457,26 @@ class RuleRef(ElementBase):
             return ElementBase.__str__(self)
         return '%s(%s)' % (self.__class__.__name__, self._rule.name)
 
+    rule = property(lambda self: self._rule)
+
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def i_dependencies(self):
+    def dependencies(self):
         return [self._rule]
 
-    def i_compile(self, compiler):
-        compiler.add_rule(self._rule.name, imported=False)
-
-    def i_gstring(self):
+    def gstring(self):
         return "<" + self._rule.name + ">"
 
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
+    def decode(self, state):
         state.decode_attempt(self)
 
         # Allow the rule to attempt decoding.
-        for result in self._rule.i_decode(state):
+        for result in self._rule.decode(state):
             state.decode_success(self)
             yield state
             state.decode_retry(self)
@@ -538,7 +493,7 @@ class RuleRef(ElementBase):
 class ListRef(ElementBase):
 
     def __init__(self, name, list, key=None, actions=()):
-        ElementBase.__init__(self, name=name, actions=actions)
+        ElementBase.__init__(self, name=name)
 
         if not isinstance(list, list_.ListBase):
             raise TypeError("List object of %s object must be a"
@@ -554,22 +509,24 @@ class ListRef(ElementBase):
         if self._key: arguments += ", key=%r" % self._key
         return '%s(%s)' % (self.__class__.__name__, arguments)
 
+    list = property(lambda self: self._list)
+
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def i_dependencies(self):
+    def dependencies(self):
         return [self._list]
 
-    def i_compile(self, compiler):
+    def compile(self, compiler):
         compiler.add_list(self._list.name)
 
-    def i_gstring(self):
+    def gstring(self):
         return "{" + self._list.name + "}"
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
+    def decode(self, state):
         state.decode_attempt(self)
 
         # If the next word is in the list, success.
@@ -583,7 +540,7 @@ class ListRef(ElementBase):
         state.decode_failure(self)
         return
 
-    def i_evaluate(self, node, data):
+    def evaluate(self, node, data):
         if self._log_eval: self._log_eval.debug( \
             "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
 
@@ -616,7 +573,7 @@ class DictListRef(ListRef):
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_evaluate(self, node, data):
+    def evaluate(self, node, data):
         if self._log_eval: self._log_eval.debug( \
             "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
 
@@ -639,21 +596,21 @@ class DictListRef(ListRef):
 class Empty(ElementBase):
 
     def __init__(self, actions=(), name=None):
-        ElementBase.__init__(self, actions, name)
+        ElementBase.__init__(self, name)
 
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def i_compile(self, compiler):
+    def compile(self, compiler):
         pass
 
-    def i_gstring(self):
+    def gstring(self):
         return ""
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
+    def decode(self, state):
         state.decode_attempt(self)
 
         state.decode_success(self)
@@ -667,12 +624,13 @@ class Empty(ElementBase):
 #===========================================================================
 # Slightly more complex element classes.
 
-class Dictation(ElementBase):
+class Dictation(RuleRef):
 
     _rule_name = "dgndictation"
 
-    def __init__(self, name=None, format=True, actions=()):
-        ElementBase.__init__(self, actions, name)
+    def __init__(self, name=None, format=True):
+        rule = rule_.ImportedRule(self._rule_name)
+        RuleRef.__init__(self, rule, name=name)
         self._format_words = format
 
     def __str__(self):
@@ -684,16 +642,13 @@ class Dictation(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def i_compile(self, compiler):
-        compiler.add_rule(self._rule_name, imported=True)
-
-    def i_gstring(self):
+    def gstring(self):
         return "<" + self._rule_name + ">"
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
-    def i_decode(self, state):
+    def decode(self, state):
         state.decode_attempt(self)
 
         # Check that at least one word has been dictated, otherwise feel.
@@ -719,7 +674,7 @@ class Dictation(ElementBase):
         state.decode_failure(self)
         return
 
-    def i_evaluate(self, node, data):
+    def evaluate(self, node, data):
         if self._log_eval: self._log_eval.debug( \
             "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
 
@@ -776,6 +731,7 @@ class ActionBase(object):
 
     def __init__(self):
         self._argstr = ""
+        ElementBase._log_eval.error("%s: DEPRECATED" % self)
 
     def _set_argstr(self, *args):
         self._argstr = ", ".join(map(str, args))

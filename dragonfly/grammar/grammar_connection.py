@@ -54,6 +54,7 @@ class ConnectionGrammar(Grammar):
             return False
 
     def exit_context(self):
+        [r.deactivate() for r in self._rules if r.active]
         self.disconnect()
         self.connection_down()
 
@@ -81,6 +82,7 @@ class ConnectionGrammar(Grammar):
                                         % (self, self._app_name, e))
             return False
         else:
+            [r.activate() for r in self._rules if not r.active]
             return True
 
     def disconnect(self):

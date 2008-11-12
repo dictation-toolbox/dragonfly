@@ -37,6 +37,8 @@ from win32com.shell import shell, shellcon
 log_handlers = ["stdout", "file"]
 log_names = {
     "":                     (logging.WARNING, logging.WARNING),
+    "engine":               (logging.WARNING, logging.INFO), 
+    "engine.compiler":      (logging.WARNING, logging.INFO), 
     "grammar.load":         (logging.WARNING, logging.INFO), 
     "grammar.begin":        (logging.WARNING, logging.INFO),
     "grammar.results":      (logging.WARNING, logging.WARNING),
