@@ -34,6 +34,13 @@ from dragonfly.engines.compiler_base import CompilerBase
 
 
 #---------------------------------------------------------------------------
+# Utility generator function for iterating over COM collections.
+
+def collection_iter(collection):
+    for index in xrange(0, collection.Count):
+        yield collection.Item(index)
+
+#---------------------------------------------------------------------------
 
 class Sapi5Compiler(CompilerBase):
 
@@ -56,6 +63,23 @@ class Sapi5Compiler(CompilerBase):
         flags = constants.SRATopLevel + constants.SRADynamic
         rule_handle = grammar_handle.Rules.Add(rule.name, flags, 0)
         self.compile_element(rule.element, rule_handle.InitialState, None)
+
+        stack = [(collection_iter(rule_handle.InitialState.Transitions), None)]
+        while stack:
+            try:
+                t = stack[-1][0].next()
+            except StopIteration:
+                stack.pop()
+                continue
+
+            s = t.NextState
+            if s:
+                stack.append((collection_iter(s.Transitions), t))
+            else:
+                ts = [j for i,j in stack[1:]] + [t]
+                path = [j.Text for j in ts]
+                self._log.error("%s: path %r." % (self, path))
+
 
     #-----------------------------------------------------------------------
     # Methods for compiling elements.
@@ -80,10 +104,11 @@ class Sapi5Compiler(CompilerBase):
     def _compile_optional(self, element, src_state, dst_state):
         self._log.error("%s: Compiling element %s." % (self, element))
 
-        self.compile_element(element, src_state, dst_state)
-        src_state.AddWordTransition(dst_state, None)
+        self.compile_element(element.children[0], src_state, dst_state)
+        src_state.AddWordTransition(dst_state, '')#None)
 
     def _compile_literal(self, element, src_state, dst_state):
         self._log.error("%s: Compiling element %s." % (self, element))
 
+#        self._log.error("%s: transition %s -> %s." % (self, id(src_state), id(dst_state)))
         src_state.AddWordTransition(dst_state, " ".join(element._words))

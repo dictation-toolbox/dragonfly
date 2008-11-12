@@ -25,12 +25,31 @@
 
 #---------------------------------------------------------------------------
 
+def get_engine():
+    if _engine:
+        return _engine
+
+    engine = get_natlink_engine()
+    if engine:
+        return engine
+
+    engine = get_sapi5_engine()
+    if engine:
+        return engine
+
+    raise Exception
+
+_engine = None
+
+
+#---------------------------------------------------------------------------
+
 NatlinkEngine = None
 _natlink_engine = None
 
 def get_natlink_engine():
     global NatlinkEngine
-    global _natlink_engine
+    global _natlink_engine, _engine
 
     if _natlink_engine:
         return _natlink_engine
@@ -40,6 +59,7 @@ def get_natlink_engine():
 
     if NatlinkEngine.is_available():
         _natlink_engine = NatlinkEngine()
+        _engine = _natlink_engine
         return _natlink_engine
     return None
 
@@ -51,7 +71,7 @@ _sapi5_engine = None
 
 def get_sapi5_engine():
     global Sapi5Engine
-    global _sapi5_engine
+    global _sapi5_engine, _engine
 
     if _sapi5_engine:
         return _sapi5_engine
@@ -61,19 +81,6 @@ def get_sapi5_engine():
 
     if Sapi5Engine.is_available():
         _sapi5_engine = Sapi5Engine()
+        _engine = _sapi5_engine
         return _sapi5_engine
     return None
-
-
-#---------------------------------------------------------------------------
-
-def get_engine():
-    engine = get_natlink_engine()
-    if engine:
-        return engine
-
-    engine = get_sapi5_engine()
-    if engine:
-        return engine
-
-    raise Exception
