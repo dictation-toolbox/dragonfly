@@ -47,6 +47,7 @@ setup(
       packages=[
                 "dragonfly",
                 "dragonfly.actions",
+                "dragonfly.engines",
                 "dragonfly.grammar",
                 "dragonfly.windows",
                ],
