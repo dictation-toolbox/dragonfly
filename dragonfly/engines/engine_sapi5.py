@@ -241,4 +241,5 @@ class GrammarWrapper(object):
 
         Sapi5Engine._log.error("Grammar %s: failed to decode"
                                  " recognition %r."
-                                 % (self.grammar._name, words))
+                                 % (self.grammar._name,
+                                    [r[0] for r in results]))
