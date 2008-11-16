@@ -42,6 +42,7 @@ def collection_iter(collection):
 
 _trace_level=0
 def trace_compile(func):
+    return func
     def dec(self, element, src_state, dst_state, grammar, grammar_handle):
         global _trace_level
         s = '%s %s: compiling %s' % (grammar.name, '==='*_trace_level, element)
@@ -63,7 +64,7 @@ class Sapi5Compiler(CompilerBase):
     # Methods for compiling grammars.
 
     def compile_grammar(self, grammar, context):
-        self._log.error("%s: Compiling grammar %s." % (self, grammar.name))
+        self._log.debug("%s: Compiling grammar %s." % (self, grammar.name))
         grammar_handle = context.CreateGrammar()
 
         for rule in grammar.rules:
@@ -72,10 +73,10 @@ class Sapi5Compiler(CompilerBase):
         return grammar_handle
 
     def _compile_rule(self, rule, grammar, grammar_handle):
-        self._log.error("%s: Compiling rule %s." % (self, rule.name))
+        self._log.debug("%s: Compiling rule %s." % (self, rule.name))
         rule_handle = grammar_handle.Rules.FindRule(rule.name)
         if rule_handle:
-            self._log.error("%s: Already compiled rule %s." % (self, rule.name))
+            self._log.debug("%s: Already compiled rule %s." % (self, rule.name))
             return
 
 #        flags = constants.SRATopLevel
@@ -83,6 +84,7 @@ class Sapi5Compiler(CompilerBase):
         rule_handle = grammar_handle.Rules.Add(rule.name, flags, 0)
         self.compile_element(rule.element, rule_handle.InitialState, None, grammar, grammar_handle)
 
+        return
         stack = [(collection_iter(rule_handle.InitialState.Transitions), None)]
         while stack:
             self._log.error("%s: Stack len %s." % (self, len(stack)))
@@ -111,7 +113,7 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_sequence(self, element, src_state, dst_state, grammar, grammar_handle):
-        self._log.error("%s: Compiling element %s." % (self, element))
+#        self._log.error("%s: Compiling element %s." % (self, element))
 
         states = [src_state.Rule.AddState() for i in range(len(element.children)-1)]
         states.insert(0, src_state)
@@ -123,37 +125,37 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_alternative(self, element, src_state, dst_state, grammar, grammar_handle):
-        self._log.error("%s: Compiling element %s." % (self, element))
+#        self._log.error("%s: Compiling element %s." % (self, element))
 
         for child in element.children:
             self.compile_element(child, src_state, dst_state, grammar, grammar_handle)
 
     @trace_compile
     def _compile_optional(self, element, src_state, dst_state, grammar, grammar_handle):
-        self._log.error("%s: Compiling element %s." % (self, element))
+#        self._log.error("%s: Compiling element %s." % (self, element))
 
         self.compile_element(element.children[0], src_state, dst_state, grammar, grammar_handle)
         src_state.AddWordTransition(dst_state, '')#None)
 
     @trace_compile
     def _compile_literal(self, element, src_state, dst_state, grammar, grammar_handle):
-        self._log.error("%s: Compiling element %s." % (self, element))
+#        self._log.error("%s: Compiling element %s." % (self, element))
 
         src_state.AddWordTransition(dst_state, " ".join(element._words))
 
     @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, grammar_handle):
-        self._log.error("%s: Compiling element %s." % (self, element))
+#        self._log.error("%s: Compiling element %s." % (self, element))
 
-        self._log.error("%s: rule %s name %s." % (self, element, element.rule.name))
+#        self._log.error("%s: rule %s name %s." % (self, element, element.rule.name))
         rule_handle = grammar_handle.Rules.FindRule(element.rule.name)
-        self._log.error("%s: rule handle %s." % (self, rule_handle))
+#        self._log.error("%s: rule handle %s." % (self, rule_handle))
         if not rule_handle:
-            self._log.error("%s: rule handle not found, creating." % self)
+#            self._log.error("%s: rule handle not found, creating." % self)
             grammar.add_rule(element.rule)
             self._compile_rule(element.rule, grammar, grammar_handle)
             rule_handle = grammar_handle.Rules.FindRule(element.rule.name)
-            self._log.error("%s: rule handle after creation %s." % (self, rule_handle))
+#            self._log.error("%s: rule handle after creation %s." % (self, rule_handle))
             if not rule_handle:
                 raise CompilerError("%s: Failed to create rule dependency: %r."
                                     % (self, element.rule.name))
@@ -162,15 +164,15 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_list_ref(self, element, src_state, dst_state, grammar, grammar_handle):
-        self._log.error("%s: Compiling element %s." % (self, element))
+#        self._log.error("%s: Compiling element %s." % (self, element))
 
-        self._log.error("%s: list %s name %s." % (self, element, element.list.name))
+#        self._log.error("%s: list %s name %s." % (self, element, element.list.name))
         list_rule_name = "__list_%s" % element.list.name
-        self._log.error("%s: list rule %r." % (self, list_rule_name))
+#        self._log.error("%s: list rule %r." % (self, list_rule_name))
         rule_handle = grammar_handle.Rules.FindRule(list_rule_name)
-        self._log.error("%s: rule handle %s." % (self, rule_handle))
+#        self._log.error("%s: rule handle %s." % (self, rule_handle))
         if not rule_handle:
-            self._log.error("%s: rule handle not found, creating." % self)
+#            self._log.error("%s: rule handle not found, creating." % self)
             grammar.add_list(element.list)
             flags = constants.SRADynamic
             rule_handle = grammar_handle.Rules.Add(list_rule_name, flags, 0)
@@ -178,7 +180,7 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, grammar_handle):
-        self._log.error("%s: Compiling element %s." % (self, element))
+#        self._log.error("%s: Compiling element %s." % (self, element))
         rule_handle = self._get_dictation_rule(grammar, grammar_handle)
         src_state.AddRuleTransition(dst_state, rule_handle)
 
@@ -191,9 +193,9 @@ class Sapi5Compiler(CompilerBase):
         """
         rule_handle = grammar_handle.Rules.FindRule("dgndictation")
         if rule_handle:
-            self._log.error("%s: dictation rule already present." % self)
+#            self._log.error("%s: dictation rule already present." % self)
             return rule_handle
-        self._log.error("%s: building dictation rule ." % self)
+#        self._log.error("%s: building dictation rule ." % self)
 
         flags = 0
 #        flags = constants.SRADynamic
