@@ -44,7 +44,10 @@ _trace_level=0
 def trace_compile(func):
     def dec(self, element, src_state, dst_state, grammar, grammar_handle):
         global _trace_level
-        grammar._log_load.error('%s %s: compiling %s.' % (grammar.name, '==='*_trace_level, element))
+        s = '%s %s: compiling %s' % (grammar.name, '==='*_trace_level, element)
+        l = 140-len(s)
+        s += ' '*l + '| %-20s %s -> %s' % (src_state.Rule.Name, src_state and id(src_state), dst_state and id(dst_state))
+        grammar._log_load.error(s)
         _trace_level+=1
         func(self, element, src_state, dst_state, grammar, grammar_handle)
         _trace_level-=1
@@ -98,7 +101,7 @@ class Sapi5Compiler(CompilerBase):
                 self._log.error("%s: path %r." % (self, path))
             if len(stack) > 100:
                 ts = [j for i,j in stack[1:]] + [t]
-                path = [j.Text or j.Rule and ("<%s>" % j.Rule.Name) for j in ts]
+                path = ["%r[%s]" % (j.Text,j.NextState) or j.Rule and ("<%s>" % j.Rule.Name) for j in ts]
                 self._log.error("%s: path %r." % (self, path))
                 break
 

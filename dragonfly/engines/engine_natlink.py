@@ -146,7 +146,6 @@ class NatlinkEngine(EngineBase):
         words = node.words()
         formatter = wordinfo.FormatState()
         formatted = formatter.format_words(words)
-        self._log.error("formatting: %r - %r" % (words, formatted))
         return formatted
 
 

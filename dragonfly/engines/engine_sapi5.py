@@ -78,12 +78,16 @@ class Sapi5Engine(EngineBase):
         grammar_handle.State = constants.SGSEnabled
         self._log.error("Grammar state: %s." % grammar_handle.State)
 #        grammar_handle.DictationLoad(LoadOption=constants.SLODynamic)
-        grammar_handle.DictationLoad(LoadOption=constants.SLOStatic)
+#        grammar_handle.DictationLoad(LoadOption=constants.SLOStatic)
         grammar_handle.DictationSetState(constants.SGDSActive)
 #        grammar_handle.DictationSetState(constants.SGDSInactive)
 
         for rule_handle in collection_iter(grammar_handle.Rules):
             self._log.error("Activating rule: %r." % rule_handle.Name)
+            if rule_handle.Name == "dgndictation":
+                self._log.error(" Except rule: %r." % rule_handle.Name)
+                grammar_handle.CmdSetRuleState(rule_handle.Name, constants.SGDSInactive)
+                continue
             grammar_handle.CmdSetRuleState(rule_handle.Name, constants.SGDSActive)
 
     def activate_rule(self, rule, grammar):
