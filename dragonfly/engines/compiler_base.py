@@ -46,6 +46,7 @@ class CompilerBase(object):
         (elements_.Literal,     lambda s,e,*a,**k: s._compile_literal(e,*a,**k)),
         (elements_.RuleRef,     lambda s,e,*a,**k: s._compile_rule_ref(e,*a,**k)),
         (elements_.ListRef,     lambda s,e,*a,**k: s._compile_list_ref(e,*a,**k)),
+        (elements_.Dictation,   lambda s,e,*a,**k: s._compile_dictation(e,*a,**k)),
         ]
 
     #-----------------------------------------------------------------------
@@ -102,6 +103,11 @@ class CompilerBase(object):
                                   % (self, element))
 
     def _compile_list_ref(self, element, *args, **kwargs):
+        raise NotImplementedError("Compiler %s not implemented"
+                                  " for element type %s."
+                                  % (self, element))
+
+    def _compile_dictation(self, element, *args, **kwargs):
         raise NotImplementedError("Compiler %s not implemented"
                                   " for element type %s."
                                   % (self, element))

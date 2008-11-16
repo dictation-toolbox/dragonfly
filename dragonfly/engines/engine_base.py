@@ -46,3 +46,6 @@ class EngineBase(object):
 
     def load_grammar(self, grammar, *args, **kwargs):
         raise NotImplementedError("Engine %s not implemented." % self)
+
+    def update_list(self, lst, grammar):
+        raise NotImplementedError("Engine %s not implemented." % self)

@@ -37,9 +37,10 @@ class State(object):
     #-----------------------------------------------------------------------
     # Methods for initialization.
 
-    def __init__(self, results, rule_names):
+    def __init__(self, results, rule_names, engine):
         self._results = results
         self._rule_names = rule_names
+        self._engine = engine
         self._index = 0
         self._data = {}
         self._depth = 0
@@ -78,7 +79,7 @@ class State(object):
     def word_rule(self, delta = 0):
         i = self._index + delta
         if 0 <= i < len(self._results):
-            return self._results[i]
+            return self._results[i][0:2]
         else:
             return None
 
@@ -177,7 +178,7 @@ class State(object):
                 node = node.parent
             parent = node
             node = Node(parent, frame.actor, self._results,
-                        frame.begin, frame.end, frame.depth)
+                        frame.begin, frame.end, frame.depth, self._engine)
             if parent: parent.children.append(node)
             else: root = node
 
@@ -188,12 +189,13 @@ class State(object):
 
 class Node(object):
 
-    __slots__ = ("parent", "children", "actor",
-                    "results", "begin", "end", "depth")
+    __slots__ = ("parent", "children", "actor", "results",
+                 "begin", "end", "depth", "engine")
 
-    def __init__(self, parent, actor, results, begin, end, depth):
+    def __init__(self, parent, actor, results, begin, end, depth, engine):
         self.parent = parent; self.actor = actor; self.results = results
         self.begin = begin; self.end = end; self.depth = depth
+        self.engine = engine
         self.children = []
 
     def __str__(self):
@@ -201,6 +203,9 @@ class Node(object):
 
     def words(self):
         return [w[0] for w in self.results[self.begin:self.end]]
+
+    def full_results(self):
+        return self.results[self.begin:self.end]
 
     def value(self):
         return self.actor.value(self)

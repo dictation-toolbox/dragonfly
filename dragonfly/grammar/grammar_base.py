@@ -75,13 +75,16 @@ class Grammar(object):
         return "%s(%s)" % (self.__class__.__name__, self._name)
 
     name = property(lambda self: self._name,
-                        doc="Read-only access to name attribute.")
+                    doc="Read-only access to name attribute.")
 
     rules = property(lambda self: self._rules,
-                        doc="Read-only access to rules attribute.")
+                     doc="Read-only access to rules attribute.")
+
+    lists = property(lambda self: self._lists,
+                     doc="Read-only access to lists attribute.")
 
     loaded = property(lambda self: self._loaded,
-                doc = "Whether a grammar is loaded into natlink or not.")
+                      doc = "Whether a grammar is loaded into natlink or not.")
 
     def enable(self):
         """Enable this grammar so that it is active to receive recognitions."""
@@ -196,7 +199,7 @@ class Grammar(object):
                             % (self._name, lst.name))
 
         # Check for correct type and valid list instance.
-        assert self._loaded
+#        assert self._loaded
         if lst not in self._lists:
             raise GrammarError("List '%s' not loaded in this grammar." \
                 % lst.name)
@@ -257,7 +260,6 @@ class Grammar(object):
             for r in self._rules:
                 if r.exported and hasattr(r, "process_begin"):
                     r.process_begin(executable, title, handle)
-
 
         else:
             # Grammar's context doesn't match, deactivate active rules.

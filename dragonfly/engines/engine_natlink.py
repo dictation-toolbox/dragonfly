@@ -64,7 +64,7 @@ class NatlinkEngine(EngineBase):
 
         grammar.engine = self
         grammar_object = natlink.GramObj()
-        wrapper = GrammarWrapper(grammar, grammar_object)
+        wrapper = GrammarWrapper(grammar, grammar_object, self)
 
         grammar_object.setBeginCallback(wrapper.begin_callback)
         grammar_object.setResultsCallback(wrapper.results_callback)
@@ -139,13 +139,25 @@ class NatlinkEngine(EngineBase):
         return grammar._grammar_wrapper
 
 
+    #-----------------------------------------------------------------------
+    # Methods for handling dictation elements.
+
+    def format_dictation_node(self, node):
+        words = node.words()
+        formatter = wordinfo.FormatState()
+        formatted = formatter.format_words(words)
+        self._log.error("formatting: %r - %r" % (words, formatted))
+        return formatted
+
+
 #---------------------------------------------------------------------------
 
 class GrammarWrapper(object):
 
-    def __init__(self, grammar, grammar_object):
+    def __init__(self, grammar, grammar_object, engine):
         self.grammar = grammar
         self.grammar_object = grammar_object
+        self.engine = engine
 
     def begin_callback(self, module_info):
         executable, title, handle = module_info
@@ -161,7 +173,7 @@ class GrammarWrapper(object):
         # Iterates through this grammar's rules, attempting
         #  to decode each.  If successful, called that rule's
         #  method for processing the recognition and return.
-        s = state_.State(words_rules, self.grammar._rule_names)
+        s = state_.State(words_rules, self.grammar._rule_names, self.engine)
         for r in self.grammar._rules:
             if not r.active: continue
             s.initialize_decoding()
@@ -176,7 +188,9 @@ class GrammarWrapper(object):
                                    % (self.grammar._name, words))
 
 
+
 #---------------------------------------------------------------------------
 
 from dragonfly.engines.compiler_natlink  import NatlinkCompiler
 import dragonfly.grammar.state as state_
+import dragonfly.grammar.wordinfo as wordinfo

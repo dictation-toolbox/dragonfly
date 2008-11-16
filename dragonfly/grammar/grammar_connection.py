@@ -58,7 +58,7 @@ class ConnectionGrammar(Grammar):
         self.disconnect()
         self.connection_down()
 
-    def process_begin(self, executable, title, handle):
+    def _process_begin(self, executable, title, handle):
         # If not connected yet, retry.  If the connection fails after
         #  single attempt, give up.
         if not self._application:

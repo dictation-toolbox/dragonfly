@@ -27,7 +27,6 @@ import types
 import dragonfly.log as log_
 import rule as rule_
 import list as list_
-import wordinfo
 
 
 #===========================================================================
@@ -529,36 +528,28 @@ class ListRef(ElementBase):
     def decode(self, state):
         state.decode_attempt(self)
 
-        # If the next word is in the list, success.
-        if state.word() in self._list:
-            state.next()
-            state.decode_success(self)
-            yield state
-            state.decode_retry(self)
+        # If the next word(s) is/are in the list, success.
+        delta = 0
+        word = state.word()
+        while 1:
+            if word in self._list:
+                state.next(delta + 1)
+                state.decode_success(self)
+                yield state
+                state.decode_retry(self)
+            delta += 1
+            next = state.word(delta)
+            if next is None:
+                break
+            word += " " + next
 
         # If the word is not in the list, or on retry, failure.
         state.decode_failure(self)
         return
 
-    def evaluate(self, node, data):
-        if self._log_eval: self._log_eval.debug( \
-            "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
-
-        # If a key was set, store the matched words in the data dictionary.
-        if self._key:
-            words = node.words()
-            if len(words) != 1: raise ValueError("Decoding stack broken,"
-                        " received multiple list words: %r." % words)
-            data[self._key] = words[0]
-
-        # Finally, evaluate this element's actions.
-        self._evaluate_actions(self._actions, node, data)
-
     def value(self, node):
         words = node.words()
-        if len(words) != 1: raise ValueError("Decoding stack broken,"
-                    " received multiple list words: %r." % words)
-        return words[0]
+        return " ".join(words)
 
 #---------------------------------------------------------------------------
 
@@ -572,20 +563,6 @@ class DictListRef(ListRef):
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
-
-    def evaluate(self, node, data):
-        if self._log_eval: self._log_eval.debug( \
-            "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
-
-        # If a key was set, store the matched words in the data dictionary.
-        if self._key:
-            words = node.words()
-            if len(words) != 1: raise ValueError("Decoding stack broken,"
-                        " received multiple list words: %r." % words)
-            data[self._key] = self._list[words[0]]
-
-        # Finally, evaluate this element's actions.
-        self._evaluate_actions(self._actions, node, data)
 
     def value(self, node):
         key = ListRef.value(self, node)
@@ -624,13 +601,10 @@ class Empty(ElementBase):
 #===========================================================================
 # Slightly more complex element classes.
 
-class Dictation(RuleRef):
-
-    _rule_name = "dgndictation"
+class Dictation(ElementBase):
 
     def __init__(self, name=None, format=True):
-        rule = rule_.ImportedRule(self._rule_name)
-        RuleRef.__init__(self, rule, name=name)
+        ElementBase.__init__(self, name)
         self._format_words = format
 
     def __str__(self):
@@ -643,7 +617,7 @@ class Dictation(RuleRef):
     # Methods for load-time setup.
 
     def gstring(self):
-        return "<" + self._rule_name + ">"
+        return "<dgndictation>"
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
@@ -658,7 +632,7 @@ class Dictation(RuleRef):
 
         # Determine how many words have been dictated.
         count = 1
-        while state.rule(count) == self._rule_name:
+        while state.rule(count) == "dgndictation":
             count += 1
 
         # Yield possible states where the number of dictated words
@@ -674,28 +648,9 @@ class Dictation(RuleRef):
         state.decode_failure(self)
         return
 
-    def evaluate(self, node, data):
-        if self._log_eval: self._log_eval.debug( \
-            "%s%s: evaluating %s" % ("  "*node.depth, self, node.words()))
-
-        # If a name was set, store the matched words in the data dictionary.
-        if self.name:
-            if self._format_words:
-                formatter = wordinfo.FormatState()
-                data[self.name] = formatter.format_words(node.words())
-                if self._log_eval: self._log_eval.debug( \
-                    "%s%s: formatted '%s'" \
-                     % ("  "*node.depth, self, data[self.name]))
-            else:
-                data[self.name] = node.words()
-
-        # Finally, evaluate this element's actions.
-        self._evaluate_actions(self._actions, node, data)
-
     def value(self, node):
         if self._format_words:
-            formatter = wordinfo.FormatState()
-            return formatter.format_words(node.words())
+            return node.engine.format_dictation_node(node)
         else:
             return node.words()
 
