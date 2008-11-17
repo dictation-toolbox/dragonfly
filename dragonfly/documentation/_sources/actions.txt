@@ -1,3 +1,56 @@
-Action framework
-================
 
+Action framework
+============================================================================
+
+A common use of Dragonfly is to control other applications by 
+voice and to automate common desktop activities.  To do this, 
+voice commands can be associated with actions.  When the command 
+is spoken, the action is executed.  Dragonfly's action framework 
+allows for easy definition of things to do, such as text input 
+and sending keystrokes.  It also allows these things to be 
+dynamically coupled to voice commands, so as to enable the 
+actions to contain dynamic elements from the recognized command.
+
+An example would be a voice command to find some bit of text:
+
+ * Command specification: ``please find <text>``
+ * Associated action: ``Key("c-f") + Text("%(text)s")``
+ * Special element: ``Dictation("text")``
+
+This triplet would allow the user to say *"please find some 
+words"*, which would result in *control-f* being pressed to open 
+the *Find* dialogue followed by *"some words"* being typed into 
+the dialogue.  The *special element* is necessary to define
+what the dynamic element *"text"* is.
+
+This section describes the common action types and dynamic 
+element types.
+
+
+Action types
+----------------------------------------------------------------------------
+
+**``Key(...)"**
+   Keystroke sending action.
+
+**``Text(...)"**
+   Text input action.
+
+**``Pause(...)"**
+   Explicit pause between actions.
+
+
+Dynamic elements types, a.k.a. ``extras``
+----------------------------------------------------------------------------
+
+**``Dictation(...)"**
+   Free-form dictation element.
+
+**``Choice(...)"**
+   Choice of an item from a predefined set.
+
+**``RuleRef(...)"**
+   Reference to another rule within this grammar.
+
+**``ListRef(...)"**
+   Reference to a dynamic list within this grammar.

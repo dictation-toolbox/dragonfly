@@ -19,7 +19,7 @@ To be able to use the dragonfly, you will need the following:
    ActiveState's Python distribution or available from
    `Mark Hammond's page
    <http://python.net/crew/mhammond/win32/Downloads.html>`_.
- * *(only for Dragon NaturallySpeaking users)* **Natlink** --
+ * **Natlink** *(only for Dragon NaturallySpeaking users)* --
    for example available from `Daniel Rocco
    <http://www.westga.edu/~drocco/voice/NatLink/>`_.
 
