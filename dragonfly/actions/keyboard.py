@@ -88,10 +88,17 @@ class Keyboard(object):
                     the keyboard event.
 
         """
-
+        items = []
         for keycode, down, timeout in events:
             input = sendinput.KeyboardInput(keycode, down)
-            array = sendinput.make_input_array([input])
+            items.append(input)
+            if timeout:
+                array = sendinput.make_input_array(items)
+                items = []
+                sendinput.send_input_array(array)
+                time.sleep(timeout)
+        if items:
+            array = sendinput.make_input_array(items)
             sendinput.send_input_array(array)
             if timeout: time.sleep(timeout)
 
@@ -342,12 +349,16 @@ class KeyAction(actionbase_.DynStrActionBase):
 
 class TextAction(actionbase_.DynStrActionBase):
 
-    _pause_factor = 0.02
+    _pause_default = 0.02
     _keyboard = Keyboard()
     _specials = {
         "\n":   [keycodes["enter"]],
         "\t":   [keycodes["tab"]],
         }
+
+    def __init__(self, spec=None, static=False, pause=_pause_default):
+        self._pause = pause
+        actionbase_.DynStrActionBase.__init__(self, spec=spec, static=static)
 
     def _parse_spec(self, spec):
         events = []
@@ -369,7 +380,7 @@ class TextAction(actionbase_.DynStrActionBase):
                 character_events.append(   (modifier, False, None))
 
             c, d, p = character_events[-1]
-            character_events[-1] = (c, d, self._pause_factor)
+            character_events[-1] = (c, d, self._pause)
 
             events.extend(character_events)
 

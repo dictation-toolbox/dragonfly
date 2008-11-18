@@ -50,6 +50,7 @@ typeables = {
     "backspace":    Typeable(code=win32con.VK_BACK,      name="backspace"),
     "delete":       Typeable(code=win32con.VK_DELETE,    name="delete"),
     "del":          Typeable(code=win32con.VK_DELETE,    name="del"),
+    "win":          Typeable(code=win32con.VK_LWIN,      name="win"),
     "apps":         Typeable(code=win32con.VK_APPS,      name="apps"),
     "popup":        Typeable(code=win32con.VK_APPS,      name="popup"),
     "escape":       Typeable(code=win32con.VK_ESCAPE,    name="escape"),
