@@ -1,19 +1,28 @@
 Dragonfly documentation
 =======================
 
+Dragonfly is a speech recognition framework.  It is a Python 
+package which offers a high-level object model and allows its 
+users to easily write scripts, macros, and programs which use 
+speech recognition.
+
+It currently supports Dragon NaturallySpeaking (DNS) and Window 
+Speech Recognition (WSR) as backend engines.
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-   grammar
-   mappingrule
+   introduction
+   installation
+   objectmodel
+   actions
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
