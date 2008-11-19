@@ -19,17 +19,8 @@
 #
 
 """
-    This file implements the Grammar class, a grammar type representing
-    a natlink grammar.
+    This file implements the Grammar class.
 """
-
-
-try:
-	import natlink
-	import natlinkutils
-except ImportError:
-	natlink = None
-	natlinkutils = None
 
 
 # The trailing underscore in imported module names allows the original
@@ -39,17 +30,38 @@ except ImportError:
 #
 import dragonfly.log as log_
 
+#---------------------------------------------------------------------------
 
 class GrammarError(Exception):
     pass
 
 
+#---------------------------------------------------------------------------
+
 class Grammar(object):
+    """
+        Grammar class for managing a set of rules.
+
+        This based grammar class takes care of the communication 
+        between Dragonfly's object model and the backend speech 
+        recognition engine.  This includes compiling rules and 
+        elements, loading them, activating and deactivating 
+        them, and unloading them.  It may, depending on the 
+        engine, also include receiving recognition results and 
+        dispatching them to the appropriate rule.
+
+         * ``name`` -- name of this grammar.
+         * ``description`` -- description for this grammar.
+         * ``context`` -- context within which to be active.
+    """
 
     _log_load = log_.get_log("grammar.load")
     _log_begin = log_.get_log("grammar.begin")
     _log_results = log_.get_log("grammar.results")
 
+
+    #-----------------------------------------------------------------------
+    # Methods for initialization and cleanup.
 
     def __init__(self, name, description=None, context=None):
         self._name = name

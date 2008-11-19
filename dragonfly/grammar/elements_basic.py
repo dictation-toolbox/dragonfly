@@ -25,8 +25,8 @@
 
 import types
 import dragonfly.log as log_
-import rule as rule_
-import list as list_
+import dragonfly.grammar.rule as rule_
+import dragonfly.grammar.list as list_
 
 
 #===========================================================================

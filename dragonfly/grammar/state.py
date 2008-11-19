@@ -25,9 +25,8 @@
 
 
 import dragonfly.log as log_
-import grammar as grammar_
-import rule as rule_
-import elements as elements_
+import dragonfly.grammar.grammar as grammar_
+import dragonfly.grammar.rule as rule_
 
 
 class State(object):

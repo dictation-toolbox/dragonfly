@@ -26,9 +26,6 @@
 
 import types
 import dragonfly.log as log_
-import state as state_
-import compiler as compiler_
-import context as context_
 
 
 class Rule(object):
@@ -174,3 +171,9 @@ class ImportedRule(Rule):
 
     def dependencies(self):
         return ()
+
+
+#---------------------------------------------------------------------------
+# Delayed imports.
+
+import dragonfly.grammar.context as context_
