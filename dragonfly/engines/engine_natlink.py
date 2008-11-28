@@ -149,6 +149,13 @@ class NatlinkEngine(EngineBase):
         return formatted
 
 
+    #-----------------------------------------------------------------------
+    #  Miscellaneous methods.
+
+    def mimic(self, words):
+        natlink.recognitionMimic(words)
+
+
 #---------------------------------------------------------------------------
 
 class GrammarWrapper(object):

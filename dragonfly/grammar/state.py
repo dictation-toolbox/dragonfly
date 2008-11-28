@@ -25,7 +25,7 @@
 
 
 import dragonfly.log as log_
-import dragonfly.grammar.grammar as grammar_
+import dragonfly.grammar.grammar_base as grammar_
 import dragonfly.grammar.rule as rule_
 
 

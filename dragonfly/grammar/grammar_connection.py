@@ -49,7 +49,7 @@ class ConnectionGrammar(Grammar):
     """
 
     def __init__(self, name, description=None, context=None, app_name=None):
-        assert isinstance(app_name, basestr) or app_name == None
+        assert isinstance(app_name, basestring) or app_name == None
         self._app_name = app_name
         self._application = None
         Grammar.__init__(self, name=name, description=description,

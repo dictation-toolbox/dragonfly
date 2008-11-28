@@ -298,7 +298,6 @@ class Grammar(object):
 # Done systematically, this leads to less confusion for readers of this
 # source code.
 #
-import state as state_
 import rule as rule_
 import list as list_
 import compiler as compiler_

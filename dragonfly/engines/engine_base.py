@@ -49,3 +49,13 @@ class EngineBase(object):
 
     def update_list(self, lst, grammar):
         raise NotImplementedError("Engine %s not implemented." % self)
+
+
+    #-----------------------------------------------------------------------
+    #  Miscellaneous methods.
+
+    def speak(self, text):
+        raise NotImplementedError("Engine %s not implemented." % self)
+
+    def mimic(self, words):
+        raise NotImplementedError("Engine %s not implemented." % self)

@@ -24,6 +24,7 @@
 """
 
 
+from ctypes import windll, pointer, c_wchar, c_ulong
 import win32gui
 import dragonfly.windows.rectangle as rectangle_
 import dragonfly.windows.monitor as monitor_
@@ -42,13 +43,28 @@ class Window(object):
     #-----------------------------------------------------------------------
     # Class methods to create new Window objects.
 
+    @classmethod
     def get_foreground(cls):
         handle = win32gui.GetForegroundWindow()
         if handle in cls._windows_by_handle:
             return cls._windows_by_handle[handle]
         window = Window(handle=handle)
         return window
-    get_foreground = classmethod(get_foreground)
+
+    @classmethod
+    def get_all_windows(cls):
+        def function(handle, argument):
+            argument.append(Window(handle))
+        argument = []
+        win32gui.EnumWindows(function, argument)
+        return argument
+
+#    @classmethod
+#    def get_window_by_executable(cls, executable):
+#        def function(handle, argument):
+#            title = windll.user32.GetWindowText(handle)
+#            print "title: %r" % title
+#        windll.user32.EnumWindows(function, argument)
 
 
     #=======================================================================
@@ -75,8 +91,10 @@ class Window(object):
                       doc="Protected access to handle attribute.")
 
     def _get_name(self):
-        if self._names:  return self._names[0]
-        else:            return None
+        if not self._names:
+            return None
+        for name in self._names:
+            return name
     def _set_name(self, name):
         assert isinstance(name, basestring)
         self._names.add(name)
@@ -99,6 +117,9 @@ class Window(object):
     _get_window_text    = _win32gui_func("GetWindowText")
     _get_class_name     = _win32gui_func("GetClassName")
 
+    title               = property(fget=_get_window_text)
+    classname           = property(fget=_get_class_name)
+
 
     def _win32gui_test(name):
         test = getattr(win32gui, name)
@@ -111,6 +132,27 @@ class Window(object):
     is_visible      = _win32gui_test("IsWindowVisible")
     is_minimized    = _win32gui_test("IsIconic")
 #   is_maximized    = _win32gui_test("IsZoomed")
+
+
+    def _get_window_module(self):
+        # Get this window's process ID.
+        pid = c_ulong()
+        windll.user32.GetWindowThreadProcessId(self._handle, pointer(pid))
+
+        # Get the process handle of this window's process ID.
+        #  Access permission flags:
+        #  0x0410 = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ
+        handle = windll.kernel32.OpenProcess(0x0410, 0, pid)
+
+        # Retrieve and return the process's executable path.
+        buf_len = 256
+        buf = (c_wchar * buf_len)()
+        windll.psapi.GetModuleFileNameExW(handle, 0, pointer(buf), buf_len)
+        buf = buf[:]
+        buf = buf[:buf.index("\0")]
+        return str(buf)
+    executable = property(fget=_get_window_module)
+
 
     #-----------------------------------------------------------------------
     # Methods related to window geometry.
