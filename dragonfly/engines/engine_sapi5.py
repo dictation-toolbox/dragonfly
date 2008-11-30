@@ -32,6 +32,7 @@ from pywintypes import com_error
 import dragonfly.grammar.state as state_
 from dragonfly.engines.engine_base import EngineBase
 from dragonfly.engines.compiler_sapi5 import Sapi5Compiler
+from dragonfly.windows.window import Window
 
 
 #---------------------------------------------------------------------------
@@ -56,6 +57,7 @@ class Sapi5Engine(EngineBase):
 
     def __init__(self):
         self._recognizer = win32com.client.Dispatch("SAPI.SpSharedRecognizer")
+        self._speaker = win32com.client.Dispatch("SAPI.SpVoice")
         self._compiler = Sapi5Compiler()
 
 
@@ -63,6 +65,7 @@ class Sapi5Engine(EngineBase):
     # Methods for working with grammars.
 
     def load_grammar(self, grammar):
+        """ Load the given *grammar*. """
         self._log.debug("Loading grammar %s." % grammar.name)
         grammar.engine = self
         context = self._recognizer.CreateRecoContext()
@@ -77,21 +80,44 @@ class Sapi5Engine(EngineBase):
             self.activate_rule(r, grammar)
 
     def activate_grammar(self, grammar):
+        """ Activate the given *grammar*. """
         self._log.debug("Activating grammar %s." % grammar.name)
         grammar_handle = self._get_grammar_wrapper(grammar).handle
         grammar_handle.State = constants.SGSEnabled
+
+        # Turn on dictation during loading of the grammar.
         grammar_handle.DictationSetState(constants.SGDSActive)
 
         for rule_handle in collection_iter(grammar_handle.Rules):
             grammar_handle.CmdSetRuleState(rule_handle.Name, constants.SGDSActive)
+
+        # Turn off dictation after loading the grammar.
         grammar_handle.DictationSetState(constants.SGDSInactive)
 
+    def deactivate_grammar(self, grammar):
+        """ Deactivate the given *grammar*. """
+        self._log.debug("Deactivating grammar %s." % grammar.name)
+        grammar_handle = self._get_grammar_wrapper(grammar).handle
+        grammar_handle.State = constants.SGSDisabled
+
     def activate_rule(self, rule, grammar):
-        self._log.debug("Activating rule %s in grammar %s." % (rule.name, grammar.name))
+        """ Activate the given *rule*. """
+        self._log.debug("Activating rule %s in grammar %s."
+                        % (rule.name, grammar.name))
         grammar_handle = self._get_grammar_wrapper(grammar).handle
         grammar_handle.Rules.Commit()
         attributes = grammar_handle.Rules.FindRule(rule.name).Attributes
         grammar_handle.CmdSetRuleState(rule.name, constants.SGDSActive)
+        grammar_handle.Rules.CommitAndSave()
+
+    def deactivate_rule(self, rule, grammar):
+        """ Deactivate the given *rule*. """
+        self._log.debug("Deactivating rule %s in grammar %s."
+                        % (rule.name, grammar.name))
+        grammar_handle = self._get_grammar_wrapper(grammar).handle
+        grammar_handle.Rules.Commit()
+        attributes = grammar_handle.Rules.FindRule(rule.name).Attributes
+        grammar_handle.CmdSetRuleState(rule.name, constants.SGDSInactive)
         grammar_handle.Rules.CommitAndSave()
 
     def update_list(self, lst, grammar):
@@ -119,7 +145,8 @@ class Sapi5Engine(EngineBase):
 
     def format_dictation_node(self, node):
         results = node.full_results()
-        self._log.debug("%s: format the dictation of the %r." % (self, results))
+        self._log.debug("%s: format the dictation of the %r."
+                        % (self, results))
         return " ".join(r[2] for r in results)
 
 
@@ -128,9 +155,13 @@ class Sapi5Engine(EngineBase):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        pass
+        if isinstance(words, basestring):
+            phrase = words
+        else:
+            phrase = " ".join(words)
+        result = self._recognizer.EmulateRecognition(phrase)
+        self._log.error("Emulate results: %r" % result )
 
-    _speaker = win32com.client.Dispatch("SAPI.SpVoice")
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
         self._speaker.Speak(text)
@@ -162,8 +193,9 @@ class GrammarWrapper(object):
         c.OnPhraseStart = self.phrase_start_callback
 
     def phrase_start_callback(self, stream_number, stream_position):
-#        self.engine.speak("phrase start")
-        pass
+        window = Window.get_foreground()
+        self.grammar.process_begin(window.executable, window.title,
+                                   window.handle)
 
     def recognition_callback(self, StreamNumber, StreamPosition, RecognitionType, Result):
         try:
@@ -222,6 +254,7 @@ class GrammarWrapper(object):
                 results.append(info)
 
             #---------------------------------------------------------------
+            # Attempt to parse the recognition.
 
             s = state_.State(results, rule_set, self.engine)
             for r in self.grammar._rules:
@@ -238,7 +271,11 @@ class GrammarWrapper(object):
             Sapi5Engine._log.error("Grammar %s: exception: %s"
                                    % (self.grammar._name, e), exc_info=True)
 
-        Sapi5Engine._log.error("Grammar %s: failed to decode"
-                                 " recognition %r."
-                                 % (self.grammar._name,
-                                    [r[0] for r in results]))
+        #-------------------------------------------------------------------
+        # If this point is reached, then the recognition was not
+        #  processed successfully..
+
+        self.engine._log.error("Grammar %s: failed to decode"
+                               " recognition %r."
+                               % (self.grammar._name,
+                                  [r[0] for r in results]))
