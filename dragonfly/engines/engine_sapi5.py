@@ -19,7 +19,7 @@
 #
 
 """
-    This file implements the SAPI 5 engine class.
+This file implements the SAPI 5 engine back-end.
 """
 
 
@@ -30,16 +30,21 @@ from win32com.client import constants
 from pywintypes import com_error
 
 import dragonfly.grammar.state as state_
-from dragonfly.engines.engine_base     import EngineBase
-from dragonfly.engines.compiler_sapi5  import Sapi5Compiler
+from dragonfly.engines.engine_base import EngineBase
+from dragonfly.engines.compiler_sapi5 import Sapi5Compiler
 
 
 #---------------------------------------------------------------------------
 
 class Sapi5Engine(EngineBase):
 
+    """
+        Speech recognition engine back-end for SAPI 5.
+    """
+
     @classmethod
     def is_available(cls):
+        """ Check whether this engine is available. """
         try:
             win32com.client.Dispatch("SAPI.SpSharedRecognizer")
         except com_error:
@@ -74,42 +79,30 @@ class Sapi5Engine(EngineBase):
     def activate_grammar(self, grammar):
         self._log.debug("Activating grammar %s." % grammar.name)
         grammar_handle = self._get_grammar_wrapper(grammar).handle
-#        self._log.error("Grammar state: %s." % grammar_handle.State)
         grammar_handle.State = constants.SGSEnabled
-#        self._log.error("Grammar state: %s." % grammar_handle.State)
-#        grammar_handle.DictationLoad(LoadOption=constants.SLODynamic)
-#        grammar_handle.DictationLoad(LoadOption=constants.SLOStatic)
         grammar_handle.DictationSetState(constants.SGDSActive)
-#        grammar_handle.DictationSetState(constants.SGDSInactive)
 
         for rule_handle in collection_iter(grammar_handle.Rules):
-#            self._log.error("Activating rule: %r." % rule_handle.Name)
-            if rule_handle.Name == "dgndictation":
-#                self._log.error(" Except rule: %r." % rule_handle.Name)
-                grammar_handle.CmdSetRuleState(rule_handle.Name, constants.SGDSInactive)
-                continue
             grammar_handle.CmdSetRuleState(rule_handle.Name, constants.SGDSActive)
+        grammar_handle.DictationSetState(constants.SGDSInactive)
 
     def activate_rule(self, rule, grammar):
         self._log.debug("Activating rule %s in grammar %s." % (rule.name, grammar.name))
         grammar_handle = self._get_grammar_wrapper(grammar).handle
         grammar_handle.Rules.Commit()
+        attributes = grammar_handle.Rules.FindRule(rule.name).Attributes
         grammar_handle.CmdSetRuleState(rule.name, constants.SGDSActive)
-#        grammar_handle.Rules.Commit()
         grammar_handle.Rules.CommitAndSave()
 
     def update_list(self, lst, grammar):
         grammar_handle = self._get_grammar_wrapper(grammar).handle
         list_rule_name = "__list_%s" % lst.name
-#        self._log.error("%s: list rule %r." % (self, list_rule_name))
         rule_handle = grammar_handle.Rules.FindRule(list_rule_name)
-#        self._log.error("%s: rule handle %s." % (self, rule_handle))
 
         rule_handle.Clear()
         src_state = rule_handle.InitialState
         dst_state = None
         for item in lst.get_list_items():
-#            self._log.error("%s: adding item %r." % (self, item))
             src_state.AddWordTransition(dst_state, item)
 
         grammar_handle.Rules.Commit()
@@ -131,10 +124,15 @@ class Sapi5Engine(EngineBase):
 
 
     #-----------------------------------------------------------------------
-    # Methods for ...
+    # Miscellaneous methods.
+
+    def mimic(self, words):
+        """ Mimic a recognition of the given *words*. """
+        pass
 
     _speaker = win32com.client.Dispatch("SAPI.SpVoice")
     def speak(self, text):
+        """ Speak the given *text* using text-to-speech. """
         self._speaker.Speak(text)
 
 
@@ -158,12 +156,13 @@ class GrammarWrapper(object):
         self.engine = engine
 
         base = win32com.client.getevents("SAPI.SpSharedRecoContext")
-#        Sapi5Engine._log.error('base %s' % base)
         class ContextEvents(base): pass
         c = ContextEvents(context)
         c.OnRecognition = self.recognition_callback
+        c.OnPhraseStart = self.phrase_start_callback
 
-    def begin_callback(self):
+    def phrase_start_callback(self, stream_number, stream_position):
+#        self.engine.speak("phrase start")
         pass
 
     def recognition_callback(self, StreamNumber, StreamPosition, RecognitionType, Result):

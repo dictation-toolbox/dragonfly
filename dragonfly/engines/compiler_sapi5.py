@@ -79,8 +79,9 @@ class Sapi5Compiler(CompilerBase):
             self._log.debug("%s: Already compiled rule %s." % (self, rule.name))
             return
 
-#        flags = constants.SRATopLevel
-        flags = constants.SRATopLevel + constants.SRADynamic
+        flags = 0
+        if rule.exported:
+            flags |= constants.SRATopLevel
         rule_handle = grammar_handle.Rules.Add(rule.name, flags, 0)
         self.compile_element(rule.element, rule_handle.InitialState, None, grammar, grammar_handle)
 
@@ -113,8 +114,6 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_sequence(self, element, src_state, dst_state, grammar, grammar_handle):
-#        self._log.error("%s: Compiling element %s." % (self, element))
-
         states = [src_state.Rule.AddState() for i in range(len(element.children)-1)]
         states.insert(0, src_state)
         states.append(dst_state)
@@ -125,37 +124,25 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_alternative(self, element, src_state, dst_state, grammar, grammar_handle):
-#        self._log.error("%s: Compiling element %s." % (self, element))
-
         for child in element.children:
             self.compile_element(child, src_state, dst_state, grammar, grammar_handle)
 
     @trace_compile
     def _compile_optional(self, element, src_state, dst_state, grammar, grammar_handle):
-#        self._log.error("%s: Compiling element %s." % (self, element))
-
         self.compile_element(element.children[0], src_state, dst_state, grammar, grammar_handle)
         src_state.AddWordTransition(dst_state, '')#None)
 
     @trace_compile
     def _compile_literal(self, element, src_state, dst_state, grammar, grammar_handle):
-#        self._log.error("%s: Compiling element %s." % (self, element))
-
         src_state.AddWordTransition(dst_state, " ".join(element._words))
 
     @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, grammar_handle):
-#        self._log.error("%s: Compiling element %s." % (self, element))
-
-#        self._log.error("%s: rule %s name %s." % (self, element, element.rule.name))
         rule_handle = grammar_handle.Rules.FindRule(element.rule.name)
-#        self._log.error("%s: rule handle %s." % (self, rule_handle))
         if not rule_handle:
-#            self._log.error("%s: rule handle not found, creating." % self)
             grammar.add_rule(element.rule)
             self._compile_rule(element.rule, grammar, grammar_handle)
             rule_handle = grammar_handle.Rules.FindRule(element.rule.name)
-#            self._log.error("%s: rule handle after creation %s." % (self, rule_handle))
             if not rule_handle:
                 raise CompilerError("%s: Failed to create rule dependency: %r."
                                     % (self, element.rule.name))
@@ -164,15 +151,9 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_list_ref(self, element, src_state, dst_state, grammar, grammar_handle):
-#        self._log.error("%s: Compiling element %s." % (self, element))
-
-#        self._log.error("%s: list %s name %s." % (self, element, element.list.name))
         list_rule_name = "__list_%s" % element.list.name
-#        self._log.error("%s: list rule %r." % (self, list_rule_name))
         rule_handle = grammar_handle.Rules.FindRule(list_rule_name)
-#        self._log.error("%s: rule handle %s." % (self, rule_handle))
         if not rule_handle:
-#            self._log.error("%s: rule handle not found, creating." % self)
             grammar.add_list(element.list)
             flags = constants.SRADynamic
             rule_handle = grammar_handle.Rules.Add(list_rule_name, flags, 0)
@@ -180,7 +161,6 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, grammar_handle):
-#        self._log.error("%s: Compiling element %s." % (self, element))
         rule_handle = self._get_dictation_rule(grammar, grammar_handle)
         src_state.AddRuleTransition(dst_state, rule_handle)
 
