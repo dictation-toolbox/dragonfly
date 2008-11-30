@@ -54,8 +54,10 @@ class EngineBase(object):
     #-----------------------------------------------------------------------
     #  Miscellaneous methods.
 
-    def speak(self, text):
+    def mimic(self, words):
+        """ Mimic a recognition of the given *words*. """
         raise NotImplementedError("Engine %s not implemented." % self)
 
-    def mimic(self, words):
+    def speak(self, text):
+        """ Speak the given *text* using text-to-speech. """
         raise NotImplementedError("Engine %s not implemented." % self)

@@ -19,7 +19,7 @@
 #
 
 """
-    This file implements the Natlink engine class.
+This file implements the Natlink engine class.
 """
 
 
@@ -33,8 +33,13 @@ from dragonfly.engines.engine_base       import EngineBase
 
 class NatlinkEngine(EngineBase):
 
+    """
+        Speech recognition engine back-end for Natlink.
+    """
+
     @classmethod
     def is_available(cls):
+        """ Check whether Natlink is available. """
         try:
             import natlink
         except ImportError:
@@ -59,6 +64,7 @@ class NatlinkEngine(EngineBase):
     # Methods for working with grammars.
 
     def load_grammar(self, grammar):
+        """ Load the given *grammar* into natlink. """
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
 
@@ -90,7 +96,7 @@ class NatlinkEngine(EngineBase):
         self._set_grammar_wrapper(grammar, wrapper)
 
     def unload_grammar(self, grammar):
-        """Unload this grammar from natlink."""
+        """ Unload the given *grammar* from natlink. """
         try:
             grammar_object = self._get_grammar_wrapper(grammar).grammar_object
             grammar_object.setBeginCallback(None)
@@ -143,6 +149,7 @@ class NatlinkEngine(EngineBase):
     # Methods for handling dictation elements.
 
     def format_dictation_node(self, node):
+        """ Format capitalization and spacing of words of *node*. """
         words = node.words()
         formatter = wordinfo.FormatState()
         formatted = formatter.format_words(words)
@@ -153,7 +160,12 @@ class NatlinkEngine(EngineBase):
     #  Miscellaneous methods.
 
     def mimic(self, words):
+        """ Mimic a recognition of the given *words*. """
         natlink.recognitionMimic(words)
+
+    def speak(self, text):
+        """ Speak the given *text* using text-to-speech. """
+        natlink.execScript('TTSPlayString "%s"' % text)
 
 
 #---------------------------------------------------------------------------
