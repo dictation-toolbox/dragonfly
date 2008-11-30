@@ -29,6 +29,12 @@ import dragonfly.log as log_
 
 #---------------------------------------------------------------------------
 
+class ActionError(Exception):
+    pass
+
+
+#---------------------------------------------------------------------------
+
 class ActionBase(object):
 
     _log_init = log_.get_log("action.init")

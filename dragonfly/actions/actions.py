@@ -28,9 +28,8 @@
 
 from dragonfly.actions.actionbase import ActionBase
 
-import dragonfly.actions.keyboard as keyboard_
-Key = keyboard_.KeyAction
-Text = keyboard_.TextAction
+from dragonfly.actions.action_key import Key
+from dragonfly.actions.action_text import Text
 
 import dragonfly.actions.pause as pause_
 Pause = pause_.PauseAction
