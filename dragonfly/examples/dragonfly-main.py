@@ -22,7 +22,6 @@ import pythoncom
 import dragonfly.log as log_
 from dragonfly.engines.engine import get_sapi5_engine
 engine = get_sapi5_engine()
-engine.speak('begin!')
 
 
 #---------------------------------------------------------------------------
@@ -121,6 +120,5 @@ directory.load()
 
 engine.speak('beginning loop!')
 while 1:
-#    engine.speak('loop!')
     pythoncom.PumpWaitingMessages()
-    time.sleep(1)
+    time.sleep(.1)
