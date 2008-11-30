@@ -35,9 +35,9 @@ class Text(DynStrActionBase):
     _pause_default = 0.02
     _keyboard = Keyboard()
     _specials = {
-        "\n":   [typeables["enter"]],
-        "\t":   [typeables["tab"]],
-        }
+                 "\n":   typeables["enter"],
+                 "\t":   typeables["tab"],
+                }
 
     def __init__(self, spec=None, static=False, pause=_pause_default):
         self._pause = pause
