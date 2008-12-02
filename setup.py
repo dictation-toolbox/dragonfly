@@ -39,10 +39,19 @@ release = match.group("rel")
 setup(
       name="dragonfly",
       version=release,
-      description="Speech recognition library for extending Natlink",
+      description="Speech recognition framework",
       author="Christo Butcher",
       author_email="dist.dragonfly@twizzy.biz",
+      license="LGPL",
       url="http://code.google.com/p/dragonfly/",
+
+      classifiers=[
+                   "Environment :: Win32 (MS Windows)",
+                   "Development Status :: 4 - Beta",
+                   "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+                   "Operating System :: Microsoft :: Windows",
+                   "Programming Language :: Python",
+                  ],
 
       packages=[
                 "dragonfly",

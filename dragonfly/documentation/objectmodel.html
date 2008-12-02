@@ -64,8 +64,8 @@ it to the appropriate rule.</p>
 functionality.  Normally the rules within a grammar are somehow
 related to each other.  However, neither of these is strictly
 necessary, they are just common use patterns.</p>
-<p>The <tt class="docutils literal"><span class="pre">Grammar</span></tt> class and related classes are described
-somewhere...</p>
+<p>The <tt class="docutils literal"><span class="pre">Grammar</span></tt> class and derived classes are described
+in section <a class="reference external" href="grammarclasses.html#refgrammarclasses"><em>Grammar classes reference</em></a>.</p>
 </div>
 <div class="section" id="rules">
 <h2>Rules<a class="headerlink" href="#rules" title="Permalink to this headline">¶</a></h2>
@@ -99,6 +99,18 @@ modified without reloading the grammar.</li>
 <li><tt class="docutils literal"><span class="pre">Dictation(...)</span></tt> &#8211; a free-form dictation element
 which allows the speaker to say one or more natural
 language words.</li>
+</ul>
+</blockquote>
+<p>The above mentioned element types are at the heart of
+Dragonfly&#8217;s object model.  But of course using them all the time
+to specify every grammar would be quite tedious.  There is
+therefore also a special element which constructs these basic
+element types from a string specification:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">Compound(...)</span></tt> &#8211; a special element which parses a string
+spec to create a hierarchy of basic elements.  The format of
+this spec is described <a class="reference external" href="compound.html#refcompound"><em>Compound elements reference</em></a>.</li>
 </ul>
 </blockquote>
 </div>
@@ -158,7 +170,7 @@ language words.</li>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Nov 18, 2008.
+      Last updated on Dec 01, 2008.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
     </div>
   </body>

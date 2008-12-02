@@ -22,8 +22,8 @@ functionality.  Normally the rules within a grammar are somehow
 related to each other.  However, neither of these is strictly 
 necessary, they are just common use patterns.
 
-The ``Grammar`` class and related classes are described 
-somewhere...
+The ``Grammar`` class and derived classes are described 
+in section :ref:`RefGrammarClasses`.
 
 
 Rules
@@ -61,3 +61,13 @@ rules.  The most common elements are:
  * ``Dictation(...)`` -- a free-form dictation element
    which allows the speaker to say one or more natural
    language words.
+
+The above mentioned element types are at the heart of 
+Dragonfly's object model.  But of course using them all the time 
+to specify every grammar would be quite tedious.  There is 
+therefore also a special element which constructs these basic 
+element types from a string specification:
+
+ * ``Compound(...)`` -- a special element which parses a string 
+   spec to create a hierarchy of basic elements.  The format of 
+   this spec is described :ref:`RefCompound`.

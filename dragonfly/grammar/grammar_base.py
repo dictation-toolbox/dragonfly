@@ -42,7 +42,7 @@ class Grammar(object):
     """
         Grammar class for managing a set of rules.
 
-        This based grammar class takes care of the communication 
+        This base grammar class takes care of the communication 
         between Dragonfly's object model and the backend speech 
         recognition engine.  This includes compiling rules and 
         elements, loading them, activating and deactivating 
@@ -122,7 +122,14 @@ class Grammar(object):
     # Methods for populating a grammar object instance.
 
     def add_rule(self, rule):
-        """Add a rule to this grammar."""
+        """
+            Add a rule to this grammar.
+
+            **Internal:** this method is normally *not* called 
+            by the user, but instead automatically during 
+            grammar compilation.
+
+        """
         self._log_load.debug("Grammar %s: adding rule %s."
                             % (self._name, rule.name))
 
@@ -144,7 +151,14 @@ class Grammar(object):
         rule.grammar = self
 
     def add_list(self, lst):
-        """Add a list to this grammar."""
+        """
+            Add a list to this grammar.
+
+            **Internal:** this method is normally *not* called 
+            by the user, but instead automatically during 
+            grammar compilation.
+
+        """
         self._log_load.debug("Grammar %s: adding list %s."
                             % (self._name, lst.name))
 
