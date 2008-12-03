@@ -2,6 +2,76 @@
 Action framework
 ============================================================================
 
+The Dragonfly library contains an action framework which which 
+offers easy and flexible interfaces to common actions, such as 
+emulating keystrokes.  These action types have been objectified, 
+which means that they are first-class Python objects and can be 
+treated as such.
+
+Perhaps the most important method of Dragonfly's actions is 
+their :meth:`ActionBase.execute` method, which performs the 
+actual event associated with them.
+
+Dragonfly's action types are derived from the 
+:class:`ActionBase` class.  This base class implements standard 
+action behavior, such as the ability to concatenate multiple 
+actions and to duplicate an action.
+
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   actionkey
+
+
+Basic examples
+----------------------------------------------------------------------------
+
+The code below shows the basic usage of Dragonfly action 
+objects.  They can be created, combined, executed, etc.
+
+.. code-block:: python
+
+   from dragonfly.all import Key, Text
+
+   a1 = Key("up, left, down, right")   # Define action a1.
+   a1.execute()                        # Send the keystrokes.
+
+   a2 = Text("Hello world!")           # Define action a2, which
+                                       #  will type the text.
+   a2.execute()                        # Send the keystrokes.
+
+   a4 = a1 + a2                        # a4 is now the concatenation
+                                       #  of a1 and a2.
+   a4.execute()                        # Send the keystrokes.
+
+   a3 = Key("a-f, down/25:4")          # Press alt-f and then down 4 times
+                                       #  with 25/100 s pause in between.
+   a4 += a3                            # a4 is now the concatenation
+                                       #  of a1, a2, and a3.
+   a4.execute()                        # Send the keystrokes.
+
+   Key("w-b, right/25:5").execute()    # Define and execute together.
+
+
+Action types
+----------------------------------------------------------------------------
+
+**``Key(...)"**
+   Keystroke sending action.
+
+**``Text(...)"**
+   Text input action.
+
+**``Pause(...)"**
+   Explicit pause between actions.
+
+
+Combining voice commands and actions
+----------------------------------------------------------------------------
+
 A common use of Dragonfly is to control other applications by 
 voice and to automate common desktop activities.  To do this, 
 voice commands can be associated with actions.  When the command 
@@ -20,27 +90,11 @@ An example would be a voice command to find some bit of text:
 This triplet would allow the user to say *"please find some 
 words"*, which would result in *control-f* being pressed to open 
 the *Find* dialogue followed by *"some words"* being typed into 
-the dialogue.  The *special element* is necessary to define
+the dialog.  The *special element* is necessary to define
 what the dynamic element *"text"* is.
 
-This section describes the common action types and dynamic 
-element types.
 
-
-Action types
-----------------------------------------------------------------------------
-
-**``Key(...)"**
-   Keystroke sending action.
-
-**``Text(...)"**
-   Text input action.
-
-**``Pause(...)"**
-   Explicit pause between actions.
-
-
-Dynamic elements types, a.k.a. ``extras``
+Dynamic element types, a.k.a. ``extras``
 ----------------------------------------------------------------------------
 
 **``Dictation(...)"**

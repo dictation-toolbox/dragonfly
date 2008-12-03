@@ -1,0 +1,88 @@
+
+.. _RefActionKey:
+
+Key action reference
+============================================================================
+
+This section describes the :class:`Key` action object.  This 
+type of action is used for sending keystrokes to the foreground 
+application.
+
+
+Key class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.actions.action_key.Key
+
+
+.. _RefActionKeySpec:
+
+Key specification format
+----------------------------------------------------------------------------
+
+The ``spec`` argument passed to the :class:`Key` constructor 
+specifies which keystroke events will be emulated.  It has one 
+of the following formats:
+
+[*modifiers* ``-``] *keyname* [``/`` *innerpause*] [``:`` *repeat*] [``/`` *outerpause*]
+
+[*modifiers* ``-``] *keyname* [``:`` *direction*] [``/`` *outerpause*]
+
+*modifiers*
+   Modifiers for this keystroke.  These keys are held down
+   while pressing the main keystroke.
+   Can be zero or more of the following:
+
+    - ``a`` -- alt key
+    - ``c`` -- control key
+    - ``s`` -- shift key
+    - ``w`` -- Windows key
+
+*keyname*
+   Name of the keystroke.  Valid names are listed in :ref:`RefActionKeyNames`.
+
+*innerpause*
+   The time to pause between repetitions of this keystroke.
+
+*repeat*
+   The number of times this keystroke should be repeated.
+   Default: 1.
+
+*outerpause*
+   The time to pause after this keystroke.
+
+
+.. _RefActionKeyNames:
+
+Key names
+----------------------------------------------------------------------------
+
+ - Lowercase alphabet: ``a``, ``b``, ``c``, ``d``, ``e``, ``f``, ``g``,
+   ``h``, ``i``, ``j``, ``k``, ``l``, ``m``, ``n``, ``o``, ``p``, ``q``,
+   ``r``, ``s``, ``t``, ``u``, ``v``, ``w``, ``x``, ``y``, ``z``
+ - Uppercase alphabet: ``A``, ``B``, ``C``, ``D``, ``E``, ``F``, ``G``,
+   ``H``, ``I``, ``J``, ``K``, ``L``, ``M``, ``N``, ``O``, ``P``, ``Q``,
+   ``R``, ``S``, ``T``, ``U``, ``V``, ``W``, ``X``, ``Y``, ``Z``
+ - Digits: ``0``, ``1``, ``2``, ``3``, ``4``, ``5``, ``6``, ``7``,
+   ``8``, ``9``
+ - Navigation keys: ``left``, ``right``, ``up``, ``down``, ``pgup``,
+   ``pgdown``, ``home``, ``end``
+ - Editing keys: ``space``, ``enter``, ``backspace``, ``del``,
+   ``insert``
+ - Symbols: ``ampersand``, ``apostrophe``, ``asterisk``, ``at``,
+   ``backslash``, ``backtick``, ``bar``, ``caret``, ``colon``,
+   ``comma``, ``dollar``, ``dot``, ``dquote``, ``equal``, ``escape``,
+   ``exclamation``, ``hash``, ``hyphen``, ``minus``, ``percent``,
+   ``plus``, ``question``, ``slash``, ``squote``, ``tilde``,
+   ``underscore``
+ - Function keys: ``f1``, ``f2``, ``f3``, ``f4``, ``f5``, ``f6``,
+   ``f7``, ``f8``, ``f9``, ``f10``, ``f11``, ``f12``, ``f13``, ``f14``,
+   ``f15``, ``f16``, ``f17``, ``f18``, ``f19``, ``f20``, ``f21``,
+   ``f22``, ``f23``, ``f24``
+ - Modifiers: ``alt``, ``ctrl``, ``shift``
+ - Brackets: ``langle``, ``lbrace``, ``lbracket``, ``lparen``,
+   ``rangle``, ``rbrace``, ``rbracket``, ``rparen``
+ - Special keys: ``apps``, ``win``
+ - Numberpad keys: ``np0``, ``np1``, ``np2``, ``np3``, ``np4``, ``np5``,
+   ``np6``, ``np7``, ``np8``, ``np9``, ``npadd``, ``npdec``, ``npdiv``,
+   ``npmul``, ``npsep``, ``npsub``

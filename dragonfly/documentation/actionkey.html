@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Key action reference &mdash; Dragonfly v0.6.4-rc2 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '',
+          VERSION:     '0.6.4-rc2',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="contents" title="Global table of contents" href="contents.html" />
+    <link rel="index" title="Global index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Dragonfly v0.6.4-rc2 documentation" href="index.html" />
+    <link rel="up" title="Action framework" href="actions.html" />
+    <link rel="next" title="Dragonfly source code reference" href="reference.html" />
+    <link rel="prev" title="Action framework" href="actions.html" />
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="reference.html" title="Dragonfly source code reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="actions.html" title="Action framework"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Dragonfly v0.6.4-rc2 documentation</a> &raquo;</li>
+          <li><a href="actions.html" accesskey="U">Action framework</a> &raquo;</li>
+      </ul>
+    </div>
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  
+  <div class="section" id="key-action-reference">
+<span id="refactionkey"></span><h1>Key action reference<a class="headerlink" href="#key-action-reference" title="Permalink to this headline">¶</a></h1>
+<p>This section describes the <tt class="xref docutils literal"><span class="pre">Key</span></tt> action object.  This
+type of action is used for sending keystrokes to the foreground
+application.</p>
+<div class="section" id="key-class">
+<h2>Key class<a class="headerlink" href="#key-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dragonfly.actions.action_key.Key">
+<!--[dragonfly.actions.action_key.Key]-->class <tt class="descclassname">dragonfly.actions.action_key.</tt><tt class="descname">Key</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_key.Key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keystroke emulation action.</p>
+<p>This class emulates keyboard activity by sending 
+keystrokes to the foreground application.  It does this 
+using Dragonfly&#8217;s keyboard interface, which uses the 
+<tt class="docutils literal"><span class="pre">sendinput()</span></tt> function of the Win32 API.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">spec</span></tt> &#8211; keystroke specification.</li>
+<li><tt class="docutils literal"><span class="pre">static</span></tt> &#8211; flag indicating whether the
+specification contains dynamic elements.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="key-specification-format">
+<span id="refactionkeyspec"></span><h2>Key specification format<a class="headerlink" href="#key-specification-format" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">spec</span></tt> argument passed to the <tt class="xref docutils literal"><span class="pre">Key</span></tt> constructor
+specifies which keystroke events will be emulated.  It has one
+of the following formats:</p>
+<p>[<em>modifiers</em> <tt class="docutils literal"><span class="pre">-</span></tt>] <em>keyname</em> [<tt class="docutils literal"><span class="pre">/</span></tt> <em>innerpause</em>] [<tt class="docutils literal"><span class="pre">:</span></tt> <em>repeat</em>] [<tt class="docutils literal"><span class="pre">/</span></tt> <em>outerpause</em>]</p>
+<p>[<em>modifiers</em> <tt class="docutils literal"><span class="pre">-</span></tt>] <em>keyname</em> [<tt class="docutils literal"><span class="pre">:</span></tt> <em>direction</em>] [<tt class="docutils literal"><span class="pre">/</span></tt> <em>outerpause</em>]</p>
+<dl class="docutils">
+<dt><em>modifiers</em></dt>
+<dd><p class="first">Modifiers for this keystroke.  These keys are held down
+while pressing the main keystroke.
+Can be zero or more of the following:</p>
+<blockquote class="last">
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">a</span></tt> &#8211; alt key</li>
+<li><tt class="docutils literal"><span class="pre">c</span></tt> &#8211; control key</li>
+<li><tt class="docutils literal"><span class="pre">s</span></tt> &#8211; shift key</li>
+<li><tt class="docutils literal"><span class="pre">w</span></tt> &#8211; Windows key</li>
+</ul>
+</blockquote>
+</dd>
+<dt><em>keyname</em></dt>
+<dd>Name of the keystroke.  Valid names are listed in <a class="reference internal" href="#refactionkeynames"><em>Key names</em></a>.</dd>
+<dt><em>innerpause</em></dt>
+<dd>The time to pause between repetitions of this keystroke.</dd>
+<dt><em>repeat</em></dt>
+<dd>The number of times this keystroke should be repeated.
+Default: 1.</dd>
+<dt><em>outerpause</em></dt>
+<dd>The time to pause after this keystroke.</dd>
+</dl>
+</div>
+<div class="section" id="key-names">
+<span id="refactionkeynames"></span><h2>Key names<a class="headerlink" href="#key-names" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<ul class="simple">
+<li>Lowercase alphabet: <tt class="docutils literal"><span class="pre">a</span></tt>, <tt class="docutils literal"><span class="pre">b</span></tt>, <tt class="docutils literal"><span class="pre">c</span></tt>, <tt class="docutils literal"><span class="pre">d</span></tt>, <tt class="docutils literal"><span class="pre">e</span></tt>, <tt class="docutils literal"><span class="pre">f</span></tt>, <tt class="docutils literal"><span class="pre">g</span></tt>,
+<tt class="docutils literal"><span class="pre">h</span></tt>, <tt class="docutils literal"><span class="pre">i</span></tt>, <tt class="docutils literal"><span class="pre">j</span></tt>, <tt class="docutils literal"><span class="pre">k</span></tt>, <tt class="docutils literal"><span class="pre">l</span></tt>, <tt class="docutils literal"><span class="pre">m</span></tt>, <tt class="docutils literal"><span class="pre">n</span></tt>, <tt class="docutils literal"><span class="pre">o</span></tt>, <tt class="docutils literal"><span class="pre">p</span></tt>, <tt class="docutils literal"><span class="pre">q</span></tt>,
+<tt class="docutils literal"><span class="pre">r</span></tt>, <tt class="docutils literal"><span class="pre">s</span></tt>, <tt class="docutils literal"><span class="pre">t</span></tt>, <tt class="docutils literal"><span class="pre">u</span></tt>, <tt class="docutils literal"><span class="pre">v</span></tt>, <tt class="docutils literal"><span class="pre">w</span></tt>, <tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, <tt class="docutils literal"><span class="pre">z</span></tt></li>
+<li>Uppercase alphabet: <tt class="docutils literal"><span class="pre">A</span></tt>, <tt class="docutils literal"><span class="pre">B</span></tt>, <tt class="docutils literal"><span class="pre">C</span></tt>, <tt class="docutils literal"><span class="pre">D</span></tt>, <tt class="docutils literal"><span class="pre">E</span></tt>, <tt class="docutils literal"><span class="pre">F</span></tt>, <tt class="docutils literal"><span class="pre">G</span></tt>,
+<tt class="docutils literal"><span class="pre">H</span></tt>, <tt class="docutils literal"><span class="pre">I</span></tt>, <tt class="docutils literal"><span class="pre">J</span></tt>, <tt class="docutils literal"><span class="pre">K</span></tt>, <tt class="docutils literal"><span class="pre">L</span></tt>, <tt class="docutils literal"><span class="pre">M</span></tt>, <tt class="docutils literal"><span class="pre">N</span></tt>, <tt class="docutils literal"><span class="pre">O</span></tt>, <tt class="docutils literal"><span class="pre">P</span></tt>, <tt class="docutils literal"><span class="pre">Q</span></tt>,
+<tt class="docutils literal"><span class="pre">R</span></tt>, <tt class="docutils literal"><span class="pre">S</span></tt>, <tt class="docutils literal"><span class="pre">T</span></tt>, <tt class="docutils literal"><span class="pre">U</span></tt>, <tt class="docutils literal"><span class="pre">V</span></tt>, <tt class="docutils literal"><span class="pre">W</span></tt>, <tt class="docutils literal"><span class="pre">X</span></tt>, <tt class="docutils literal"><span class="pre">Y</span></tt>, <tt class="docutils literal"><span class="pre">Z</span></tt></li>
+<li>Digits: <tt class="docutils literal"><span class="pre">0</span></tt>, <tt class="docutils literal"><span class="pre">1</span></tt>, <tt class="docutils literal"><span class="pre">2</span></tt>, <tt class="docutils literal"><span class="pre">3</span></tt>, <tt class="docutils literal"><span class="pre">4</span></tt>, <tt class="docutils literal"><span class="pre">5</span></tt>, <tt class="docutils literal"><span class="pre">6</span></tt>, <tt class="docutils literal"><span class="pre">7</span></tt>,
+<tt class="docutils literal"><span class="pre">8</span></tt>, <tt class="docutils literal"><span class="pre">9</span></tt></li>
+<li>Navigation keys: <tt class="docutils literal"><span class="pre">left</span></tt>, <tt class="docutils literal"><span class="pre">right</span></tt>, <tt class="docutils literal"><span class="pre">up</span></tt>, <tt class="docutils literal"><span class="pre">down</span></tt>, <tt class="docutils literal"><span class="pre">pgup</span></tt>,
+<tt class="docutils literal"><span class="pre">pgdown</span></tt>, <tt class="docutils literal"><span class="pre">home</span></tt>, <tt class="docutils literal"><span class="pre">end</span></tt></li>
+<li>Editing keys: <tt class="docutils literal"><span class="pre">space</span></tt>, <tt class="docutils literal"><span class="pre">enter</span></tt>, <tt class="docutils literal"><span class="pre">backspace</span></tt>, <tt class="docutils literal"><span class="pre">del</span></tt>,
+<tt class="docutils literal"><span class="pre">insert</span></tt></li>
+<li>Symbols: <tt class="docutils literal"><span class="pre">ampersand</span></tt>, <tt class="docutils literal"><span class="pre">apostrophe</span></tt>, <tt class="docutils literal"><span class="pre">asterisk</span></tt>, <tt class="docutils literal"><span class="pre">at</span></tt>,
+<tt class="docutils literal"><span class="pre">backslash</span></tt>, <tt class="docutils literal"><span class="pre">backtick</span></tt>, <tt class="docutils literal"><span class="pre">bar</span></tt>, <tt class="docutils literal"><span class="pre">caret</span></tt>, <tt class="docutils literal"><span class="pre">colon</span></tt>,
+<tt class="docutils literal"><span class="pre">comma</span></tt>, <tt class="docutils literal"><span class="pre">dollar</span></tt>, <tt class="docutils literal"><span class="pre">dot</span></tt>, <tt class="docutils literal"><span class="pre">dquote</span></tt>, <tt class="docutils literal"><span class="pre">equal</span></tt>, <tt class="docutils literal"><span class="pre">escape</span></tt>,
+<tt class="docutils literal"><span class="pre">exclamation</span></tt>, <tt class="docutils literal"><span class="pre">hash</span></tt>, <tt class="docutils literal"><span class="pre">hyphen</span></tt>, <tt class="docutils literal"><span class="pre">minus</span></tt>, <tt class="docutils literal"><span class="pre">percent</span></tt>,
+<tt class="docutils literal"><span class="pre">plus</span></tt>, <tt class="docutils literal"><span class="pre">question</span></tt>, <tt class="docutils literal"><span class="pre">slash</span></tt>, <tt class="docutils literal"><span class="pre">squote</span></tt>, <tt class="docutils literal"><span class="pre">tilde</span></tt>,
+<tt class="docutils literal"><span class="pre">underscore</span></tt></li>
+<li>Function keys: <tt class="docutils literal"><span class="pre">f1</span></tt>, <tt class="docutils literal"><span class="pre">f2</span></tt>, <tt class="docutils literal"><span class="pre">f3</span></tt>, <tt class="docutils literal"><span class="pre">f4</span></tt>, <tt class="docutils literal"><span class="pre">f5</span></tt>, <tt class="docutils literal"><span class="pre">f6</span></tt>,
+<tt class="docutils literal"><span class="pre">f7</span></tt>, <tt class="docutils literal"><span class="pre">f8</span></tt>, <tt class="docutils literal"><span class="pre">f9</span></tt>, <tt class="docutils literal"><span class="pre">f10</span></tt>, <tt class="docutils literal"><span class="pre">f11</span></tt>, <tt class="docutils literal"><span class="pre">f12</span></tt>, <tt class="docutils literal"><span class="pre">f13</span></tt>, <tt class="docutils literal"><span class="pre">f14</span></tt>,
+<tt class="docutils literal"><span class="pre">f15</span></tt>, <tt class="docutils literal"><span class="pre">f16</span></tt>, <tt class="docutils literal"><span class="pre">f17</span></tt>, <tt class="docutils literal"><span class="pre">f18</span></tt>, <tt class="docutils literal"><span class="pre">f19</span></tt>, <tt class="docutils literal"><span class="pre">f20</span></tt>, <tt class="docutils literal"><span class="pre">f21</span></tt>,
+<tt class="docutils literal"><span class="pre">f22</span></tt>, <tt class="docutils literal"><span class="pre">f23</span></tt>, <tt class="docutils literal"><span class="pre">f24</span></tt></li>
+<li>Modifiers: <tt class="docutils literal"><span class="pre">alt</span></tt>, <tt class="docutils literal"><span class="pre">ctrl</span></tt>, <tt class="docutils literal"><span class="pre">shift</span></tt></li>
+<li>Brackets: <tt class="docutils literal"><span class="pre">langle</span></tt>, <tt class="docutils literal"><span class="pre">lbrace</span></tt>, <tt class="docutils literal"><span class="pre">lbracket</span></tt>, <tt class="docutils literal"><span class="pre">lparen</span></tt>,
+<tt class="docutils literal"><span class="pre">rangle</span></tt>, <tt class="docutils literal"><span class="pre">rbrace</span></tt>, <tt class="docutils literal"><span class="pre">rbracket</span></tt>, <tt class="docutils literal"><span class="pre">rparen</span></tt></li>
+<li>Special keys: <tt class="docutils literal"><span class="pre">apps</span></tt>, <tt class="docutils literal"><span class="pre">win</span></tt></li>
+<li>Numberpad keys: <tt class="docutils literal"><span class="pre">np0</span></tt>, <tt class="docutils literal"><span class="pre">np1</span></tt>, <tt class="docutils literal"><span class="pre">np2</span></tt>, <tt class="docutils literal"><span class="pre">np3</span></tt>, <tt class="docutils literal"><span class="pre">np4</span></tt>, <tt class="docutils literal"><span class="pre">np5</span></tt>,
+<tt class="docutils literal"><span class="pre">np6</span></tt>, <tt class="docutils literal"><span class="pre">np7</span></tt>, <tt class="docutils literal"><span class="pre">np8</span></tt>, <tt class="docutils literal"><span class="pre">np9</span></tt>, <tt class="docutils literal"><span class="pre">npadd</span></tt>, <tt class="docutils literal"><span class="pre">npdec</span></tt>, <tt class="docutils literal"><span class="pre">npdiv</span></tt>,
+<tt class="docutils literal"><span class="pre">npmul</span></tt>, <tt class="docutils literal"><span class="pre">npsep</span></tt>, <tt class="docutils literal"><span class="pre">npsub</span></tt></li>
+</ul>
+</blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3>Table Of Contents</h3>
+            <ul>
+<li><a class="reference external" href="">Key action reference</a><ul>
+<li><a class="reference external" href="#key-class">Key class</a></li>
+<li><a class="reference external" href="#key-specification-format">Key specification format</a></li>
+<li><a class="reference external" href="#key-names">Key names</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="actions.html" title="previous chapter">Action framework</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="reference.html" title="next chapter">Dragonfly source code reference</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/actionkey.txt">Show Source</a></li>
+            </ul>
+            <h3>Quick search</h3>
+            <form class="search" action="search.html" method="get">
+              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="reference.html" title="Dragonfly source code reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="actions.html" title="Action framework"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Dragonfly v0.6.4-rc2 documentation</a> &raquo;</li>
+          <li><a href="actions.html" accesskey="U">Action framework</a> &raquo;</li>
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008, Christo Butcher.
+      Last updated on Dec 03, 2008.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+    </div>
+  </body>
+</html>
