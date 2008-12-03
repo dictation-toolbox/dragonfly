@@ -30,6 +30,5 @@ from dragonfly.actions.actionbase import ActionBase
 
 from dragonfly.actions.action_key import Key
 from dragonfly.actions.action_text import Text
-
-import dragonfly.actions.pause as pause_
-Pause = pause_.PauseAction
+from dragonfly.actions.action_paste import Paste
+from dragonfly.actions.action_pause import Pause

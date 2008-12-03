@@ -19,15 +19,15 @@
 #
 
 """
-    This file implements the PauseAction class.
+    This file implements the Pause action class.
 """
 
 
 import time
-import dragonfly.actions.actionbase as actionbase_
+from dragonfly.actions.actionbase import DynStrActionBase
 
 
-class PauseAction(actionbase_.DynStrActionBase):
+class Pause(DynStrActionBase):
 
     def _parse_spec(self, spec):
         interval = float(spec) / 100

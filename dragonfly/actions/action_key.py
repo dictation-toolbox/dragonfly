@@ -32,6 +32,21 @@ from dragonfly.actions.keyboard import Keyboard
 
 class Key(DynStrActionBase):
 
+    """
+        Keystroke emulation action.
+
+        This class emulates keyboard activity by sending 
+        keystrokes to the foreground application.  It does this 
+        using Dragonfly's keyboard interface, which uses the 
+        ``sendinput()`` function of the Win32 API.
+
+        Constructor arguments:
+         * ``spec`` -- keystroke specification.
+         * ``static`` -- flag indicating whether the
+           specification contains dynamic elements.
+
+    """
+
     # Various keystroke specification format parameters.
     _key_separator = ","
     _delimiter_characters = ":/"

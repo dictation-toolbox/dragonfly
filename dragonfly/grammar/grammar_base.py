@@ -87,23 +87,32 @@ class Grammar(object):
         return "%s(%s)" % (self.__class__.__name__, self._name)
 
     name = property(lambda self: self._name,
-                    doc="Read-only access to name attribute.")
+                    doc="A grammar's name.")
 
     rules = property(lambda self: self._rules,
-                     doc="Read-only access to rules attribute.")
+                     doc="List of a grammar's rules.")
 
     lists = property(lambda self: self._lists,
-                     doc="Read-only access to lists attribute.")
+                     doc="List of a grammar's lists.")
 
     loaded = property(lambda self: self._loaded,
-                      doc = "Whether a grammar is loaded into natlink or not.")
+                      doc="Whether a grammar is loaded into"
+                          " its SR engine or not.")
 
     def enable(self):
-        """Enable this grammar so that it is active to receive recognitions."""
+        """
+            Enable this grammar so that it is active to receive 
+            recognitions.
+
+        """
         self._enabled = True
 
     def disable(self):
-        """Disable this grammar so that it is not active to receive recognitions."""
+        """
+            Disable this grammar so that it is not active to 
+            receive recognitions.
+
+        """
         self._enabled = False
 
     enabled = property(lambda self: self._enabled,
@@ -116,7 +125,7 @@ class Grammar(object):
                                % self)
         self._engine = engine
     engine = property(lambda self: self._engine, _set_engine,
-                        doc="Property access to engine attribute.")
+                        doc="A grammar's SR engine.")
 
     #-----------------------------------------------------------------------
     # Methods for populating a grammar object instance.
@@ -178,6 +187,14 @@ class Grammar(object):
         lst.grammar = self
 
     def add_dependency(self, dep):
+        """
+            Add a rule or list dependency to this grammar.
+
+            **Internal:** this method is normally *not* called 
+            by the user, but instead automatically during 
+            grammar compilation.
+
+        """
         if isinstance(dep, rule_.Rule):
             self.add_rule(dep)
         elif isinstance(dep, list_.ListBase):
@@ -188,7 +205,14 @@ class Grammar(object):
     # Methods for runtime modification of a grammar's contents.
 
     def activate_rule(self, rule):
-        """Activate a rule loaded in this grammar."""
+        """
+            Activate a rule loaded in this grammar.
+
+            **Internal:** this method is normally *not* called 
+            directly by the user, but instead automatically when 
+            the rule itself is activated by the user.
+
+        """
         self._log_load.debug("Grammar %s: activating rule %s." \
                             % (self._name, rule.name))
 
@@ -204,7 +228,14 @@ class Grammar(object):
         self._engine.activate_rule(rule, self)
 
     def deactivate_rule(self, rule):
-        """Deactivate a rule loaded in this grammar."""
+        """
+            Deactivate a rule loaded in this grammar.
+
+            **Internal:** this method is normally *not* called 
+            directly by the user, but instead automatically when 
+            the rule itself is deactivated by the user.
+
+        """
         self._log_load.debug("Grammar %s: deactivating rule %s." \
                             % (self._name, rule.name))
 
@@ -220,7 +251,14 @@ class Grammar(object):
         self._engine.deactivate_rule(rule, self)
 
     def update_list(self, lst):
-        """Update a list loaded in this grammar."""
+        """
+            Update a list's content loaded in this grammar.
+
+            **Internal:** this method is normally *not* called 
+            directly by the user, but instead automatically when 
+            the list itself is modified by the user.
+
+        """
         self._log_load.debug("Grammar %s: updating list %s." \
                             % (self._name, lst.name))
 
@@ -240,7 +278,7 @@ class Grammar(object):
     # Methods for registering a grammar object instance in natlink.
 
     def load(self):
-        """Load this grammar into natlink."""
+        """ Load this grammar into its SR engine. """
 
         # Prevent loading the same grammar multiple times.
         if self._loaded: return
@@ -254,7 +292,7 @@ class Grammar(object):
             lst._update()
 
     def unload(self):
-        """Unload this grammar from natlink."""
+        """ Unload this grammar from its SR engine. """
 
         # Prevent unloading the same grammar multiple times.
         if not self._loaded: return
@@ -266,7 +304,20 @@ class Grammar(object):
     # Callback methods for handling utterances and recognitions.
 
     def process_begin(self, executable, title, handle):
+        """
+            Start of phrase callback.
 
+            This method is called when the speech recognition 
+            engine detects that the user has begun to speak a 
+            phrase.
+
+            Arguments:
+             - *executable* -- the full path to the module whose 
+               window is currently in the foreground.
+             - *title* -- window title of the foreground window.
+             - *handle* -- window handle to the foreground window.
+
+        """
         self._log_begin.debug("Grammar %s: detected beginning of utterance."
                               % self._name)
         self._log_begin.debug("Grammar %s:     executable '%s', title '%s'."
@@ -298,12 +349,49 @@ class Grammar(object):
             % (self._name, [r.name for r in self._rules if r.active]))
 
     def enter_context(self):
+        """
+            Enter context callback.
+
+            This method is called when a phrase-start has been 
+            detected.  It is only called if this grammar's 
+            context previously did not match but now does
+            match positively.
+
+        """
         pass
 
     def exit_context(self):
+        """
+            Exit context callback.
+
+            This method is called when a phrase-start has been 
+            detected.  It is only called if this grammar's 
+            context previously did match but now doesn't 
+            match positively anymore.
+
+        """
         pass
 
     def _process_begin(self, executable, title, handle):
+        """
+            Start of phrase callback.
+
+            *This usually the method which should be overridden 
+            to give derived grammar classes custom behavior.*
+
+            This method is called when the speech recognition 
+            engine detects that the user has begun to speak a 
+            phrase.  This method is only called when this 
+            grammar's context does match positively.  It is 
+            called by the ``Grammar.process_begin`` method.
+
+            Arguments:
+             - *executable* -- the full path to the module whose 
+               window is currently in the foreground.
+             - *title* -- window title of the foreground window.
+             - *handle* -- window handle to the foreground window.
+
+        """
         pass
 
 

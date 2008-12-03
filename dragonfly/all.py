@@ -37,13 +37,15 @@ from dragonfly.grammar.list         import ListBase, List, DictList
 from dragonfly.grammar.wordinfo     import Word, FormatState
 
 #---------------------------------------------------------------------------
-from dragonfly.actions.actions      import ActionBase, Key, Text, Pause
+from dragonfly.actions.actions      import (ActionBase, Key, Text, Paste,
+                                            Pause)
 from dragonfly.actions.keyboard     import Typeable, Keyboard
 from dragonfly.actions.typeables    import typeables
 
 #---------------------------------------------------------------------------
 from dragonfly.windows.window       import Window
 from dragonfly.windows.monitor      import Monitor
+from dragonfly.windows.clipboard    import Clipboard
 
 #---------------------------------------------------------------------------
 def get_integer(language="en"):
@@ -51,3 +53,5 @@ def get_integer(language="en"):
 #        mod = __import__(integer_languages[language])
     from dragonfly.grammar.integer_en import Integer
     return Integer
+
+Integer = get_integer()
