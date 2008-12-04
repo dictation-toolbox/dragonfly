@@ -24,14 +24,21 @@ import os
 import os.path
 import subprocess
 
-directory = os.path.dirname(__file__)
-python_binary = sys.executable
-setup_path = os.path.join(directory, "setup.py")
+upload = False
 
-os.chdir(directory)
+from pkg_resources import resource_filename
+setup_path = os.path.abspath(resource_filename(__name__, "setup.py"))
 
-arguments = [python_binary, setup_path, "sdist"]
-subprocess.call(arguments)
+commands = ["sdist", "bdist_wininst", "bdist_egg"]
+if upload:
+    # Make sure HOME is defined; required for .pypirc use.
+    if "HOME" not in os.environ:
+        os.putenv("HOME", os.path.expanduser("~"))
+    commands.insert(0, "register")
+    commands.extend(["upload", "--show-response"])
+#    commands.extend(["upload_gcode", "--src"])
+#    commands.extend(["upload_gcode", "--windows"])
 
-arguments = [python_binary, setup_path, "bdist_wininst"]
+arguments = [sys.executable, setup_path] + commands
+os.chdir(os.path.dirname(setup_path))
 subprocess.call(arguments)
