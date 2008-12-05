@@ -207,7 +207,10 @@ class Node(object):
         return self.results[self.begin:self.end]
 
     def value(self):
-        return self.actor.value(self)
+        try:
+            return self.actor.value(self)
+        except:
+            pass
 
     def pretty_string(self, indent = ""):
         if not self.children:
@@ -228,18 +231,28 @@ class Node(object):
             if child.has_child_with_name(name): return True
         return False
 
-    def get_child_by_name(self, name):
+    def get_child_by_name(self, name, shallow=False):
         """Get one node below this node with the given name."""
         for child in self.children:
-            if child.name == name: return child
-            match = child.get_child_by_name(name)
+            if child.name:
+                if child.name == name:
+                    return child
+                if shallow:
+                    # If shallow, don't look past named children.
+                    continue
+            match = child.get_child_by_name(name, shallow)
             if match: return match
         return None
 
-    def get_children_by_name(self, name):
+    def get_children_by_name(self, name, shallow=False):
         """Get all nodes below this node with the given name."""
         matches = []
         for child in self.children:
-            if child.name == name: matches.append(child)
-            matches.extend(child.get_children_by_name(name))
+            if child.name:
+                if child.name == name:
+                    matches.append(child)
+                if shallow:
+                    # If shallow, don't look past named children.
+                    continue
+            matches.extend(child.get_children_by_name(name, shallow))
         return matches

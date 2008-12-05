@@ -41,7 +41,7 @@ class ElementBase(object):
 
     def __init__(self, name=None):
         if not name:
-            name = self.__class__.__name__
+            name = None
         self.name = name
 
     #-----------------------------------------------------------------------

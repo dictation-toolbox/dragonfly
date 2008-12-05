@@ -48,10 +48,11 @@ from dragonfly.windows.monitor      import Monitor
 from dragonfly.windows.clipboard    import Clipboard
 
 #---------------------------------------------------------------------------
-def get_integer(language="en"):
+def get_number_module(language="en"):
 #    if language and integer_languages:
 #        mod = __import__(integer_languages[language])
-    from dragonfly.grammar.integer_en import Integer
-    return Integer
+    import dragonfly.grammar.number_en as mod
+    return mod
 
-Integer = get_integer()
+Integer = get_number_module().Integer
+Digits  = get_number_module().Digits
