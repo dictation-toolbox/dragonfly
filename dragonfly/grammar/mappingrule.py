@@ -37,8 +37,6 @@ class MappingRule(Rule):
     defaults = {}
     exported = True
 
-    _key = "_MappingRule_item"
-
     #-----------------------------------------------------------------------
 
     def __init__(self, name=None, mapping=None, extras=None, defaults=None,
@@ -67,14 +65,27 @@ class MappingRule(Rule):
 
         children = []
         for spec, value in self._mapping.iteritems():
-            c = Compound(spec, elements=self._extras,
-                         name=self._key, value=value)
+            c = Compound(spec, elements=self._extras, value=value)
             children.append(c)
 
         element = Alternative(children)
         Rule.__init__(self, self._name, element, exported=exported)
 
     #-----------------------------------------------------------------------
+
+    def value(self, node):
+        node = node.children[0]
+        value = node.value()
+
+        if hasattr(value, "evaluate"):        
+            extras = dict(self._defaults)
+            for name, element in self._extras.iteritems():
+                extra_node = node.get_child_by_name(name, shallow=True)
+                if not extra_node: continue
+                extras[name] = extra_node.value()
+            value = value.evaluate(extras)
+
+        return value
 
     def process_recognition(self, node):
         """
@@ -87,12 +98,11 @@ class MappingRule(Rule):
 
             - *node* -- The root node of the recognition parse tree.
         """
-        item_node = node.get_child_by_name(self._key)
-        item_value = item_node.value()
+        item_value = node.value()
 
         extras = dict(self._defaults)
         for name, element in self._extras.iteritems():
-            extra_node = node.get_child_by_name(name)
+            extra_node = node.get_child_by_name(name, shallow=True)
             if not extra_node: continue
             extras[name] = extra_node.value()
 

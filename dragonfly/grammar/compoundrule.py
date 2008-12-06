@@ -31,17 +31,20 @@ from dragonfly.grammar.elements import ElementBase, Compound
 
 class CompoundRule(Rule):
 
-    _name = None
-    spec = None
-    extras = []
+    _name    = None
+    spec     = None
+    extras   = []
+    defaults = {}
     exported = True
 
     #-----------------------------------------------------------------------
 
-    def __init__(self, name=None, spec=None, extras=None, exported=None):
+    def __init__(self, name=None, spec=None, extras=None,
+                 defaults=None, exported=None):
         if name     is None: name     = self._name or self.__class__.__name__
         if spec     is None: spec     = self.spec
         if extras   is None: extras   = self.extras
+        if defaults is None: defaults = self.defaults
         if exported is None: exported = self.exported
 
         assert isinstance(name, (str, unicode))
@@ -51,9 +54,10 @@ class CompoundRule(Rule):
             assert isinstance(item, ElementBase)
         assert exported == True or exported == False
 
-        self._name    = name
-        self._spec    = spec
-        self._extras  = dict([(element.name, element) for element in extras])
+        self._name     = name
+        self._spec     = spec
+        self._extras   = dict([(element.name, element) for element in extras])
+        self._defaults = dict(defaults)
 
         child = Compound(spec, extras=self._extras)
         Rule.__init__(self, name, child, exported=exported)
@@ -70,9 +74,9 @@ class CompoundRule(Rule):
 
             - *node* -- The root node of the recognition parse tree.
         """
-        extras = {}
+        extras = dict(self._defaults)
         for name, element in self._extras.iteritems():
-            extra_node = node.get_child_by_name(name)
+            extra_node = node.get_child_by_name(name, shallow=True)
             if not extra_node: continue
             extras[name] = extra_node.value()
 

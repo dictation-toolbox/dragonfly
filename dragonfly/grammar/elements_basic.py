@@ -122,7 +122,7 @@ class ElementBase(object):
 
 class Sequence(ElementBase):
 
-    def __init__(self, children=(), actions=(), name=None):
+    def __init__(self, children=(), name=None):
         ElementBase.__init__(self, name=name)
         self._children = self._copy_sequence(children,
                                              "children", ElementBase)
@@ -191,7 +191,7 @@ class Sequence(ElementBase):
 
 class Optional(ElementBase):
 
-    def __init__(self, child, actions=(), name=None):
+    def __init__(self, child, name=None):
         ElementBase.__init__(self, name)
 
         if not isinstance(child, ElementBase):
@@ -251,7 +251,7 @@ class Optional(ElementBase):
 
 class Alternative(ElementBase):
 
-    def __init__(self, children=(), actions=(), name=None):
+    def __init__(self, children=(), name=None):
         ElementBase.__init__(self, name)
         self._children = self._copy_sequence(children,
                                              "children", ElementBase)
@@ -316,7 +316,7 @@ class Alternative(ElementBase):
 
 class Repetition(Sequence):
 
-    def __init__(self, child, min=1, max=None, actions=(), name=None):
+    def __init__(self, child, min=1, max=None, name=None):
         if not isinstance(child, ElementBase):
             raise TypeError("Child of %s object must be an"
                             " ElementBase instance." % self)
@@ -344,7 +344,7 @@ class Repetition(Sequence):
         else:
             raise ValueError("Repetition not allowed to be empty.")
 
-        Sequence.__init__(self, children, actions, name=name)
+        Sequence.__init__(self, children, name=name)
 
     def dependencies(self):
         return self._child.dependencies()
@@ -381,12 +381,16 @@ class Repetition(Sequence):
 
         return repetitions
 
+    def value(self, node):
+        repetitions = self.get_repetitions(node)
+        return [r.value() for r in repetitions]
+
 
 #---------------------------------------------------------------------------
 
 class Literal(ElementBase):
 
-    def __init__(self, text, actions=(), name=None, value=None):
+    def __init__(self, text, name=None, value=None):
         ElementBase.__init__(self, name)
         self._value = value
 
@@ -440,7 +444,7 @@ class Literal(ElementBase):
 
 class RuleRef(ElementBase):
 
-    def __init__(self, rule, actions=(), name=None):
+    def __init__(self, rule, name=None):
         ElementBase.__init__(self, name)
 
         if not isinstance(rule, rule_.Rule):
@@ -487,11 +491,12 @@ class RuleRef(ElementBase):
     def value(self, node):
         return node.children[0].value()
 
+
 #---------------------------------------------------------------------------
 
 class ListRef(ElementBase):
 
-    def __init__(self, name, list, key=None, actions=()):
+    def __init__(self, name, list, key=None):
         ElementBase.__init__(self, name=name)
 
         if not isinstance(list, list_.ListBase):
@@ -555,11 +560,11 @@ class ListRef(ElementBase):
 
 class DictListRef(ListRef):
 
-    def __init__(self, name, dict, key=None, actions=()):
+    def __init__(self, name, dict, key=None):
         if not isinstance(dict, list_.DictList):
             raise TypeError("Dict object of %s object must be a"
                             " Dragonfly DictList." % self)
-        ListRef.__init__(self, name, dict, key, actions)
+        ListRef.__init__(self, name, dict, key)
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
@@ -572,7 +577,7 @@ class DictListRef(ListRef):
 
 class Empty(ElementBase):
 
-    def __init__(self, actions=(), name=None):
+    def __init__(self, name=None):
         ElementBase.__init__(self, name)
 
     #-----------------------------------------------------------------------
@@ -653,30 +658,6 @@ class Dictation(ElementBase):
             return node.engine.format_dictation_node(node)
         else:
             return node.words()
-
-
-#---------------------------------------------------------------------------
-
-class LiteralChoice(Alternative):
-
-    def __init__(self, name, choices, actions=()):
-
-        # Build children elements with appropriate Insert actions.
-        assert isinstance(choices, dict)
-        self.choices = choices
-        children = []
-        for k, v in choices.items():
-            action = Insert(name, v)
-            child = Literal(k, actions=(action,))
-            children.append(child)
-
-        # Initialize super class.
-        Alternative.__init__(self, children=children, actions=actions,
-            name=name)
-
-    def value(self, node):
-        word = node.words()[0]
-        return self.choices[word]
 
 
 #===========================================================================

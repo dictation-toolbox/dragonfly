@@ -72,9 +72,13 @@ class ActionBase(object):
     #-----------------------------------------------------------------------
     # Execution methods.
 
+    def evaluate(self, data=None):
+        return self
+
     def execute(self, data=None):
         if self._log_exec:
             self._log_exec.debug("Executing action: %s" % self)
+        self.evaluate(data)
         self._execute(data)
         [a.execute(data) for a in self._following]
 
@@ -97,6 +101,8 @@ class DynStrActionBase(ActionBase):
         self._spec = spec
         self._static = False
         self._events = None
+        self._bound = False
+        self._bound_data = None
         if spec is None: return
 
         if static or spec.find("%") == -1:
@@ -115,6 +121,19 @@ class DynStrActionBase(ActionBase):
     #-----------------------------------------------------------------------
     # Execution methods.
 
+    def bind_data(self, data):
+        if not self._bound:
+            self._bound = True
+            self._bound_data = data
+
+    def evaluate(self, data):
+        if self._static or self._bound:
+            return self
+        else:
+            clone = self.copy()
+            clone.bind_data(data)
+            return clone
+
     def _execute(self, data=None):
         if self._static:
             # If static, the events have already been parsed by the
@@ -125,6 +144,8 @@ class DynStrActionBase(ActionBase):
             # If not static, now is the time to build the dynamic spec,
             #  parse it, and execute the events.
 
+            if self._bound:
+                data = self._bound_data
             try:
                 spec = self._spec % data
             except KeyError:

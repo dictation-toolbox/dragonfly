@@ -61,7 +61,7 @@ documentation `here <http://dragonfly.googlecode.com/svn/trunk/dragonfly/documen
 
 
 import os.path, re, sys
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 #---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ setup(
       name          = "dragonfly",
       version       = release,
       description   = "Speech recognition framework",
-      author        = "Chris Butcher",
+      author        = "Christo Butcher",
       author_email  = "dist.dragonfly@twizzy.biz",
       license       = "LGPL",
       url           = "http://code.google.com/p/dragonfly/",
@@ -115,13 +115,7 @@ setup(
                    "Programming Language :: Python",
                   ],
 
-      packages=[
-                "dragonfly",
-                "dragonfly.actions",
-                "dragonfly.engines",
-                "dragonfly.grammar",
-                "dragonfly.windows",
-               ],
+      packages=find_packages(),
 
       cmdclass={'upload_gcode': upload_gcode},
      )

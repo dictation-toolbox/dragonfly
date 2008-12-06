@@ -55,7 +55,6 @@ DictListRef     = basic_.DictListRef
 DictList        = basic_.DictListRef    # For backwards compatibility.
 Empty           = basic_.Empty
 Dictation       = basic_.Dictation
-LiteralChoice   = basic_.LiteralChoice
 
 
 #---------------------------------------------------------------------------

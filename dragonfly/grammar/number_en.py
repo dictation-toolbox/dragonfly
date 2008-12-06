@@ -25,7 +25,7 @@ This file implements Integer and Digits classes for the English language.
 
 from integer_base import (MapIntBuilder, CollectionIntBuilder,
                           MagnitudeIntBuilder, IntegerBase)
-from digits_base  import DigitsBase
+from digits_base import DigitsBase
 
 
 int_0           = MapIntBuilder({"zero": 0})
@@ -48,6 +48,9 @@ int_and_1_99    = CollectionIntBuilder("[and] <element>",
 int_100s        = MagnitudeIntBuilder(100,
                     "[<multiplier>] hundred [<remainder>]",
                     [int_1_9], [int_and_1_99])
+int_100big      = MagnitudeIntBuilder(100,
+                    "[<multiplier>] hundred [<remainder>]",
+                    [int_10_19, int_20_99], [int_and_1_99])
 int_1000s       = MagnitudeIntBuilder(1000,
                     "[<multiplier>] thousand [<remainder>]",
                     [int_1_9, int_10_19, int_20_99, int_100s],
@@ -59,7 +62,7 @@ int_1000000s    = MagnitudeIntBuilder(1000000,
 
 class Integer(IntegerBase):
     _builders = [int_0, int_1_9, int_10_19, int_20_99,
-                 int_100s, int_1000s, int_1000000s]
+                 int_100s, int_100big, int_1000s, int_1000000s]
 
 class Digits(DigitsBase):
     _digits = [("zero", "oh"), "one", "two", "three", "four",
