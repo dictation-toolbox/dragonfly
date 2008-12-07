@@ -61,3 +61,8 @@ class EngineBase(object):
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
         raise NotImplementedError("Engine %s not implemented." % self)
+
+    def _get_language(self):
+        raise NotImplementedError("Engine %s not implemented." % self)
+    language = property(fget=lambda self: self._get_language(),
+                        doc="Current user language of the SR engine.")

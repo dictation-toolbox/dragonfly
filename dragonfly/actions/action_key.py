@@ -176,7 +176,10 @@ class Key(DynStrActionBase):
                 raise ActionError("Cannot use direction with modifiers.")
             if inner_pause is not None:
                 raise ActionError("Cannot use direction with inner pause.")
-            events = [(code, direction, outer_pause)]
+            if direction:
+                events = code.on_events(outer_pause)
+            else:
+                events = code.off_events(outer_pause)
 
         return events
 
