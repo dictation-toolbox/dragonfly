@@ -142,7 +142,7 @@ class Rule(object):
         return
 
     def value(self, node):
-        return node.words()
+        return node.children[0].value()
 
     #-----------------------------------------------------------------------
     # Methods for processing before-and-after utterances.
