@@ -19,18 +19,36 @@
 #
 
 """
-This file implements the Key action.
+This file implements the Text action.
 """
 
 
-from dragonfly.actions.actionbase import DynStrActionBase, ActionError
-from dragonfly.actions.typeables import typeables
-from dragonfly.actions.keyboard import Keyboard
+from dragonfly.actions.actionbase   import DynStrActionBase, ActionError
+from dragonfly.actions.typeables    import typeables
+from dragonfly.actions.keyboard     import Keyboard
+from dragonfly.actions.action_key   import Key
+from dragonfly.windows.clipboard    import Clipboard
+from dragonfly.engines.engine       import get_engine
 
 
 #---------------------------------------------------------------------------
 
 class Text(DynStrActionBase):
+    """
+        Action that sends keyboard events to type text.
+
+        Arguments:
+         - *spec* -- the text to type.
+         - *static* -- if True, do not dynamically interpret *spec*
+           when executing this action.
+         - *pause* -- the time to pause between each keystroke, given
+           in seconds.
+         - *autofmt* -- if True, attempt to format the text with correct
+           spacing and capitalization.  This is done by first mimicking
+           a word recognition and then analyzing its spacing and
+           capitalization and applying the same formatting to the text.
+
+    """
 
     _pause_default = 0.02
     _keyboard = Keyboard()
@@ -39,11 +57,14 @@ class Text(DynStrActionBase):
                  "\t":   typeables["tab"],
                 }
 
-    def __init__(self, spec=None, static=False, pause=_pause_default):
+    def __init__(self, spec=None, static=False, pause=_pause_default,
+                 autofmt=False):
         self._pause = pause
+        self._autofmt = autofmt
         DynStrActionBase.__init__(self, spec=spec, static=static)
 
     def _parse_spec(self, spec):
+        """ Convert the given *spec* to keyboard events. """
         events = []
         for character in spec:
             if character in self._specials:
@@ -54,5 +75,45 @@ class Text(DynStrActionBase):
         return events
 
     def _execute_events(self, events):
+        """
+            Send keyboard events.
+
+            If instance was initialized with *autofmt* True,
+            then this method will mimic a word recognition
+            and analyze its formatting so as to autoformat
+            the text's spacing and capitalization before
+            sending it as keyboard events.
+
+        """
+
+        if self._autofmt:
+            # Mimic a word, select and copy it to retrieve capitalization.
+            get_engine().mimic("test")
+            Key("cs-left, c-c/5").execute()
+            word = Clipboard.get_text()
+
+            # Inspect formatting of the mimicked word.
+            index = word.find("test")
+            if index == -1:
+                index = word.find("Test")
+                capitalize = True
+                if index == -1:
+                    self._log.error("Failed to autoformat.")
+                    return False
+            else:
+                capitalize = False
+
+            # Capitalize given text if necessary.
+            text = self._spec
+            if capitalize:
+                text = text[0].capitalize() + text[1:]
+
+            # Reconstruct autoformatted output and convert it
+            #  to keyboard events.
+            prefix = word[:index]
+            suffix = word[index + 4:]
+            events = self._parse_spec(prefix + text + suffix)
+
+        # Send keyboard events.
         self._keyboard.send_keyboard_events(events)
         return True

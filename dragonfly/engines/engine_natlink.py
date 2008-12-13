@@ -52,13 +52,33 @@ class NatlinkEngine(EngineBase):
 
     def __init__(self):
         global natlink
-        if not natlink:
+        self._natlink = None
+
+        if natlink:
+            self._natlink = natlink
+        else:
             try:
-                import natlink
+                import natlink as natlink_
             except ImportError:
                 self._log.error("%s: failed to import natlink module." % self)
                 raise EngineError("Failed to import the Natlink module.")
+            natlink = natlink_
+            self._natlink = natlink_
 
+        try:
+            self._natlink.natConnect()
+        except Exception, e:
+            self._log.error("%s: failed to connect to Natlink: %s"
+                            % (self, e))
+            raise EngineError("%s: failed to connect to Natlink: %s"
+                            % (self, e))
+
+    def __del__(self):
+        try:
+            self._natlink.natDisconnect()
+        except Exception, e:
+            self._log.error("%s: failed to disconnect from Natlink: %s"
+                            % (self, e))
 
 
     #-----------------------------------------------------------------------
@@ -70,7 +90,7 @@ class NatlinkEngine(EngineBase):
                         % (self, grammar.name))
 
         grammar.engine = self
-        grammar_object = natlink.GramObj()
+        grammar_object = self._natlink.GramObj()
         wrapper = GrammarWrapper(grammar, grammar_object, self)
 
         grammar_object.setBeginCallback(wrapper.begin_callback)
@@ -90,7 +110,7 @@ class NatlinkEngine(EngineBase):
 
         try:
             grammar_object.load(compiled_grammar, all_results, hypothesis)
-        except natlink.NatError, e:
+        except self._natlink.NatError, e:
             self._log.warning("Engine %s: failed to load: %s." % (self, e))
             return
 
@@ -104,7 +124,7 @@ class NatlinkEngine(EngineBase):
             grammar_object.setResultsCallback(None)
             grammar_object.setHypothesisCallback(None)
             grammar_object.unload()
-        except natlink.NatError, e:
+        except self._natlink.NatError, e:
             self._log.warning("Engine %s: failed to unload: %s."
                               % (self, e))
 
@@ -162,11 +182,11 @@ class NatlinkEngine(EngineBase):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        natlink.recognitionMimic(words)
+        self._natlink.recognitionMimic(words)
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
-        natlink.execScript('TTSPlayString "%s"' % text)
+        self._natlink.execScript('TTSPlayString "%s"' % text)
 
     def _get_language(self):
         app = win32com.client.Dispatch("Dragon.DgnEngineControl")
