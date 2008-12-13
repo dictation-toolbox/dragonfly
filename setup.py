@@ -60,6 +60,9 @@ documentation `here <http://dragonfly.googlecode.com/svn/trunk/dragonfly/documen
 """
 
 
+from ez_setup import use_setuptools
+use_setuptools()
+
 import os.path, re, sys
 from setuptools import setup, find_packages
 
@@ -106,6 +109,8 @@ setup(
       url           = "http://code.google.com/p/dragonfly/",
       zip_safe      = False,  # To unzip documentation files.
       long_description = __doc__,
+
+      install_requires = "setuptools >= 0.6c7",
 
       classifiers=[
                    "Environment :: Win32 (MS Windows)",

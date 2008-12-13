@@ -33,6 +33,7 @@ commands = []
 commands += ["egg_info", "--tag-build=.dev", "-r"]
 commands += ["sdist"]
 commands += ["bdist_wininst"]
+#commands += ["bdist_msi"]
 commands += ["bdist_egg"]
 
 if upload:
