@@ -65,21 +65,6 @@ class NatlinkEngine(EngineBase):
             natlink = natlink_
             self._natlink = natlink_
 
-        try:
-            self._natlink.natConnect()
-        except Exception, e:
-            self._log.error("%s: failed to connect to Natlink: %s"
-                            % (self, e))
-            raise EngineError("%s: failed to connect to Natlink: %s"
-                            % (self, e))
-
-    def __del__(self):
-        try:
-            self._natlink.natDisconnect()
-        except Exception, e:
-            self._log.error("%s: failed to disconnect from Natlink: %s"
-                            % (self, e))
-
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.

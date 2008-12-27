@@ -41,7 +41,7 @@ class Clipboard(object):
     def set_text(cls, content):
         win32clipboard.OpenClipboard()
         win32clipboard.EmptyClipboard()
-        content = Unicode(content)
+        content = unicode(content)
         win32clipboard.SetClipboardData(win32con.CF_UNICODETEXT, content)
         win32clipboard.CloseClipboard()
 
