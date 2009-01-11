@@ -1,0 +1,14 @@
+﻿
+.. _RefClipboard:
+
+Clipboard interface reference
+============================================================================
+
+This section describes ...
+
+
+Clipboard class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.windows.clipboard.Clipboard
+   :members:

@@ -18,6 +18,10 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+"""
+This file implements an interface to the Windows system clipboard.
+"""
+
 
 import win32clipboard
 import win32con
@@ -28,68 +32,204 @@ import win32con
 class Clipboard(object):
 
     #-----------------------------------------------------------------------
-    # Class methods for manipulating the clipboard contents.
+
+    format_text      = win32con.CF_TEXT
+    format_oemtext   = win32con.CF_OEMTEXT
+    format_unicode   = win32con.CF_UNICODETEXT
+    format_locale    = win32con.CF_LOCALE
+    format_hdrop     = win32con.CF_HDROP
+    format_names = {
+                    format_text:     "text",
+                    format_oemtext:  "oemtext",
+                    format_unicode:  "unicode",
+                    format_locale:   "locale",
+                    format_hdrop:    "hdrop",
+                   }
 
     @classmethod
-    def get_text(cls):
+    def get_system_text(cls):
         win32clipboard.OpenClipboard()
-        content = win32clipboard.GetClipboardData(win32con.CF_UNICODETEXT)
-        win32clipboard.CloseClipboard()
+        try:
+            content = win32clipboard.GetClipboardData(cls.format_unicode)
+        finally:
+            win32clipboard.CloseClipboard()
         return content
 
     @classmethod
-    def set_text(cls, content):
-        win32clipboard.OpenClipboard()
-        win32clipboard.EmptyClipboard()
+    def set_system_text(cls, content):
         content = unicode(content)
-        win32clipboard.SetClipboardData(win32con.CF_UNICODETEXT, content)
-        win32clipboard.CloseClipboard()
-
-    @classmethod
-    def get_available_formats(cls):
-        """
-            Retrieve the list of formats available from the 
-            Windows clipboard.
-
-        """
         win32clipboard.OpenClipboard()
-        format = 0
-        formats = []
-        while 1:
-            format = win32clipboard.EnumClipboardFormats(format)
-            if not format:
-                break
-            formats.append(format)
-        win32clipboard.CloseClipboard()
-        return formats
+        try:
+            win32clipboard.EmptyClipboard()
+            win32clipboard.SetClipboardData(cls.format_unicode, content)
+        finally:
+            win32clipboard.CloseClipboard()
+
 
     #-----------------------------------------------------------------------
 
-    def __init__(self, content=None, format=None):
-        self.content = content
-        self.format = format
+    def __init__(self, contents=None, text=None, from_system=False):
+        self._contents = {}
+
+        # If requested, retrieve current system clipboard contents.
+        if from_system:
+            self.copy_from_system()
+
+        # Process given contents for this Clipboard instance.
+        if contents:
+            try:
+                self._contents = dict(contents)
+            except Exception, e:
+                raise TypeError("Invalid contents: %s (%r)" % (e, contents))
+
+        # Handle special case of text content.
+        if not text is None:
+            self._contents[self.format_unicode] = unicode(text)
 
     def __str__(self):
-        return "%s(%r)" % (self.__class__.__name__, self.content)
+        arguments = []
+        skip = []
+        if self.format_unicode in self._contents:
+            arguments.append("unicode=%r"
+                             % self._contents[self.format_unicode])
+            skip.append(self.format_unicode)
+        elif self.format_text in self._contents:
+            arguments.append("text=%r" % self._contents[self.format_text])
+            skip.append(self.format_text)
+        for format in sorted(self._contents.keys()):
+            if format in skip:
+                continue
+            if format in self.format_names:
+                arguments.append(repr(self.format_names[format]))
+            else:
+                arguments.append(format)
+        arguments = ",".join(str(a) for a in arguments)
+        return "%s(%s)" % (self.__class__.__name__, arguments)
 
-    def get(self, format=win32con.CF_UNICODETEXT):
-        """ Copy the Windows clipboard content into this instance. """
+    def copy_from_system(self, formats=None, clear=False):
+        """
+            Copy the Windows system clipboard contents into this instance.
+
+            Arguments:
+             - *formats* (iterable, default: None) -- if not None, only the
+               given content formats will be retrieved.  If None, all
+               available formats will be retrieved.
+             - *clear* (boolean, default: False) -- if true, the Windows
+               system clipboard will be cleared after its contents have been
+               retrieved.
+
+        """
         win32clipboard.OpenClipboard()
-        content = win32clipboard.GetClipboardData(format)
-        win32clipboard.CloseClipboard()
-        self.format = format
-        self.content = content
 
-    def set(self):
-        """ Copy this instance's content into the Windows clipboard. """
-        if self.content is None or self.format is None:
-            raise ValueError("Cannot set clipboard with content"
-                             " and/or format undefined.")
+        # Determine which formats to retrieve.
+        if not formats:
+            format = 0
+            formats = []
+            while 1:
+                format = win32clipboard.EnumClipboardFormats(format)
+                if not format:
+                    break
+                formats.append(format)
+        elif isinstance(formats, int):
+            formats = (formats,)
+
+        # Verify that the given formats are valid.
+        try:
+            for format in formats:
+                if not isinstance(format, int):
+                    raise TypeError("Invalid clipboard format: %r"
+                                    % format)
+        except Exception, e:
+            raise
+
+        # Retrieve Windows system clipboard content.
+        contents = {}
+        for format in formats:
+            content = win32clipboard.GetClipboardData(format)
+            contents[format] = content
+        self._contents = contents
+
+        # Clear the system clipboard, if requested, and close it.
+        if clear:
+            win32clipboard.EmptyClipboard()
+        win32clipboard.CloseClipboard()
+
+    def copy_to_system(self, clear=True):
+        """
+            Copy the contents of this instance into the Windows system
+            clipboard.
+
+            Arguments:
+             - *clear* (boolean, default: True) -- if true, the Windows
+               system clipboard will be cleared before this instance's
+               contents are transferred.
+
+        """
         win32clipboard.OpenClipboard()
-        win32clipboard.EmptyClipboard()
-        handle = win32clipboard.SetClipboardData(self.format, self.content)
+
+        # Clear the system clipboard, if requested.
+        if clear:
+            win32clipboard.EmptyClipboard()
+
+        # Transfer content to Windows system clipboard.
+        for format, content in self._contents.items():
+            win32clipboard.SetClipboardData(format, content)
+
         win32clipboard.CloseClipboard()
 
-        if not handle:
-            raise ValueError("Failed to set clipboard with content"
-                             " %r." % self.content)
+    def has_format(self, format):
+        """
+            Determine whether this instance has content for the given
+            *format*.
+
+            Arguments:
+             - *format* (int) -- the clipboard format to look for.
+
+        """
+        return (format in self._contents)
+
+    def get_format(self, format):
+        """
+            Retrieved this instance's content for the given *format*.
+
+            Arguments:
+             - *format* (int) -- the clipboard format to retrieve.
+
+            If the given *format* is not available, a *ValueError*
+            is raised.
+
+        """
+        try:
+            return self._contents[format]
+        except KeyError:
+            raise ValueError("Clipboard format not available: %r"
+                             % format)
+
+    def set_format(self, format, content):
+        self._contents[format] = content
+
+    def has_text(self):
+        """ Determine whether this instance has text content. """
+        return (self.format_unicode in self._contents
+                or self.format_text in self._contents)
+
+    def get_text(self):
+        """
+            Retrieve this instance's text content.  If no text content
+            is available, this method returns *None*.
+
+        """
+        if self.format_unicode in self._contents:
+            return self._contents[self.format_unicode]
+        elif self.format_text in self._contents:
+            return self._contents[self.format_text]
+        else:
+            return None
+
+    def set_text(self, content):
+        self._contents[self.format_unicode] = unicode(content)
+
+    text    = property(
+                       lambda self:    self.get_text(),
+                       lambda self, d: self.set_text(d)
+                      )
