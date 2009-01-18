@@ -19,8 +19,9 @@
 #
 
 """
-    This file implements the Rule class, in grammar object which
-    represents one natlink rule within a grammar.
+This file implements the Rule class, a grammar object which
+represents one natlink rule within a grammar.
+
 """
 
 
@@ -29,6 +30,32 @@ import dragonfly.log as log_
 
 
 class Rule(object):
+    """
+        Rule class for implementing complete or partial voice-commands.
+
+        This rule class represents a voice-command or part of a voice-
+        command.  It contains a root element, which defines the language 
+        construct of this rule.
+
+         - *name* (*str*) -- name of this rule
+         - *element* (*Element*) --
+           root element for this rule
+         - *context* (*Context*, default: *None*) --
+           context within which to be active.  If *None*, the rule will
+           always be active.
+         - *imported* (boolean, default: *False*) --
+           if true, this rule is imported from outside its grammar
+         - *exported* (boolean, default: *False*) --
+           if true, this rule is a complete top-level rule which can be
+           spoken by the user.  This should be *True* for voice-commands
+           that the user can speak.
+
+        The *self._log* logger objects should be used in methods of 
+        derived classes for logging purposes.  It is a standard logger 
+        object from the *logger* module in the Python standard library.
+
+    """
+
 
     _log_load = log_.get_log("grammar.load")
     _log_eval = log_.get_log("grammar.eval")
@@ -53,17 +80,14 @@ class Rule(object):
     #-----------------------------------------------------------------------
     # Protected attribute access.
 
-    name = property(lambda self: self._name,
-        doc="Read-only access to a rule's name.")
-
-    element = property(lambda self: self._element,
-        doc="Read-only access to a rule's root element.")
-
+    name     = property(lambda self: self._name,
+                        doc="This rule's name.  (Read-only)")
+    element  = property(lambda self: self._element,
+                        doc="This rule's root element.  (Read-only)")
     exported = property(lambda self: self._exported,
-        doc="Read-only access to the exported attribute.")
-
+                        doc="This rule's exported status.  (Read-only)")
     imported = property(lambda self: self._imported,
-        doc="Read-only access to the imported attribute.")
+                        doc="This rule's imported status.  (Read-only)")
 
     def _get_grammar(self):
         return self._grammar
@@ -75,12 +99,32 @@ class Rule(object):
                 " cannot be changed after it has been set (%s != %s)."
                 % (grammar, self._grammar))
     grammar = property(_get_grammar, _set_grammar,
-        doc="Set-once access to a rule's grammar object.")
+                       doc="This rule's grammar object.  (Set once)")
 
     #-----------------------------------------------------------------------
     # Internal methods for controlling a rules active state.
 
     def process_begin(self, executable, title, handle):
+        """
+            Start of phrase callback.
+
+            This method is called when the speech recognition 
+            engine detects that the user has begun to speak a 
+            phrase.  It is called by the rule's containing grammar
+            if the grammar and this rule are active.
+
+            The default implementation of this method checks
+            whether this rule's context matches, and if it does
+            this method calls
+            :meth:`dragonfly.grammar.rule.Rule._process_begin`.
+
+            Arguments:
+             - *executable* -- the full path to the module whose 
+               window is currently in the foreground
+             - *title* -- window title of the foreground window
+             - *handle* -- window handle to the foreground window
+
+        """
         assert self._grammar
         if self._context:
             if self._context.matches(executable, title, handle):
@@ -142,18 +186,67 @@ class Rule(object):
         return
 
     def value(self, node):
+        """
+            Start of phrase callback.
+
+            *This is generally the method which developers should override 
+            in derived rule classes to change the default semantic value 
+            of a recognized rule.*
+
+            This method is called to obtain the semantic value associated 
+            with a particular recognition.  It could be called from 
+            another rule's :meth:`dragonfly.grammar.rule.Rule.value` if 
+            that rule references this rule.  If also be called from this 
+            rule's :meth:`dragonfly.grammar.rule.Rule.process_recognition`
+            if that method has been overridden to do so in a derived
+            class.
+
+            The default implementation of this method returns the value of 
+            this rule's root element.
+
+        """
         return node.children[0].value()
 
     #-----------------------------------------------------------------------
     # Methods for processing before-and-after utterances.
 
     def _process_begin(self):
+        """
+            Start of phrase detection callback.
+
+            *This is generally the method which developers should
+            override in derived rule classes to give them custom
+            functionality when the start of a phrase is detected.*
+
+            This method is called when the speech recognition 
+            engine detects that the user has begun to speak a 
+            phrase.  It is called by this rule's
+            :meth:`dragonfly.grammar.rule.Rule.process_begin`
+            after some context checks.
+
+            The default implementation of this method does nothing.
+
+        """
         pass
 
     def process_results(self, data):
         pass
 
     def process_recognition(self, node):
+        """
+            Rule recognition callback.
+
+            *This is generally the method which developers should
+            override in derived rule classes to give them custom
+            functionality when a top-level rule is recognized.*
+
+            This method is called when the user has spoken words matching 
+            this rule's contents.  This method is called only once for 
+            each recognition, and only for the matching top-level rule.
+
+            The default implementation of this method does nothing.
+
+        """
         pass
 
 

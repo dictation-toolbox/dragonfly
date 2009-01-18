@@ -19,7 +19,8 @@
 #
 
 """
-    This file implements base classes for the action system.
+This file implements base classes for the action system.
+
 """
 
 
@@ -46,11 +47,23 @@ class ActionBase(object):
     def __init__(self):
         self._str = ""
         self._following = []
+        self._data = None
+        self._bound = False
+        self._repeat = 1
 
     def __str__(self):
         s = "%s(%s)" % (self.__class__.__name__, self._str)
         if self._following:
-            s += "+".join([str(a) for a in self._following])
+            actions = [s] + [str(a) for a in self._following]
+            s = " + ".join(actions)
+        if self._repeat != 1:
+            if self._following:
+                s = "(" + s + ")"
+            s = "%s*%d" % (s, self._repeat)
+        if self._bound and self._data:
+            if self._following and self._repeat == 1:
+                s = "(" + s + ")"
+            s = "%s %% %r" % (s, self._data)
         return s
 
     def copy(self):
@@ -69,18 +82,42 @@ class ActionBase(object):
         self.append(other)
         return self
 
+    def __mul__(self, other):
+        if not isinstance(other, int):
+            raise TypeError("Invalid multiplier type: %r (must be an int)"
+                            % other)
+        copy = self.copy()
+        copy._repeat *= other
+        return copy
+
+    def __imul__(self, other):
+        if not isinstance(other, int):
+            raise TypeError("Invalid multiplier type: %r (must be an int)"
+                            % other)
+        self._repeat *= other
+        return self
+
     #-----------------------------------------------------------------------
     # Execution methods.
 
-    def evaluate(self, data=None):
-        return self
+    def copy_bind(self, data=None):
+        if self._bound:
+            return self
+        else:
+            action = self.copy()
+            action._data = data
+            action._bound = True
+            return action
 
     def execute(self, data=None):
+        if self._bound:
+            data = self._data
         if self._log_exec:
-            self._log_exec.debug("Executing action: %s" % self)
-        self.evaluate(data)
-        self._execute(data)
-        [a.execute(data) for a in self._following]
+            self._log_exec.debug("Executing action: %s" % self.copy_bind(data))
+        for index in range(self._repeat):
+            self._execute(data)
+            for a in self._following:
+                a.execute(data)
 
     def _execute(self, data=None):
         pass
@@ -121,19 +158,6 @@ class DynStrActionBase(ActionBase):
     #-----------------------------------------------------------------------
     # Execution methods.
 
-    def bind_data(self, data):
-        if not self._bound:
-            self._bound = True
-            self._bound_data = data
-
-    def evaluate(self, data):
-        if self._static or self._bound:
-            return self
-        else:
-            clone = self.copy()
-            clone.bind_data(data)
-            return clone
-
     def _execute(self, data=None):
         if self._static:
             # If static, the events have already been parsed by the
@@ -144,13 +168,13 @@ class DynStrActionBase(ActionBase):
             # If not static, now is the time to build the dynamic spec,
             #  parse it, and execute the events.
 
-            if self._bound:
-                data = self._bound_data
+            if data is None:
+                data = {}
             try:
                 spec = self._spec % data
             except KeyError:
                 if self._log_exec: self._log_exec.error("%s:"
-                                    " Spec %r doesn't match data %s."
+                                    " Spec %r doesn't match data %r."
                                     % (self, self._spec, data))
                 return False
 

@@ -100,10 +100,10 @@ class Clipboard(object):
             if format in skip:
                 continue
             if format in self.format_names:
-                arguments.append(repr(self.format_names[format]))
+                arguments.append(self.format_names[format])
             else:
-                arguments.append(format)
-        arguments = ",".join(str(a) for a in arguments)
+                arguments.append(repr(format))
+        arguments = ", ".join(str(a) for a in arguments)
         return "%s(%s)" % (self.__class__.__name__, arguments)
 
     def copy_from_system(self, formats=None, clear=False):

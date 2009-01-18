@@ -50,9 +50,13 @@ class Grammar(object):
         engine, also include receiving recognition results and 
         dispatching them to the appropriate rule.
 
-         * ``name`` -- name of this grammar.
-         * ``description`` -- description for this grammar.
-         * ``context`` -- context within which to be active.
+         - *name* -- name of this grammar
+         - *description* (str, default: None) --
+           description for this grammar
+         - *context* (Context, default: None) --
+           context within which to be active.  If *None*, the grammar will
+           always be active.
+
     """
 
     _log_load = log_.get_log("grammar.load")

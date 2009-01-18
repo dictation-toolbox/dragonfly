@@ -19,7 +19,8 @@
 #
 
 """
-    This file implements several fundamental grammar elements.
+This file implements several fundamental grammar elements.
+
 """
 
 

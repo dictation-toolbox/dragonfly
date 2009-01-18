@@ -77,13 +77,13 @@ class MappingRule(Rule):
         node = node.children[0]
         value = node.value()
 
-        if hasattr(value, "evaluate"):        
+        if hasattr(value, "copy_bind"):        
             extras = dict(self._defaults)
             for name, element in self._extras.iteritems():
                 extra_node = node.get_child_by_name(name, shallow=True)
                 if not extra_node: continue
                 extras[name] = extra_node.value()
-            value = value.evaluate(extras)
+            value = value.copy_bind(extras)
 
         return value
 
