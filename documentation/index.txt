@@ -1,5 +1,6 @@
+
 Dragonfly documentation
-=======================
+============================================================================
 
 Dragonfly is a speech recognition framework.  It is a Python 
 package which offers a high-level object model and allows its 
@@ -15,14 +16,14 @@ Contents:
    :maxdepth: 2
 
    introduction
-   installation
-   objectmodel
+   grammar
+   engines
    actions
-   reference
+   windows
 
 
 Indices and tables
-------------------
+----------------------------------------------------------------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

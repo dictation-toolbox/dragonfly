@@ -22,11 +22,9 @@ Grammar class
              process_begin, _process_begin,
              enter_context, exit_context
 
-..   :members: _process_begin
-
 
 ConnectionGrammar class
 ----------------------------------------------------------------------------
 
 .. autoclass:: dragonfly.grammar.grammar_connection.ConnectionGrammar
-   :members:
+   :members: application, connection_up, connection_down

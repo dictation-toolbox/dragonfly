@@ -1,0 +1,22 @@
+﻿
+Engines sub-package
+============================================================================
+
+Dragonfly supports multiple speech recognition engines as its backend.
+The *engines* sub-package implements the interface code for each
+supported engine.
+
+
+EngineBase class
+----------------------------------------------------------------------------
+
+The :class:`dragonfly.engines.engine_base.EngineBase` class forms the base
+class for this specific speech recognition engine classes.  It defines
+the stubs required and performs some of the logic necessary for
+Dragonfly to be able to interact with a speech recognition engine.
+
+.. autoclass:: dragonfly.engines.engine_base.EngineBase
+   :members: 
+
+
+To be continued: compiler classes, natlink and wsr implementation classes.

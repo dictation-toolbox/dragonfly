@@ -1,0 +1,61 @@
+﻿
+Features and target audience
+============================================================================
+
+This section gives a brief introduction into Dragonfly, its 
+features, and the audience it's targeted at.
+
+Features
+----------------------------------------------------------------------------
+
+Dragonfly was written to make it very easy for Python macros, 
+scripts, and applications to interface with speech recognition 
+engines.  Its design allows speech commands and grammar objects 
+to be treated as first-class Python objects.  This allows easy 
+and intuitive definition of complex command grammars and greatly 
+simplifies processing recognition results.
+
+*Language object model*
+   The core of Dragonfly is based on a flexible object model for 
+   handling speech elements and command grammars.  This makes it 
+   easy to define complex language constructs, but also greatly 
+   simplifies retrieving the semantic values associated with a 
+   speech recognition.
+
+*Support for multiple speech recognition engines*
+   Dragonfly's modular nature lets it use different speech 
+   recognition engines at the back end, while still providing a 
+   single front end interface to its users.  This means that a 
+   program that uses Dragonfly can be run on any of the 
+   supported back end engines without any modification. 
+   Currently Dragonfly supports Dragon NaturallySpeaking and 
+   Windows Speech Recognition (included with Windows Vista).
+
+*Built-in action framework*
+   Dragonfly contains its own powerful framework for defining 
+   and executing actions.  It includes actions for text input 
+   and key-stroke simulation.
+
+
+Target audience
+----------------------------------------------------------------------------
+
+Dragonfly is a Python package.  It is a library which can be 
+used by people writing software that interfaces with speech 
+recognition.  Its main target audience therefore consists of 
+programmers.
+
+On the other hand, Dragonfly's high-level object model is very 
+easy and intuitive to use.  It is very rewarding for people 
+without any prior programming experience to see their first 
+small attempts to be rewarded so quickly by making their 
+computer listen to them and speak to them.  This is exactly how 
+some of Dragonfly's users were introduced to writing software.
+
+Dragonfly also offers a robust and unified platform for people 
+using speech recognition to increase their productivity and 
+efficiency.  An `entire repository
+<http://dragonfly-modules.googlecode.com/svn/trunk/command-modules/documentation/index.html>`_
+of Dragonfly command-modules is available which contains command 
+grammars for controlling common applications and automating 
+frequent desktop activities.

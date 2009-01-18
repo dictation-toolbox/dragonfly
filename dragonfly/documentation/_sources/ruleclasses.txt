@@ -1,0 +1,18 @@
+﻿
+.. _RefRuleClasses:
+
+Rule class reference
+============================================================================
+
+This section describes the following class:
+
+ * :class:`dragonfly.grammar.rule.Rule` -- the base rule class
+
+
+Rule class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.grammar.rule.Rule
+   :members: name, exported, imported, grammar,
+             process_begin, _process_begin,
+             value, process_recognition

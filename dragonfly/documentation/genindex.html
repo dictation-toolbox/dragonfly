@@ -41,7 +41,7 @@
 
    <h1 id="index">Index</h1>
 
-   <a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#H"><strong>H</strong></a> | <a href="#K"><strong>K</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> 
+   <a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#H"><strong>H</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#K"><strong>K</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a> 
 
    <hr />
 
@@ -50,7 +50,10 @@
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
-<dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar._process_begin">_process_begin() (dragonfly.grammar.grammar_base.Grammar method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar._process_begin">_process_begin() (dragonfly.grammar.grammar_base.Grammar method)</a></dt>
+  <dd><dl>
+    <dt><a href="ruleclasses.html#dragonfly.grammar.rule.Rule._process_begin">(dragonfly.grammar.rule.Rule method)</a></dt>
+  </dl></dd></dl></td><td width="33%" valign="top"><dl>
 </dl></td></tr></table>
 
 <h2 id="A">A</h2>
@@ -87,9 +90,11 @@
 
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.enable">enable() (dragonfly.grammar.grammar_base.Grammar method)</a></dt>
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.enabled">enabled (dragonfly.grammar.grammar_base.Grammar attribute)</a></dt>
-<dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.engine">engine (dragonfly.grammar.grammar_base.Grammar attribute)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.engine">engine (dragonfly.grammar.grammar_base.Grammar attribute)</a></dt>
+<dt><a href="engines.html#dragonfly.engines.engine_base.EngineBase">EngineBase (class in dragonfly.engines.engine_base)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.enter_context">enter_context() (dragonfly.grammar.grammar_base.Grammar method)</a></dt>
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.exit_context">exit_context() (dragonfly.grammar.grammar_base.Grammar method)</a></dt>
+<dt><a href="ruleclasses.html#dragonfly.grammar.rule.Rule.exported">exported (dragonfly.grammar.rule.Rule attribute)</a></dt>
 </dl></td></tr></table>
 
 <h2 id="G">G</h2>
@@ -100,6 +105,7 @@
 <dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.get_system_text">get_system_text (dragonfly.windows.clipboard.Clipboard attribute)</a></dt>
 <dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.get_text">get_text() (dragonfly.windows.clipboard.Clipboard method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar">Grammar (class in dragonfly.grammar.grammar_base)</a></dt>
+<dt><a href="ruleclasses.html#dragonfly.grammar.rule.Rule.grammar">grammar (dragonfly.grammar.rule.Rule attribute)</a></dt>
 </dl></td></tr></table>
 
 <h2 id="H">H</h2>
@@ -108,6 +114,14 @@
 
 <dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.has_format">has_format() (dragonfly.windows.clipboard.Clipboard method)</a></dt>
 <dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.has_text">has_text() (dragonfly.windows.clipboard.Clipboard method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+</dl></td></tr></table>
+
+<h2 id="I">I</h2>
+<table width="100%" class="indextable"><tr><td width="33%" valign="top">
+<dl>
+
+<dt><a href="ruleclasses.html#dragonfly.grammar.rule.Rule.imported">imported (dragonfly.grammar.rule.Rule attribute)</a></dt>
+<dt><a href="engines.html#dragonfly.engines.engine_base.EngineBase.is_available">is_available (dragonfly.engines.engine_base.EngineBase attribute)</a></dt></dl></td><td width="33%" valign="top"><dl>
 </dl></td></tr></table>
 
 <h2 id="K">K</h2>
@@ -121,29 +135,45 @@
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
+<dt><a href="engines.html#dragonfly.engines.engine_base.EngineBase.language">language (dragonfly.engines.engine_base.EngineBase attribute)</a></dt>
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.lists">lists (dragonfly.grammar.grammar_base.Grammar attribute)</a></dt>
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.load">load() (dragonfly.grammar.grammar_base.Grammar method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.loaded">loaded (dragonfly.grammar.grammar_base.Grammar attribute)</a></dt>
+</dl></td></tr></table>
+
+<h2 id="M">M</h2>
+<table width="100%" class="indextable"><tr><td width="33%" valign="top">
+<dl>
+
+<dt><a href="engines.html#dragonfly.engines.engine_base.EngineBase.mimic">mimic() (dragonfly.engines.engine_base.EngineBase method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 </dl></td></tr></table>
 
 <h2 id="N">N</h2>
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
-<dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.name">name (dragonfly.grammar.grammar_base.Grammar attribute)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.name">name (dragonfly.grammar.grammar_base.Grammar attribute)</a></dt>
+  <dd><dl>
+    <dt><a href="ruleclasses.html#dragonfly.grammar.rule.Rule.name">(dragonfly.grammar.rule.Rule attribute)</a></dt>
+  </dl></dd></dl></td><td width="33%" valign="top"><dl>
 </dl></td></tr></table>
 
 <h2 id="P">P</h2>
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
-<dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.process_begin">process_begin() (dragonfly.grammar.grammar_base.Grammar method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.process_begin">process_begin() (dragonfly.grammar.grammar_base.Grammar method)</a></dt>
+  <dd><dl>
+    <dt><a href="ruleclasses.html#dragonfly.grammar.rule.Rule.process_begin">(dragonfly.grammar.rule.Rule method)</a></dt>
+  </dl></dd></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="ruleclasses.html#dragonfly.grammar.rule.Rule.process_recognition">process_recognition() (dragonfly.grammar.rule.Rule method)</a></dt>
 </dl></td></tr></table>
 
 <h2 id="R">R</h2>
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
+<dt><a href="ruleclasses.html#dragonfly.grammar.rule.Rule">Rule (class in dragonfly.grammar.rule)</a></dt>
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.rules">rules (dragonfly.grammar.grammar_base.Grammar attribute)</a></dt></dl></td><td width="33%" valign="top"><dl>
 </dl></td></tr></table>
 
@@ -151,7 +181,8 @@
 <table width="100%" class="indextable"><tr><td width="33%" valign="top">
 <dl>
 
-<dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.set_system_text">set_system_text (dragonfly.windows.clipboard.Clipboard attribute)</a></dt></dl></td><td width="33%" valign="top"><dl>
+<dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.set_system_text">set_system_text (dragonfly.windows.clipboard.Clipboard attribute)</a></dt>
+<dt><a href="engines.html#dragonfly.engines.engine_base.EngineBase.speak">speak() (dragonfly.engines.engine_base.EngineBase method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 </dl></td></tr></table>
 
 <h2 id="T">T</h2>
@@ -166,6 +197,13 @@
 <dl>
 
 <dt><a href="grammarclasses.html#dragonfly.grammar.grammar_base.Grammar.unload">unload() (dragonfly.grammar.grammar_base.Grammar method)</a></dt></dl></td><td width="33%" valign="top"><dl>
+</dl></td></tr></table>
+
+<h2 id="V">V</h2>
+<table width="100%" class="indextable"><tr><td width="33%" valign="top">
+<dl>
+
+<dt><a href="ruleclasses.html#dragonfly.grammar.rule.Rule.value">value() (dragonfly.grammar.rule.Rule method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 </dl></td></tr></table>
 
 
@@ -202,7 +240,7 @@
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Jan 10, 2009.
+      Last updated on Jan 18, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
     </div>
   </body>

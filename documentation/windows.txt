@@ -1,0 +1,14 @@
+﻿
+Windows sub-package
+============================================================================
+
+Dragonfly includes several toolkits for non-speech user interface in. 
+These include for example dialog GUIs, generic window control, and access 
+to the Windows system clipboard.
+
+Contents of Dragonfly's windows sub-package:
+
+.. toctree::
+   :maxdepth: 2
+
+   clipboard

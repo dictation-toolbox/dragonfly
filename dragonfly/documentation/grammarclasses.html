@@ -19,9 +19,9 @@
     <link rel="index" title="Global index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Dragonfly v0.6.4rc3 documentation" href="index.html" />
-    <link rel="up" title="Dragonfly source code reference" href="reference.html" />
-    <link rel="next" title="Compound elements reference" href="compound.html" />
-    <link rel="prev" title="Dragonfly source code reference" href="reference.html" />
+    <link rel="up" title="Grammar sub-package" href="grammar.html" />
+    <link rel="next" title="Rule class reference" href="ruleclasses.html" />
+    <link rel="prev" title="Grammar sub-package" href="grammar.html" />
   </head>
   <body>
     <div class="related">
@@ -34,13 +34,13 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="compound.html" title="Compound elements reference"
+          <a href="ruleclasses.html" title="Rule class reference"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="reference.html" title="Dragonfly source code reference"
+          <a href="grammar.html" title="Grammar sub-package"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.4rc3 documentation</a> &raquo;</li>
-          <li><a href="reference.html" accesskey="U">Dragonfly source code reference</a> &raquo;</li>
+          <li><a href="grammar.html" accesskey="U">Grammar sub-package</a> &raquo;</li>
       </ul>
     </div>
     <div class="document">
@@ -64,7 +64,7 @@ application is  in the foreground.</li>
 <h2>Grammar class<a class="headerlink" href="#grammar-class" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="dragonfly.grammar.grammar_base.Grammar">
-<!--[dragonfly.grammar.grammar_base.Grammar]-->class <tt class="descclassname">dragonfly.grammar.grammar_base.</tt><tt class="descname">Grammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar" title="Permalink to this definition">¶</a></dt>
+<!--[dragonfly.grammar.grammar_base.Grammar]-->class <tt class="descname">Grammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Grammar class for managing a set of rules.</p>
 <p>This base grammar class takes care of the communication 
 between Dragonfly&#8217;s object model and the backend speech 
@@ -75,9 +75,12 @@ engine, also include receiving recognition results and
 dispatching them to the appropriate rule.</p>
 <blockquote>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">name</span></tt> &#8211; name of this grammar.</li>
-<li><tt class="docutils literal"><span class="pre">description</span></tt> &#8211; description for this grammar.</li>
-<li><tt class="docutils literal"><span class="pre">context</span></tt> &#8211; context within which to be active.</li>
+<li><em>name</em> &#8211; name of this grammar</li>
+<li><em>description</em> (str, default: None) &#8211;
+description for this grammar</li>
+<li><em>context</em> (Context, default: None) &#8211;
+context within which to be active.  If <em>None</em>, the grammar will
+always be active.</li>
 </ul>
 </blockquote>
 <dl class="attribute">
@@ -201,7 +204,7 @@ match positively anymore.</p>
 <h2>ConnectionGrammar class<a class="headerlink" href="#connectiongrammar-class" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="dragonfly.grammar.grammar_connection.ConnectionGrammar">
-<!--[dragonfly.grammar.grammar_connection.ConnectionGrammar]-->class <tt class="descclassname">dragonfly.grammar.grammar_connection.</tt><tt class="descname">ConnectionGrammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em>, <em>app_name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar" title="Permalink to this definition">¶</a></dt>
+<!--[dragonfly.grammar.grammar_connection.ConnectionGrammar]-->class <tt class="descname">ConnectionGrammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em>, <em>app_name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Grammar class for maintaining a COM connection well 
 within a given context.  This is useful for controlling 
 applications through COM while they are in the 
@@ -224,17 +227,6 @@ the COM connection.</li>
 <dd>COM handle to the application.</dd></dl>
 
 <dl class="method">
-<dt id="dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_down">
-<!--[dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_down]--><tt class="descname">connection_down</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_down" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method called immediately after exiting this 
-instance&#8217;s context and disconnecting from the 
-application.</p>
-<p>By default this method doesn&#8217;t do anything.
-This method should be overridden by derived classes 
-if they need to clean up after disconnection.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_up">
 <!--[dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_up]--><tt class="descname">connection_up</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_up" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method called immediately after entering this 
@@ -245,6 +237,17 @@ This method should be overridden by derived classes
 if they need to synchronize some internal state with 
 the application.  The COM connection is available 
 through the <tt class="docutils literal"><span class="pre">self.application</span></tt> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_down">
+<!--[dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_down]--><tt class="descname">connection_down</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_down" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method called immediately after exiting this 
+instance&#8217;s context and disconnecting from the 
+application.</p>
+<p>By default this method doesn&#8217;t do anything.
+This method should be overridden by derived classes 
+if they need to clean up after disconnection.</p>
 </dd></dl>
 
 </dd></dl>
@@ -268,9 +271,9 @@ through the <tt class="docutils literal"><span class="pre">self.application</spa
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="reference.html" title="previous chapter">Dragonfly source code reference</a></p>
+            <p class="topless"><a href="grammar.html" title="previous chapter">Grammar sub-package</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="compound.html" title="next chapter">Compound elements reference</a></p>
+            <p class="topless"><a href="ruleclasses.html" title="next chapter">Rule class reference</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/grammarclasses.txt">Show Source</a></li>
@@ -295,18 +298,18 @@ through the <tt class="docutils literal"><span class="pre">self.application</spa
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="compound.html" title="Compound elements reference"
+          <a href="ruleclasses.html" title="Rule class reference"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="reference.html" title="Dragonfly source code reference"
+          <a href="grammar.html" title="Grammar sub-package"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.4rc3 documentation</a> &raquo;</li>
-          <li><a href="reference.html" accesskey="U">Dragonfly source code reference</a> &raquo;</li>
+          <li><a href="grammar.html" accesskey="U">Grammar sub-package</a> &raquo;</li>
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Jan 10, 2009.
+      Last updated on Jan 18, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
     </div>
   </body>
