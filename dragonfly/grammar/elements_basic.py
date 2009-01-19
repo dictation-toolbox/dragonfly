@@ -76,7 +76,10 @@ class ElementBase(object):
     # Methods for load-time setup.
 
     def dependencies(self):
-        return []
+        dependencies = []
+        for c in self.children:
+            dependencies.extend(c.dependencies())
+        return dependencies
 
     def compile(self, compiler):
         raise NotImplementedError("Call to virtual method compile()"
@@ -467,7 +470,7 @@ class RuleRef(ElementBase):
     # Methods for load-time setup.
 
     def dependencies(self):
-        return [self._rule]
+        return [self._rule] + self._rule.dependencies()
 
     def gstring(self):
         return "<" + self._rule.name + ">"

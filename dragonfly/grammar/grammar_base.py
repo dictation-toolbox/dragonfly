@@ -227,6 +227,8 @@ class Grammar(object):
         if rule not in self._rules:
             raise GrammarError("Rule '%s' not loaded in this grammar." \
                 % rule.name)
+        if not rule.exported:
+            return
 
         # Activate the given rule.
         self._engine.activate_rule(rule, self)
@@ -250,6 +252,8 @@ class Grammar(object):
         if rule not in self._rules:
             raise GrammarError("Rule '%s' not loaded in this grammar." \
                 % rule.name)
+        if not rule.exported:
+            return
 
         # Deactivate the given rule.
         self._engine.deactivate_rule(rule, self)
