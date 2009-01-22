@@ -190,6 +190,9 @@ class Sequence(ElementBase):
         state.decode_failure(self)
         return
 
+    def value(self, node):
+        return [child.value() for child in node.children]
+
 
 #---------------------------------------------------------------------------
 

@@ -29,7 +29,7 @@ from dragonfly.grammar.elements import (Alternative, Repetition, Compound)
 
 
 #---------------------------------------------------------------------------
-# Base class for numeric value element classes.
+# Base class for digit-series element classes.
 
 class DigitsBase(Repetition):
 

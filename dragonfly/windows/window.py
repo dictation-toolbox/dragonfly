@@ -191,4 +191,3 @@ class Window(object):
 
     def set_foreground(self):
         self._set_foreground()
-        self._bring_to_top()

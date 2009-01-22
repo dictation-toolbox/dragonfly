@@ -19,7 +19,7 @@
 #
 
 """
-This file implements base classes for structured number grammar
+This file implements base classes for structured integer grammar
 elements.
 
 """
@@ -31,15 +31,15 @@ from dragonfly.grammar.list     import  List
 
 
 #---------------------------------------------------------------------------
-# Base class for numeric value element classes.
+# Base class for integer element classes.
 
 class IntegerBase(Alternative):
 
     _builders = ()
 
-    def __init__(self, name=None, minimum=None, maximum=None):
-        self._minimum = minimum; self._maximum = maximum
-        children = self._build_children(minimum, maximum)
+    def __init__(self, name=None, min=None, max=None):
+        self._min = min; self._max = max
+        children = self._build_children(min, max)
         Alternative.__init__(self, children, name=name)
 
     #-----------------------------------------------------------------------
@@ -49,16 +49,16 @@ class IntegerBase(Alternative):
         arguments = []
         if self.name is not None:
             arguments = ["%r" % self.name]
-        if self._minimum is not None or self._maximum is not None:
-            arguments.append("%s" % self._minimum)
-            arguments.append("%s" % self._maximum)
+        if self._min is not None or self._max is not None:
+            arguments.append("%s" % self._min)
+            arguments.append("%s" % self._max)
         return "%s(%s)" % (self.__class__.__name__, ",".join(arguments))
 
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def _build_children(self, minimum, maximum):
-        children = [c.build_element(minimum, maximum)
+    def _build_children(self, min, max):
+        children = [c.build_element(min, max)
                     for c in self._builders]
         return [c for c in children if c]
 
@@ -71,7 +71,7 @@ class IntBuilderBase(object):
     def __init__(self):
         pass
 
-    def build_element(self, minimum, maximum):
+    def build_element(self, min, max):
         raise NotImplementedError("Call to virtual method build_element()"
                                   " in base class IntBuilderBase")
 
@@ -81,10 +81,10 @@ class MapIntBuilder(IntBuilderBase):
     def __init__(self, mapping):
         self._mapping = mapping
 
-    def build_element(self, minimum, maximum):
+    def build_element(self, min, max):
         elements = [(spec, value)
                     for spec, value in self._mapping.iteritems()
-                    if minimum <= value < maximum]
+                    if min <= value < max]
         if len(elements) > 1:
             children = [Compound(spec=spec, value=value)
                         for spec, value in elements]
@@ -101,17 +101,17 @@ class CollectionIntBuilder(IntBuilderBase):
         self._spec = spec
         self._set = set
 
-    def build_element(self, minimum, maximum):
-        child = self._build_range_set(self._set, minimum, maximum)
+    def build_element(self, min, max):
+        child = self._build_range_set(self._set, min, max)
         if not child:
             return None
         child.name = "element"
         element = Collection(self._spec, child)
         return element
 
-    def _build_range_set(self, set, minimum, maximum):
+    def _build_range_set(self, set, min, max):
         # Iterate through the set allowing each item to build an element.
-        children = [c.build_element(minimum, maximum) for c in set]
+        children = [c.build_element(min, max) for c in set]
         children = [c for c in children if c]
 
         # Wrap up results appropriately.
@@ -131,16 +131,16 @@ class MagnitudeIntBuilder(IntBuilderBase):
         self._multipliers = multipliers
         self._remainders = remainders
 
-    def build_element(self, minimum, maximum):
+    def build_element(self, min, max):
 
         # Sanity check.
-        if minimum >= maximum: return None
+        if min >= max: return None
 
         # Calculate ranges of multipliers and remainders.
-        first_multiplier = minimum / self._factor
-        last_multiplier  = (maximum - 1) / self._factor + 1
-        first_remainder  = minimum % self._factor
-        last_remainder   = maximum % self._factor
+        first_multiplier = min / self._factor
+        last_multiplier  = (max - 1) / self._factor + 1
+        first_remainder  = min % self._factor
+        last_remainder   = max % self._factor
 
         # Handle special case of only one possible multiplier value.
         if first_multiplier == last_multiplier - 1:
@@ -197,9 +197,9 @@ class MagnitudeIntBuilder(IntBuilderBase):
         remainders.name = "remainder"
         return Magnitude(self._factor, self._spec, multipliers, remainders)
 
-    def _build_range_set(self, set, minimum, maximum):
+    def _build_range_set(self, set, min, max):
         # Iterate through the set allowing each item to build an element.
-        children = [c.build_element(minimum, maximum) for c in set]
+        children = [c.build_element(min, max) for c in set]
         children = [c for c in children if c]
 
         # Wrap up results appropriately.
