@@ -20,6 +20,7 @@ Contents:
    engines
    actions
    windows
+   misc
 
 
 Indices and tables
