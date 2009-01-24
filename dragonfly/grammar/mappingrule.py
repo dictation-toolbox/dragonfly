@@ -19,7 +19,8 @@
 #
 
 """
-    This file implements the MappingRule class.
+This file implements the MappingRule class.
+
 """
 
 
@@ -36,16 +37,18 @@ class MappingRule(Rule):
     extras   = []
     defaults = {}
     exported = True
+    context  = None
 
     #-----------------------------------------------------------------------
 
     def __init__(self, name=None, mapping=None, extras=None, defaults=None,
-                 exported=None):
+                 exported=None, context=None):
         if name     is None: name     = self.__class__.__name__
         if mapping  is None: mapping  = self.mapping
         if extras   is None: extras   = self.extras
         if defaults is None: defaults = self.defaults
         if exported is None: exported = self.exported
+        if context  is None: context  = self.context
 
         # Type checking of initialization values.
         assert isinstance(name, (str, unicode))
@@ -69,7 +72,8 @@ class MappingRule(Rule):
             children.append(c)
 
         element = Alternative(children)
-        Rule.__init__(self, self._name, element, exported=exported)
+        Rule.__init__(self, self._name, element, exported=exported,
+                      context=context)
 
     #-----------------------------------------------------------------------
 
