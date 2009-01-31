@@ -19,16 +19,16 @@
 #
 
 """
-    This file offers access to various action classes.
+This file offers access to various action classes.
 
-    This is the file normally imported by end-user code which needs
-    to use the dragonfly action system.
+This is the file normally imported by end-user code which needs
+to use the dragonfly action system.
+
 """
 
 
-from dragonfly.actions.actionbase import ActionBase
-
-from dragonfly.actions.action_key import Key
-from dragonfly.actions.action_text import Text
-from dragonfly.actions.action_paste import Paste
-from dragonfly.actions.action_pause import Pause
+from dragonfly.actions.action_base   import ActionBase, ActionError
+from dragonfly.actions.action_key    import Key
+from dragonfly.actions.action_text   import Text
+from dragonfly.actions.action_paste  import Paste
+from dragonfly.actions.action_pause  import Pause

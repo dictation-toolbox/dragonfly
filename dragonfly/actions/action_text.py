@@ -19,11 +19,23 @@
 #
 
 """
-This file implements the Text action.
+Text action -- type a given text
+============================================================================
+
+This section describes the :class:`Text` action object. This type of 
+action is used for typing text into the foreground application.
+
+It differs from the :class:`Key` action in that :class:`Text` is used for 
+typing literal text, while :class:`dragonfly.actions.action_key.Key` 
+emulates pressing keys on the keyboard.  An example of this is that the 
+arrow-keys are not part of a text and so cannot be typed using the 
+:class:`Text` action, but can be sent by the 
+:class:`dragonfly.actions.action_key.Key` action.
+
 """
 
 
-from dragonfly.actions.actionbase   import DynStrActionBase, ActionError
+from dragonfly.actions.action_base  import DynStrActionBase, ActionError
 from dragonfly.actions.typeables    import typeables
 from dragonfly.actions.keyboard     import Keyboard
 from dragonfly.actions.action_key   import Key
@@ -38,12 +50,15 @@ class Text(DynStrActionBase):
         Action that sends keyboard events to type text.
 
         Arguments:
-         - *spec* -- the text to type.
-         - *static* -- if True, do not dynamically interpret *spec*
-           when executing this action.
-         - *pause* -- the time to pause between each keystroke, given
-           in seconds.
-         - *autofmt* -- if True, attempt to format the text with correct
+         - *spec* (*str*) -- the text to type
+         - *static* (boolean) --
+           if *True*, do not dynamically interpret *spec*
+           when executing this action
+         - *pause* (*float*) --
+           the time to pause between each keystroke, given
+           in seconds
+         - *autofmt* (boolean) --
+           if *True*, attempt to format the text with correct
            spacing and capitalization.  This is done by first mimicking
            a word recognition and then analyzing its spacing and
            capitalization and applying the same formatting to the text.

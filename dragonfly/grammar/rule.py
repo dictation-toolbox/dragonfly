@@ -37,6 +37,7 @@ class Rule(object):
         command.  It contains a root element, which defines the language 
         construct of this rule.
 
+        Constructor arguments:
          - *name* (*str*) -- name of this rule
          - *element* (*Element*) --
            root element for this rule

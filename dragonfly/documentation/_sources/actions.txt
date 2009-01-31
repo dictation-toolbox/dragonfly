@@ -8,23 +8,14 @@ emulating keystrokes.  These action types have been objectified,
 which means that they are first-class Python objects and can be 
 treated as such.
 
-Perhaps the most important method of Dragonfly's actions is 
-their :meth:`ActionBase.execute` method, which performs the 
-actual event associated with them.
+Perhaps the most important method of Dragonfly's actions is their 
+:meth:`dragonfly.actions.action_base.ActionBase.execute` method, which 
+performs the actual event associated with them.
 
 Dragonfly's action types are derived from the 
-:class:`ActionBase` class.  This base class implements standard 
-action behavior, such as the ability to concatenate multiple 
-actions and to duplicate an action.
-
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   actionkey
-   actiontext
+:class:`dragonfly.actions.action_base.ActionBase` class.  This base class 
+implements standard action behavior, such as the ability to concatenate 
+multiple actions and to duplicate an action.
 
 
 Basic examples
@@ -57,19 +48,6 @@ objects.  They can be created, combined, executed, etc.
    Key("w-b, right/25:5").execute()    # Define and execute together.
 
 
-Action types
-----------------------------------------------------------------------------
-
-**``Key(...)"**
-   Keystroke sending action.
-
-**``Text(...)"**
-   Text input action.
-
-**``Pause(...)"**
-   Explicit pause between actions.
-
-
 Combining voice commands and actions
 ----------------------------------------------------------------------------
 
@@ -95,17 +73,26 @@ the dialog.  The *special element* is necessary to define
 what the dynamic element *"text"* is.
 
 
-Dynamic element types, a.k.a. ``extras``
+Action class reference
 ----------------------------------------------------------------------------
 
-**``Dictation(...)"**
-   Free-form dictation element.
+.. automodule:: dragonfly.actions.action_base
+   :members:
 
-**``Choice(...)"**
-   Choice of an item from a predefined set.
+.. automodule:: dragonfly.actions.action_key
+   :members:
 
-**``RuleRef(...)"**
-   Reference to another rule within this grammar.
+.. automodule:: dragonfly.actions.action_text
+   :members:
 
-**``ListRef(...)"**
-   Reference to a dynamic list within this grammar.
+.. automodule:: dragonfly.actions.action_paste
+   :members:
+
+.. automodule:: dragonfly.actions.action_mimic
+   :members:
+
+.. automodule:: dragonfly.actions.action_waitwindow
+   :members:
+
+.. automodule:: dragonfly.actions.action_pause
+   :members:

@@ -19,15 +19,17 @@
 #
 
 """
-This file implements the Paste action.
+Paste action -- insert a specific text by pasting it from the clipboard
+============================================================================
+
 """
 
 
 import win32con
-from dragonfly.actions.actionbase import DynStrActionBase, ActionError
-from dragonfly.actions.action_key import Key
-from dragonfly.actions.action_text import Text
-from dragonfly.windows.clipboard import Clipboard
+from dragonfly.actions.action_base  import DynStrActionBase, ActionError
+from dragonfly.actions.action_key   import Key
+from dragonfly.actions.action_text  import Text
+from dragonfly.windows.clipboard    import Clipboard
 
 
 #---------------------------------------------------------------------------
@@ -38,11 +40,20 @@ class Paste(DynStrActionBase):
         Paste-from-clipboard action.
 
         Constructor arguments:
-         * ``content`` -- content paste.
-         * ``format`` -- clipboard format.  Default: Unicode text.
-         * ``paste`` -- paste action.  Default: Key("c-v").
-         * ``static`` -- flag indicating whether the
-           specification contains dynamic elements.  Default: False.
+         - *content* (*str*) -- content to paste
+         - *format* (*int*, Win32 clipboard format) --
+           clipboard format
+         - *paste* (instance derived from *ActionBase*) --
+           paste action
+         - *static* (boolean) --
+           flag indicating whether the
+           specification contains dynamic elements
+
+        This action inserts the given *content* into the Windows system 
+        clipboard, and then performs the *paste* action to paste it into 
+        the foreground application.  By default, the *paste* action is the 
+        :kbd:`Control-v` keystroke.  The default clipboard format to use 
+        is the *Unicode* text format.
 
     """
 

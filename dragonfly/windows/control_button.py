@@ -37,10 +37,12 @@ class Button(ControlBase):
 
     def __init__(self, parent, text, size, default=False, **kwargs):
         flavor = 128
-        style =  win32con.BS_PUSHBUTTON |  win32con.BS_TEXT |  win32con.WS_CHILD |  win32con.WS_OVERLAPPED |  win32con.WS_VISIBLE
-#( win32con.WS_CHILD
-#                | win32con.WS_VISIBLE
-#                | win32con.WS_TABSTOP)
+        style =  ( win32con.BS_PUSHBUTTON
+                 | win32con.BS_TEXT
+                 | win32con.WS_CHILD
+                 | win32con.WS_TABSTOP
+                 | win32con.WS_OVERLAPPED
+                 | win32con.WS_VISIBLE)
         if default:  style |= win32con.BS_DEFPUSHBUTTON
         else:        style |= win32con.BS_PUSHBUTTON
         ControlBase.__init__(self, parent, flavor, text, size, style,

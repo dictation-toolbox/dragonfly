@@ -19,9 +19,6 @@
     <link rel="index" title="Global index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Dragonfly v0.6.4rc3 documentation" href="index.html" />
-    <link rel="up" title="Grammar sub-package" href="grammar.html" />
-    <link rel="next" title="Engines sub-package" href="engines.html" />
-    <link rel="prev" title="Grammar classes reference" href="grammarclasses.html" />
   </head>
   <body>
     <div class="related">
@@ -33,14 +30,7 @@
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
-        <li class="right" >
-          <a href="engines.html" title="Engines sub-package"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="grammarclasses.html" title="Grammar classes reference"
-             accesskey="P">previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.4rc3 documentation</a> &raquo;</li>
-          <li><a href="grammar.html" accesskey="U">Grammar sub-package</a> &raquo;</li>
       </ul>
     </div>
     <div class="document">
@@ -66,8 +56,9 @@
 <p>This rule class represents a voice-command or part of a voice-
 command.  It contains a root element, which defines the language 
 construct of this rule.</p>
-<blockquote>
-<ul class="simple">
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
 <li><em>name</em> (<em>str</em>) &#8211; name of this rule</li>
 <li><em>element</em> (<em>Element</em>) &#8211;
 root element for this rule</li>
@@ -81,7 +72,8 @@ if true, this rule is a complete top-level rule which can be
 spoken by the user.  This should be <em>True</em> for voice-commands
 that the user can speak.</li>
 </ul>
-</blockquote>
+</dd>
+</dl>
 <p>The <em>self._log</em> logger objects should be used in methods of 
 derived classes for logging purposes.  It is a standard logger 
 object from the <em>logger</em> module in the Python standard library.</p>
@@ -194,10 +186,6 @@ each recognition, and only for the matching top-level rule.</p>
 </li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="grammarclasses.html" title="previous chapter">Grammar classes reference</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="engines.html" title="next chapter">Engines sub-package</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/ruleclasses.txt">Show Source</a></li>
@@ -221,19 +209,12 @@ each recognition, and only for the matching top-level rule.</p>
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
-        <li class="right" >
-          <a href="engines.html" title="Engines sub-package"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="grammarclasses.html" title="Grammar classes reference"
-             accesskey="P">previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.4rc3 documentation</a> &raquo;</li>
-          <li><a href="grammar.html" accesskey="U">Grammar sub-package</a> &raquo;</li>
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Jan 24, 2009.
+      Last updated on Jan 31, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
     </div>
   </body>

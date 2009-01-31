@@ -1,4 +1,4 @@
-#
+﻿#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -19,7 +19,8 @@
 #
 
 """
-This file implements base classes for the action system.
+ActionBase base class
+============================================================================
 
 """
 
@@ -37,9 +38,14 @@ class ActionError(Exception):
 #---------------------------------------------------------------------------
 
 class ActionBase(object):
+    """
+        Base class for Dragonfly's action classes.
+
+    """
 
     _log_init = log_.get_log("action.init")
     _log_exec = log_.get_log("action.exec")
+    _log = log_.get_log("action")
 
     #-----------------------------------------------------------------------
     # Initialization and aggregation methods.

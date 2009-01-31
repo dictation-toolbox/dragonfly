@@ -13,7 +13,6 @@ Speech Recognition (WSR) as backend engines.
 Contents:
 
 .. toctree::
-   :maxdepth: 2
 
    introduction
    grammar

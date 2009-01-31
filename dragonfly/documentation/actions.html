@@ -19,7 +19,7 @@
     <link rel="index" title="Global index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Dragonfly v0.6.4rc3 documentation" href="index.html" />
-    <link rel="next" title="Key action reference" href="actionkey.html" />
+    <link rel="next" title="Windows sub-package" href="windows.html" />
     <link rel="prev" title="Engines sub-package" href="engines.html" />
   </head>
   <body>
@@ -33,7 +33,7 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="actionkey.html" title="Key action reference"
+          <a href="windows.html" title="Windows sub-package"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="engines.html" title="Engines sub-package"
@@ -54,28 +54,13 @@ offers easy and flexible interfaces to common actions, such as
 emulating keystrokes.  These action types have been objectified,
 which means that they are first-class Python objects and can be
 treated as such.</p>
-<p>Perhaps the most important method of Dragonfly&#8217;s actions is
-their <tt class="xref docutils literal"><span class="pre">ActionBase.execute()</span></tt> method, which performs the
-actual event associated with them.</p>
+<p>Perhaps the most important method of Dragonfly&#8217;s actions is their
+<tt class="xref docutils literal"><span class="pre">dragonfly.actions.action_base.ActionBase.execute()</span></tt> method, which
+performs the actual event associated with them.</p>
 <p>Dragonfly&#8217;s action types are derived from the
-<tt class="xref docutils literal"><span class="pre">ActionBase</span></tt> class.  This base class implements standard
-action behavior, such as the ability to concatenate multiple
-actions and to duplicate an action.</p>
-<p>Contents:</p>
-<ul>
-<li><a class="reference external" href="actionkey.html">Key action reference</a><ul>
-<li><a class="reference external" href="actionkey.html#key-class">Key class</a></li>
-<li><a class="reference external" href="actionkey.html#key-specification-format">Key specification format</a></li>
-<li><a class="reference external" href="actionkey.html#key-names">Key names</a></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><a class="reference external" href="actiontext.html">Text action reference</a><ul>
-<li><a class="reference external" href="actiontext.html#text-class">Text class</a></li>
-</ul>
-</li>
-</ul>
+<a title="dragonfly.actions.action_base.ActionBase" class="reference internal" href="#dragonfly.actions.action_base.ActionBase"><tt class="xref docutils literal"><span class="pre">dragonfly.actions.action_base.ActionBase</span></tt></a> class.  This base class
+implements standard action behavior, such as the ability to concatenate
+multiple actions and to duplicate an action.</p>
 <div class="section" id="basic-examples">
 <h2>Basic examples<a class="headerlink" href="#basic-examples" title="Permalink to this headline">¶</a></h2>
 <p>The code below shows the basic usage of Dragonfly action
@@ -102,17 +87,6 @@ objects.  They can be created, combined, executed, etc.</p>
 <span class="n">Key</span><span class="p">(</span><span class="s">&quot;w-b, right/25:5&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>    <span class="c"># Define and execute together.</span>
 </pre></div>
 </div>
-<div class="section" id="action-types">
-<h2>Action types<a class="headerlink" href="#action-types" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt><strong>``Key(...)&#8221;</strong></dt>
-<dd>Keystroke sending action.</dd>
-<dt><strong>``Text(...)&#8221;</strong></dt>
-<dd>Text input action.</dd>
-<dt><strong>``Pause(...)&#8221;</strong></dt>
-<dd>Explicit pause between actions.</dd>
-</dl>
-</div>
 <div class="section" id="combining-voice-commands-and-actions">
 <h2>Combining voice commands and actions<a class="headerlink" href="#combining-voice-commands-and-actions" title="Permalink to this headline">¶</a></h2>
 <p>A common use of Dragonfly is to control other applications by
@@ -137,18 +111,303 @@ the <em>Find</em> dialogue followed by <em>&#8220;some words&#8221;</em> being t
 the dialog.  The <em>special element</em> is necessary to define
 what the dynamic element <em>&#8220;text&#8221;</em> is.</p>
 </div>
-<div class="section" id="dynamic-element-types-a-k-a-extras">
-<h2>Dynamic element types, a.k.a. <tt class="docutils literal"><span class="pre">extras</span></tt><a class="headerlink" href="#dynamic-element-types-a-k-a-extras" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-dragonfly.actions.action_pause">
+<h2>Action class reference<a class="headerlink" href="#module-dragonfly.actions.action_pause" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="actionbase-base-class">
+<h3>ActionBase base class<a class="headerlink" href="#actionbase-base-class" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="dragonfly.actions.action_base.ActionBase">
+<!--[dragonfly.actions.action_base.ActionBase]-->class <tt class="descname">ActionBase</tt><a class="headerlink" href="#dragonfly.actions.action_base.ActionBase" title="Permalink to this definition">¶</a></dt>
+<dd>Base class for Dragonfly&#8217;s action classes.</dd></dl>
+
+</div>
+<div class="section" id="key-action-send-a-sequence-of-keystrokes">
+<span id="refkey"></span><h3>Key action &#8211; send a sequence of keystrokes<a class="headerlink" href="#key-action-send-a-sequence-of-keystrokes" title="Permalink to this headline">¶</a></h3>
+<p>This section describes the <a title="dragonfly.actions.action_key.Key" class="reference internal" href="#dragonfly.actions.action_key.Key"><tt class="xref docutils literal"><span class="pre">Key</span></tt></a> action object.  This 
+type of action is used for sending keystrokes to the foreground 
+application.  Examples of how to use this class are given in
+<a class="reference internal" href="#refkeyspecexamples"><em>Example key actions</em></a>.</p>
+<div class="section" id="keystroke-specification-format">
+<span id="refkeyspec"></span><h4>Keystroke specification format<a class="headerlink" href="#keystroke-specification-format" title="Permalink to this headline">¶</a></h4>
+<p>The <em>spec</em> argument passed to the <a title="dragonfly.actions.action_key.Key" class="reference internal" href="#dragonfly.actions.action_key.Key"><tt class="xref docutils literal"><span class="pre">Key</span></tt></a> constructor specifies which 
+keystroke events will be emulated.  It is a string consisting of one or 
+more comma-separated keystroke elements.  Each of these elements has one 
+of the following two possible formats:</p>
 <dl class="docutils">
-<dt><strong>``Dictation(...)&#8221;</strong></dt>
-<dd>Free-form dictation element.</dd>
-<dt><strong>``Choice(...)&#8221;</strong></dt>
-<dd>Choice of an item from a predefined set.</dd>
-<dt><strong>``RuleRef(...)&#8221;</strong></dt>
-<dd>Reference to another rule within this grammar.</dd>
-<dt><strong>``ListRef(...)&#8221;</strong></dt>
-<dd>Reference to a dynamic list within this grammar.</dd>
+<dt>Normal press-release key action, optionally repeated several times:</dt>
+<dd>[<em>modifiers</em> <tt class="docutils literal"><span class="pre">-</span></tt>] <em>keyname</em> [<tt class="docutils literal"><span class="pre">/</span></tt> <em>innerpause</em>] [<tt class="docutils literal"><span class="pre">:</span></tt> <em>repeat</em>] [<tt class="docutils literal"><span class="pre">/</span></tt> <em>outerpause</em>]</dd>
+<dt>Press-and-hold a key, or release a held-down key:</dt>
+<dd>[<em>modifiers</em> <tt class="docutils literal"><span class="pre">-</span></tt>] <em>keyname</em> <tt class="docutils literal"><span class="pre">:</span></tt> <em>direction</em> [<tt class="docutils literal"><span class="pre">/</span></tt> <em>outerpause</em>]</dd>
 </dl>
+<p>The different parts of the keystroke specification are as follows.  Note 
+that only <em>keyname</em> is required; the other fields are optional.</p>
+<blockquote>
+<ul>
+<li><p class="first"><em>modifiers</em> &#8211;
+Modifiers for this keystroke.  These keys are held down
+while pressing the main keystroke.
+Can be zero or more of the following:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">a</span></tt> &#8211; alt key</li>
+<li><tt class="docutils literal"><span class="pre">c</span></tt> &#8211; control key</li>
+<li><tt class="docutils literal"><span class="pre">s</span></tt> &#8211; shift key</li>
+<li><tt class="docutils literal"><span class="pre">w</span></tt> &#8211; Windows key</li>
+</ul>
+</blockquote>
+</li>
+<li><p class="first"><em>keyname</em> &#8211;
+Name of the keystroke.  Valid names are listed in
+<a class="reference internal" href="#refkeyspecnames"><em>Key names</em></a>.</p>
+</li>
+<li><p class="first"><em>innerpause</em> &#8211;
+The time to pause between repetitions of this keystroke.</p>
+</li>
+<li><p class="first"><em>repeat</em> &#8211;
+The number of times this keystroke should be repeated.
+If not specified, the key will be pressed and released once.</p>
+</li>
+<li><p class="first"><em>outerpause</em> &#8211;
+The time to pause after this keystroke.</p>
+</li>
+<li><p class="first"><em>direction</em> &#8211;
+Whether to press-and-hold or release the key.  Must be
+one of the following:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">down</span></tt> &#8211; press and hold the key</li>
+<li><tt class="docutils literal"><span class="pre">up</span></tt> &#8211; release the key</li>
+</ul>
+</blockquote>
+<p>Note that releasing a key which is <em>not</em> being held down does <em>not</em> 
+cause an error.  It harmlessly does nothing.</p>
+</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="key-names">
+<span id="refkeyspecnames"></span><h4>Key names<a class="headerlink" href="#key-names" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<ul class="simple">
+<li>Lowercase alphabet: <tt class="docutils literal"><span class="pre">a</span></tt>, <tt class="docutils literal"><span class="pre">b</span></tt>, <tt class="docutils literal"><span class="pre">c</span></tt>, <tt class="docutils literal"><span class="pre">d</span></tt>, <tt class="docutils literal"><span class="pre">e</span></tt>, <tt class="docutils literal"><span class="pre">f</span></tt>, <tt class="docutils literal"><span class="pre">g</span></tt>,
+<tt class="docutils literal"><span class="pre">h</span></tt>, <tt class="docutils literal"><span class="pre">i</span></tt>, <tt class="docutils literal"><span class="pre">j</span></tt>, <tt class="docutils literal"><span class="pre">k</span></tt>, <tt class="docutils literal"><span class="pre">l</span></tt>, <tt class="docutils literal"><span class="pre">m</span></tt>, <tt class="docutils literal"><span class="pre">n</span></tt>, <tt class="docutils literal"><span class="pre">o</span></tt>, <tt class="docutils literal"><span class="pre">p</span></tt>, <tt class="docutils literal"><span class="pre">q</span></tt>,
+<tt class="docutils literal"><span class="pre">r</span></tt>, <tt class="docutils literal"><span class="pre">s</span></tt>, <tt class="docutils literal"><span class="pre">t</span></tt>, <tt class="docutils literal"><span class="pre">u</span></tt>, <tt class="docutils literal"><span class="pre">v</span></tt>, <tt class="docutils literal"><span class="pre">w</span></tt>, <tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, <tt class="docutils literal"><span class="pre">z</span></tt></li>
+<li>Uppercase alphabet: <tt class="docutils literal"><span class="pre">A</span></tt>, <tt class="docutils literal"><span class="pre">B</span></tt>, <tt class="docutils literal"><span class="pre">C</span></tt>, <tt class="docutils literal"><span class="pre">D</span></tt>, <tt class="docutils literal"><span class="pre">E</span></tt>, <tt class="docutils literal"><span class="pre">F</span></tt>, <tt class="docutils literal"><span class="pre">G</span></tt>,
+<tt class="docutils literal"><span class="pre">H</span></tt>, <tt class="docutils literal"><span class="pre">I</span></tt>, <tt class="docutils literal"><span class="pre">J</span></tt>, <tt class="docutils literal"><span class="pre">K</span></tt>, <tt class="docutils literal"><span class="pre">L</span></tt>, <tt class="docutils literal"><span class="pre">M</span></tt>, <tt class="docutils literal"><span class="pre">N</span></tt>, <tt class="docutils literal"><span class="pre">O</span></tt>, <tt class="docutils literal"><span class="pre">P</span></tt>, <tt class="docutils literal"><span class="pre">Q</span></tt>,
+<tt class="docutils literal"><span class="pre">R</span></tt>, <tt class="docutils literal"><span class="pre">S</span></tt>, <tt class="docutils literal"><span class="pre">T</span></tt>, <tt class="docutils literal"><span class="pre">U</span></tt>, <tt class="docutils literal"><span class="pre">V</span></tt>, <tt class="docutils literal"><span class="pre">W</span></tt>, <tt class="docutils literal"><span class="pre">X</span></tt>, <tt class="docutils literal"><span class="pre">Y</span></tt>, <tt class="docutils literal"><span class="pre">Z</span></tt></li>
+<li>Digits: <tt class="docutils literal"><span class="pre">0</span></tt>, <tt class="docutils literal"><span class="pre">1</span></tt>, <tt class="docutils literal"><span class="pre">2</span></tt>, <tt class="docutils literal"><span class="pre">3</span></tt>, <tt class="docutils literal"><span class="pre">4</span></tt>, <tt class="docutils literal"><span class="pre">5</span></tt>, <tt class="docutils literal"><span class="pre">6</span></tt>, <tt class="docutils literal"><span class="pre">7</span></tt>,
+<tt class="docutils literal"><span class="pre">8</span></tt>, <tt class="docutils literal"><span class="pre">9</span></tt></li>
+<li>Navigation keys: <tt class="docutils literal"><span class="pre">left</span></tt>, <tt class="docutils literal"><span class="pre">right</span></tt>, <tt class="docutils literal"><span class="pre">up</span></tt>, <tt class="docutils literal"><span class="pre">down</span></tt>, <tt class="docutils literal"><span class="pre">pgup</span></tt>,
+<tt class="docutils literal"><span class="pre">pgdown</span></tt>, <tt class="docutils literal"><span class="pre">home</span></tt>, <tt class="docutils literal"><span class="pre">end</span></tt></li>
+<li>Editing keys: <tt class="docutils literal"><span class="pre">space</span></tt>, <tt class="docutils literal"><span class="pre">enter</span></tt>, <tt class="docutils literal"><span class="pre">backspace</span></tt>, <tt class="docutils literal"><span class="pre">del</span></tt>,
+<tt class="docutils literal"><span class="pre">insert</span></tt></li>
+<li>Symbols: <tt class="docutils literal"><span class="pre">ampersand</span></tt>, <tt class="docutils literal"><span class="pre">apostrophe</span></tt>, <tt class="docutils literal"><span class="pre">asterisk</span></tt>, <tt class="docutils literal"><span class="pre">at</span></tt>,
+<tt class="docutils literal"><span class="pre">backslash</span></tt>, <tt class="docutils literal"><span class="pre">backtick</span></tt>, <tt class="docutils literal"><span class="pre">bar</span></tt>, <tt class="docutils literal"><span class="pre">caret</span></tt>, <tt class="docutils literal"><span class="pre">colon</span></tt>,
+<tt class="docutils literal"><span class="pre">comma</span></tt>, <tt class="docutils literal"><span class="pre">dollar</span></tt>, <tt class="docutils literal"><span class="pre">dot</span></tt>, <tt class="docutils literal"><span class="pre">dquote</span></tt>, <tt class="docutils literal"><span class="pre">equal</span></tt>, <tt class="docutils literal"><span class="pre">escape</span></tt>,
+<tt class="docutils literal"><span class="pre">exclamation</span></tt>, <tt class="docutils literal"><span class="pre">hash</span></tt>, <tt class="docutils literal"><span class="pre">hyphen</span></tt>, <tt class="docutils literal"><span class="pre">minus</span></tt>, <tt class="docutils literal"><span class="pre">percent</span></tt>,
+<tt class="docutils literal"><span class="pre">plus</span></tt>, <tt class="docutils literal"><span class="pre">question</span></tt>, <tt class="docutils literal"><span class="pre">slash</span></tt>, <tt class="docutils literal"><span class="pre">squote</span></tt>, <tt class="docutils literal"><span class="pre">tilde</span></tt>,
+<tt class="docutils literal"><span class="pre">underscore</span></tt></li>
+<li>Function keys: <tt class="docutils literal"><span class="pre">f1</span></tt>, <tt class="docutils literal"><span class="pre">f2</span></tt>, <tt class="docutils literal"><span class="pre">f3</span></tt>, <tt class="docutils literal"><span class="pre">f4</span></tt>, <tt class="docutils literal"><span class="pre">f5</span></tt>, <tt class="docutils literal"><span class="pre">f6</span></tt>,
+<tt class="docutils literal"><span class="pre">f7</span></tt>, <tt class="docutils literal"><span class="pre">f8</span></tt>, <tt class="docutils literal"><span class="pre">f9</span></tt>, <tt class="docutils literal"><span class="pre">f10</span></tt>, <tt class="docutils literal"><span class="pre">f11</span></tt>, <tt class="docutils literal"><span class="pre">f12</span></tt>, <tt class="docutils literal"><span class="pre">f13</span></tt>, <tt class="docutils literal"><span class="pre">f14</span></tt>,
+<tt class="docutils literal"><span class="pre">f15</span></tt>, <tt class="docutils literal"><span class="pre">f16</span></tt>, <tt class="docutils literal"><span class="pre">f17</span></tt>, <tt class="docutils literal"><span class="pre">f18</span></tt>, <tt class="docutils literal"><span class="pre">f19</span></tt>, <tt class="docutils literal"><span class="pre">f20</span></tt>, <tt class="docutils literal"><span class="pre">f21</span></tt>,
+<tt class="docutils literal"><span class="pre">f22</span></tt>, <tt class="docutils literal"><span class="pre">f23</span></tt>, <tt class="docutils literal"><span class="pre">f24</span></tt></li>
+<li>Modifiers: <tt class="docutils literal"><span class="pre">alt</span></tt>, <tt class="docutils literal"><span class="pre">ctrl</span></tt>, <tt class="docutils literal"><span class="pre">shift</span></tt></li>
+<li>Brackets: <tt class="docutils literal"><span class="pre">langle</span></tt>, <tt class="docutils literal"><span class="pre">lbrace</span></tt>, <tt class="docutils literal"><span class="pre">lbracket</span></tt>, <tt class="docutils literal"><span class="pre">lparen</span></tt>,
+<tt class="docutils literal"><span class="pre">rangle</span></tt>, <tt class="docutils literal"><span class="pre">rbrace</span></tt>, <tt class="docutils literal"><span class="pre">rbracket</span></tt>, <tt class="docutils literal"><span class="pre">rparen</span></tt></li>
+<li>Special keys: <tt class="docutils literal"><span class="pre">apps</span></tt>, <tt class="docutils literal"><span class="pre">win</span></tt></li>
+<li>Numberpad keys: <tt class="docutils literal"><span class="pre">np0</span></tt>, <tt class="docutils literal"><span class="pre">np1</span></tt>, <tt class="docutils literal"><span class="pre">np2</span></tt>, <tt class="docutils literal"><span class="pre">np3</span></tt>, <tt class="docutils literal"><span class="pre">np4</span></tt>, <tt class="docutils literal"><span class="pre">np5</span></tt>,
+<tt class="docutils literal"><span class="pre">np6</span></tt>, <tt class="docutils literal"><span class="pre">np7</span></tt>, <tt class="docutils literal"><span class="pre">np8</span></tt>, <tt class="docutils literal"><span class="pre">np9</span></tt>, <tt class="docutils literal"><span class="pre">npadd</span></tt>, <tt class="docutils literal"><span class="pre">npdec</span></tt>, <tt class="docutils literal"><span class="pre">npdiv</span></tt>,
+<tt class="docutils literal"><span class="pre">npmul</span></tt>, <tt class="docutils literal"><span class="pre">npsep</span></tt>, <tt class="docutils literal"><span class="pre">npsub</span></tt></li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="example-key-actions">
+<span id="refkeyspecexamples"></span><h4>Example key actions<a class="headerlink" href="#example-key-actions" title="Permalink to this headline">¶</a></h4>
+<p>The following code types the text &#8220;Hello world!&#8221; into the foreground 
+application:</p>
+<div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;H, e, l, l, o, space, w, o, r, l, d, exclamation&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+<p>The following code is a bit more useful, as it saves the current file with 
+the name &#8220;dragonfly.txt&#8221; (this works for many English-language 
+applications):</p>
+<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-f, a/50&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Text</span><span class="p">(</span><span class="s">&quot;dragonfly.txt&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;enter&quot;</span><span class="p">)</span>
+<span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+<p>The following code selects the next four lines by holding down the <em>shift</em> 
+key, slowly moving down 4 lines, and then releasing the <em>shift</em> key:</p>
+<div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;shift:down, down/25:4, shift:up&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+<p>The following code locks the screen by pressing the <em>Windows</em> key together 
+with the <em>l</em>:</p>
+<div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;w-l&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="key-class-reference">
+<h4>Key class reference<a class="headerlink" href="#key-class-reference" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="dragonfly.actions.action_key.Key">
+<!--[dragonfly.actions.action_key.Key]-->class <tt class="descname">Key</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_key.Key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keystroke emulation action.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>spec</em> (<em>str</em>) &#8211; keystroke specification</li>
+<li><em>static</em> (boolean) &#8211; flag indicating whether the
+specification contains dynamic elements</li>
+</ul>
+</dd>
+</dl>
+<p>The format of the keystroke specification <em>spec</em> is described in 
+<a class="reference internal" href="#refkeyspec"><em>Keystroke specification format</em></a>.</p>
+<p>This class emulates keyboard activity by sending keystrokes to the 
+foreground application.  It does this using Dragonfly&#8217;s keyboard 
+interface implemented in the <tt class="xref docutils literal"><span class="pre">keyboard</span></tt> and <tt class="xref docutils literal"><span class="pre">sendinput</span></tt> 
+modules.  These use the <tt class="docutils literal"><span class="pre">sendinput()</span></tt> function of the Win32 API.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="text-action-type-a-given-text">
+<h3>Text action &#8211; type a given text<a class="headerlink" href="#text-action-type-a-given-text" title="Permalink to this headline">¶</a></h3>
+<p>This section describes the <a title="dragonfly.actions.action_text.Text" class="reference internal" href="#dragonfly.actions.action_text.Text"><tt class="xref docutils literal"><span class="pre">Text</span></tt></a> action object. This type of 
+action is used for typing text into the foreground application.</p>
+<p>It differs from the <tt class="xref docutils literal"><span class="pre">Key</span></tt> action in that <a title="dragonfly.actions.action_text.Text" class="reference internal" href="#dragonfly.actions.action_text.Text"><tt class="xref docutils literal"><span class="pre">Text</span></tt></a> is used for 
+typing literal text, while <a title="dragonfly.actions.action_key.Key" class="reference internal" href="#dragonfly.actions.action_key.Key"><tt class="xref docutils literal"><span class="pre">dragonfly.actions.action_key.Key</span></tt></a> 
+emulates pressing keys on the keyboard.  An example of this is that the 
+arrow-keys are not part of a text and so cannot be typed using the 
+<a title="dragonfly.actions.action_text.Text" class="reference internal" href="#dragonfly.actions.action_text.Text"><tt class="xref docutils literal"><span class="pre">Text</span></tt></a> action, but can be sent by the 
+<a title="dragonfly.actions.action_key.Key" class="reference internal" href="#dragonfly.actions.action_key.Key"><tt class="xref docutils literal"><span class="pre">dragonfly.actions.action_key.Key</span></tt></a> action.</p>
+<dl class="class">
+<dt id="dragonfly.actions.action_text.Text">
+<!--[dragonfly.actions.action_text.Text]-->class <tt class="descname">Text</tt><big>(</big><em>spec=None</em>, <em>static=False</em>, <em>pause=0.02</em>, <em>autofmt=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_text.Text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Action that sends keyboard events to type text.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>spec</em> (<em>str</em>) &#8211; the text to type</li>
+<li><em>static</em> (boolean) &#8211;
+if <em>True</em>, do not dynamically interpret <em>spec</em>
+when executing this action</li>
+<li><em>pause</em> (<em>float</em>) &#8211;
+the time to pause between each keystroke, given
+in seconds</li>
+<li><em>autofmt</em> (boolean) &#8211;
+if <em>True</em>, attempt to format the text with correct
+spacing and capitalization.  This is done by first mimicking
+a word recognition and then analyzing its spacing and
+capitalization and applying the same formatting to the text.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="paste-action-insert-a-specific-text-by-pasting-it-from-the-clipboard">
+<h3>Paste action &#8211; insert a specific text by pasting it from the clipboard<a class="headerlink" href="#paste-action-insert-a-specific-text-by-pasting-it-from-the-clipboard" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="dragonfly.actions.action_paste.Paste">
+<!--[dragonfly.actions.action_paste.Paste]-->class <tt class="descname">Paste</tt><big>(</big><em>content</em>, <em>format=None</em>, <em>paste=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_paste.Paste" title="Permalink to this definition">¶</a></dt>
+<dd><p>Paste-from-clipboard action.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>content</em> (<em>str</em>) &#8211; content to paste</li>
+<li><em>format</em> (<em>int</em>, Win32 clipboard format) &#8211;
+clipboard format</li>
+<li><em>paste</em> (instance derived from <em>ActionBase</em>) &#8211;
+paste action</li>
+<li><em>static</em> (boolean) &#8211;
+flag indicating whether the
+specification contains dynamic elements</li>
+</ul>
+</dd>
+</dl>
+<p>This action inserts the given <em>content</em> into the Windows system 
+clipboard, and then performs the <em>paste</em> action to paste it into 
+the foreground application.  By default, the <em>paste</em> action is the 
+<tt class="docutils literal"><span class="pre">Control-v</span></tt> keystroke.  The default clipboard format to use 
+is the <em>Unicode</em> text format.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="mimic-action-mimic-a-recognition">
+<h3>Mimic action &#8211; mimic a recognition<a class="headerlink" href="#mimic-action-mimic-a-recognition" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="dragonfly.actions.action_mimic.Mimic">
+<!--[dragonfly.actions.action_mimic.Mimic]-->class <tt class="descname">Mimic</tt><big>(</big><em>*words</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mimic.Mimic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mimic recognition action.</p>
+<p>The constructor arguments are the words which will be 
+mimicked.  These should be passed as a variable argument 
+list.  For example:</p>
+<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">,</span> <span class="s">&quot;world&quot;</span><span class="p">,</span> <span class="s">r&quot;!\exclamation-mark&quot;</span><span class="p">)</span>
+<span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+<p>If an error occurs during mimicking the given 
+recognition, then an <em>ActionError</em> is raised.  A common 
+error is that the engine does not know the given words 
+and can therefore not recognize them.  For example, the 
+following attempts to mimic recognition of <em>one single 
+word</em> including a space and an exclamation-mark; this 
+will almost certainly fail:</p>
+<div class="highlight"><pre><span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello world!&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>   <span class="c"># Will raise ActionError.</span>
+</pre></div>
+</dd></dl>
+
+</div>
+<div class="section" id="waitwindow-action-wait-for-a-specific-window-context">
+<h3>WaitWindow action &#8211; wait for a specific window context<a class="headerlink" href="#waitwindow-action-wait-for-a-specific-window-context" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="dragonfly.actions.action_waitwindow.WaitWindow">
+<!--[dragonfly.actions.action_waitwindow.WaitWindow]-->class <tt class="descname">WaitWindow</tt><big>(</big><em>title=None</em>, <em>executable=None</em>, <em>timeout=15</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_waitwindow.WaitWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for a specific window context action.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>title</em> (<em>str</em>) &#8211;
+part of the window title: not case sensitive</li>
+<li><em>executable</em> (<em>str</em>) &#8211;
+part of the file name of the executable; not case sensitive</li>
+<li><em>timeout</em> (<em>int</em> or <em>float</em>) &#8211;
+the maximum number of seconds to wait for the correct
+context, after which an <tt class="xref docutils literal"><span class="pre">ActionError</span></tt> will
+be raised.</li>
+</ul>
+</dd>
+</dl>
+<p>When this action is executed, it waits until the correct window 
+context is present.  This window context is specified by the 
+desired window title of the foreground window and/or the 
+executable name of the foreground application.  These are 
+specified using the constructor arguments listed above.  The 
+substring search used is <em>not</em> case sensitive.</p>
+<p>If the correct window context is not found within <em>timeout</em> 
+seconds, then this action will raise an :class`ActionError` to 
+indicate the timeout.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="pause-action-wait-for-a-specific-amount-of-time">
+<h3>Pause action &#8211; wait for a specific amount of time<a class="headerlink" href="#pause-action-wait-for-a-specific-amount-of-time" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="dragonfly.actions.action_pause.Pause">
+<!--[dragonfly.actions.action_pause.Pause]-->class <tt class="descname">Pause</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_pause.Pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pause for the given amount of time.</p>
+<p>The <em>spec</em> constructor argument should be a <em>string</em> giving the 
+time to wait.  It should be given in hundredths of a second.  For 
+example, the following code will pause for 20/100s = 0.2
+seconds:</p>
+<div class="highlight"><pre><span class="n">Pause</span><span class="p">(</span><span class="s">&quot;20&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+<p>The reason the <em>spec</em> must be given as a <em>string</em> is because it 
+can then be used in dynamic value evaluation.  For example, the 
+following code determines the time to pause at execution time:</p>
+<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Pause</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(time)d</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;time&quot;</span><span class="p">:</span> <span class="mf">37</span><span class="p">}</span>
+<span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</dd></dl>
+
+</div>
 </div>
 </div>
 
@@ -162,9 +421,23 @@ what the dynamic element <em>&#8220;text&#8221;</em> is.</p>
             <ul>
 <li><a class="reference external" href="">Action framework</a><ul>
 <li><a class="reference external" href="#basic-examples">Basic examples</a></li>
-<li><a class="reference external" href="#action-types">Action types</a></li>
 <li><a class="reference external" href="#combining-voice-commands-and-actions">Combining voice commands and actions</a></li>
-<li><a class="reference external" href="#dynamic-element-types-a-k-a-extras">Dynamic element types, a.k.a. <tt class="docutils literal"><span class="pre">extras</span></tt></a></li>
+<li><a class="reference external" href="#module-dragonfly.actions.action_pause">Action class reference</a><ul>
+<li><a class="reference external" href="#actionbase-base-class">ActionBase base class</a></li>
+<li><a class="reference external" href="#key-action-send-a-sequence-of-keystrokes">Key action &#8211; send a sequence of keystrokes</a><ul>
+<li><a class="reference external" href="#keystroke-specification-format">Keystroke specification format</a></li>
+<li><a class="reference external" href="#key-names">Key names</a></li>
+<li><a class="reference external" href="#example-key-actions">Example key actions</a></li>
+<li><a class="reference external" href="#key-class-reference">Key class reference</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#text-action-type-a-given-text">Text action &#8211; type a given text</a></li>
+<li><a class="reference external" href="#paste-action-insert-a-specific-text-by-pasting-it-from-the-clipboard">Paste action &#8211; insert a specific text by pasting it from the clipboard</a></li>
+<li><a class="reference external" href="#mimic-action-mimic-a-recognition">Mimic action &#8211; mimic a recognition</a></li>
+<li><a class="reference external" href="#waitwindow-action-wait-for-a-specific-window-context">WaitWindow action &#8211; wait for a specific window context</a></li>
+<li><a class="reference external" href="#pause-action-wait-for-a-specific-amount-of-time">Pause action &#8211; wait for a specific amount of time</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -172,7 +445,7 @@ what the dynamic element <em>&#8220;text&#8221;</em> is.</p>
             <h4>Previous topic</h4>
             <p class="topless"><a href="engines.html" title="previous chapter">Engines sub-package</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="actionkey.html" title="next chapter">Key action reference</a></p>
+            <p class="topless"><a href="windows.html" title="next chapter">Windows sub-package</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/actions.txt">Show Source</a></li>
@@ -197,7 +470,7 @@ what the dynamic element <em>&#8220;text&#8221;</em> is.</p>
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="actionkey.html" title="Key action reference"
+          <a href="windows.html" title="Windows sub-package"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="engines.html" title="Engines sub-package"
@@ -207,7 +480,7 @@ what the dynamic element <em>&#8220;text&#8221;</em> is.</p>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Jan 24, 2009.
+      Last updated on Jan 31, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
     </div>
   </body>

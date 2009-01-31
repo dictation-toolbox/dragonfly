@@ -32,7 +32,7 @@ copyright = u'2008, Christo Butcher'
 
 today_fmt = '%B %d, %Y'
 exclude_trees = []
-add_module_names = False # True
+add_module_names = False
 pygments_style = 'sphinx'
 
 

@@ -19,13 +19,140 @@
 #
 
 """
-This file implements the Key action.
+.. _RefKey:
+
+Key action -- send a sequence of keystrokes
+============================================================================
+
+This section describes the :class:`Key` action object.  This 
+type of action is used for sending keystrokes to the foreground 
+application.  Examples of how to use this class are given in
+:ref:`RefKeySpecExamples`.
+
+
+.. _RefKeySpec:
+
+Keystroke specification format
+............................................................................
+
+The *spec* argument passed to the :class:`Key` constructor specifies which 
+keystroke events will be emulated.  It is a string consisting of one or 
+more comma-separated keystroke elements.  Each of these elements has one 
+of the following two possible formats:
+
+Normal press-release key action, optionally repeated several times:
+   [*modifiers* ``-``] *keyname* [``/`` *innerpause*] [``:`` *repeat*] [``/`` *outerpause*]
+
+Press-and-hold a key, or release a held-down key:
+   [*modifiers* ``-``] *keyname* ``:`` *direction* [``/`` *outerpause*]
+
+The different parts of the keystroke specification are as follows.  Note 
+that only *keyname* is required; the other fields are optional.
+
+ - *modifiers* --
+   Modifiers for this keystroke.  These keys are held down
+   while pressing the main keystroke.
+   Can be zero or more of the following:
+
+    - ``a`` -- alt key
+    - ``c`` -- control key
+    - ``s`` -- shift key
+    - ``w`` -- Windows key
+
+ - *keyname* --
+   Name of the keystroke.  Valid names are listed in
+   :ref:`RefKeySpecNames`.
+ - *innerpause* --
+   The time to pause between repetitions of this keystroke.
+ - *repeat* --
+   The number of times this keystroke should be repeated.
+   If not specified, the key will be pressed and released once.
+ - *outerpause* --
+   The time to pause after this keystroke.
+ - *direction* --
+   Whether to press-and-hold or release the key.  Must be
+   one of the following:
+
+    - ``down`` -- press and hold the key
+    - ``up`` -- release the key
+
+   Note that releasing a key which is *not* being held down does *not* 
+   cause an error.  It harmlessly does nothing.
+
+
+.. _RefKeySpecNames:
+
+Key names
+............................................................................
+
+ - Lowercase alphabet: ``a``, ``b``, ``c``, ``d``, ``e``, ``f``, ``g``,
+   ``h``, ``i``, ``j``, ``k``, ``l``, ``m``, ``n``, ``o``, ``p``, ``q``,
+   ``r``, ``s``, ``t``, ``u``, ``v``, ``w``, ``x``, ``y``, ``z``
+ - Uppercase alphabet: ``A``, ``B``, ``C``, ``D``, ``E``, ``F``, ``G``,
+   ``H``, ``I``, ``J``, ``K``, ``L``, ``M``, ``N``, ``O``, ``P``, ``Q``,
+   ``R``, ``S``, ``T``, ``U``, ``V``, ``W``, ``X``, ``Y``, ``Z``
+ - Digits: ``0``, ``1``, ``2``, ``3``, ``4``, ``5``, ``6``, ``7``,
+   ``8``, ``9``
+ - Navigation keys: ``left``, ``right``, ``up``, ``down``, ``pgup``,
+   ``pgdown``, ``home``, ``end``
+ - Editing keys: ``space``, ``enter``, ``backspace``, ``del``,
+   ``insert``
+ - Symbols: ``ampersand``, ``apostrophe``, ``asterisk``, ``at``,
+   ``backslash``, ``backtick``, ``bar``, ``caret``, ``colon``,
+   ``comma``, ``dollar``, ``dot``, ``dquote``, ``equal``, ``escape``,
+   ``exclamation``, ``hash``, ``hyphen``, ``minus``, ``percent``,
+   ``plus``, ``question``, ``slash``, ``squote``, ``tilde``,
+   ``underscore``
+ - Function keys: ``f1``, ``f2``, ``f3``, ``f4``, ``f5``, ``f6``,
+   ``f7``, ``f8``, ``f9``, ``f10``, ``f11``, ``f12``, ``f13``, ``f14``,
+   ``f15``, ``f16``, ``f17``, ``f18``, ``f19``, ``f20``, ``f21``,
+   ``f22``, ``f23``, ``f24``
+ - Modifiers: ``alt``, ``ctrl``, ``shift``
+ - Brackets: ``langle``, ``lbrace``, ``lbracket``, ``lparen``,
+   ``rangle``, ``rbrace``, ``rbracket``, ``rparen``
+ - Special keys: ``apps``, ``win``
+ - Numberpad keys: ``np0``, ``np1``, ``np2``, ``np3``, ``np4``, ``np5``,
+   ``np6``, ``np7``, ``np8``, ``np9``, ``npadd``, ``npdec``, ``npdiv``,
+   ``npmul``, ``npsep``, ``npsub``
+
+
+.. _RefKeySpecExamples:
+
+Example key actions
+............................................................................
+
+The following code types the text "Hello world!" into the foreground 
+application: ::
+
+    Key("H, e, l, l, o, space, w, o, r, l, d, exclamation").execute()
+
+The following code is a bit more useful, as it saves the current file with 
+the name "dragonfly.txt" (this works for many English-language 
+applications): ::
+
+    action = Key("a-f, a/50") + Text("dragonfly.txt") + Key("enter")
+    action.execute()
+
+The following code selects the next four lines by holding down the *shift* 
+key, slowly moving down 4 lines, and then releasing the *shift* key: ::
+
+    Key("shift:down, down/25:4, shift:up").execute()
+
+The following code locks the screen by pressing the *Windows* key together 
+with the *l*: ::
+
+    Key("w-l").execute()
+
+
+Key class reference
+............................................................................
+
 """
 
 
-from dragonfly.actions.actionbase import DynStrActionBase, ActionError
-from dragonfly.actions.typeables import typeables
-from dragonfly.actions.keyboard import Keyboard
+from dragonfly.actions.action_base  import DynStrActionBase, ActionError
+from dragonfly.actions.typeables    import typeables
+from dragonfly.actions.keyboard     import Keyboard
 
 
 #---------------------------------------------------------------------------
@@ -35,15 +162,18 @@ class Key(DynStrActionBase):
     """
         Keystroke emulation action.
 
-        This class emulates keyboard activity by sending 
-        keystrokes to the foreground application.  It does this 
-        using Dragonfly's keyboard interface, which uses the 
-        ``sendinput()`` function of the Win32 API.
-
         Constructor arguments:
-         * ``spec`` -- keystroke specification.
-         * ``static`` -- flag indicating whether the
-           specification contains dynamic elements.
+         - *spec* (*str*) -- keystroke specification
+         - *static* (boolean) -- flag indicating whether the
+           specification contains dynamic elements
+
+        The format of the keystroke specification *spec* is described in 
+        :ref:`RefKeySpec`.
+
+        This class emulates keyboard activity by sending keystrokes to the 
+        foreground application.  It does this using Dragonfly's keyboard 
+        interface implemented in the :mod:`keyboard` and :mod:`sendinput` 
+        modules.  These use the ``sendinput()`` function of the Win32 API.
 
     """
 

@@ -1,43 +1,8 @@
 ﻿
+.. _RefGrammar:
+
 Grammar sub-package
-============================================================================
+****************************************************************************
 
-Dragonfly's core is a language object model containing the following
-objects:
-
- - *Grammars* -- these represent collections of *rules*.
- - *Rules* -- these implement complete or partial voice commands, and
-   contain a hierarchy of *elements*.
- - *Elements* -- these form the language building blocks of voice commands,
-   and represent literal words, element sequences, references to other
-   rules, etc.
-
-
-To illustrate this language model, we discuss an example grammar which
-contains 2 voice commands: **"command one"** and **"(second command |
-command two) [test]"**.
-
- - *Grammar*: container for the two voice commands
-    - *Rule*: first voice command rule **"command one"**
-       - *Literal element*: element for the literal words **"command one"**.
-         This element is the root-element of the first command rule
-    - *Rule*: second voice command rule **"(second command | command two) [test]"**
-       - *Sequence element*: root-element of the second command rule
-          - *Alternative element*: first child element of the sequence
-             - *Literal element*: element for the literal words **"second command"**
-             - *Literal element*: element for the literal words **"command two"**
-          - *Optional element*: second child element of the sequence
-             - *Literal element*: element for the literal words **"test"**
-
-All of these different objects are described in the documents listed 
-below.
-
-
-Grammar sub-package contents
-----------------------------------------------------------------------------
-
-.. toctree::
-
-   grammarclasses
-   ruleclasses
-   elements
+.. automodule:: dragonfly.grammar.elements_basic
+   :members:

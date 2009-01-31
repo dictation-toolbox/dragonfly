@@ -19,16 +19,16 @@
 #
 
 """
-    This file implements a Win32 keyboard interface using sendinput.
+This file implements a Win32 keyboard interface using sendinput.
+
 """
 
 
 import time
-from ctypes import windll, c_char, c_wchar
 import win32con
-import dragonfly.actions.acstr as acstr
-import dragonfly.actions.actionbase as actionbase_
-import dragonfly.actions.sendinput as sendinput
+from ctypes import windll, c_char, c_wchar
+from dragonfly.actions.sendinput import (KeyboardInput, make_input_array,
+                                         send_input_array)
 
 
 #---------------------------------------------------------------------------
@@ -91,16 +91,16 @@ class Keyboard(object):
         """
         items = []
         for keycode, down, timeout in events:
-            input = sendinput.KeyboardInput(keycode, down)
+            input = KeyboardInput(keycode, down)
             items.append(input)
             if timeout:
-                array = sendinput.make_input_array(items)
+                array = make_input_array(items)
                 items = []
-                sendinput.send_input_array(array)
+                send_input_array(array)
                 time.sleep(timeout)
         if items:
-            array = sendinput.make_input_array(items)
-            sendinput.send_input_array(array)
+            array = make_input_array(items)
+            send_input_array(array)
             if timeout: time.sleep(timeout)
 
     @classmethod
