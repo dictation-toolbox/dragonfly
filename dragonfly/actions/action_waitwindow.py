@@ -55,7 +55,7 @@ class WaitWindow(ActionBase):
         substring search used is *not* case sensitive.
 
         If the correct window context is not found within *timeout* 
-        seconds, then this action will raise an :class`ActionError` to 
+        seconds, then this action will raise an :class:`ActionError` to 
         indicate the timeout.
 
     """

@@ -1,16 +1,24 @@
 
-Action framework
+Actions sub-package
 ============================================================================
 
-The Dragonfly library contains an action framework which which 
-offers easy and flexible interfaces to common actions, such as 
-emulating keystrokes.  These action types have been objectified, 
-which means that they are first-class Python objects and can be 
-treated as such.
+The Dragonfly library contains an action framework which offers easy and 
+flexible interfaces to common actions, such as sending keystrokes and 
+emulating speech recognition.  Dragonfly's actions sub-package has various 
+types of these actions, each consisting of a Python class.  There is for 
+example a :class:`dragonfly.actions.action_key.Key` class for sending 
+keystrokes and a :class:`dragonfly.actions.action_mimic.Mimic` class for 
+emulating speech recognition.
+
+Each of these actions is implemented as a Python class and this makes it 
+easy to work with them.  An action can be created (*defined what it will 
+do*) at one point and executed (*do what it was defined to do*) later. 
+Actions can be added together with the ``+`` operator to attend them 
+together, thereby creating series of actions.
 
 Perhaps the most important method of Dragonfly's actions is their 
 :meth:`dragonfly.actions.action_base.ActionBase.execute` method, which 
-performs the actual event associated with them.
+performs the actual event associated with its action.
 
 Dragonfly's action types are derived from the 
 :class:`dragonfly.actions.action_base.ActionBase` class.  This base class 
@@ -21,8 +29,8 @@ multiple actions and to duplicate an action.
 Basic examples
 ----------------------------------------------------------------------------
 
-The code below shows the basic usage of Dragonfly action 
-objects.  They can be created, combined, executed, etc.
+The code below shows the basic usage of Dragonfly action objects.  They 
+can be created, combined, executed, etc.
 
 .. code-block:: python
 
