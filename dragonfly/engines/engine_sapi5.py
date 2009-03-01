@@ -26,6 +26,7 @@ This file implements the SAPI 5 engine back-end.
 #---------------------------------------------------------------------------
 
 import win32com.client
+import win32com.client.gencache
 from win32com.client import constants
 from pywintypes import com_error
 
@@ -56,6 +57,8 @@ class Sapi5Engine(EngineBase):
     #-----------------------------------------------------------------------
 
     def __init__(self):
+        win32com.client.gencache.EnsureDispatch("SAPI.SpSharedRecognizer")
+        win32com.client.gencache.EnsureDispatch("SAPI.SpVoice")
         self._recognizer = win32com.client.Dispatch("SAPI.SpSharedRecognizer")
         self._speaker = win32com.client.Dispatch("SAPI.SpVoice")
         self._compiler = Sapi5Compiler()
@@ -165,6 +168,9 @@ class Sapi5Engine(EngineBase):
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
         self._speaker.Speak(text)
+
+    def _get_language(self):
+        return "en"
 
 
 #---------------------------------------------------------------------------
