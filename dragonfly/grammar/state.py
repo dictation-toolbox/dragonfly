@@ -25,7 +25,7 @@
 
 
 from ..log          import get_log
-from .grammar_base  import Grammar
+from .grammar_base  import Grammar, GrammarError
 from .rule_base     import Rule
 
 

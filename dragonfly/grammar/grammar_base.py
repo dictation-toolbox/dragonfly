@@ -20,15 +20,15 @@
 
 """
     This file implements the Grammar class.
+
 """
 
+from ..log             import get_log
+from ..engines.engine  import get_engine
+from .rule_base        import Rule
+from .list             import ListBase
+from .context          import Context
 
-# The trailing underscore in imported module names allows the original
-# module names to be used conveniently for local variables.
-# Done systematically, this leads to less confusion for readers of this
-# source code.
-#
-from ..log import get_log
 
 #---------------------------------------------------------------------------
 
@@ -401,14 +401,3 @@ class Grammar(object):
 
         """
         pass
-
-
-# The trailing underscore in imported module names allows the original
-# module names to be used conveniently for local variables.
-# Done systematically, this leads to less confusion for readers of this
-# source code.
-#
-from .rule_base import Rule
-from .list import ListBase
-from .context import Context
-from ..engines.engine import get_engine
