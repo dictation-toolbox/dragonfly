@@ -24,9 +24,9 @@ This file implements the MappingRule class.
 """
 
 
-from dragonfly.grammar.rule     import Rule
-from dragonfly.grammar.elements import ElementBase, Compound, Alternative
-from dragonfly.actions.actions  import ActionBase
+from .rule_base         import Rule
+from .elements          import ElementBase, Compound, Alternative
+from ..actions.actions  import ActionBase
 
 
 #---------------------------------------------------------------------------

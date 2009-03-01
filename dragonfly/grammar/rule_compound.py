@@ -24,8 +24,8 @@ This file implements the CompoundRule class.
 """
 
 
-from dragonfly.grammar.rule     import Rule
-from dragonfly.grammar.elements import ElementBase, Compound
+from .rule_base  import Rule
+from .elements   import ElementBase, Compound
 
 
 #---------------------------------------------------------------------------

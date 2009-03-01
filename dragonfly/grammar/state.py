@@ -24,14 +24,14 @@
 """
 
 
-import dragonfly.log as log_
-import dragonfly.grammar.grammar_base as grammar_
-import dragonfly.grammar.rule as rule_
+from ..log          import get_log
+from .grammar_base  import Grammar
+from .rule_base     import Rule
 
 
 class State(object):
 
-    _log_decode = log_.get_log("grammar.decode")
+    _log_decode = get_log("grammar.decode")
 
     #-----------------------------------------------------------------------
     # Methods for initialization.
@@ -71,7 +71,7 @@ class State(object):
             elif rule_id == 1000000:
                 return "dgndictation"
             else:
-                raise grammar_.GrammarError("Malformed recognition data.")
+                raise GrammarError("Malformed recognition data.")
         else:
             return None
 
@@ -118,19 +118,19 @@ class State(object):
     def decode_rollback(self, element):
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
-            raise grammar_.GrammarError("Recognition decoding stack broken")
+            raise GrammarError("Recognition decoding stack broken")
         if frame is self._stack[-1]:
             # Last parser on the stack, rollback.
             self._index = frame.begin
         else:
-            raise grammar_.GrammarError("Recognition decoding stack broken")
+            raise GrammarError("Recognition decoding stack broken")
         self._log_step(element, "rollback")
 
     def decode_success(self, element):
         self._log_step(element, "success")
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
-            raise grammar_.GrammarError("Recognition decoding stack broken.")
+            raise GrammarError("Recognition decoding stack broken.")
         frame.end = self._index
         self._depth -= 1
 

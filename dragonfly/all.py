@@ -25,9 +25,9 @@ from dragonfly.config   import Config, Section, Item
 #---------------------------------------------------------------------------
 from dragonfly.grammar.grammar_base       import Grammar
 from dragonfly.grammar.grammar_connection import ConnectionGrammar
-from dragonfly.grammar.rule               import Rule
-from dragonfly.grammar.compoundrule       import CompoundRule
-from dragonfly.grammar.mappingrule        import MappingRule
+from dragonfly.grammar.rule_base          import Rule
+from dragonfly.grammar.rule_compound      import CompoundRule
+from dragonfly.grammar.rule_mapping       import MappingRule
 from dragonfly.grammar.elements           import ElementBase, Sequence, Alternative, \
                                                  Optional, Repetition, Literal, RuleRef, \
                                                  ListRef, DictListRef, Dictation, Empty, \

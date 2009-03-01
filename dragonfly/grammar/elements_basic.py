@@ -65,9 +65,9 @@ Class reference
 
 
 import types
-import dragonfly.log as log_
-import dragonfly.grammar.rule as rule_
-import dragonfly.grammar.list as list_
+from ..log       import get_log
+from .rule_base  import Rule
+from .list       import ListBase, DictList
 
 
 #===========================================================================
@@ -86,8 +86,8 @@ class ElementBase(object):
 
     name = "uninitialized"
 
-    _log_decode = log_.get_log("grammar.decode")
-    _log_eval = log_.get_log("grammar.eval")
+    _log_decode = get_log("grammar.decode")
+    _log_eval = get_log("grammar.eval")
 
     def __init__(self, name=None):
         if not name:
@@ -654,7 +654,7 @@ class RuleRef(ElementBase):
     def __init__(self, rule, name=None):
         ElementBase.__init__(self, name)
 
-        if not isinstance(rule, rule_.Rule):
+        if not isinstance(rule, Rule):
             raise TypeError("Rule object of %s object must be a"
                             " Dragonfly rule." % self)
         self._rule = rule
@@ -706,7 +706,7 @@ class ListRef(ElementBase):
     def __init__(self, name, list, key=None):
         ElementBase.__init__(self, name=name)
 
-        if not isinstance(list, list_.ListBase):
+        if not isinstance(list, ListBase):
             raise TypeError("List object of %s object must be a"
                             " Dragonfly list." % self)
         self._list = list
@@ -768,7 +768,7 @@ class ListRef(ElementBase):
 class DictListRef(ListRef):
 
     def __init__(self, name, dict, key=None):
-        if not isinstance(dict, list_.DictList):
+        if not isinstance(dict, DictList):
             raise TypeError("Dict object of %s object must be a"
                             " Dragonfly DictList." % self)
         ListRef.__init__(self, name, dict, key)

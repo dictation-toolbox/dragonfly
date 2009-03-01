@@ -26,8 +26,8 @@ classes.
 
 
 import sys
-from rule import Rule
-from elements_basic import RuleRef
+from .rule_base       import Rule
+from .elements_basic  import RuleRef
 
 
 #---------------------------------------------------------------------------

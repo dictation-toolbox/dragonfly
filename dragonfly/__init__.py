@@ -19,36 +19,37 @@
 #
 
 #---------------------------------------------------------------------------
-from dragonfly.log      import get_log
-from dragonfly.config   import Config, Section, Item
+import dragonfly.log
+from .log      import get_log
+from .config   import Config, Section, Item
 
 #---------------------------------------------------------------------------
-from dragonfly.grammar.grammar_base       import Grammar
-from dragonfly.grammar.grammar_connection import ConnectionGrammar
-from dragonfly.grammar.rule               import Rule
-from dragonfly.grammar.compoundrule       import CompoundRule
-from dragonfly.grammar.mappingrule        import MappingRule
-from dragonfly.grammar.elements  import (ElementBase, Sequence, Alternative,
+from .grammar.grammar_base       import Grammar
+from .grammar.grammar_connection import ConnectionGrammar
+from .grammar.rule_base          import Rule
+from .grammar.rule_compound      import CompoundRule
+from .grammar.rule_mapping       import MappingRule
+from .grammar.elements  import (ElementBase, Sequence, Alternative,
                                          Optional, Repetition, Literal,
                                          ListRef, DictListRef, Dictation,
                                          RuleRef, Empty, Compound, Choice)
-from dragonfly.grammar.context   import Context, AppContext
-from dragonfly.grammar.list      import ListBase, List, DictList
-from dragonfly.grammar.wordinfo  import Word, FormatState
+from .grammar.context   import Context, AppContext
+from .grammar.list      import ListBase, List, DictList
+from .grammar.wordinfo  import Word, FormatState
 
 #---------------------------------------------------------------------------
-from dragonfly.engines.engine    import get_engine
+from .engines.engine    import get_engine
 
 #---------------------------------------------------------------------------
-from dragonfly.actions.actions   import (ActionBase, Key, Text, Paste,
+from .actions.actions   import (ActionBase, Key, Text, Paste,
                                             Pause, Mimic, WaitWindow)
-from dragonfly.actions.keyboard  import Typeable, Keyboard
-from dragonfly.actions.typeables import typeables
+from .actions.keyboard  import Typeable, Keyboard
+from .actions.typeables import typeables
 
 #---------------------------------------------------------------------------
-from dragonfly.windows.window    import Window
-from dragonfly.windows.monitor   import Monitor
-from dragonfly.windows.clipboard import Clipboard
+from .windows.window    import Window
+from .windows.monitor   import Monitor
+from .windows.clipboard import Clipboard
 
 #---------------------------------------------------------------------------
 import dragonfly.grammar.number as _number

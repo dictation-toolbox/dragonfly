@@ -28,7 +28,7 @@
 # Done systematically, this leads to less confusion for readers of this
 # source code.
 #
-import dragonfly.log as log_
+from ..log import get_log
 
 #---------------------------------------------------------------------------
 
@@ -59,9 +59,9 @@ class Grammar(object):
 
     """
 
-    _log_load = log_.get_log("grammar.load")
-    _log_begin = log_.get_log("grammar.begin")
-    _log_results = log_.get_log("grammar.results")
+    _log_load = get_log("grammar.load")
+    _log_begin = get_log("grammar.begin")
+    _log_results = get_log("grammar.results")
 
 
     #-----------------------------------------------------------------------
@@ -70,7 +70,7 @@ class Grammar(object):
     def __init__(self, name, description=None, context=None):
         self._name = name
         self._description = description
-        assert isinstance(context, context_.Context) or context is None
+        assert isinstance(context, Context) or context is None
         self._context = context
 
         self._rules = []
@@ -79,7 +79,7 @@ class Grammar(object):
         self._loaded = False
         self._enabled = True
         self._in_context = False
-        self._engine = engine_.get_engine()
+        self._engine = get_engine()
 
     def __del__(self):
         self.unload()
@@ -149,7 +149,7 @@ class Grammar(object):
         # Check for correct type and duplicate rules or rule names.
         if self._loaded:
             raise GrammarError("Cannot add rule while loaded.")
-        elif not isinstance(rule, rule_.Rule):
+        elif not isinstance(rule, Rule):
             raise GrammarError("Invalid rule object: %s" % rule)
         elif rule in self._rules:
             return
@@ -178,7 +178,7 @@ class Grammar(object):
         # Check for correct type and duplicate lists or list names.
         if self._loaded:
             raise GrammarError("Cannot add list while loaded.")
-        elif not isinstance(lst, list_.ListBase):
+        elif not isinstance(lst, ListBase):
             raise GrammarError("Invalid list object: %s" % lst)
         elif lst in self._lists:
             return
@@ -199,9 +199,9 @@ class Grammar(object):
             grammar compilation.
 
         """
-        if isinstance(dep, rule_.Rule):
+        if isinstance(dep, Rule):
             self.add_rule(dep)
-        elif isinstance(dep, list_.ListBase):
+        elif isinstance(dep, ListBase):
             self.add_list(dep)
         else: raise GrammarError("Unknown dependency type %s." % dep)
 
@@ -222,7 +222,7 @@ class Grammar(object):
 
         # Check for correct type and valid rule instance.
         assert self._loaded
-        assert isinstance(rule, rule_.Rule), \
+        assert isinstance(rule, Rule), \
             "Dragonfly rule objects must be of the type dragonfly.rule.Rule"
         if rule not in self._rules:
             raise GrammarError("Rule '%s' not loaded in this grammar." \
@@ -247,7 +247,7 @@ class Grammar(object):
 
         # Check for correct type and valid rule instance.
         assert self._loaded
-        assert isinstance(rule, rule_.Rule), \
+        assert isinstance(rule, Rule), \
             "Dragonfly rule objects must be of the type dragonfly.rule.Rule"
         if rule not in self._rules:
             raise GrammarError("Rule '%s' not loaded in this grammar." \
@@ -408,8 +408,7 @@ class Grammar(object):
 # Done systematically, this leads to less confusion for readers of this
 # source code.
 #
-import rule as rule_
-import list as list_
-import compiler as compiler_
-import context as context_
-import dragonfly.engines.engine as engine_
+from .rule_base import Rule
+from .list import ListBase
+from .context import Context
+from ..engines.engine import get_engine
