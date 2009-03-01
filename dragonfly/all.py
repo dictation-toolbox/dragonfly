@@ -38,7 +38,7 @@ from dragonfly.grammar.wordinfo     import Word, FormatState
 
 #---------------------------------------------------------------------------
 from dragonfly.actions.actions      import (ActionBase, Key, Text, Paste,
-                                            Pause)
+                                            Pause, Mimic, WaitWindow)
 from dragonfly.actions.keyboard     import Typeable, Keyboard
 from dragonfly.actions.typeables    import typeables
 

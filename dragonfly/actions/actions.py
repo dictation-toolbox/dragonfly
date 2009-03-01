@@ -27,8 +27,10 @@ to use the dragonfly action system.
 """
 
 
-from dragonfly.actions.action_base   import ActionBase, ActionError
-from dragonfly.actions.action_key    import Key
-from dragonfly.actions.action_text   import Text
-from dragonfly.actions.action_paste  import Paste
-from dragonfly.actions.action_pause  import Pause
+from dragonfly.actions.action_base        import ActionBase, ActionError
+from dragonfly.actions.action_key         import Key
+from dragonfly.actions.action_text        import Text
+from dragonfly.actions.action_paste       import Paste
+from dragonfly.actions.action_pause       import Pause
+from dragonfly.actions.action_mimic       import Mimic
+from dragonfly.actions.action_waitwindow  import WaitWindow
