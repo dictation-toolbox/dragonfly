@@ -19,9 +19,11 @@
 #
 
 #---------------------------------------------------------------------------
-import dragonfly.log
-from .log      import get_log
-from .config   import Config, Section, Item
+from .log               import get_log
+from .config            import Config, Section, Item
+
+#---------------------------------------------------------------------------
+from .engines.engine    import get_engine
 
 #---------------------------------------------------------------------------
 from .grammar.grammar_base       import Grammar
@@ -30,15 +32,15 @@ from .grammar.rule_base          import Rule
 from .grammar.rule_compound      import CompoundRule
 from .grammar.rule_mapping       import MappingRule
 from .grammar.elements  import (ElementBase, Sequence, Alternative,
-                                         Optional, Repetition, Literal,
-                                         ListRef, DictListRef, Dictation,
-                                         RuleRef, Empty, Compound, Choice)
+                                Optional, Repetition, Literal,
+                                ListRef, DictListRef, Dictation,
+                                RuleRef, Empty, Compound, Choice)
 from .grammar.context   import Context, AppContext
 from .grammar.list      import ListBase, List, DictList
 from .grammar.wordinfo  import Word, FormatState
 
-#---------------------------------------------------------------------------
-from .engines.engine    import get_engine
+from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
+                                Number, NumberRef)
 
 #---------------------------------------------------------------------------
 from .actions.actions   import (ActionBase, Key, Text, Paste,
@@ -47,15 +49,8 @@ from .actions.keyboard  import Typeable, Keyboard
 from .actions.typeables import typeables
 
 #---------------------------------------------------------------------------
+from .windows.point     import Point
+from .windows.rectangle import Rectangle, unit
 from .windows.window    import Window
-from .windows.monitor   import Monitor
+from .windows.monitor   import Monitor, monitors
 from .windows.clipboard import Clipboard
-
-#---------------------------------------------------------------------------
-import dragonfly.grammar.number as _number
-Integer     = _number.Integer
-IntegerRef  = _number.IntegerRef
-Digits      = _number.Digits
-DigitsRef   = _number.DigitsRef
-Number      = _number.Number
-NumberRef   = _number.NumberRef

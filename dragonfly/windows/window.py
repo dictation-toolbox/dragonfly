@@ -24,10 +24,10 @@
 """
 
 
-from ctypes import windll, pointer, c_wchar, c_ulong
 import win32gui
-import dragonfly.windows.rectangle as rectangle_
-import dragonfly.windows.monitor as monitor_
+from ctypes      import windll, pointer, c_wchar, c_ulong
+from .rectangle  import Rectangle, unit
+from .monitor    import monitors
 
 
 #===========================================================================
@@ -160,30 +160,30 @@ class Window(object):
     def get_position(self):
         l, t, r, b = self._get_rect()
         w = r - l; h = b - t
-        return rectangle_.Rectangle(l, t, w, h)
+        return Rectangle(l, t, w, h)
 
     def set_position(self, rectangle):
-        assert isinstance(rectangle, rectangle_.Rectangle)
+        assert isinstance(rectangle, Rectangle)
         l, t, w, h = rectangle.ltwh
         win32gui.MoveWindow(self._handle, l, t, w, h, 1)
 
     def get_containing_monitor(self):
         center = self.get_position().center
-        for monitor in monitor_.monitors:
+        for monitor in monitors:
             if monitor.rectangle.contains(center):
                 return monitor
         # Fall through, return first monitor.
-        return monitor_.monitors[0]
+        return monitors[0]
 
     def get_normalized_position(self):
         monitor = self.get_containing_monitor()
         rectangle = self.get_position()
-        rectangle.renormalize(monitor.rectangle, rectangle_.unit)
+        rectangle.renormalize(monitor.rectangle, unit)
         return rectangle
 
     def set_normalized_position(self, rectangle, monitor=None):
         if not monitor: monitor = self.get_containing_monitor()
-        rectangle.renormalize(rectangle_.unit, monitor.rectangle)
+        rectangle.renormalize(unit, monitor.rectangle)
         self.set_position(rectangle)
 
     #-----------------------------------------------------------------------
