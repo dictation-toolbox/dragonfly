@@ -794,7 +794,7 @@ class Empty(ElementBase):
         pass
 
     def gstring(self):
-        return ""
+        return "<Empty()>"
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
@@ -829,7 +829,7 @@ class Dictation(ElementBase):
     # Methods for load-time setup.
 
     def gstring(self):
-        return "<dgndictation>"
+        return "<Dictation()>"
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
@@ -867,80 +867,24 @@ class Dictation(ElementBase):
             return node.words()
 
 
-#===========================================================================
-# Action classes can be used during element evaluation.
+#---------------------------------------------------------------------------
 
-class ActionBase(object):
+class Impossible(ElementBase):
 
-    def __init__(self):
-        self._argstr = ""
-        ElementBase._log_eval.error("%s: DEPRECATED" % self)
+    def __init__(self, name=None):
+        ElementBase.__init__(self, name)
 
-    def _set_argstr(self, *args):
-        self._argstr = ", ".join(map(str, args))
+    #-----------------------------------------------------------------------
+    # Methods for load-time setup.
 
-    def __str__(self):
-        return "%s(%s)" % (self.__class__.__name__, self._argstr)
+    def gstring(self):
+        return "<Impossible()>"
 
-    def evaluate(self, node, data):
-        raise NotImplementedError("Call to virtual method evaluate()"
-                                    " in base class ActionBase")
+    #-----------------------------------------------------------------------
+    # Methods for runtime recognition processing.
 
+    def decode(self, state):
+        state.decode_attempt(self)
 
-class Insert(ActionBase):
-
-    def __init__(self, key, value):
-        ActionBase.__init__(self)
-        self._set_argstr(key, value)
-        self.key = key; self.value = value
-
-    def evaluate(self, node, data):
-        data[self.key] = self.value
-
-
-class Rename(ActionBase):
-
-    def __init__(self, old_key, new_key):
-        ActionBase.__init__(self)
-        self._set_argstr(old_key, new_key)
-        self.new_key = new_key
-        self.old_key = old_key
-
-    def evaluate(self, node, data):
-        if self.old_key in data:
-            data[self.new_key] = data.pop(self.old_key)
-
-
-class Words(ActionBase):
-
-    def __init__(self, key):
-        ActionBase.__init__(self)
-        self._set_argstr(key)
-        self.key = key
-
-    def evaluate(self, node, data):
-        data[self.key] = " ".join(node.words())
-
-
-class WordsMap(ActionBase):
-
-    def __init__(self, key, dictionary):
-        ActionBase.__init__(self)
-        self._set_argstr(key, dictionary)
-        self.key = key
-        self.dictionary = dictionary
-
-    def evaluate(self, node, data):
-        words = " ".join(node.words())
-        if words in self.dictionary:
-            data[self.key] = self.dictionary[words]
-
-
-class Func(ActionBase):
-
-    def __init__(self, function):
-        ActionBase.__init__(self)
-        self.function = function
-
-    def evaluate(self, node, data):
-        self.function(node, data)
+        state.decode_failure(self)
+        return

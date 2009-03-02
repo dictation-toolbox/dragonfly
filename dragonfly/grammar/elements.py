@@ -55,6 +55,7 @@ DictListRef     = basic_.DictListRef
 DictList        = basic_.DictListRef    # For backwards compatibility.
 Empty           = basic_.Empty
 Dictation       = basic_.Dictation
+Impossible      = basic_.Impossible
 
 
 #---------------------------------------------------------------------------
@@ -62,13 +63,3 @@ Dictation       = basic_.Dictation
 
 Compound        = compound_.Compound
 Choice          = compound_.Choice
-
-
-#===========================================================================
-# Action classes to be used for element evaluation.
-
-Insert          = basic_.Insert
-Rename          = basic_.Rename
-Words           = basic_.Words
-WordsMap        = basic_.WordsMap
-Func            = basic_.Func

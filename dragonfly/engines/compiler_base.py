@@ -47,6 +47,7 @@ class CompilerBase(object):
         (elements_.RuleRef,     lambda s,e,*a,**k: s._compile_rule_ref(e,*a,**k)),
         (elements_.ListRef,     lambda s,e,*a,**k: s._compile_list_ref(e,*a,**k)),
         (elements_.Dictation,   lambda s,e,*a,**k: s._compile_dictation(e,*a,**k)),
+        (elements_.Impossible,  lambda s,e,*a,**k: s._compile_impossible(e,*a,**k)),
         ]
 
     #-----------------------------------------------------------------------
@@ -77,37 +78,16 @@ class CompilerBase(object):
 
     #-----------------------------------------------------------------------
 
-    def _compile_sequence(self, element, *args, **kwargs):
+    def _compile_unknown_element(self, element, *args, **kwargs):
         raise NotImplementedError("Compiler %s not implemented"
                                   " for element type %s."
                                   % (self, element))
 
-    def _compile_alternative(self, element, *args, **kwargs):
-        raise NotImplementedError("Compiler %s not implemented"
-                                  " for element type %s."
-                                  % (self, element))
-
-    def _compile_optional(self, element, *args, **kwargs):
-        raise NotImplementedError("Compiler %s not implemented"
-                                  " for element type %s."
-                                  % (self, element))
-
-    def _compile_literal(self, element, *args, **kwargs):
-        raise NotImplementedError("Compiler %s not implemented"
-                                  " for element type %s."
-                                  % (self, element))
-
-    def _compile_rule_ref(self, element, *args, **kwargs):
-        raise NotImplementedError("Compiler %s not implemented"
-                                  " for element type %s."
-                                  % (self, element))
-
-    def _compile_list_ref(self, element, *args, **kwargs):
-        raise NotImplementedError("Compiler %s not implemented"
-                                  " for element type %s."
-                                  % (self, element))
-
-    def _compile_dictation(self, element, *args, **kwargs):
-        raise NotImplementedError("Compiler %s not implemented"
-                                  " for element type %s."
-                                  % (self, element))
+    _compile_sequence     = _compile_unknown_element
+    _compile_alternative  = _compile_unknown_element
+    _compile_optional     = _compile_unknown_element
+    _compile_literal      = _compile_unknown_element
+    _compile_rule_ref     = _compile_unknown_element
+    _compile_list_ref     = _compile_unknown_element
+    _compile_dictation    = _compile_unknown_element
+    _compile_impossible   = _compile_unknown_element

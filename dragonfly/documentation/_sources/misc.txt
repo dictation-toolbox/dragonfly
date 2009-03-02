@@ -6,3 +6,4 @@ Miscellaneous
 
 .. automodule:: dragonfly.config
    :members: Config, Section, Item
+   :undoc-members:

@@ -103,6 +103,9 @@ class NatlinkCompiler(CompilerBase):
     def _compile_dictation(self, element, compiler):
         compiler.add_rule("dgndictation", imported=True)
 
+    def _compile_impossible(self, element, compiler):
+        compiler.add_list("_empty_list")
+
 
 #===========================================================================
 # Internal compiler class which takes care of the binary format
