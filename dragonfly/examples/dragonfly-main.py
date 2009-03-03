@@ -114,7 +114,15 @@ class CommandModuleDirectory(object):
 #---------------------------------------------------------------------------
 # Main event driving loop.
 
-path = os.path.dirname(__file__)
+try:
+    path = os.path.dirname(__file__)
+except NameError:
+    # The "__file__" name is not always available, for example
+    #  when this module is run from PythonWin.  In this case we
+    #  simply use the current working directory.
+    path = os.path.dirname(os.getcwd())
+    __file__ = os.path.join(path, "dragonfly-main.py")
+
 directory = CommandModuleDirectory(path, excludes=[__file__])
 directory.load()
 

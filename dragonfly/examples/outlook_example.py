@@ -25,14 +25,11 @@
     classes.  This module can be activated in the same way as other
     Natlink macros by placing it in the "My Documents\Natlink folder" or
     "Program Files\NetLink/MacroSystem".
+
 """
 
-
-from dragonfly.grammar.grammar     import Grammar
-from dragonfly.grammar.context     import AppContext
-from dragonfly.grammar.mappingrule import MappingRule
-from dragonfly.grammar.elements    import LiteralChoice
-from dragonfly.actions.actions     import Key, Text, Pause
+from dragonfly import (Grammar, AppContext, MappingRule, Choice,
+                       Key, Text, Pause)
 
 
 #---------------------------------------------------------------------------
@@ -94,7 +91,7 @@ folder_rule = MappingRule(
                                    + Key("enter"),
             },
     extras=[
-            LiteralChoice("folder", folder_map),
+            Choice("folder", folder_map),
            ],
     )
 

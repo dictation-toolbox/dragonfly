@@ -24,13 +24,10 @@
     It shows how to use Dragonfly's Grammar, AppContext, and CompoundRule
     classes.  This module can be activated in the same way as other
     Natlink macros by placing it in the My Documents\Natlink folder.
+
 """
 
-
-from dragonfly.grammar.grammar       import Grammar
-from dragonfly.grammar.context       import AppContext
-from dragonfly.grammar.compoundrule  import CompoundRule
-from dragonfly.grammar.elements      import Choice, Dictation
+from dragonfly import (Grammar, AppContext, CompoundRule, Choice, Dictation)
 
 
 #---------------------------------------------------------------------------

@@ -25,14 +25,11 @@
     classes.  This module can be activated in the same way as other
     Natlink macros by placing it in the "My Documents\Natlink folder" or
     "Program Files\NetLink/MacroSystem".
+
 """
 
-
-from dragonfly.grammar.grammar     import Grammar
-from dragonfly.grammar.context     import AppContext
-from dragonfly.grammar.mappingrule import MappingRule
-from dragonfly.grammar.elements    import Dictation
-from dragonfly.actions.actions     import Key, Text
+from dragonfly import (Grammar, AppContext, MappingRule, Dictation,
+                       Key, Text)
 
 
 #---------------------------------------------------------------------------
