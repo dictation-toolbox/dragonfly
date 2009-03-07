@@ -19,8 +19,8 @@
 #
 
 """
-This file implements the Rule class, a grammar object which
-represents one natlink rule within a grammar.
+Rule class
+============================================================================
 
 """
 
@@ -117,7 +117,7 @@ class Rule(object):
             The default implementation of this method checks
             whether this rule's context matches, and if it does
             this method calls
-            :meth:`dragonfly.grammar.rule.Rule._process_begin`.
+            :meth:`._process_begin`.
 
             Arguments:
              - *executable* -- the full path to the module whose 
@@ -190,20 +190,22 @@ class Rule(object):
         """
             Start of phrase callback.
 
-            *This is generally the method which developers should override 
-            in derived rule classes to change the default semantic value 
-            of a recognized rule.*
-
             This method is called to obtain the semantic value associated 
             with a particular recognition.  It could be called from 
-            another rule's :meth:`dragonfly.grammar.rule.Rule.value` if 
+            another rule's :meth:`.value` if 
             that rule references this rule.  If also be called from this 
-            rule's :meth:`dragonfly.grammar.rule.Rule.process_recognition`
+            rule's :meth:`.process_recognition`
             if that method has been overridden to do so in a derived
             class.
 
             The default implementation of this method returns the value of 
             this rule's root element.
+
+            .. note::
+
+               This is generally the method which developers should 
+               override in derived rule classes to change the default
+               semantic value of a recognized rule.
 
         """
         return node.children[0].value()
@@ -215,17 +217,19 @@ class Rule(object):
         """
             Start of phrase detection callback.
 
-            *This is generally the method which developers should
-            override in derived rule classes to give them custom
-            functionality when the start of a phrase is detected.*
-
             This method is called when the speech recognition 
             engine detects that the user has begun to speak a 
             phrase.  It is called by this rule's
-            :meth:`dragonfly.grammar.rule.Rule.process_begin`
+            :meth:`.process_begin`
             after some context checks.
 
             The default implementation of this method does nothing.
+
+            .. note::
+
+               This is generally the method which developers should
+               override in derived rule classes to give them custom
+               functionality when the start of a phrase is detected.
 
         """
         pass
@@ -237,15 +241,17 @@ class Rule(object):
         """
             Rule recognition callback.
 
-            *This is generally the method which developers should
-            override in derived rule classes to give them custom
-            functionality when a top-level rule is recognized.*
-
             This method is called when the user has spoken words matching 
             this rule's contents.  This method is called only once for 
             each recognition, and only for the matching top-level rule.
 
             The default implementation of this method does nothing.
+
+            .. note::
+
+               This is generally the method which developers should
+               override in derived rule classes to give them custom
+               functionality when a top-level rule is recognized.
 
         """
         pass

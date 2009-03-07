@@ -102,5 +102,8 @@ Action class reference
 .. automodule:: dragonfly.actions.action_waitwindow
    :members:
 
+.. automodule:: dragonfly.actions.action_focuswindow
+   :members:
+
 .. automodule:: dragonfly.actions.action_pause
    :members:

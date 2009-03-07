@@ -43,8 +43,8 @@ from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
                                 Number, NumberRef)
 
 #---------------------------------------------------------------------------
-from .actions.actions   import (ActionBase, Key, Text, Paste,
-                                            Pause, Mimic, WaitWindow)
+from .actions.actions   import (ActionBase, Key, Text, Paste, Pause,
+                                Mimic, WaitWindow, FocusWindow, ActionError)
 from .actions.keyboard  import Typeable, Keyboard
 from .actions.typeables import typeables
 

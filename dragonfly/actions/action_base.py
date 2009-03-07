@@ -26,7 +26,7 @@ ActionBase base class
 
 
 import copy as copy_
-import dragonfly.log as log_
+from ..log import get_log
 
 
 #---------------------------------------------------------------------------
@@ -43,9 +43,9 @@ class ActionBase(object):
 
     """
 
-    _log_init = log_.get_log("action.init")
-    _log_exec = log_.get_log("action.exec")
-    _log = log_.get_log("action")
+    _log_init = get_log("action.init")
+    _log_exec = get_log("action.exec")
+    _log = get_log("action")
 
     #-----------------------------------------------------------------------
     # Initialization and aggregation methods.
@@ -118,12 +118,17 @@ class ActionBase(object):
     def execute(self, data=None):
         if self._bound:
             data = self._data
-        if self._log_exec:
-            self._log_exec.debug("Executing action: %s" % self.copy_bind(data))
-        for index in range(self._repeat):
-            self._execute(data)
-            for a in self._following:
-                a.execute(data)
+        self._log_exec.debug("Executing action: %s" % self.copy_bind(data))
+        try:
+            for index in range(self._repeat):
+                if self._execute(data) == False:
+                    raise ActionError(str(self))
+                for a in self._following:
+                    if a.execute(data) == False:
+                        raise ActionError(str(a))
+        except ActionError, e:
+            self._log_exec.error("Execution failed: %s" % e)
+            return False
 
     def _execute(self, data=None):
         pass

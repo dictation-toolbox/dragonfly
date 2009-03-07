@@ -150,9 +150,9 @@ Key class reference
 """
 
 
-from dragonfly.actions.action_base  import DynStrActionBase, ActionError
-from dragonfly.actions.typeables    import typeables
-from dragonfly.actions.keyboard     import Keyboard
+from .action_base  import DynStrActionBase, ActionError
+from .typeables    import typeables
+from .keyboard     import Keyboard
 
 
 #---------------------------------------------------------------------------
@@ -202,6 +202,8 @@ class Key(DynStrActionBase):
 
         # Remove leading and trailing whitespace.
         spec = spec.strip()
+        if not spec:
+            return []
 
         # Parse modifier prefix.
         index = spec.find(self._modifier_prefix_delimiter)

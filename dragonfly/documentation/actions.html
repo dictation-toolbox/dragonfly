@@ -2,25 +2,26 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Actions sub-package &mdash; Dragonfly v0.6.4rc3 documentation</title>
+    
+    <title>Actions sub-package &mdash; Dragonfly v0.6.5beta1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-          URL_ROOT:    '',
-          VERSION:     '0.6.4rc3',
-          COLLAPSE_MODINDEX: false,
-          FILE_SUFFIX: '.html'
+        URL_ROOT:    '',
+        VERSION:     '0.6.5beta1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="contents" title="Global table of contents" href="contents.html" />
-    <link rel="index" title="Global index" href="genindex.html" />
+    <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="Dragonfly v0.6.4rc3 documentation" href="index.html" />
+    <link rel="top" title="Dragonfly v0.6.5beta1 documentation" href="index.html" />
     <link rel="next" title="Windows sub-package" href="windows.html" />
-    <link rel="prev" title="Engines sub-package" href="engines.html" />
+    <link rel="prev" title="Engines sub-package" href="engines.html" /> 
   </head>
   <body>
     <div class="related">
@@ -38,9 +39,9 @@
         <li class="right" >
           <a href="engines.html" title="Engines sub-package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Dragonfly v0.6.4rc3 documentation</a> &raquo;</li>
+        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li> 
       </ul>
-    </div>
+    </div>  
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
@@ -72,7 +73,7 @@ multiple actions and to duplicate an action.</p>
 <h2>Basic examples<a class="headerlink" href="#basic-examples" title="Permalink to this headline">¶</a></h2>
 <p>The code below shows the basic usage of Dragonfly action objects.  They
 can be created, combined, executed, etc.</p>
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">dragonfly.all</span> <span class="kn">import</span> <span class="n">Key</span><span class="p">,</span> <span class="n">Text</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">dragonfly.all</span> <span class="kn">import</span> <span class="n">Key</span><span class="p">,</span> <span class="n">Text</span>
 
 <span class="n">a1</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;up, left, down, right&quot;</span><span class="p">)</span>   <span class="c"># Define action a1.</span>
 <span class="n">a1</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>                        <span class="c"># Send the keystrokes.</span>
@@ -93,6 +94,7 @@ can be created, combined, executed, etc.</p>
 
 <span class="n">Key</span><span class="p">(</span><span class="s">&quot;w-b, right/25:5&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>    <span class="c"># Define and execute together.</span>
 </pre></div>
+</div>
 </div>
 <div class="section" id="combining-voice-commands-and-actions">
 <h2>Combining voice commands and actions<a class="headerlink" href="#combining-voice-commands-and-actions" title="Permalink to this headline">¶</a></h2>
@@ -232,22 +234,26 @@ cause an error.  It harmlessly does nothing.</p>
 <span id="refkeyspecexamples"></span><h4>Example key actions<a class="headerlink" href="#example-key-actions" title="Permalink to this headline">¶</a></h4>
 <p>The following code types the text &#8220;Hello world!&#8221; into the foreground 
 application:</p>
-<div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;H, e, l, l, o, space, w, o, r, l, d, exclamation&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;H, e, l, l, o, space, w, o, r, l, d, exclamation&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
+</div>
 <p>The following code is a bit more useful, as it saves the current file with 
 the name &#8220;dragonfly.txt&#8221; (this works for many English-language 
 applications):</p>
-<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-f, a/50&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Text</span><span class="p">(</span><span class="s">&quot;dragonfly.txt&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;enter&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-f, a/50&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Text</span><span class="p">(</span><span class="s">&quot;dragonfly.txt&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;enter&quot;</span><span class="p">)</span>
 <span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
+</div>
 <p>The following code selects the next four lines by holding down the <em>shift</em> 
 key, slowly moving down 4 lines, and then releasing the <em>shift</em> key:</p>
-<div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;shift:down, down/25:4, shift:up&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;shift:down, down/25:4, shift:up&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
+</div>
 <p>The following code locks the screen by pressing the <em>Windows</em> key together 
 with the <em>l</em>:</p>
-<div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;w-l&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;w-l&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
+</div>
 </div>
 <div class="section" id="key-class-reference">
 <h4>Key class reference<a class="headerlink" href="#key-class-reference" title="Permalink to this headline">¶</a></h4>
@@ -313,12 +319,12 @@ capitalization and applying the same formatting to the text.</li>
 <h3>Paste action &#8211; insert a specific text by pasting it from the clipboard<a class="headerlink" href="#paste-action-insert-a-specific-text-by-pasting-it-from-the-clipboard" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_paste.Paste">
-<!--[dragonfly.actions.action_paste.Paste]-->class <tt class="descname">Paste</tt><big>(</big><em>content</em>, <em>format=None</em>, <em>paste=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_paste.Paste" title="Permalink to this definition">¶</a></dt>
+<!--[dragonfly.actions.action_paste.Paste]-->class <tt class="descname">Paste</tt><big>(</big><em>contents</em>, <em>format=None</em>, <em>paste=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_paste.Paste" title="Permalink to this definition">¶</a></dt>
 <dd><p>Paste-from-clipboard action.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
 <dd><ul class="first last simple">
-<li><em>content</em> (<em>str</em>) &#8211; content to paste</li>
+<li><em>contents</em> (<em>str</em>) &#8211; contents to paste</li>
 <li><em>format</em> (<em>int</em>, Win32 clipboard format) &#8211;
 clipboard format</li>
 <li><em>paste</em> (instance derived from <em>ActionBase</em>) &#8211;
@@ -329,7 +335,7 @@ specification contains dynamic elements</li>
 </ul>
 </dd>
 </dl>
-<p>This action inserts the given <em>content</em> into the Windows system 
+<p>This action inserts the given <em>contents</em> into the Windows system 
 clipboard, and then performs the <em>paste</em> action to paste it into 
 the foreground application.  By default, the <em>paste</em> action is the 
 <tt class="docutils literal"><span class="pre">Control-v</span></tt> keystroke.  The default clipboard format to use 
@@ -346,9 +352,10 @@ is the <em>Unicode</em> text format.</p>
 <p>The constructor arguments are the words which will be 
 mimicked.  These should be passed as a variable argument 
 list.  For example:</p>
-<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">,</span> <span class="s">&quot;world&quot;</span><span class="p">,</span> <span class="s">r&quot;!\exclamation-mark&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">,</span> <span class="s">&quot;world&quot;</span><span class="p">,</span> <span class="s">r&quot;!\exclamation-mark&quot;</span><span class="p">)</span>
 <span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
+</div>
 <p>If an error occurs during mimicking the given 
 recognition, then an <em>ActionError</em> is raised.  A common 
 error is that the engine does not know the given words 
@@ -356,8 +363,9 @@ and can therefore not recognize them.  For example, the
 following attempts to mimic recognition of <em>one single 
 word</em> including a space and an exclamation-mark; this 
 will almost certainly fail:</p>
-<div class="highlight"><pre><span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello world!&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>   <span class="c"># Will raise ActionError.</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello world!&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>   <span class="c"># Will raise ActionError.</span>
 </pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -393,6 +401,28 @@ indicate the timeout.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="focuswindow-action-bring-a-window-to-the-foreground">
+<h3>FocusWindow action &#8211; bring a window to the foreground<a class="headerlink" href="#focuswindow-action-bring-a-window-to-the-foreground" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="dragonfly.actions.action_focuswindow.FocusWindow">
+<!--[dragonfly.actions.action_focuswindow.FocusWindow]-->class <tt class="descname">FocusWindow</tt><big>(</big><em>executable=None</em>, <em>title=None</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_focuswindow.FocusWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bring a window to the foreground action.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>executable</em> (<em>str</em>) &#8211; part of the filename of the
+application&#8217;s executable to which the target window belongs;
+not case sensitive.</li>
+<li><em>title</em> (<em>str</em>) &#8211; part of the title of the target window;
+not case sensitive.</li>
+</ul>
+</dd>
+</dl>
+<p>This action searches all visible windows for a window which 
+matches the given parameters.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="pause-action-wait-for-a-specific-amount-of-time">
 <h3>Pause action &#8211; wait for a specific amount of time<a class="headerlink" href="#pause-action-wait-for-a-specific-amount-of-time" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
@@ -403,15 +433,17 @@ indicate the timeout.</p>
 time to wait.  It should be given in hundredths of a second.  For 
 example, the following code will pause for 20/100s = 0.2
 seconds:</p>
-<div class="highlight"><pre><span class="n">Pause</span><span class="p">(</span><span class="s">&quot;20&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Pause</span><span class="p">(</span><span class="s">&quot;20&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
+</div>
 <p>The reason the <em>spec</em> must be given as a <em>string</em> is because it 
 can then be used in dynamic value evaluation.  For example, the 
 following code determines the time to pause at execution time:</p>
-<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Pause</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(time)d</span><span class="s">&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Pause</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(time)d</span><span class="s">&quot;</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;time&quot;</span><span class="p">:</span> <span class="mf">37</span><span class="p">}</span>
 <span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -424,7 +456,7 @@ following code determines the time to pause at execution time:</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3>Table Of Contents</h3>
+            <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
 <li><a class="reference external" href="">Actions sub-package</a><ul>
 <li><a class="reference external" href="#basic-examples">Basic examples</a></li>
@@ -442,6 +474,7 @@ following code determines the time to pause at execution time:</p>
 <li><a class="reference external" href="#paste-action-insert-a-specific-text-by-pasting-it-from-the-clipboard">Paste action &#8211; insert a specific text by pasting it from the clipboard</a></li>
 <li><a class="reference external" href="#mimic-action-mimic-a-recognition">Mimic action &#8211; mimic a recognition</a></li>
 <li><a class="reference external" href="#waitwindow-action-wait-for-a-specific-window-context">WaitWindow action &#8211; wait for a specific window context</a></li>
+<li><a class="reference external" href="#focuswindow-action-bring-a-window-to-the-foreground">FocusWindow action &#8211; bring a window to the foreground</a></li>
 <li><a class="reference external" href="#pause-action-wait-for-a-specific-amount-of-time">Pause action &#8211; wait for a specific amount of time</a></li>
 </ul>
 </li>
@@ -457,7 +490,7 @@ following code determines the time to pause at execution time:</p>
             <ul class="this-page-menu">
               <li><a href="_sources/actions.txt">Show Source</a></li>
             </ul>
-            <h3>Quick search</h3>
+          <h3>Quick search</h3>
             <form class="search" action="search.html" method="get">
               <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
               <input type="hidden" name="check_keywords" value="yes" />
@@ -482,13 +515,13 @@ following code determines the time to pause at execution time:</p>
         <li class="right" >
           <a href="engines.html" title="Engines sub-package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Dragonfly v0.6.4rc3 documentation</a> &raquo;</li>
+        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Feb 01, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+      Last updated on Mar 07, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
     </div>
   </body>
 </html>

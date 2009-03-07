@@ -19,10 +19,62 @@
 #
 
 """
-This file implements the MappingRule class.
+MappingRule class
+============================================================================
+
+The MappingRule class is designed to make it very easy to create a rule 
+based on a mapping of spoken-forms to semantic values.
+
+This class has the following parameters to customize its behavior:
+
+ - *mapping* -- mapping of spoken-forms to semantic values
+ - *extras* -- extras elements referenced from the compound spec
+ - *defaults* -- default values for the extras
+ - *exported* -- whether the rule is exported
+ - *context* -- context in which the rule will be active
+
+Each of these parameters can be passed as a (keyword) arguments to the 
+constructor, or defined as a class attribute in a derived class.
+
+
+Example usage
+............................................................................
+
+The MappingRule class can be used to define a voice-command as follows::
+
+    class ExampleRule(MappingRule):
+
+        mapping  = {
+                    "[feed] address [bar]":                Key("a-d"),
+                    "subscribe [[to] [this] feed]":        Key("a-u"),
+                    "paste [feed] address":                Key("a-d, c-v, enter"),
+                    "feeds | feed (list | window | win)":  Key("a-d, tab:2, s-tab"),
+                    "down [<n>] (feed | feeds)":           Key("a-d, tab:2, s-tab, down:%(n)d"),
+                    "up [<n>] (feed | feeds)":             Key("a-d, tab:2, s-tab, up:%(n)d"),
+                    "open [item]":                         Key("a-d, tab:2, c-s"),
+                    "newer [<n>]":                         Key("a-d, tab:2, up:%(n)d"),
+                    "older [<n>]":                         Key("a-d, tab:2, down:%(n)d"),
+                    "mark all [as] read":                  Key("cs-r"),
+                    "mark all [as] unread":                Key("cs-u"),
+                    "search [bar]":                        Key("a-s"),
+                    "search [for] <text>":                 Key("a-s") + Text("%(text)s\\n"),
+                   }
+        extras   = [
+                    Integer("n", 1, 20),
+                    Dictation("text"),
+                   ]
+        defaults = {
+                    "n": 1,
+                   }
+
+        rule = ExampleRule()
+        grammar.add_rule(rule)
+
+
+Class reference
+............................................................................
 
 """
-
 
 from .rule_base         import Rule
 from .elements          import ElementBase, Compound, Alternative
@@ -32,6 +84,20 @@ from ..actions.actions  import ActionBase
 #---------------------------------------------------------------------------
 
 class MappingRule(Rule):
+    """
+        Rule class based on a mapping of spoken-forms to semantic values.
+
+        Constructor arguments:
+         - *name* (*str*) -- the rule's name
+         - *mapping* (*dict*) -- mapping of spoken-forms to semantic
+           values
+         - *extras* (sequence) -- extras elements referenced from the
+           spoken-forms in *mapping*
+         - *defaults* (*dict*) -- default values for the extras
+         - *exported* (boolean) -- whether the rule is exported
+         - *context* (*Context*) -- context in which the rule will be active
+
+    """
 
     mapping  = {}
     extras   = []

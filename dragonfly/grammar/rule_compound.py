@@ -19,7 +19,49 @@
 #
 
 """
-This file implements the CompoundRule class.
+CompoundRule class
+============================================================================
+
+The CompoundRule class is designed to make it very easy to create a rule 
+based on a single compound spec.
+
+This rule class has the following parameters to customize its behavior:
+
+ - *spec* -- compound specification for the rule's root element
+ - *extras* -- extras elements referenced from the compound spec
+ - *defaults* -- default values for the extras
+ - *exported* -- whether the rule is exported
+ - *context* -- context in which the rule will be active
+
+Each of these parameters can be passed as a (keyword) arguments to the 
+constructor, or defined as a class attribute in a derived class.
+
+
+Example usage
+............................................................................
+
+The CompoundRule class can be used to define a voice-command as follows::
+
+    class ExampleRule(CompoundRule):
+
+        spec = "I want to eat <food>"
+        extras = [Choice("food", {
+                                  "(an | a juicy) apple": "good",
+                                  "a [greasy] hamburger": "bad",
+                                 }
+                        )
+                 ]
+
+        def _process_recognition(self, node, extras):
+            good_or_bad = extras["food"]
+            print "That is a %s idea!" % good_or_bad
+
+    rule = ExampleRule()
+    grammar.add_rule(rule)
+
+
+Class reference
+............................................................................
 
 """
 
@@ -31,11 +73,25 @@ from .elements   import ElementBase, Compound
 #---------------------------------------------------------------------------
 
 class CompoundRule(Rule):
+    """
+        Rule class based on the compound element.
+
+        Constructor arguments:
+         - *name* (*str*) -- the rule's name
+         - *spec* (*str*) -- compound specification for the rule's
+           root element
+         - *extras* (sequence) -- extras elements referenced from the
+           compound spec
+         - *defaults* (*dict*) -- default values for the extras
+         - *exported* (boolean) -- whether the rule is exported
+         - *context* (*Context*) -- context in which the rule will be active
+
+    """
 
     _name    = None
     spec     = None
-    extras   = []
-    defaults = {}
+    extras   = ()
+    defaults = ()
     exported = True
     context  = None
 

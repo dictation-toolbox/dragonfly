@@ -21,6 +21,8 @@ print "Version:", version, "-- Release:", release
 #---------------------------------------------------------------------------
 # General configuration
 
+#sys.path.append(os.getcwd())
+#extensions = ['sphinx.ext.autodoc', 'include_privates']
 extensions = ['sphinx.ext.autodoc']
 templates_path = ['templates']
 source_suffix = '.txt'

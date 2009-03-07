@@ -2,24 +2,25 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Miscellaneous &mdash; Dragonfly v0.6.4rc3 documentation</title>
+    
+    <title>Miscellaneous &mdash; Dragonfly v0.6.5beta1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-          URL_ROOT:    '',
-          VERSION:     '0.6.4rc3',
-          COLLAPSE_MODINDEX: false,
-          FILE_SUFFIX: '.html'
+        URL_ROOT:    '',
+        VERSION:     '0.6.5beta1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="contents" title="Global table of contents" href="contents.html" />
-    <link rel="index" title="Global index" href="genindex.html" />
+    <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="Dragonfly v0.6.4rc3 documentation" href="index.html" />
-    <link rel="prev" title="Clipboard toolkit" href="clipboard.html" />
+    <link rel="top" title="Dragonfly v0.6.5beta1 documentation" href="index.html" />
+    <link rel="prev" title="Clipboard toolkit" href="clipboard.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,9 +35,9 @@
         <li class="right" >
           <a href="clipboard.html" title="Clipboard toolkit"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Dragonfly v0.6.4rc3 documentation</a> &raquo;</li>
+        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li> 
       </ul>
-    </div>
+    </div>  
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
@@ -53,7 +54,7 @@ a three-phase <em>setup &#8211; load &#8211; use</em> system:</p>
 <blockquote>
 <ul class="simple">
 <li><em>setup</em> &#8211; a Config object is created and its structure and 
-defaults contents are defined.</li>
+default contents are defined.</li>
 <li><em>load</em> &#8211; a separate file containing the user&#8217;s configuration 
 settings is looked for and, if found, its values are loaded 
 into the Config object.</li>
@@ -61,18 +62,27 @@ into the Config object.</li>
 through easy Config object attributes.</li>
 </ul>
 </blockquote>
+<p>This configuration toolkit uses the following three classes:</p>
+<blockquote>
+<ul class="simple">
+<li><a title="dragonfly.config.Config" class="reference internal" href="#dragonfly.config.Config"><tt class="xref docutils literal"><span class="pre">Config</span></tt></a> &#8211; a collection of configuration settings, grouped
+within one or more sections</li>
+<li><a title="dragonfly.config.Section" class="reference internal" href="#dragonfly.config.Section"><tt class="xref docutils literal"><span class="pre">Section</span></tt></a> &#8211; a group of items and/or subsections</li>
+<li><a title="dragonfly.config.Item" class="reference internal" href="#dragonfly.config.Item"><tt class="xref docutils literal"><span class="pre">Item</span></tt></a> &#8211; a single configuration setting</li>
+</ul>
+</blockquote>
 <div class="section" id="usage-example">
 <h3>Usage example<a class="headerlink" href="#usage-example" title="Permalink to this headline">¶</a></h3>
 <p>The main program using Dragonfly&#8217;s configuration toolkit would
 normally look something like this:</p>
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">dragonfly.all</span> <span class="kn">import</span> <span class="n">Config</span><span class="p">,</span> <span class="n">Section</span><span class="p">,</span> <span class="n">Item</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">dragonfly.all</span> <span class="kn">import</span> <span class="n">Config</span><span class="p">,</span> <span class="n">Section</span><span class="p">,</span> <span class="n">Item</span>
 
 <span class="c"># *Setup* phase.</span>
 <span class="c"># This defines a configuration object with the name &quot;Example</span>
 <span class="c">#  configuration&quot;.  It contains one section with the title</span>
 <span class="c">#  &quot;Test section&quot;, which has two configuration items.  Both</span>
 <span class="c">#  these items have a default value and a docstring.</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="s">&quot;Example configuration&quot;</span><span class="p">)</span>
+<span class="n">config</span>                 <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="s">&quot;Example configuration&quot;</span><span class="p">)</span>
 <span class="n">config</span><span class="o">.</span><span class="n">test</span>            <span class="o">=</span> <span class="n">Section</span><span class="p">(</span><span class="s">&quot;Test section&quot;</span><span class="p">)</span>
 <span class="n">config</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">fruit</span>      <span class="o">=</span> <span class="n">Item</span><span class="p">(</span><span class="s">&quot;apple&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s">&quot;Must eat fruit.&quot;</span><span class="p">)</span>
 <span class="n">config</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">color</span>      <span class="o">=</span> <span class="n">Item</span><span class="p">(</span><span class="s">&quot;blue&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s">&quot;The color of life.&quot;</span><span class="p">)</span>
@@ -90,6 +100,7 @@ normally look something like this:</p>
 <span class="k">print</span> <span class="s">&quot;The color of life is&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">color</span>
 <span class="k">print</span> <span class="s">&quot;You must eat an </span><span class="si">%s</span><span class="s"> every day&quot;</span> <span class="o">%</span> <span class="n">config</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">fruit</span>
 </pre></div>
+</div>
 <p>The configuration defined above is basically complete.  Every
 configuration item has a default value and can be accessed by
 the program.  But if the user would like to modify some or all
@@ -100,17 +111,56 @@ This gives its author powerful tools for determining the desired
 configuration settings.  However, it will usually consist merely 
 of variable assignments. The configuration file for the program 
 above might look something like this:</p>
-<div class="highlight"><pre><span class="c">#--- Test section ------------------------------------------------------</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Test section</span>
 <span class="n">test</span><span class="o">.</span><span class="n">fruit</span> <span class="o">=</span> <span class="s">&quot;banana&quot;</span>   <span class="c"># Bananas have more potassium.</span>
 <span class="n">test</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s">&quot;white&quot;</span>    <span class="c"># I like light colors.</span>
 </pre></div>
+</div>
+</div>
+<div class="section" id="implementation-details">
+<h3>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h3>
+<p>This configuration toolkit makes use of Python&#8217;s special methods
+for setting and retrieving object attributes.  This makes it much
+easier to use, as there is no need to use functions such as
+<em>value = get_config_value(&#8220;item_name&#8221;)</em>; instead the configuration
+values are immediately accessible as Python objects.  It also allows
+for more extensive error checking; it is for example trivial to
+implement custom <em>Item</em> classes which only allow specific values
+or value types, such as integers, boolean values, etc.</p>
+</div>
+<div class="section" id="configuration-class-reference">
+<h3>Configuration class reference<a class="headerlink" href="#configuration-class-reference" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.config.Config">
 <!--[dragonfly.config.Config]-->class <tt class="descname">Config</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Configuration class for storing program settings.</p>
+<dl class="docutils">
+<dt>Constructor argument:</dt>
+<dd><ul class="first last simple">
+<li><em>name</em> (<em>str</em>) &#8211;
+the name of this configuration object.</li>
+</ul>
+</dd>
+</dl>
+<p>This class can contain zero or more <a title="dragonfly.config.Section" class="reference internal" href="#dragonfly.config.Section"><tt class="xref docutils literal"><span class="pre">Section</span></tt></a> instances, 
+each of which can contain zero or more <a title="dragonfly.config.Item" class="reference internal" href="#dragonfly.config.Item"><tt class="xref docutils literal"><span class="pre">Item</span></tt></a> instances. 
+It is these items which store the actual configuration settings. 
+The sections merely divide the items up into groups, so that 
+different configuration topics can be split for easy readability.</p>
+<dl class="method">
 <dt id="dragonfly.config.Config.generate_config_file">
 <!--[dragonfly.config.Config.generate_config_file]--><tt class="descname">generate_config_file</tt><big>(</big><em>path=None</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config.generate_config_file" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Create a configuration file containing this
+configuration object&#8217;s current settings.</p>
+<blockquote>
+<ul class="simple">
+<li><em>path</em> (<em>str</em>, default: <em>None</em>) &#8211;
+path to the configuration file to load.  If <em>None</em>,
+then a path is generated from the calling module&#8217;s
+file name by replacing its extension with &#8220;.txt&#8221;.</li>
+</ul>
+</blockquote>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="dragonfly.config.Config.get_by_name">
@@ -125,62 +175,80 @@ above might look something like this:</p>
 <dl class="method">
 <dt id="dragonfly.config.Config.load">
 <!--[dragonfly.config.Config.load]--><tt class="descname">load</tt><big>(</big><em>path=None</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="dragonfly.config.Config.load_from_file">
-<!--[dragonfly.config.Config.load_from_file]--><tt class="descname">load_from_file</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config.load_from_file" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Load the configuration file at the given <em>path</em>, or
+look for a configuration file associated with the calling
+module.</p>
+<blockquote>
+<ul class="simple">
+<li><em>path</em> (<em>str</em>, default: <em>None</em>) &#8211;
+path to the configuration file to load.  If <em>None</em>,
+then a path is generated from the calling module&#8217;s
+file name by replacing its extension with &#8220;.txt&#8221;.</li>
+</ul>
+</blockquote>
+<p>If the <em>path</em> is a file, it is loaded.  On the other hand,
+if it does not exist or is not a file, nothing is loaded
+and this configuration&#8217;s defaults remain in place.</p>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="dragonfly.config.Section">
 <!--[dragonfly.config.Section]-->class <tt class="descname">Section</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#dragonfly.config.Section" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="dragonfly.config.Section.update_namespace">
-<!--[dragonfly.config.Section.update_namespace]--><tt class="descname">update_namespace</tt><big>(</big><em>namespace</em><big>)</big><a class="headerlink" href="#dragonfly.config.Section.update_namespace" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<dd><p>Section of a configuration for grouping items.</p>
+<dl class="docutils">
+<dt>Constructor argument:</dt>
+<dd><ul class="first last simple">
+<li><em>doc</em> (<em>str</em>) &#8211;
+the name of this configuration section.</li>
+</ul>
+</dd>
+</dl>
+<p>A section can contain zero or more subsections and zero or more 
+configuration items.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="dragonfly.config.Item">
 <!--[dragonfly.config.Item]-->class <tt class="descname">Item</tt><big>(</big><em>default</em>, <em>doc=None</em>, <em>namespace=None</em><big>)</big><a class="headerlink" href="#dragonfly.config.Item" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="dragonfly.config.Item.default">
-<!--[dragonfly.config.Item.default]--><tt class="descname">default</tt><a class="headerlink" href="#dragonfly.config.Item.default" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="dragonfly.config.Item.get_default">
-<!--[dragonfly.config.Item.get_default]--><tt class="descname">get_default</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.config.Item.get_default" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="dragonfly.config.Item.get_value">
-<!--[dragonfly.config.Item.get_value]--><tt class="descname">get_value</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.config.Item.get_value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="dragonfly.config.Item.set_value">
-<!--[dragonfly.config.Item.set_value]--><tt class="descname">set_value</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#dragonfly.config.Item.set_value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="dragonfly.config.Item.update_namespace">
-<!--[dragonfly.config.Item.update_namespace]--><tt class="descname">update_namespace</tt><big>(</big><em>namespace</em><big>)</big><a class="headerlink" href="#dragonfly.config.Item.update_namespace" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<dd><p>Configuration item for storing configuration settings.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>default</em> &#8211;
+the default value for this item</li>
+<li><em>doc</em> (<em>str</em>, default: <em>None</em>) &#8211;
+an optional description of this item</li>
+<li><em>namespace</em> (<em>dict</em>, default: <em>None</em>) &#8211;
+an optional namespace dictionary which will be made available
+to the Python code in the external configuration file
+during loading</li>
+</ul>
+</dd>
+</dl>
+<p>A configuration item is the object that stores the actual 
+configuration settings.  Each item has a default value, a current 
+value, an optional description, and an optional namespace.</p>
+<p>This class performs the checking of configuration values assigned 
+to it during loading of the configuration file.  The default 
+behavior of this class is to only accept values of the same Python 
+type as the item&#8217;s default value.  So, if the default value is a 
+string, then the value assigned in the configuration file must 
+also be a string.  Otherwise an exception will be raised and 
+loading will fail.</p>
+<p>Developers who want other kinds of value checking should override 
+the <a title="dragonfly.config.Item.validate" class="reference internal" href="#dragonfly.config.Item.validate"><tt class="xref docutils literal"><span class="pre">Item.validate()</span></tt></a> method of this class.</p>
 <dl class="method">
 <dt id="dragonfly.config.Item.validate">
 <!--[dragonfly.config.Item.validate]--><tt class="descname">validate</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#dragonfly.config.Item.validate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="dragonfly.config.Item.value">
-<!--[dragonfly.config.Item.value]--><tt class="descname">value</tt><a class="headerlink" href="#dragonfly.config.Item.value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Determine whether the given <em>value</em> is valid.</p>
+<p>This method performs validity checking of the configuration 
+value assigned to this item during loading of the external 
+configuration file.  If the default behavior is to raise a 
+<em>TypeError</em> if the type of the assigned value is not the same 
+as the type of the default value.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -194,11 +262,13 @@ above might look something like this:</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3>Table Of Contents</h3>
+            <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
 <li><a class="reference external" href="">Miscellaneous</a><ul>
 <li><a class="reference external" href="#configuration-toolkit">Configuration toolkit</a><ul>
 <li><a class="reference external" href="#usage-example">Usage example</a></li>
+<li><a class="reference external" href="#implementation-details">Implementation details</a></li>
+<li><a class="reference external" href="#configuration-class-reference">Configuration class reference</a></li>
 </ul>
 </li>
 </ul>
@@ -211,7 +281,7 @@ above might look something like this:</p>
             <ul class="this-page-menu">
               <li><a href="_sources/misc.txt">Show Source</a></li>
             </ul>
-            <h3>Quick search</h3>
+          <h3>Quick search</h3>
             <form class="search" action="search.html" method="get">
               <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
               <input type="hidden" name="check_keywords" value="yes" />
@@ -233,13 +303,13 @@ above might look something like this:</p>
         <li class="right" >
           <a href="clipboard.html" title="Clipboard toolkit"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Dragonfly v0.6.4rc3 documentation</a> &raquo;</li>
+        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Jan 23, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+      Last updated on Mar 07, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
     </div>
   </body>
 </html>

@@ -1,18 +1,24 @@
 ﻿
 .. _RefRuleClasses:
 
-Rule class reference
+Rule classes reference
 ============================================================================
 
-This section describes the following class:
+This section describes the following classes:
 
- * :class:`dragonfly.grammar.rule.Rule` -- the base rule class
+ * :class:`dragonfly.grammar.rule_base.Rule` -- the base rule class
+ * :class:`dragonfly.grammar.rule_compound.CompoundRule` -- a rule class
+   of which the root element is a
+   :class:`dragonfly.grammar.element_compound.Compound` element.
+ * :class:`dragonfly.grammar.rule_mapping.MappingRule` -- a rule class for
+   creating multiple spoken-form -> semantic value voice-commands.
 
 
-Rule class
-----------------------------------------------------------------------------
+.. automodule:: dragonfly.grammar.rule_base
+   :members:
 
-.. autoclass:: dragonfly.grammar.rule.Rule
-   :members: name, exported, imported, grammar,
-             process_begin, _process_begin,
-             value, process_recognition
+.. automodule:: dragonfly.grammar.rule_compound
+   :members:
+
+.. automodule:: dragonfly.grammar.rule_mapping
+   :members:
