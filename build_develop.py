@@ -40,7 +40,7 @@ def main():
     from pkg_resources import resource_filename
     setup_path = os.path.abspath(resource_filename(__name__, "setup.py"))
 
-    commands = ["develop"]
+    commands = ["egg_info", "--tag-build=.dev", "-r", "develop"]
 
     arguments = [sys.executable, setup_path] + commands
     os.chdir(os.path.dirname(setup_path))
