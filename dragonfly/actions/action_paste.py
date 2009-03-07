@@ -40,7 +40,7 @@ class Paste(DynStrActionBase):
         Paste-from-clipboard action.
 
         Constructor arguments:
-         - *content* (*str*) -- content to paste
+         - *contents* (*str*) -- contents to paste
          - *format* (*int*, Win32 clipboard format) --
            clipboard format
          - *paste* (instance derived from *ActionBase*) --
@@ -49,7 +49,7 @@ class Paste(DynStrActionBase):
            flag indicating whether the
            specification contains dynamic elements
 
-        This action inserts the given *content* into the Windows system 
+        This action inserts the given *contents* into the Windows system 
         clipboard, and then performs the *paste* action to paste it into 
         the foreground application.  By default, the *paste* action is the 
         :kbd:`Control-v` keystroke.  The default clipboard format to use 
@@ -61,37 +61,37 @@ class Paste(DynStrActionBase):
     _default_format = win32con.CF_UNICODETEXT
     _default_paste = Key("c-v/5")
 
-    def __init__(self, content, format=None, paste=None, static=False):
+    def __init__(self, contents, format=None, paste=None, static=False):
         if not format: format = self._default_format
         if not paste: paste = self._default_paste
-        if isinstance(content, basestring):
-            spec = content
-            self.content = None
+        if isinstance(contents, basestring):
+            spec = contents
+            self.contents = None
         else:
             spec = ""
-            self.content = content
+            self.contents = contents
         self.format = format
         self.paste = paste
         DynStrActionBase.__init__(self, spec, static=static)
 
     def _parse_spec(self, spec):
-        if self.content:
-            return self.content
+        if self.contents:
+            return self.contents
         else:
             return spec
 
     def _execute_events(self, events):
         original = Clipboard()
-        original.get()
+        original.copy_from_system()
 
         if self.format == win32con.CF_UNICODETEXT:
             events = unicode(events)
         elif self.format == win32con.CF_TEXT:
             events = str(events)
 
-        clipboard = Clipboard(content=events, format=self.format)
-        clipboard.set()
+        clipboard = Clipboard(contents={self.format: events})
+        clipboard.copy_to_system()
         self.paste.execute()
 
-        original.set()
+        original.copy_to_system()
         return True
