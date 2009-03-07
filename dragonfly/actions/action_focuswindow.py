@@ -49,8 +49,10 @@ class FocusWindow(ActionBase):
     """
 
     def __init__(self, executable=None, title=None):
-        self.executable = executable.lower()
-        self.title = title.lower()
+        if executable:  self.executable = executable.lower()
+        else:           self.executable = None
+        if title:       self.title = title.lower()
+        else:           self.title = None
         ActionBase.__init__(self)
 
         arguments = []
@@ -59,15 +61,21 @@ class FocusWindow(ActionBase):
         self._str = ", ".join(arguments)
 
     def _execute(self, data=None):
+        executable = self.executable
+        title = self.title
+        if data and isinstance(data, dict):
+            if executable:  executable = executable % data
+            if title:       title = title % data
+
         windows = Window.get_all_windows()
         for window in windows:
             if not window.is_visible:
                 continue
-            if self.executable:
-                if window.executable.lower().find(self.executable) == -1:
+            if executable:
+                if window.executable.lower().find(executable) == -1:
                     continue
-            if self.title:
-                if window.title.lower().find(self.title) == -1:
+            if title:
+                if window.title.lower().find(title) == -1:
                     continue
             window.set_foreground()
             return

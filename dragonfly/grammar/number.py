@@ -61,8 +61,8 @@ class RuleWrap(RuleRef):
     _next_id = 0
 
     def __init__(self, name, element):
-        rule_name = "_RuleWrap_%02d" % self._next_id
-        self.__class__._next_id += 1
+        rule_name = "_%s_%02d" % (self.__class__.__name__, RuleWrap._next_id)
+        RuleWrap._next_id += 1
         rule = Rule(name=rule_name, element=element)
         RuleRef.__init__(self, rule=rule, name=name)
 
