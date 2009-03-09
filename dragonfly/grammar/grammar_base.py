@@ -135,14 +135,7 @@ class Grammar(object):
     # Methods for populating a grammar object instance.
 
     def add_rule(self, rule):
-        """
-            Add a rule to this grammar.
-
-            **Internal:** this method is normally *not* called 
-            by the user, but instead automatically during 
-            grammar compilation.
-
-        """
+        """ Add a rule to this grammar. """
         self._log_load.debug("Grammar %s: adding rule %s."
                             % (self._name, rule.name))
 
@@ -163,15 +156,25 @@ class Grammar(object):
         self._rules.append(rule)
         rule.grammar = self
 
+    def remove_rule(self, rule):
+        """ Remove a rule from this grammar. """
+        self._log_load.debug("Grammar %s: removing rule %s."
+                            % (self._name, rule.name))
+
+        # Check for correct type.
+        if self._loaded:
+            raise GrammarError("Cannot remove rule while loaded.")
+        elif not isinstance(rule, Rule):
+            raise GrammarError("Invalid rule object: %s" % rule)
+        elif rule not in self._rules:
+            return
+
+        # Remove the rule from this grammar object's internal list.
+        self._rules.remove(rule)
+        rule.grammar = None
+
     def add_list(self, lst):
-        """
-            Add a list to this grammar.
-
-            **Internal:** this method is normally *not* called 
-            by the user, but instead automatically during 
-            grammar compilation.
-
-        """
+        """ Add a list to this grammar. """
         self._log_load.debug("Grammar %s: adding list %s."
                             % (self._name, lst.name))
 
@@ -307,6 +310,7 @@ class Grammar(object):
         self._log_load.debug("Grammar %s: unloading." % self._name)
 
         self._engine.unload_grammar(self)
+        self._loaded = False
 
     #-----------------------------------------------------------------------
     # Callback methods for handling utterances and recognitions.

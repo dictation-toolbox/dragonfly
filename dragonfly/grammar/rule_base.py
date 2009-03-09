@@ -95,6 +95,8 @@ class Rule(object):
     def _set_grammar(self, grammar):
         if self._grammar is None:
             self._grammar = grammar
+        elif grammar is None:
+            self._grammar = None
         elif grammar != self._grammar:
             raise TypeError("The grammar object a Dragonfly rule"
                 " cannot be changed after it has been set (%s != %s)."
@@ -150,7 +152,11 @@ class Rule(object):
             raise TypeError("A Dragonfly rule cannot be deactivated"
                             " before it is bound to a grammar.")
         if self._active:
-            self._grammar.deactivate_rule(self)
+            try:
+                self._grammar.deactivate_rule(self)
+            except Exception, e:
+                self._log.warning("Failed to deactivate rule: %s (%s)"
+                                  % (self, e))
             self._active = False
 
     active = property(lambda self: self._active,
