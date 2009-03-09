@@ -29,7 +29,7 @@ try:
 except ImportError:
 	natlink = None
 
-import dragonfly.log as log_
+from ..log import get_log
 
 class Word(object):
 
@@ -64,7 +64,7 @@ class Word(object):
 
 class FormatState(object):
 
-    _log = log_.get_log("dictation.formatter")
+    _log = get_log("dictation.formatter")
 
     (normal, capitalize, upper, lower, force) = range(5)
     (normal, no, double) = range(3)

@@ -71,6 +71,16 @@ class FocusWindow(ActionBase):
         for window in windows:
             if not window.is_visible:
                 continue
+            if (window.executable.endswith("natspeak.exe")
+                and window.classname == "#32770"
+                and window.get_position().dy < 50):
+                # If a window matches the above, it is very probably
+                #  the results-box of DNS.  We ignore this because
+                #  its title is the words of the last recognition,
+                #  which will often interfere with a search for
+                #  a window with a spoken title.
+                continue
+
             if executable:
                 if window.executable.lower().find(executable) == -1:
                     continue

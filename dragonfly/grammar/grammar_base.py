@@ -93,10 +93,10 @@ class Grammar(object):
     name = property(lambda self: self._name,
                     doc="A grammar's name.")
 
-    rules = property(lambda self: self._rules,
+    rules = property(lambda self: tuple(self._rules),
                      doc="List of a grammar's rules.")
 
-    lists = property(lambda self: self._lists,
+    lists = property(lambda self: tuple(self._lists),
                      doc="List of a grammar's lists.")
 
     loaded = property(lambda self: self._loaded,

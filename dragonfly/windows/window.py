@@ -25,6 +25,7 @@
 
 
 import win32gui
+import win32con
 from ctypes      import windll, pointer, c_wchar, c_ulong
 from .rectangle  import Rectangle, unit
 from .monitor    import monitors
@@ -134,6 +135,14 @@ class Window(object):
 #   is_maximized    = _win32gui_test("IsZoomed")
 
 
+    def _win32gui_show_window(state):
+        return lambda self: win32gui.ShowWindow(self._handle, state)
+
+    minimize        = _win32gui_show_window(win32con.SW_MINIMIZE)
+    maximize        = _win32gui_show_window(win32con.SW_MAXIMIZE)
+    restore         = _win32gui_show_window(win32con.SW_RESTORE)
+
+
     def _get_window_module(self):
         # Get this window's process ID.
         pid = c_ulong()
@@ -190,4 +199,6 @@ class Window(object):
     # Methods for miscellaneous window control.
 
     def set_foreground(self):
+        if self.is_minimized:
+            self.restore()
         self._set_foreground()
