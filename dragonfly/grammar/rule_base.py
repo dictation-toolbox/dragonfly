@@ -131,12 +131,15 @@ class Rule(object):
         assert self._grammar
         if self._context:
             if self._context.matches(executable, title, handle):
-                self.activate()
+                if not self._active:
+                    self.activate()
                 self._process_begin()
             else:
-                self.deactivate()
+                if self._active:
+                    self.deactivate()
         else:
-            self.activate()
+            if not self._active:
+                self.activate()
             self._process_begin()
 
     def activate(self):

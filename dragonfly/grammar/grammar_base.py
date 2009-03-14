@@ -297,6 +297,7 @@ class Grammar(object):
 
         self._engine.load_grammar(self)
         self._loaded = True
+        self._in_context = False
 
         # Update all lists loaded in this grammar.
         for lst in self._lists:
@@ -311,6 +312,7 @@ class Grammar(object):
 
         self._engine.unload_grammar(self)
         self._loaded = False
+        self._in_context = False
 
     #-----------------------------------------------------------------------
     # Callback methods for handling utterances and recognitions.
