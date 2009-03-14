@@ -64,8 +64,8 @@ class FocusWindow(ActionBase):
         executable = self.executable
         title = self.title
         if data and isinstance(data, dict):
-            if executable:  executable = executable % data
-            if title:       title = title % data
+            if executable:  executable = (executable % data).lower()
+            if title:       title = (title % data).lower()
 
         windows = Window.get_all_windows()
         for window in windows:

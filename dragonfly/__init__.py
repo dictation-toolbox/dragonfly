@@ -43,10 +43,13 @@ from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
                                 Number, NumberRef)
 
 #---------------------------------------------------------------------------
-from .actions.actions   import (ActionBase, Key, Text, Paste, Pause,
-                                Mimic, WaitWindow, FocusWindow, ActionError)
+from .actions.actions   import (ActionBase, DynStrActionBase, ActionError,
+                                Key, Text, Mouse, Paste, Pause,
+                                Mimic, WaitWindow, FocusWindow)
 from .actions.keyboard  import Typeable, Keyboard
 from .actions.typeables import typeables
+from .actions.sendinput import (KeyboardInput, MouseInput, HardwareInput,
+                                make_input_array, send_input_array)
 
 #---------------------------------------------------------------------------
 from .windows.point     import Point

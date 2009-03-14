@@ -45,13 +45,31 @@ class Word(object):
         )
     _flag_bits = dict(zip(_flag_names, [1 << index for index in xrange(32)]))
 
+    _replacements = {
+                     "one":      ("1", 0x00000400),
+                     "two":      ("2", 0x00000400),
+                     "three":    ("3", 0x00000400),
+                     "four":     ("4", 0x00000400),
+                     "five":     ("5", 0x00000400),
+                     "six":      ("6", 0x00000400),
+                     "seven":    ("7", 0x00000400),
+                     "eight":    ("8", 0x00000400),
+                     "nine":     ("9", 0x00000400),
+                    }
+
     def __init__(self, word):
+        if word in self._replacements:
+            word, self._info = self._replacements[word]
+        else:
+            self._info = natlink.getWordInfo(word)
         self._word = word
-        self._info = natlink.getWordInfo(word)
         index = word.rfind("\\")
         if index == -1:
-            self.written = word; self.spoken = word
-        else:   self.written = word[:index]; self.spoken = word[index+1:]
+            self.written = word
+            self.spoken = word
+        else:
+            self.written = word[:index]
+            self.spoken = word[index+1:]
         for name, bit in Word._flag_bits.items():
             self.__dict__[name.replace(" ", "_")] = ((self._info & bit) != 0)
 

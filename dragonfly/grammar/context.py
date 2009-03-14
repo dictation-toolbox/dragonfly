@@ -79,7 +79,7 @@ class AppContext(Context):
     #-----------------------------------------------------------------------
     # Initialization methods.
 
-    def __init__(self, executable=None, title=None):
+    def __init__(self, executable=None, title=None, exclude=False):
         Context.__init__(self)
 
         if isinstance(executable, str):
@@ -98,7 +98,10 @@ class AppContext(Context):
             raise TypeError("title argument must be a string or None;"
                         " received %r" % title)
 
-        self._str = "%s, %s" % ( self._executable, self._title)
+        self._exclude = bool(exclude)
+
+        self._str = "%s, %s, %s" % (self._executable, self._title,
+                                    self._exclude)
 
     #-----------------------------------------------------------------------
     # Matching methods.
@@ -107,14 +110,18 @@ class AppContext(Context):
         executable = executable.lower()
         title = title.lower()
 
-        if self._executable and executable.find(self._executable) == -1:
-            if self._log_match: self._log_match.debug("%s:"
+        if self._executable:
+            found = (executable.find(self._executable) != -1)
+            if self._exclude == found:
+                self._log_match.debug("%s:"
                         " No match, executable doesn't match." % (self))
-            return False
-        if self._title and title.find(self._title) == -1:
-            if self._log_match: self._log_match.debug("%s:"
+                return False
+        if self._title:
+            found = (title.find(self._title) != -1)
+            if self._exclude == found:
+                self._log_match.debug("%s:"
                         " No match, title doesn't match." % (self))
-            return False
+                return False
 
         if self._log_match: self._log_match.debug("%s: Match." % (self))
         return True

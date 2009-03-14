@@ -27,8 +27,8 @@
 import win32gui
 import ctypes
 
-import dragonfly.log as log_
-from dragonfly.windows.rectangle import Rectangle
+from ..log       import get_log
+from .rectangle  import Rectangle
 
 
 #---------------------------------------------------------------------------
@@ -42,7 +42,7 @@ monitors = []
 
 class Monitor(object):
 
-    _log = log_.get_log("monitor.init")
+    _log = get_log("monitor.init")
 
     #-----------------------------------------------------------------------
     # Methods for initialization and introspection.
