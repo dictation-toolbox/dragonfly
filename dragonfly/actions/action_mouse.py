@@ -18,20 +18,13 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-
-#m("<0,3>").execute()
-#from time import sleep; from dragonfly import Mouse as m
-#sleep(2);m("(-5,0.5), middle:down, <0,3>").execute()
-
-
-
-
 """
 Mouse action
 ============================================================================
 
-This section describes the :class:`Text` action object. This type of 
-action is used for typing text into the foreground application.
+This section describes the :class:`Mouse` action object. This type of 
+action is used for controlling the mouse cursor and clicking mouse
+button.
 
 """
 
@@ -89,7 +82,6 @@ class _Move(_EventBase):
             distance = self.horizontal * rectangle.dx
         else:
             distance = self.horizontal
-        print 'h',horizontal, distance
         horizontal += distance
 
         if self.from_top:   vertical = rectangle.y1
@@ -100,7 +92,6 @@ class _Move(_EventBase):
             distance = self.vertical
         vertical += distance
 
-        print "moving:", horizontal, vertical
         self._move_mouse(horizontal, vertical)
 
     def _move_mouse(self, horizontal, vertical):
@@ -111,8 +102,8 @@ class _Move(_EventBase):
         vertical   = int(float(vertical)   / vertres * 0x10000)
 
         flags = win32con.MOUSEEVENTF_MOVE | win32con.MOUSEEVENTF_ABSOLUTE
-        null = pointer(c_ulong(0))
-        input = MouseInput(horizontal, vertical, 0, flags, 0, null)
+        zero = pointer(c_ulong(0))
+        input = MouseInput(horizontal, vertical, 0, flags, 0, zero)
         array = make_input_array([input])
         send_input_array(array)
 
@@ -120,14 +111,12 @@ class _Move(_EventBase):
 class _MoveWindow(_Move):
 
     def execute(self, window):
-        print self.__class__.__name__
         self._move_relative(window.get_position())
 
 
 class _MoveScreen(_Move):
 
     def execute(self, window):
-        print self.__class__.__name__
         self._move_relative(monitors[0].rectangle)
 
 
@@ -140,32 +129,25 @@ class _MoveRelative(_Move):
 
     def execute(self, window):
         position = get_cursor_position()
-        print position
         if not position:
             raise ActionError("Failed to retrieve cursor position.")
         horizontal = position[0] + self.horizontal
         vertical   = position[1] + self.vertical
-        print self.__class__.__name__, "move relative", position, "->", (horizontal, vertical)
-        print 'pos', (horizontal, vertical)
         self._move_mouse(horizontal, vertical)
-#        result = set_cursor_position(horizontal, vertical)
-#        if not result:
-#            raise ActionError("Failed to set cursor position.")
 
 
 class _Button(_EventBase):
 
     def __init__(self, *flags):
         _EventBase.__init__(self)
-        null = pointer(c_ulong(0))
-        print "flags", flags
-        flags = [win32con.MOUSEEVENTF_LEFTDOWN, win32con.MOUSEEVENTF_LEFTUP]
-        inputs = [MouseInput(0, 0, 0, flag, 0, null) for flag in flags]
-        self._array = make_input_array(inputs)
+        self._flags = flags
 
     def execute(self, window):
-        print self.__class__.__name__, "buttons", self._array
-        send_input_array(self._array)
+        zero = pointer(c_ulong(0))
+        inputs = [MouseInput(0, 0, 0, flag, 0, zero)
+                  for flag in self._flags]
+        array = make_input_array(inputs)
+        send_input_array(array)
 
 
 class _Pause(_EventBase):
@@ -175,7 +157,6 @@ class _Pause(_EventBase):
         self._interval = interval
 
     def execute(self, window):
-        print self.__class__.__name__, "sleeping", self._interval
         time.sleep(self._interval)
 
 
@@ -208,12 +189,10 @@ class Mouse(DynStrActionBase):
                         handled = True
                         break
                 except Exception, e:
-                    print 'argh', e
                     continue
             if not handled:
                 raise ActionError("Invalid mouse spec: %r (in %r)"
                                   % (part, spec))
-        print events
         return events
 
     def _parse_position_pair(self, spec):
@@ -351,7 +330,6 @@ class Mouse(DynStrActionBase):
             else:
                 items.append(new_item)
 
-        print "%r -> %r" % (spec, items)
         return items
 
 
@@ -361,5 +339,4 @@ class Mouse(DynStrActionBase):
         """ Send events. """
         window = Window.get_foreground()
         for event in events:
-            print 'exec', event
             event.execute(window)
