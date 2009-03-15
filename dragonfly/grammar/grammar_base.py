@@ -300,6 +300,10 @@ class Grammar(object):
         self._in_context = False
 
         # Update all lists loaded in this grammar.
+        for rule in self._rules:
+            if rule.active != False:
+                rule.activate()
+        # Update all lists loaded in this grammar.
         for lst in self._lists:
             lst._update()
 

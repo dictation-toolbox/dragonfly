@@ -69,23 +69,38 @@ class Sapi5Compiler(CompilerBase):
 
         for rule in grammar.rules:
             self._compile_rule(rule, grammar, grammar_handle)
+        grammar_handle.Rules.Commit()
 
         return grammar_handle
 
     def _compile_rule(self, rule, grammar, grammar_handle):
         self._log.debug("%s: Compiling rule %s." % (self, rule.name))
+
+        # Determine whether this rule has already been compiled.
         rule_handle = grammar_handle.Rules.FindRule(rule.name)
         if rule_handle:
             self._log.debug("%s: Already compiled rule %s." % (self, rule.name))
             return
 
+        # Generate a new unique rule ID within this grammar.
+        if not hasattr(grammar, "_sapi5_next_rule_id"):
+            grammar._sapi5_next_rule_id = 1
+        rule_id = grammar._sapi5_next_rule_id
+        grammar._sapi5_next_rule_id += 1
+
+        # Determine the flags to set when adding this rule.
         flags = 0
         if rule.exported:
             flags |= constants.SRATopLevel
-        rule_handle = grammar_handle.Rules.Add(rule.name, flags, 0)
+
+        # Add this rule, and compile its root element.
+        rule_handle = grammar_handle.Rules.Add(rule.name, flags, rule_id)
+        self._log.debug("%s: Compiling rule %r (id %r)." % (self, rule_handle.Name, rule_handle.Id))
         self.compile_element(rule.element, rule_handle.InitialState, None, grammar, grammar_handle)
 
         return
+
+        # Below is for debugging purposes only.
         stack = [(collection_iter(rule_handle.InitialState.Transitions), None)]
         while stack:
             self._log.error("%s: Stack len %s." % (self, len(stack)))

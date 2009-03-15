@@ -26,6 +26,71 @@ This section describes the :class:`Mouse` action object. This type of
 action is used for controlling the mouse cursor and clicking mouse
 button.
 
+
+Mouse specification format
+............................................................................
+
+The *spec* argument passed to the :class:`Mouse` constructor specifies 
+which mouse events will be emulated.  It is a string consisting of one or 
+more comma-separated elements.  Each of these elements has one of the 
+following possible formats:
+
+Mouse button-press action:
+   *keyname* [``:`` *repeat*] [``/`` *pause*]
+
+ - *keyname* -- Specifies which mouse button to click:
+
+    - ``left`` -- left mouse button key
+    - ``middle`` -- middle mouse button key
+    - ``right`` -- right mouse button key
+
+ - *repeat* -- Specifies how many times the button should be clicked:
+
+    - ``0`` -- don't click the button, this is a no-op
+    - ``1`` -- normal button click
+    - ``2`` -- double-click
+    - ``3`` -- triple-click
+
+ - *pause* --
+   Specifies how long to pause *after* clicking the button.  The value
+   should be an integer giving in hundredths of a second.  For example,
+   ``/100`` would mean one second, and ``/50`` half a second.
+
+Mouse button-hold or button-release action:
+   *keyname* ``:`` *hold-or-release* [``/`` *pause*]
+
+ - *keyname* -- Specifies which mouse button to click; same as above.
+
+ - *hold-or-release* --
+   Specified whether the button will be held down or released:
+
+    - ``down`` -- hold the button down
+    - ``up`` -- release the button
+
+ - *pause* --
+   Specifies how long to pause *after* clicking the button; same as above.
+
+
+
+Example mouse actions
+............................................................................
+
+The following code types the text "Hello world!" into the foreground 
+application: ::
+
+    Key("H, e, l, l, o, space, w, o, r, l, d, exclamation").execute()
+
+The following code is a bit more useful, as it saves the current file with 
+the name "dragonfly.txt" (this works for many English-language 
+applications): ::
+
+    action = Key("a-f, a/50") + Text("dragonfly.txt") + Key("enter")
+    action.execute()
+
+
+Mouse class reference
+............................................................................
+
 """
 
 import time

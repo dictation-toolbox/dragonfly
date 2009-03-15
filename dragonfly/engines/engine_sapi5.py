@@ -79,24 +79,13 @@ class Sapi5Engine(EngineBase):
         self.activate_grammar(grammar)
         for l in grammar.lists:
             l._update()
-        for r in grammar.rules:
-            self.activate_rule(r, grammar)
 
     def activate_grammar(self, grammar):
         """ Activate the given *grammar*. """
         self._log.debug("Activating grammar %s." % grammar.name)
         grammar_handle = self._get_grammar_wrapper(grammar).handle
         grammar_handle.State = constants.SGSEnabled
-
-        # Turn on dictation during loading of the grammar.
-        grammar_handle.DictationSetState(constants.SGDSActive)
-
-        for rule_handle in collection_iter(grammar_handle.Rules):
-            grammar_handle.CmdSetRuleState(rule_handle.Name, constants.SGDSActive)
-
-        # Turn off dictation after loading the grammar.
-        grammar_handle.DictationSetState(constants.SGDSInactive)
-
+ 
     def deactivate_grammar(self, grammar):
         """ Deactivate the given *grammar*. """
         self._log.debug("Deactivating grammar %s." % grammar.name)
@@ -108,20 +97,30 @@ class Sapi5Engine(EngineBase):
         self._log.debug("Activating rule %s in grammar %s."
                         % (rule.name, grammar.name))
         grammar_handle = self._get_grammar_wrapper(grammar).handle
-        grammar_handle.Rules.Commit()
-        attributes = grammar_handle.Rules.FindRule(rule.name).Attributes
+#        grammar_handle.Rules.Commit()
         grammar_handle.CmdSetRuleState(rule.name, constants.SGDSActive)
-        grammar_handle.Rules.CommitAndSave()
+#        grammar_handle.Rules.CommitAndSave()
+#        grammar_handle.Rules.Commit()
+
+        rule_handle = grammar_handle.Rules.FindRule(rule.name)
+        self._log.debug("Activating rule %r (id %r)." % (rule_handle.Name, rule_handle.Id))
+        self._log.debug("Activating rule %r -> %r." % (rule_handle.Id, constants.SGDSActive))
+#        grammar_handle.CmdSetRuleIdState(rule_handle.Id, constants.SGDSActive)
 
     def deactivate_rule(self, rule, grammar):
         """ Deactivate the given *rule*. """
         self._log.debug("Deactivating rule %s in grammar %s."
                         % (rule.name, grammar.name))
         grammar_handle = self._get_grammar_wrapper(grammar).handle
-        grammar_handle.Rules.Commit()
-        attributes = grammar_handle.Rules.FindRule(rule.name).Attributes
+#        grammar_handle.Rules.Commit()
         grammar_handle.CmdSetRuleState(rule.name, constants.SGDSInactive)
-        grammar_handle.Rules.CommitAndSave()
+#        grammar_handle.Rules.CommitAndSave()
+#        grammar_handle.Rules.Commit()
+
+        rule_handle = grammar_handle.Rules.FindRule(rule.name)
+        self._log.debug("Deactivating rule %r (id %r)." % (rule_handle.Name, rule_handle.Id))
+        self._log.debug("Deactivating rule %r -> %r." % (rule_handle.Id, constants.SGDSInactive))
+#        grammar_handle.CmdSetRuleIdState(rule_handle.Id, constants.SGDSInactive)
 
     def update_list(self, lst, grammar):
         grammar_handle = self._get_grammar_wrapper(grammar).handle
@@ -210,8 +209,8 @@ class GrammarWrapper(object):
             rule_name = phrase_info.Rule.Name
 
             #---------------------------------------------------------------
-            speaker = win32com.client.Dispatch("SAPI.SpVoice")
-            speaker.Speak('you said '+phrase_info.GetText())
+#            speaker = win32com.client.Dispatch("SAPI.SpVoice")
+#            speaker.Speak('you said '+phrase_info.GetText())
 
             #---------------------------------------------------------------
             # Build a list of rule names for each element.

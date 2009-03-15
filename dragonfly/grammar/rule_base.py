@@ -70,7 +70,8 @@ class Rule(object):
         self._element = element
         self._imported = imported
         self._exported = exported
-        self._active = False
+        self._active = None
+        self._enabled = True
         assert isinstance(context, context_.Context) or context is None
         self._context = context
         self._grammar = None
@@ -89,6 +90,29 @@ class Rule(object):
                         doc="This rule's exported status.  (Read-only)")
     imported = property(lambda self: self._imported,
                         doc="This rule's imported status.  (Read-only)")
+
+    def enable(self):
+        """
+            Enable this grammar so that it is active to receive 
+            recognitions.
+
+        """
+        self._enabled = True
+        self.activate()
+
+    def disable(self):
+        """
+            Disable this grammar so that it is not active to 
+            receive recognitions.
+
+        """
+        self._enabled = False
+        if self._active:
+            self.deactivate()
+
+    enabled = property(lambda self: self._enabled,
+                doc = "Whether a grammar is active to receive"
+                      " recognitions or not.")
 
     def _get_grammar(self):
         return self._grammar
@@ -129,6 +153,10 @@ class Rule(object):
 
         """
         assert self._grammar
+        if not self._enabled:
+            if self._active:
+                self.deactivate()
+            return
         if self._context:
             if self._context.matches(executable, title, handle):
                 if not self._active:
@@ -146,6 +174,10 @@ class Rule(object):
         if not self._grammar:
             raise TypeError("A Dragonfly rule cannot be activated"
                             " before it is bound to a grammar.")
+        if not self._enabled:
+            if self._active:
+                self.deactivate()
+            return
         if not self._active:
             self._grammar.activate_rule(self)
             self._active = True
