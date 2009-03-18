@@ -49,6 +49,7 @@ class KeyboardInput(Structure):
                      win32con.VK_END,
                      win32con.VK_PRIOR,
                      win32con.VK_NEXT,
+                     win32con.VK_INSERT,
                      win32con.VK_LWIN,
                     )
 
