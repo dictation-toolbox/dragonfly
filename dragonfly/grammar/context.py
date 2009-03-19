@@ -19,32 +19,84 @@
 #
 
 """
-    This file implements the Context class for limiting under what
-    circumstances of grammars and rules are active.
+Context classes
+============================================================================
+
+Dragonfly uses context classes to define when grammars and 
+rules should be active.  A context is an object with a 
+:meth:`Context.matches` method which returns *True* if the 
+system is currently within that context, and *False* if it 
+is not.
+
+The following context classes are available:
+
+ - :class:`Context` --
+   the base class from which all other context classes are derived
+ - :class:`AppContext` --
+   class which based on the application context, i.e. foreground window
+   executable, title, and handle
+
+
+Logical operations
+----------------------------------------------------------------------------
+
+It is possible to modify and combine the behavior of contexts using the
+Python's standard logical operators:
+
+:logical AND: ``context1 & context2`` -- *all* contexts must match
+:logical OR: ``context1 | context2`` --
+   *one or more* of the contexts must match
+:logical NOT: ``~context1`` -- *inversion* of when the context matches
+
+For example, to create a context which will match when 
+Firefox is in the foreground, but only if Google Reader is 
+*not* being viewed::
+
+   firefox_context = AppContext(executable="firefox")
+   reader_context = AppContext(executable="firefox", title="Google Reader")
+   firefox_but_not_reader_context = firefox_context & ~reader_context
+
+
+Class reference
+----------------------------------------------------------------------------
+
 """
 
-
-try:
-	import natlinkutils
-except ImportError:
-	natlinkutils = None
-
 import copy
-import dragonfly.log as log_
+from dragonfly import get_log
 
 
 #---------------------------------------------------------------------------
 
 class Context(object):
+    """
+        Base class for other context classes.
 
-    _log_match = log_.get_log("context.match")
+        This base class implements some basic 
+        infrastructure, including that's required for 
+        logical operations on context objects.  Derived 
+        classes should at least do the following things:
+
+         - During initialization, set *self._str* to some descriptive,
+           human readable value.  This attribute is used by the
+           ``__str__()`` method.
+         - Overload the :meth:`Context.matches` method to implement
+           the logic to determine when to be active.
+
+        The *self._log* logger objects should be used in methods of 
+        derived classes for logging purposes.  It is a standard logger 
+        object from the *logger* module in the Python standard library.
+
+    """
+
+    _log = get_log("context.match")
+    _log_match = _log
 
     #-----------------------------------------------------------------------
     # Initialization and aggregation methods.
 
     def __init__(self):
         self._str = ""
-        self._following = []
 
     def __str__(self):
         return "%s(%s)" % (self.__class__.__name__, self._str)
@@ -52,29 +104,100 @@ class Context(object):
     def copy(self):
         return copy_.deepcopy(self)
 
-    def append(self, other):
-        assert isinstance(other, ActionBase)
-        self._following.append(other)
+    #-----------------------------------------------------------------------
+    # Logical operations.
 
-    def __add__(self, other):
-        copy = self.copy()
-        copy.append(other)
-        return copy
+    def __and__(self, other):
+        return LogicAndContext(self, other)
 
-    def __iadd__(self, other):
-        self.append(other)
-        return self
+    def __or__(self, other):
+        return LogicOrContext(self, other)
+
+    def __invert__(self):
+        return LogicNotContext(self)
 
     #-----------------------------------------------------------------------
     # Matching methods.
 
     def matches(self, executable, title, handle):
+        """
+            Indicate whether the system is currently within this context.
+
+            Arguments:
+             - *executable* (*str*) --
+               path name to the executable of the foreground application
+             - *title* (*str*) -- title of the foreground window
+             - *handle* (*int*) -- window handle to the foreground window
+
+            The default implementation of this method simply returns *True*.
+
+            .. note::
+
+               This is generally the method which developers should
+               overload to give derived context classes custom
+               functionality.
+
+        """
         return True
+
+
+#---------------------------------------------------------------------------
+# Wrapper contexts for combining contexts in logical structures.
+
+class LogicAndContext(Context):
+
+    def __init__(self, *children):
+        self._children = children
+        self._str = ", ".join(str(child) for child in children)
+
+    def matches(self, executable, title, handle):
+        for child in self._children:
+            if not child.matches(executable, title, handle):
+                return False
+        return True
+
+
+class LogicOrContext(Context):
+
+    def __init__(self, *children):
+        self._children = children
+        self._str = ", ".join(str(child) for child in children)
+
+    def matches(self, executable, title, handle):
+        for child in self._children:
+            if child.matches(executable, title, handle):
+                return True
+        return False
+
+
+class LogicNotContext(Context):
+
+    def __init__(self, child):
+        self._child = child
+        self._str = str(child)
+
+    def matches(self, executable, title, handle):
+        return not self._child.matches(executable, title, handle)
 
 
 #---------------------------------------------------------------------------
 
 class AppContext(Context):
+    """
+        Context class using foreground application details.
+
+        This class determines whether the foreground window meets
+        certain requirements.  Which requirements must be met for this
+        context to match are determined by the constructor arguments.
+
+        Constructor arguments:
+         - *executable* (*str*) --
+           (part of) the path name of the foreground application's
+           executable; case insensitive
+         - *title* (*str*) --
+           (part of) the title of the foreground window; case insensitive
+
+    """
 
     #-----------------------------------------------------------------------
     # Initialization methods.

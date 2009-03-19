@@ -2,25 +2,24 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Miscellaneous &mdash; Dragonfly v0.6.5beta1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.6.5beta1',
-        COLLAPSE_MODINDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+          URL_ROOT:    '',
+          VERSION:     '0.6.5beta1',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="contents" title="Global table of contents" href="contents.html" />
+    <link rel="index" title="Global index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Dragonfly v0.6.5beta1 documentation" href="index.html" />
-    <link rel="prev" title="Clipboard toolkit" href="clipboard.html" /> 
+    <link rel="prev" title="Context classes" href="context.html" />
   </head>
   <body>
     <div class="related">
@@ -33,11 +32,11 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="clipboard.html" title="Clipboard toolkit"
+          <a href="context.html" title="Context classes"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li>
       </ul>
-    </div>  
+    </div>
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
@@ -75,7 +74,7 @@ within one or more sections</li>
 <h3>Usage example<a class="headerlink" href="#usage-example" title="Permalink to this headline">¶</a></h3>
 <p>The main program using Dragonfly&#8217;s configuration toolkit would
 normally look something like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">dragonfly.all</span> <span class="kn">import</span> <span class="n">Config</span><span class="p">,</span> <span class="n">Section</span><span class="p">,</span> <span class="n">Item</span>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">dragonfly.all</span> <span class="kn">import</span> <span class="n">Config</span><span class="p">,</span> <span class="n">Section</span><span class="p">,</span> <span class="n">Item</span>
 
 <span class="c"># *Setup* phase.</span>
 <span class="c"># This defines a configuration object with the name &quot;Example</span>
@@ -100,7 +99,6 @@ normally look something like this:</p>
 <span class="k">print</span> <span class="s">&quot;The color of life is&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">color</span>
 <span class="k">print</span> <span class="s">&quot;You must eat an </span><span class="si">%s</span><span class="s"> every day&quot;</span> <span class="o">%</span> <span class="n">config</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">fruit</span>
 </pre></div>
-</div>
 <p>The configuration defined above is basically complete.  Every
 configuration item has a default value and can be accessed by
 the program.  But if the user would like to modify some or all
@@ -111,11 +109,10 @@ This gives its author powerful tools for determining the desired
 configuration settings.  However, it will usually consist merely 
 of variable assignments. The configuration file for the program 
 above might look something like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Test section</span>
+<div class="highlight"><pre><span class="c"># Test section</span>
 <span class="n">test</span><span class="o">.</span><span class="n">fruit</span> <span class="o">=</span> <span class="s">&quot;banana&quot;</span>   <span class="c"># Bananas have more potassium.</span>
 <span class="n">test</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s">&quot;white&quot;</span>    <span class="c"># I like light colors.</span>
 </pre></div>
-</div>
 </div>
 <div class="section" id="implementation-details">
 <h3>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h3>
@@ -262,7 +259,7 @@ as the type of the default value.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
+            <h3>Table Of Contents</h3>
             <ul>
 <li><a class="reference external" href="">Miscellaneous</a><ul>
 <li><a class="reference external" href="#configuration-toolkit">Configuration toolkit</a><ul>
@@ -276,12 +273,12 @@ as the type of the default value.</p>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="clipboard.html" title="previous chapter">Clipboard toolkit</a></p>
+            <p class="topless"><a href="context.html" title="previous chapter">Context classes</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/misc.txt">Show Source</a></li>
             </ul>
-          <h3>Quick search</h3>
+            <h3>Quick search</h3>
             <form class="search" action="search.html" method="get">
               <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
               <input type="hidden" name="check_keywords" value="yes" />
@@ -301,15 +298,15 @@ as the type of the default value.</p>
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="clipboard.html" title="Clipboard toolkit"
+          <a href="context.html" title="Context classes"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li>
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Mar 07, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+      Last updated on Mar 19, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
     </div>
   </body>
 </html>
