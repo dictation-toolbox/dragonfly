@@ -24,9 +24,8 @@ Rule class
 
 """
 
-
-import types
-import dragonfly.log as log_
+from ..log import get_log
+from .context import Context
 
 
 class Rule(object):
@@ -38,12 +37,13 @@ class Rule(object):
         construct of this rule.
 
         Constructor arguments:
-         - *name* (*str*) -- name of this rule
+         - *name* (*str*) -- name of this rule.  If *None*, a unique
+           name will automatically be generated.
          - *element* (*Element*) --
            root element for this rule
          - *context* (*Context*, default: *None*) --
            context within which to be active.  If *None*, the rule will
-           always be active.
+           always be active when its grammar is active.
          - *imported* (boolean, default: *False*) --
            if true, this rule is imported from outside its grammar
          - *exported* (boolean, default: *False*) --
@@ -57,22 +57,35 @@ class Rule(object):
 
     """
 
+    _log_load   = get_log("grammar.load")
+    _log_eval   = get_log("grammar.eval")
+    _log_proc   = get_log("grammar.process")
+    _log        = get_log("rule")
+    _log_begin  = get_log("rule")
 
-    _log_load = log_.get_log("grammar.load")
-    _log_eval = log_.get_log("grammar.eval")
-    _log_proc = log_.get_log("grammar.process")
-    _log      = log_.get_log("rule")
-    _log_begin = log_.get_log("rule")
+    # Counter ID used for anonymous rules to give them a unique name.
+    _next_anonymous_id = 0
 
-    def __init__(self, name, element, context=None,
-                    imported=False, exported=False):
-        self._name = name
+    def __init__(self, name=None, element=None, context=None,
+                 imported=False, exported=False):
+        # The default argument for *element* is NOT acceptable; this
+        #  construction is used for backwards compatibility and argument
+        #  order.
+        assert element is not None
         self._element = element
         self._imported = imported
         self._exported = exported
+
+        # Generate a unique name for this rule if none is given.
+        if not name:
+            name = "_anonrule_%03d_%s" % (self.__class__.__name__,
+                                          Rule._next_anonymous_id)
+            Rule._next_anonymous_id += 1
+        self._name = name
+
         self._active = None
         self._enabled = True
-        assert isinstance(context, context_.Context) or context is None
+        assert isinstance(context, Context) or context is None
         self._context = context
         self._grammar = None
 
@@ -312,9 +325,3 @@ class ImportedRule(Rule):
 
     def dependencies(self):
         return ()
-
-
-#---------------------------------------------------------------------------
-# Delayed imports.
-
-import dragonfly.grammar.context as context_
