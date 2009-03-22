@@ -78,8 +78,8 @@ class Rule(object):
 
         # Generate a unique name for this rule if none is given.
         if not name:
-            name = "_anonrule_%03d_%s" % (self.__class__.__name__,
-                                          Rule._next_anonymous_id)
+            name = "_anonrule_%03d_%s" % (Rule._next_anonymous_id,
+                                          self.__class__.__name__)
             Rule._next_anonymous_id += 1
         self._name = name
 

@@ -59,9 +59,10 @@ class Grammar(object):
 
     """
 
-    _log_load = get_log("grammar.load")
-    _log_begin = get_log("grammar.begin")
-    _log_results = get_log("grammar.results")
+    _log_load     = get_log("grammar.load")
+    _log_begin    = get_log("grammar.begin")
+    _log_results  = get_log("grammar.results")
+    _log          = get_log("grammar")
 
 
     #-----------------------------------------------------------------------
