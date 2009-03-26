@@ -210,9 +210,15 @@ class Compound(elements_.Alternative):
     _log = log_.get_log("compound.parse")
     _parser = parser_.Parser(stuff, _log)
 
-    def __init__(self, spec, extras={}, actions={}, name=None, value=None, elements={}):
+    def __init__(self, spec, extras=None, actions=None, name=None,
+                 value=None, value_func=None, elements=None):
         self._spec = spec
         self._value = value
+        self._value_func = value_func
+
+        if extras   is None:   extras   = {}
+        if actions  is None:   actions  = {}
+        if elements is None:   elements = {}
 
         # Convert extras argument from sequence to mapping.
         if isinstance(extras, (tuple, list)):
@@ -239,6 +245,7 @@ class Compound(elements_.Alternative):
             extras.update(elements)
         elif elements:
             extras = elements
+        self._extras = extras
 
         # This solution is non-ideal as "stuff" is a global instance.
         stuff.set_elements(extras)
@@ -257,10 +264,17 @@ class Compound(elements_.Alternative):
         return "%s(%s)" % (self.__class__.__name__, arguments)
 
     def value(self, node):
-        if self._value is None:
-            elements_.Alternative.value(self, node)
-        else:
+        if self._value_func is not None:
+            extras = {}
+            for name, element in self._extras.iteritems():
+                extra_node = node.get_child_by_name(name, shallow=True)
+                if not extra_node: continue
+                extras[name] = extra_node.value()
+            return self._value_func(node, extras)
+        elif self._value is not None:
             return self._value
+        else:
+            elements_.Alternative.value(self, node)
 
 
 #---------------------------------------------------------------------------
@@ -268,19 +282,20 @@ class Compound(elements_.Alternative):
 
 class Choice(elements_.Alternative):
 
-    def __init__(self, name, choices):
+    def __init__(self, name, choices, extras=None):
 
         # Argument type checking.
-        assert isinstance(name, str)
+        assert isinstance(name, str) or name is None
         assert isinstance(choices, dict)
         for k, v in choices.iteritems():
             assert isinstance(k, str)
 
         # Construct children from the given choice keys and values.
         self._choices = choices
+        self._extras = extras
         children = []
         for k, v in choices.iteritems():
-            child = Compound(spec=k, value=v)
+            child = Compound(spec=k, value=v, extras=extras)
             children.append(child)
 
         # Initialize super class.
