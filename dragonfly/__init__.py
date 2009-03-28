@@ -44,7 +44,7 @@ from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
 
 #---------------------------------------------------------------------------
 from .actions.actions   import (ActionBase, DynStrActionBase, ActionError,
-                                Key, Text, Mouse, Paste, Pause,
+                                Repeat, Key, Text, Mouse, Paste, Pause,
                                 Mimic, WaitWindow, FocusWindow)
 from .actions.keyboard  import Typeable, Keyboard
 from .actions.typeables import typeables

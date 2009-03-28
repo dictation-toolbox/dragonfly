@@ -25,15 +25,15 @@ This file implements the SAPI 5 engine back-end.
 
 #---------------------------------------------------------------------------
 
-import win32com.client
-import win32com.client.gencache
-from win32com.client import constants
-from pywintypes import com_error
+from win32com.client           import Dispatch, getevents, constants
+from win32com.client.gencache  import EnsureDispatch
+from pywintypes                import com_error
 
-import dragonfly.grammar.state as state_
-from dragonfly.engines.engine_base import EngineBase
-from dragonfly.engines.compiler_sapi5 import Sapi5Compiler
-from dragonfly.windows.window import Window
+from .engine_base              import EngineBase
+from .compiler_sapi5           import Sapi5Compiler
+from .dictation_sapi5          import Sapi5DictationContainer
+from ..grammar.state           import State
+from ..windows.window          import Window
 
 
 #---------------------------------------------------------------------------
@@ -44,11 +44,13 @@ class Sapi5Engine(EngineBase):
         Speech recognition engine back-end for SAPI 5.
     """
 
+    DictationContainer = Sapi5DictationContainer
+
     @classmethod
     def is_available(cls):
         """ Check whether this engine is available. """
         try:
-            win32com.client.Dispatch("SAPI.SpSharedRecognizer")
+            Dispatch("SAPI.SpSharedRecognizer")
         except com_error:
             return False
         return True
@@ -57,11 +59,11 @@ class Sapi5Engine(EngineBase):
     #-----------------------------------------------------------------------
 
     def __init__(self):
-        win32com.client.gencache.EnsureDispatch("SAPI.SpSharedRecognizer")
-        win32com.client.gencache.EnsureDispatch("SAPI.SpVoice")
-        self._recognizer = win32com.client.Dispatch("SAPI.SpSharedRecognizer")
-        self._speaker = win32com.client.Dispatch("SAPI.SpVoice")
-        self._compiler = Sapi5Compiler()
+        EnsureDispatch("SAPI.SpSharedRecognizer")
+        EnsureDispatch("SAPI.SpVoice")
+        self._recognizer  = Dispatch("SAPI.SpSharedRecognizer")
+        self._speaker     = Dispatch("SAPI.SpVoice")
+        self._compiler    = Sapi5Compiler()
 
 
     #-----------------------------------------------------------------------
@@ -143,16 +145,6 @@ class Sapi5Engine(EngineBase):
 
 
     #-----------------------------------------------------------------------
-    # Methods for handling dictation elements.
-
-    def format_dictation_node(self, node):
-        results = node.full_results()
-        self._log.debug("%s: format the dictation of the %r."
-                        % (self, results))
-        return " ".join(r[2] for r in results)
-
-
-    #-----------------------------------------------------------------------
     # Miscellaneous methods.
 
     def mimic(self, words):
@@ -191,7 +183,7 @@ class GrammarWrapper(object):
         self.handle = handle
         self.engine = engine
 
-        base = win32com.client.getevents("SAPI.SpSharedRecoContext")
+        base = getevents("SAPI.SpSharedRecoContext")
         class ContextEvents(base): pass
         c = ContextEvents(context)
         c.OnRecognition = self.recognition_callback
@@ -204,12 +196,12 @@ class GrammarWrapper(object):
 
     def recognition_callback(self, StreamNumber, StreamPosition, RecognitionType, Result):
         try:
-            newResult = win32com.client.Dispatch(Result)
+            newResult = Dispatch(Result)
             phrase_info = newResult.PhraseInfo
             rule_name = phrase_info.Rule.Name
 
             #---------------------------------------------------------------
-#            speaker = win32com.client.Dispatch("SAPI.SpVoice")
+#            speaker = Dispatch("SAPI.SpVoice")
 #            speaker.Speak('you said '+phrase_info.GetText())
 
             #---------------------------------------------------------------
@@ -261,7 +253,7 @@ class GrammarWrapper(object):
             #---------------------------------------------------------------
             # Attempt to parse the recognition.
 
-            s = state_.State(results, rule_set, self.engine)
+            s = State(results, rule_set, self.engine)
             for r in self.grammar._rules:
                 if r.name != rule_name:
                     continue

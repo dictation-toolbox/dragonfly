@@ -861,10 +861,7 @@ class Dictation(ElementBase):
         return
 
     def value(self, node):
-        if self._format_words:
-            return node.engine.format_dictation_node(node)
-        else:
-            return node.words()
+        return node.engine.DictationContainer(node.words())
 
 
 #---------------------------------------------------------------------------

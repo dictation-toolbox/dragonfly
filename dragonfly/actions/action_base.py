@@ -55,19 +55,19 @@ class ActionBase(object):
         self._following = []
         self._data = None
         self._bound = False
-        self._repeat = 1
+        self._repeat_factors = []
 
     def __str__(self):
         s = "%s(%s)" % (self.__class__.__name__, self._str)
         if self._following:
             actions = [s] + [str(a) for a in self._following]
             s = " + ".join(actions)
-        if self._repeat != 1:
+        if self._repeat_factors:
             if self._following:
                 s = "(" + s + ")"
-            s = "%s*%d" % (s, self._repeat)
+            s = "%s * (%s)" % (s, self._repeat_factors)
         if self._bound and self._data:
-            if self._following and self._repeat == 1:
+            if self._following and not self._repeat_factors:
                 s = "(" + s + ")"
             s = "%s %% %r" % (s, self._data)
         return s
@@ -89,18 +89,15 @@ class ActionBase(object):
         return self
 
     def __mul__(self, other):
-        if not isinstance(other, int):
-            raise TypeError("Invalid multiplier type: %r (must be an int)"
-                            % other)
         copy = self.copy()
-        copy._repeat *= other
+        copy *= other
         return copy
 
     def __imul__(self, other):
-        if not isinstance(other, int):
-            raise TypeError("Invalid multiplier type: %r (must be an int)"
-                            % other)
-        self._repeat *= other
+        if not isinstance(other, (int, Repeat)):
+            raise TypeError("Invalid multiplier type: %r"
+                            " (must be an int or a Repeat object)" % other)
+        self._repeat_factors.append(other)
         return self
 
     #-----------------------------------------------------------------------
@@ -120,7 +117,13 @@ class ActionBase(object):
             data = self._data
         self._log_exec.debug("Executing action: %s" % self.copy_bind(data))
         try:
-            for index in range(self._repeat):
+            repeat = 1
+            for factor in self._repeat_factors:
+                if isinstance(factor, int):
+                    repeat *= factor
+                elif isinstance(factor, Repeat):
+                    repeat *= factor.factor(data)
+            for index in range(repeat):
                 if self._execute(data) == False:
                     raise ActionError(str(self))
                 for a in self._following:
@@ -197,3 +200,23 @@ class DynStrActionBase(ActionBase):
     def _execute_events(self, events):
         pass
 
+
+#---------------------------------------------------------------------------
+
+class Repeat(object):
+
+    def __init__(self, count=None, extra=None):
+        if count is not None:  self._count = count
+        else:                  self._count = 0
+        self._extra = extra
+
+    def factor(self, data):
+        count = self._count
+        if self._extra:
+            try:
+                additional = data[self._extra]
+            except KeyError:
+                raise ActionError("No extra repeat factor found for name %r"
+                                  % self._extra)
+            count += additional
+        return count

@@ -20,14 +20,14 @@
 
 """
 This file implements the Natlink engine class.
+
 """
-
-
-#---------------------------------------------------------------------------
 
 natlink = None
 import win32com.client
-from dragonfly.engines.engine_base import EngineBase
+
+from .engine_base import EngineBase
+from .dictation_natlink import NatlinkDictationContainer
 
 
 #---------------------------------------------------------------------------
@@ -37,6 +37,8 @@ class NatlinkEngine(EngineBase):
     """
         Speech recognition engine back-end for Natlink.
     """
+
+    DictationContainer = NatlinkDictationContainer
 
     @classmethod
     def is_available(cls):
@@ -152,22 +154,11 @@ class NatlinkEngine(EngineBase):
 
 
     #-----------------------------------------------------------------------
-    # Methods for handling dictation elements.
-
-    def format_dictation_node(self, node):
-        """ Format capitalization and spacing of words of *node*. """
-        words = node.words()
-        formatter = wordinfo.FormatState()
-        formatted = formatter.format_words(words)
-        return formatted
-
-
-    #-----------------------------------------------------------------------
     #  Miscellaneous methods.
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        self._natlink.recognitionMimic(words)
+        self._natlink.recognitionMimic(list(words))
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """

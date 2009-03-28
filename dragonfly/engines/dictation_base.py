@@ -1,4 +1,4 @@
-#
+﻿#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -19,21 +19,31 @@
 #
 
 """
-This file offers access to various action classes.
-
-This is the file normally imported by end-user code which needs
-to use the dragonfly action system.
+Dictation container base class.
 
 """
 
 
-from .action_base         import (ActionBase, DynStrActionBase,
-                                  Repeat, ActionError)
-from .action_key          import Key
-from .action_text         import Text
-from .action_mouse        import Mouse
-from .action_paste        import Paste
-from .action_pause        import Pause
-from .action_mimic        import Mimic
-from .action_waitwindow   import WaitWindow
-from .action_focuswindow  import FocusWindow
+#---------------------------------------------------------------------------
+# Dictation base class -- base class for SR engine-specific containers
+#  of dictated words.
+
+class DictationContainerBase(object):
+
+    def __init__(self, words):
+        self._words = tuple(words)
+        self._formatted = None
+
+    def __str__(self):
+        if self._formatted is None:
+            self._formatted = self.format()
+        return self._formatted
+
+    @property
+    def words(self):
+        """ Sequence of the words forming this dictation. """
+        return self._words
+
+    def format(self):
+        """ Format and return this dictation. """
+        return " ".join(self._words)

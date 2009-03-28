@@ -1,4 +1,4 @@
-#
+﻿#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -19,21 +19,22 @@
 #
 
 """
-This file offers access to various action classes.
-
-This is the file normally imported by end-user code which needs
-to use the dragonfly action system.
+Dictation container for the SAPI5 engine.
 
 """
 
+from ..log import get_log
+from .dictation_base import DictationContainerBase
 
-from .action_base         import (ActionBase, DynStrActionBase,
-                                  Repeat, ActionError)
-from .action_key          import Key
-from .action_text         import Text
-from .action_mouse        import Mouse
-from .action_paste        import Paste
-from .action_pause        import Pause
-from .action_mimic        import Mimic
-from .action_waitwindow   import WaitWindow
-from .action_focuswindow  import FocusWindow
+
+#---------------------------------------------------------------------------
+# SAPI5 dictation class -- container for a series of dictated words.
+
+class Sapi5DictationContainer(DictationContainerBase):
+
+    def __init__(self, words):
+        DictationContainerBase.__init__(self, words=words)
+
+    def format(self):
+        """ Format and return this dictation. """
+        return " ".join(self._words)
