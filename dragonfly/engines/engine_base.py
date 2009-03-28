@@ -19,18 +19,18 @@
 #
 
 """
-    This file implements the engine base class.
+This file implements the engine base class.
+
 """
 
-
-import dragonfly.log as log_
+from ..log import get_log
 
 
 #---------------------------------------------------------------------------
 
 class EngineBase(object):
 
-    _log = log_.get_log("engine")
+    _log = get_log("engine")
 
     @classmethod
     def is_available(cls):
@@ -49,6 +49,16 @@ class EngineBase(object):
 
     def update_list(self, lst, grammar):
         raise NotImplementedError("Engine %s not implemented." % self)
+
+
+    #-----------------------------------------------------------------------
+    # Recognition observer methods.
+
+    def register_recognition_observer(self, observer):
+        self._recognition_observer_manager.register(observer)
+
+    def unregister_recognition_observer(self, observer):
+        self._recognition_observer_manager.unregister(observer)
 
 
     #-----------------------------------------------------------------------

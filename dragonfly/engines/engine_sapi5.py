@@ -65,6 +65,8 @@ class Sapi5Engine(EngineBase):
         self._speaker     = Dispatch("SAPI.SpVoice")
         self._compiler    = Sapi5Compiler()
 
+        self._recognition_observer_manager = None
+
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.

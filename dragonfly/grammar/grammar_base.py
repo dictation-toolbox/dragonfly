@@ -83,7 +83,10 @@ class Grammar(object):
         self._engine = get_engine()
 
     def __del__(self):
-        self.unload()
+        try:
+            self.unload()
+        except Exception, e:
+            pass
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.

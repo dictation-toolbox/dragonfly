@@ -38,6 +38,7 @@ from .grammar.elements  import (ElementBase, Sequence, Alternative,
 from .grammar.context   import Context, AppContext
 from .grammar.list      import ListBase, List, DictList
 from .grammar.wordinfo  import Word, FormatState
+from .grammar.recobs    import RecognitionObserver
 
 from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
                                 Number, NumberRef)

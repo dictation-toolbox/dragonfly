@@ -26,8 +26,9 @@ This file implements the Natlink engine class.
 natlink = None
 import win32com.client
 
-from .engine_base import EngineBase
-from .dictation_natlink import NatlinkDictationContainer
+from .engine_base        import EngineBase
+from .dictation_natlink  import NatlinkDictationContainer
+from .recobs_natlink     import NatlinkRecObsManager
 
 
 #---------------------------------------------------------------------------
@@ -54,8 +55,10 @@ class NatlinkEngine(EngineBase):
 
     def __init__(self):
         global natlink
-        self._natlink = None
 
+        EngineBase.__init__(self)
+
+        self._natlink = None
         if natlink:
             self._natlink = natlink
         else:
@@ -67,11 +70,17 @@ class NatlinkEngine(EngineBase):
             natlink = natlink_
             self._natlink = natlink_
 
+        self._recognition_observer_manager = NatlinkRecObsManager(self)
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.
 
     def load_grammar(self, grammar):
+        """ Load the given *grammar* into natlink. """
+        self.load_natlink_grammar(grammar)
+
+    def load_natlink_grammar(self, grammar, all_results=False,
+                             hypothesis=False):
         """ Load the given *grammar* into natlink. """
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
@@ -92,13 +101,12 @@ class NatlinkEngine(EngineBase):
         c = NatlinkCompiler()
         (compiled_grammar, rule_names) = c.compile_grammar(grammar)
         grammar._rule_names = rule_names
-        all_results = False
-        hypothesis = False
 
         try:
             grammar_object.load(compiled_grammar, all_results, hypothesis)
         except self._natlink.NatError, e:
-            self._log.warning("Engine %s: failed to load: %s." % (self, e))
+            self._log.warning("%s: failed to load grammar %r: %s."
+                              % (self, grammar.name, e))
             return
 
         self._set_grammar_wrapper(grammar, wrapper)
@@ -154,7 +162,7 @@ class NatlinkEngine(EngineBase):
 
 
     #-----------------------------------------------------------------------
-    #  Miscellaneous methods.
+    # Miscellaneous methods.
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
@@ -212,6 +220,10 @@ class GrammarWrapper(object):
         else:                   words_rules = words
         NatlinkEngine._log.debug("Grammar %s: received recognition %r."
                                  % (self.grammar._name, words))
+
+        if hasattr(self.grammar, "process_results"):
+            if not self.grammar.process_results(words, results):
+                return
 
         # Iterates through this grammar's rules, attempting
         #  to decode each.  If successful, called that rule's
