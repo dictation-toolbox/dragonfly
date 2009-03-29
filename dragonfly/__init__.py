@@ -38,7 +38,8 @@ from .grammar.elements  import (ElementBase, Sequence, Alternative,
 from .grammar.context   import Context, AppContext
 from .grammar.list      import ListBase, List, DictList
 from .grammar.wordinfo  import Word, FormatState
-from .grammar.recobs    import RecognitionObserver
+from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
+                                PlaybackHistory)
 
 from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
                                 Number, NumberRef)
@@ -46,7 +47,7 @@ from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
 #---------------------------------------------------------------------------
 from .actions.actions   import (ActionBase, DynStrActionBase, ActionError,
                                 Repeat, Key, Text, Mouse, Paste, Pause,
-                                Mimic, WaitWindow, FocusWindow)
+                                Mimic, Playback, WaitWindow, FocusWindow)
 from .actions.keyboard  import Typeable, Keyboard
 from .actions.typeables import typeables
 from .actions.sendinput import (KeyboardInput, MouseInput, HardwareInput,

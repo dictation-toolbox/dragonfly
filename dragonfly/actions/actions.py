@@ -35,5 +35,6 @@ from .action_mouse        import Mouse
 from .action_paste        import Paste
 from .action_pause        import Pause
 from .action_mimic        import Mimic
+from .action_playback     import Playback
 from .action_waitwindow   import WaitWindow
 from .action_focuswindow  import FocusWindow

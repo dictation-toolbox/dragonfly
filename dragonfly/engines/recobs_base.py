@@ -36,17 +36,20 @@ class RecObsManagerBase(object):
     def __init__(self, engine):
         self._engine = engine
         self._observers = []
+        self._observer_ids = set()
 
     def register(self, observer):
-        if observer in self._observers:
+        if id(observer) in self._observer_ids:
             return
         elif not self._observers:
             self._activate()
         self._observers.append(observer)
+        self._observer_ids.add(id(observer))
 
     def unregister(self, observer):
         try:
-            self.observers.remove(observer)
+            self._observers.remove(observer)
+            self._observer_ids.remove(id(observer))
         except ValueError:
             pass
         else:
