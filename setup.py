@@ -19,7 +19,7 @@
 #
 
 """
-Dragonfly -- a speech recognition framework
+Dragonfly -- a speech recognition extension library
 ============================================================================
 
 Dragonfly offers a powerful Python interface to speech 
@@ -102,7 +102,7 @@ except ImportError:
 setup(
       name          = "dragonfly",
       version       = release,
-      description   = "Speech recognition framework",
+      description   = "Speech recognition extension library",
       author        = "Christo Butcher",
       author_email  = "dist.dragonfly@twizzy.biz",
       license       = "LGPL",

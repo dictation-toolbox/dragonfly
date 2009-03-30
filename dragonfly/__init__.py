@@ -47,7 +47,8 @@ from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
 #---------------------------------------------------------------------------
 from .actions.actions   import (ActionBase, DynStrActionBase, ActionError,
                                 Repeat, Key, Text, Mouse, Paste, Pause,
-                                Mimic, Playback, WaitWindow, FocusWindow)
+                                Mimic, Playback, WaitWindow, FocusWindow,
+                                Function)
 from .actions.keyboard  import Typeable, Keyboard
 from .actions.typeables import typeables
 from .actions.sendinput import (KeyboardInput, MouseInput, HardwareInput,

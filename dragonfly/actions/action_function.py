@@ -19,46 +19,45 @@
 #
 
 """
-Playback action
+Function action
 ============================================================================
 
 """
 
-from time              import sleep
+from inspect           import getargspec
 from .action_base      import ActionBase, ActionError
-from ..engines.engine  import get_engine
 
 
 #---------------------------------------------------------------------------
 
-class Playback(ActionBase):
+class Function(ActionBase):
     """
-        Playback a series of recognitions.
+        Call a function with the recognized extras as keyword arguments.
 
     """
 
-    def __init__(self, series, speed=1):
+    def __init__(self, function):
         ActionBase.__init__(self)
-        self._series = tuple(series)
-        self._speed = float(speed)
-        self._str = str([w for w, i in self._series])
+        self._function = function
+        self._str = function.__name__
 
-    def _get_speed(self):
-        return self._speed
-    def _set_speed(self, speed):
-        self._speed = float(speed)
-    speed = property(fget=_get_speed, fset=_set_speed,
-                     doc="Factor to speed up playback.")
+        (args, varargs, varkw, defaults) = getargspec(self._function)
+        if varkw:  self._filter_keywords = False
+        else:      self._filter_keywords = True
+        self._valid_keywords = set(args)
 
     def _execute(self, data=None):
-        engine = get_engine()
+        if not isinstance(data, dict):
+            data = {}
+        else:
+            data = dict(data)
 
-        # Mimic the series of recognitions.
-        for words, interval in self._series:
-            self._log.debug("Mimicking recognition: %r" % (words,))
-            try:
-                engine.mimic(words)
-                if interval and self._speed:
-                    sleep(interval / self._speed)
-            except Exception, e:
-                raise ActionError("Playback failed: %s" % e)
+        if self._filter_keywords:
+            invalid_keywords = set(data.keys()) - self._valid_keywords
+            for key in invalid_keywords:
+                del data[key]
+
+        try:
+            self._function(**data)
+        except Exception, e:
+            raise ActionError("%s: %s" % (self, e))

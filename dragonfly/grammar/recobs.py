@@ -95,18 +95,22 @@ class PlaybackHistory(RecognitionHistory):
         return (words, time.time())
 
     def __getitem__(self, key):
-        self._log.error("getting the item for key %s" % key)
         result = RecognitionHistory.__getitem__(self, key)
-        if (len(result) == 1
-            or len(result) == 2 and isinstance(result[1], float)):
+        if len(result) == 1:
+            self._log.error("series: %r" % [(result[0][0], 0)])
+            return Playback([(result[0][0], 0)])
+        elif len(result) == 2 and isinstance(result[1], float):
+            self._log.error("series: %r" % [(result[0], 0)])
             return Playback([(result[0], 0)])
         elif len(result) == 0:
+            self._log.error("series: %r" % [()])
             return Playback(())
         else:
             pairs = [(w1, t2 - t1)
                      for ((w1, t1), (w2, t2))
                      in zip(result[:-1], result[1:])]
             pairs.append((result[-1][0], 0))
+            self._log.error("series: %r" % pairs)
             return Playback(pairs)
 
     def __getslice__(self, i, j):

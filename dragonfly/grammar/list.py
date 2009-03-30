@@ -85,9 +85,11 @@ class ListBase(object):
 
     def _update(self):
         invalid = [i for i in self if not isinstance(i, self._valid_types)]
-        if invalid: raise TypeError("Dragonfly lists can only contain"
-                                    " string objects.")
-        if self._grammar: self._grammar.update_list(self)
+        if invalid:
+            raise TypeError("Dragonfly lists can only contain"
+                            " string objects.")
+        if self._grammar:
+            self._grammar.update_list(self)
 
     #-----------------------------------------------------------------------
     # Accessor for the grammar to retrieve the list items.
