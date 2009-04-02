@@ -224,8 +224,12 @@ class Config(object):
         object.__setattr__(self, "config_path", path)
 
         if os.path.exists(path):
-            self.load_from_file(path)
+            namespace = self.load_from_file(path)
+        else:
+            namespace = None
         self._set_mode(_done)
+
+        return namespace
 
     def load_from_file(self, path):
         namespace = dict(self._sections)
@@ -263,6 +267,8 @@ class Config(object):
             lines = "\n".join(formatted).splitlines()
             for line in lines:
                 self._log.error("    " + line)
+
+        return namespace
 
     _comment_indent = " "*20
     _comment_wrapper = textwrap.TextWrapper(

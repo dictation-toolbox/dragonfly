@@ -46,6 +46,7 @@ class NatlinkRecObsManager(RecObsManagerBase):
     def _deactivate(self):
         if self._grammar:
             self._grammar.unload()
+        self._grammar = None
 
 
 #---------------------------------------------------------------------------

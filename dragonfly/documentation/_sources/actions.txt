@@ -96,7 +96,16 @@ Action class reference
 .. automodule:: dragonfly.actions.action_paste
    :members:
 
+.. automodule:: dragonfly.actions.action_mouse
+   :members:
+
+.. automodule:: dragonfly.actions.action_function
+   :members:
+
 .. automodule:: dragonfly.actions.action_mimic
+   :members:
+
+.. automodule:: dragonfly.actions.action_playback
    :members:
 
 .. automodule:: dragonfly.actions.action_waitwindow

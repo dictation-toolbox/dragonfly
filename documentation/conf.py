@@ -36,6 +36,7 @@ today_fmt = '%B %d, %Y'
 exclude_trees = []
 add_module_names = False
 pygments_style = 'sphinx'
+autoclass_content = "both"
 
 
 #---------------------------------------------------------------------------

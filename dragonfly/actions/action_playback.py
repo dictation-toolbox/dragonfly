@@ -22,6 +22,23 @@
 Playback action
 ============================================================================
 
+The :class:`Playback` action mimics a sequence of recognitions.  This is 
+for example useful for repeating a series of prerecorded or predefined 
+voice-commands.
+
+This class could for example be used to reload with one single action::
+
+    action = Playback([
+                       (["focus", "Natlink"], 1.0),
+                       (["File"], 0.5),
+                       (["Reload"], 0.0),
+                     ])
+    action.execute()
+
+
+Class reference
+----------------------------------------------------------------------------
+
 """
 
 from time              import sleep
@@ -32,12 +49,21 @@ from ..engines.engine  import get_engine
 #---------------------------------------------------------------------------
 
 class Playback(ActionBase):
-    """
-        Playback a series of recognitions.
-
-    """
+    """ Playback a series of recognitions. """
 
     def __init__(self, series, speed=1):
+        """
+            Constructor arguments:
+             - *series* (sequence of 2-tuples) --
+               the recognitions to playback.  Each element must be a
+               2-tuple of the form *(["words", "two", "mimic"], interval)*,
+               where *interval* is a float giving the number of seconds to
+               pause after the given words are mimicked.
+             - *speed* (*float*) --
+               the factor by which to speed up playback.  The intervals
+               after each mimic are divided by this number.
+    
+        """
         ActionBase.__init__(self)
         self._series = tuple(series)
         self._speed = float(speed)

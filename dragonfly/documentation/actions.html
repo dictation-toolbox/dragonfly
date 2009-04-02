@@ -2,26 +2,25 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Actions sub-package &mdash; Dragonfly v0.6.5beta1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.6.5beta1',
-        COLLAPSE_MODINDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+          URL_ROOT:    '',
+          VERSION:     '0.6.5beta1',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="contents" title="Global table of contents" href="contents.html" />
+    <link rel="index" title="Global index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Dragonfly v0.6.5beta1 documentation" href="index.html" />
     <link rel="next" title="Windows sub-package" href="windows.html" />
-    <link rel="prev" title="Engines sub-package" href="engines.html" /> 
+    <link rel="prev" title="Engines sub-package" href="engines.html" />
   </head>
   <body>
     <div class="related">
@@ -39,9 +38,9 @@
         <li class="right" >
           <a href="engines.html" title="Engines sub-package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li>
       </ul>
-    </div>  
+    </div>
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
@@ -73,7 +72,7 @@ multiple actions and to duplicate an action.</p>
 <h2>Basic examples<a class="headerlink" href="#basic-examples" title="Permalink to this headline">¶</a></h2>
 <p>The code below shows the basic usage of Dragonfly action objects.  They
 can be created, combined, executed, etc.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">dragonfly.all</span> <span class="kn">import</span> <span class="n">Key</span><span class="p">,</span> <span class="n">Text</span>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">dragonfly.all</span> <span class="kn">import</span> <span class="n">Key</span><span class="p">,</span> <span class="n">Text</span>
 
 <span class="n">a1</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;up, left, down, right&quot;</span><span class="p">)</span>   <span class="c"># Define action a1.</span>
 <span class="n">a1</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>                        <span class="c"># Send the keystrokes.</span>
@@ -94,7 +93,6 @@ can be created, combined, executed, etc.</p>
 
 <span class="n">Key</span><span class="p">(</span><span class="s">&quot;w-b, right/25:5&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>    <span class="c"># Define and execute together.</span>
 </pre></div>
-</div>
 </div>
 <div class="section" id="combining-voice-commands-and-actions">
 <h2>Combining voice commands and actions<a class="headerlink" href="#combining-voice-commands-and-actions" title="Permalink to this headline">¶</a></h2>
@@ -234,26 +232,22 @@ cause an error.  It harmlessly does nothing.</p>
 <span id="refkeyspecexamples"></span><h4>Example key actions<a class="headerlink" href="#example-key-actions" title="Permalink to this headline">¶</a></h4>
 <p>The following code types the text &#8220;Hello world!&#8221; into the foreground 
 application:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;H, e, l, l, o, space, w, o, r, l, d, exclamation&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;H, e, l, l, o, space, w, o, r, l, d, exclamation&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
-</div>
 <p>The following code is a bit more useful, as it saves the current file with 
 the name &#8220;dragonfly.txt&#8221; (this works for many English-language 
 applications):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-f, a/50&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Text</span><span class="p">(</span><span class="s">&quot;dragonfly.txt&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;enter&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-f, a/50&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Text</span><span class="p">(</span><span class="s">&quot;dragonfly.txt&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Key</span><span class="p">(</span><span class="s">&quot;enter&quot;</span><span class="p">)</span>
 <span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
-</div>
 <p>The following code selects the next four lines by holding down the <em>shift</em> 
 key, slowly moving down 4 lines, and then releasing the <em>shift</em> key:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;shift:down, down/25:4, shift:up&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;shift:down, down/25:4, shift:up&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
-</div>
 <p>The following code locks the screen by pressing the <em>Windows</em> key together 
 with the <em>l</em>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;w-l&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<div class="highlight"><pre><span class="n">Key</span><span class="p">(</span><span class="s">&quot;w-l&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
-</div>
 </div>
 <div class="section" id="key-class-reference">
 <h4>Key class reference<a class="headerlink" href="#key-class-reference" title="Permalink to this headline">¶</a></h4>
@@ -343,6 +337,177 @@ is the <em>Unicode</em> text format.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="mouse-action">
+<h3>Mouse action<a class="headerlink" href="#mouse-action" title="Permalink to this headline">¶</a></h3>
+<p>This section describes the <a title="dragonfly.actions.action_mouse.Mouse" class="reference internal" href="#dragonfly.actions.action_mouse.Mouse"><tt class="xref docutils literal"><span class="pre">Mouse</span></tt></a> action object. This type of 
+action is used for controlling the mouse cursor and clicking mouse
+button.</p>
+<div class="section" id="example-mouse-actions">
+<h4>Example mouse actions<a class="headerlink" href="#example-mouse-actions" title="Permalink to this headline">¶</a></h4>
+<p>The following code...:</p>
+<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Mouse</span><span class="p">(</span><span class="s">&quot;...&quot;</span><span class="p">)</span>
+<span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="mouse-specification-format">
+<h4>Mouse specification format<a class="headerlink" href="#mouse-specification-format" title="Permalink to this headline">¶</a></h4>
+<p>The <em>spec</em> argument passed to the <a title="dragonfly.actions.action_mouse.Mouse" class="reference internal" href="#dragonfly.actions.action_mouse.Mouse"><tt class="xref docutils literal"><span class="pre">Mouse</span></tt></a> constructor specifies 
+which mouse events will be emulated.  It is a string consisting of one or 
+more comma-separated elements.  Each of these elements has one of the 
+following possible formats:</p>
+<p>Mouse movement actions:</p>
+<blockquote>
+<ul class="simple">
+<li>location is absolute on the entire desktop:
+<tt class="docutils literal"><span class="pre">[</span></tt> <em>number</em> <tt class="docutils literal"><span class="pre">,</span></tt> <em>number</em> <tt class="docutils literal"><span class="pre">]</span></tt></li>
+<li>location is relative to the foreground window:
+<tt class="docutils literal"><span class="pre">(</span></tt> <em>number</em> <tt class="docutils literal"><span class="pre">,</span></tt> <em>number</em> <tt class="docutils literal"><span class="pre">)</span></tt></li>
+<li>move the cursor relative to its current position:
+<tt class="docutils literal"><span class="pre">&lt;</span></tt> <em>pixels</em> <tt class="docutils literal"><span class="pre">,</span></tt> <em>pixels</em> <tt class="docutils literal"><span class="pre">&gt;</span></tt></li>
+</ul>
+</blockquote>
+<p>In the above specifications, the <em>number</em> and <em>pixels</em> have the 
+following meanings:</p>
+<blockquote>
+<ul>
+<li><p class="first"><em>number</em> &#8211; can specify a number of pixels or a fraction of
+the reference window or desktop.  For example:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">(10,</span> <span class="pre">10)</span></tt> &#8211; 10 pixels to the right and down from the
+foreground window&#8217;s left-top corner</li>
+<li><tt class="docutils literal"><span class="pre">(0.5,</span> <span class="pre">0.5)</span></tt> &#8211; center of the foreground window</li>
+</ul>
+</blockquote>
+</li>
+<li><p class="first"><em>pixels</em> &#8211; specifies the number of pixels</p>
+</li>
+</ul>
+</blockquote>
+<dl class="docutils">
+<dt>Mouse button-press action:</dt>
+<dd><blockquote class="first">
+<em>keyname</em> [<tt class="docutils literal"><span class="pre">:</span></tt> <em>repeat</em>] [<tt class="docutils literal"><span class="pre">/</span></tt> <em>pause</em>]</blockquote>
+<ul class="last">
+<li><p class="first"><em>keyname</em> &#8211; Specifies which mouse button to click:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">left</span></tt> &#8211; left mouse button key</li>
+<li><tt class="docutils literal"><span class="pre">middle</span></tt> &#8211; middle mouse button key</li>
+<li><tt class="docutils literal"><span class="pre">right</span></tt> &#8211; right mouse button key</li>
+</ul>
+</blockquote>
+</li>
+<li><p class="first"><em>repeat</em> &#8211; Specifies how many times the button should be clicked:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">0</span></tt> &#8211; don&#8217;t click the button, this is a no-op</li>
+<li><tt class="docutils literal"><span class="pre">1</span></tt> &#8211; normal button click</li>
+<li><tt class="docutils literal"><span class="pre">2</span></tt> &#8211; double-click</li>
+<li><tt class="docutils literal"><span class="pre">3</span></tt> &#8211; triple-click</li>
+</ul>
+</blockquote>
+</li>
+<li><p class="first"><em>pause</em> &#8211;
+Specifies how long to pause <em>after</em> clicking the button.  The value
+should be an integer giving in hundredths of a second.  For example,
+<tt class="docutils literal"><span class="pre">/100</span></tt> would mean one second, and <tt class="docutils literal"><span class="pre">/50</span></tt> half a second.</p>
+</li>
+</ul>
+</dd>
+<dt>Mouse button-hold or button-release action:</dt>
+<dd><blockquote class="first">
+<em>keyname</em> <tt class="docutils literal"><span class="pre">:</span></tt> <em>hold-or-release</em> [<tt class="docutils literal"><span class="pre">/</span></tt> <em>pause</em>]</blockquote>
+<ul class="last">
+<li><p class="first"><em>keyname</em> &#8211; Specifies which mouse button to click; same as above.</p>
+</li>
+<li><p class="first"><em>hold-or-release</em> &#8211;
+Specified whether the button will be held down or released:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">down</span></tt> &#8211; hold the button down</li>
+<li><tt class="docutils literal"><span class="pre">up</span></tt> &#8211; release the button</li>
+</ul>
+</blockquote>
+</li>
+<li><p class="first"><em>pause</em> &#8211;
+Specifies how long to pause <em>after</em> clicking the button; same as above.</p>
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="mouse-class-reference">
+<h4>Mouse class reference<a class="headerlink" href="#mouse-class-reference" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="dragonfly.actions.action_mouse.Mouse">
+<!--[dragonfly.actions.action_mouse.Mouse]-->class <tt class="descname">Mouse</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mouse.Mouse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Action that sends mouse events.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>spec</em> (<em>str</em>) &#8211; the mouse actions to execute</li>
+<li><em>static</em> (boolean) &#8211;
+if <em>True</em>, do not dynamically interpret <em>spec</em>
+when executing this action</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="function-action">
+<h3>Function action<a class="headerlink" href="#function-action" title="Permalink to this headline">¶</a></h3>
+<p>The <a title="dragonfly.actions.action_function.Function" class="reference internal" href="#dragonfly.actions.action_function.Function"><tt class="xref docutils literal"><span class="pre">Function</span></tt></a> action wraps a callable, optionally with some 
+default keyword argument values.  On execution, the execution data 
+(commonly containing the recognition extras) are combined with the 
+default argument values (if present) to form the arguments with which 
+the callable will be called.</p>
+<p>Simple usage:</p>
+<div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&quot;count:&quot;</span><span class="p">,</span> <span class="n">count</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mf">2</span><span class="p">})</span>
+<span class="go">count: 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mf">2</span><span class="p">,</span> <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;vanilla&quot;</span><span class="p">})</span>
+<span class="go">count: 2          # Additional keyword arguments are ignored.</span>
+</pre></div>
+<p>Usage with default arguments:</p>
+<div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">flavor</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&quot;count:&quot;</span><span class="p">,</span> <span class="n">count</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&quot;flavor:&quot;</span><span class="p">,</span> <span class="n">flavor</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">flavor</span><span class="o">=</span><span class="s">&quot;spearmint&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mf">2</span><span class="p">})</span>
+<span class="go">count: 2</span>
+<span class="go">flavor: spearmint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mf">2</span><span class="p">,</span> <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;vanilla&quot;</span><span class="p">})</span>
+<span class="go">count: 2</span>
+<span class="go">flavor: vanilla</span>
+</pre></div>
+<div class="section" id="class-reference">
+<h4>Class reference<a class="headerlink" href="#class-reference" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="dragonfly.actions.action_function.Function">
+<!--[dragonfly.actions.action_function.Function]-->class <tt class="descname">Function</tt><big>(</big><em>function</em>, <em>**defaults</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_function.Function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call a function with extra keyword arguments.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>function</em> (callable) &#8211;
+the function to call when this action is executed</li>
+<li>defaults &#8211;
+default keyword-values for the arguments with which
+the function will be called</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="mimic-action">
 <h3>Mimic action<a class="headerlink" href="#mimic-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
@@ -351,24 +516,22 @@ is the <em>Unicode</em> text format.</p>
 <dd><p>Mimic recognition action.</p>
 <p>The constructor arguments are the words which will be mimicked. 
 These should be passed as a variable argument list.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">,</span> <span class="s">&quot;world&quot;</span><span class="p">,</span> <span class="s">r&quot;!\exclamation-mark&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">,</span> <span class="s">&quot;world&quot;</span><span class="p">,</span> <span class="s">r&quot;!\exclamation-mark&quot;</span><span class="p">)</span>
 <span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
-</div>
 <p>If an error occurs during mimicking the given recognition, then an 
 <em>ActionError</em> is raised.  A common error is that the engine does 
 not know the given words and can therefore not recognize them. 
 For example, the following attempts to mimic recognition of <em>one 
 single word</em> including a space and an exclamation-mark; this will 
 almost certainly fail:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello world!&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>   <span class="c"># Will raise ActionError.</span>
+<div class="highlight"><pre><span class="n">Mimic</span><span class="p">(</span><span class="s">&quot;hello world!&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>   <span class="c"># Will raise ActionError.</span>
 </pre></div>
-</div>
 <p>The constructor accepts the optional <em>extra</em> keyword argument, and 
 uses this to retrieve dynamic data from the extras associated with 
 the recognition.  For example, this can be used as follows to 
 implement dynamic mimicking:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">ExampleRule</span><span class="p">(</span><span class="n">MappingRule</span><span class="p">):</span>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">ExampleRule</span><span class="p">(</span><span class="n">MappingRule</span><span class="p">):</span>
     <span class="n">mapping</span>  <span class="o">=</span> <span class="p">{</span>
                 <span class="s">&quot;mimic recognition &lt;text&gt; [&lt;n&gt; times]&quot;</span><span class="p">:</span>
                     <span class="n">Mimic</span><span class="p">(</span><span class="n">extra</span><span class="o">=</span><span class="s">&quot;text&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">Repeat</span><span class="p">(</span><span class="n">extra</span><span class="o">=</span><span class="s">&quot;n&quot;</span><span class="p">),</span>
@@ -381,13 +544,54 @@ implement dynamic mimicking:</p>
                 <span class="s">&quot;n&quot;</span><span class="p">:</span> <span class="mf">1</span><span class="p">,</span>
                <span class="p">}</span>
 </pre></div>
-</div>
 <p>The example above will allow the user to speak <strong>&#8220;mimic 
 recognition hello world! 3 times&#8221;</strong>, which would result in the 
 exact same output as if the user had spoken <strong>&#8220;hello world!&#8221;</strong> 
 three times in a row.</p>
 </dd></dl>
 
+</div>
+<div class="section" id="playback-action">
+<h3>Playback action<a class="headerlink" href="#playback-action" title="Permalink to this headline">¶</a></h3>
+<p>The <a title="dragonfly.actions.action_playback.Playback" class="reference internal" href="#dragonfly.actions.action_playback.Playback"><tt class="xref docutils literal"><span class="pre">Playback</span></tt></a> action mimics a sequence of recognitions.  This is 
+for example useful for repeating a series of prerecorded or predefined 
+voice-commands.</p>
+<p>This class could for example be used to reload with one single action:</p>
+<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Playback</span><span class="p">([</span>
+                   <span class="p">([</span><span class="s">&quot;focus&quot;</span><span class="p">,</span> <span class="s">&quot;Natlink&quot;</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">),</span>
+                   <span class="p">([</span><span class="s">&quot;File&quot;</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">),</span>
+                   <span class="p">([</span><span class="s">&quot;Reload&quot;</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">),</span>
+                 <span class="p">])</span>
+<span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+<div class="section" id="id1">
+<h4>Class reference<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="dragonfly.actions.action_playback.Playback">
+<!--[dragonfly.actions.action_playback.Playback]-->class <tt class="descname">Playback</tt><big>(</big><em>series</em>, <em>speed=1</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_playback.Playback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Playback a series of recognitions.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>series</em> (sequence of 2-tuples) &#8211;
+the recognitions to playback.  Each element must be a
+2-tuple of the form <em>([&#8220;words&#8221;, &#8220;two&#8221;, &#8220;mimic&#8221;], interval)</em>,
+where <em>interval</em> is a float giving the number of seconds to
+pause after the given words are mimicked.</li>
+<li><em>speed</em> (<em>float</em>) &#8211;
+the factor by which to speed up playback.  The intervals
+after each mimic are divided by this number.</li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="dragonfly.actions.action_playback.Playback.speed">
+<!--[dragonfly.actions.action_playback.Playback.speed]--><tt class="descname">speed</tt><a class="headerlink" href="#dragonfly.actions.action_playback.Playback.speed" title="Permalink to this definition">¶</a></dt>
+<dd>Factor to speed up playback.</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 <div class="section" id="waitwindow-action-wait-for-a-specific-window-context">
 <h3>WaitWindow action &#8211; wait for a specific window context<a class="headerlink" href="#waitwindow-action-wait-for-a-specific-window-context" title="Permalink to this headline">¶</a></h3>
@@ -453,17 +657,15 @@ matches the given parameters.</p>
 time to wait.  It should be given in hundredths of a second.  For 
 example, the following code will pause for 20/100s = 0.2
 seconds:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">Pause</span><span class="p">(</span><span class="s">&quot;20&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<div class="highlight"><pre><span class="n">Pause</span><span class="p">(</span><span class="s">&quot;20&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
-</div>
 <p>The reason the <em>spec</em> must be given as a <em>string</em> is because it 
 can then be used in dynamic value evaluation.  For example, the 
 following code determines the time to pause at execution time:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Pause</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(time)d</span><span class="s">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Pause</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(time)d</span><span class="s">&quot;</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;time&quot;</span><span class="p">:</span> <span class="mf">37</span><span class="p">}</span>
 <span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
-</div>
 </dd></dl>
 
 </div>
@@ -476,7 +678,7 @@ following code determines the time to pause at execution time:</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
+            <h3>Table Of Contents</h3>
             <ul>
 <li><a class="reference external" href="">Actions sub-package</a><ul>
 <li><a class="reference external" href="#basic-examples">Basic examples</a></li>
@@ -492,7 +694,21 @@ following code determines the time to pause at execution time:</p>
 </li>
 <li><a class="reference external" href="#text-action-type-a-given-text">Text action &#8211; type a given text</a></li>
 <li><a class="reference external" href="#paste-action-insert-a-specific-text-by-pasting-it-from-the-clipboard">Paste action &#8211; insert a specific text by pasting it from the clipboard</a></li>
+<li><a class="reference external" href="#mouse-action">Mouse action</a><ul>
+<li><a class="reference external" href="#example-mouse-actions">Example mouse actions</a></li>
+<li><a class="reference external" href="#mouse-specification-format">Mouse specification format</a></li>
+<li><a class="reference external" href="#mouse-class-reference">Mouse class reference</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#function-action">Function action</a><ul>
+<li><a class="reference external" href="#class-reference">Class reference</a></li>
+</ul>
+</li>
 <li><a class="reference external" href="#mimic-action">Mimic action</a></li>
+<li><a class="reference external" href="#playback-action">Playback action</a><ul>
+<li><a class="reference external" href="#id1">Class reference</a></li>
+</ul>
+</li>
 <li><a class="reference external" href="#waitwindow-action-wait-for-a-specific-window-context">WaitWindow action &#8211; wait for a specific window context</a></li>
 <li><a class="reference external" href="#focuswindow-action-bring-a-window-to-the-foreground">FocusWindow action &#8211; bring a window to the foreground</a></li>
 <li><a class="reference external" href="#pause-action-wait-for-a-specific-amount-of-time">Pause action &#8211; wait for a specific amount of time</a></li>
@@ -510,7 +726,7 @@ following code determines the time to pause at execution time:</p>
             <ul class="this-page-menu">
               <li><a href="_sources/actions.txt">Show Source</a></li>
             </ul>
-          <h3>Quick search</h3>
+            <h3>Quick search</h3>
             <form class="search" action="search.html" method="get">
               <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
               <input type="hidden" name="check_keywords" value="yes" />
@@ -535,13 +751,13 @@ following code determines the time to pause at execution time:</p>
         <li class="right" >
           <a href="engines.html" title="Engines sub-package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Dragonfly v0.6.5beta1 documentation</a> &raquo;</li>
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Mar 28, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+      Last updated on Apr 02, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
     </div>
   </body>
 </html>

@@ -27,6 +27,15 @@ action is used for controlling the mouse cursor and clicking mouse
 button.
 
 
+Example mouse actions
+............................................................................
+
+The following code...::
+
+    action = Mouse("...")
+    action.execute()
+
+
 Mouse specification format
 ............................................................................
 
@@ -34,6 +43,27 @@ The *spec* argument passed to the :class:`Mouse` constructor specifies
 which mouse events will be emulated.  It is a string consisting of one or 
 more comma-separated elements.  Each of these elements has one of the 
 following possible formats:
+
+Mouse movement actions:
+
+ - location is absolute on the entire desktop:
+   ``[`` *number* ``,`` *number* ``]``
+ - location is relative to the foreground window:
+   ``(`` *number* ``,`` *number* ``)``
+ - move the cursor relative to its current position:
+   ``<`` *pixels* ``,`` *pixels* ``>``
+
+In the above specifications, the *number* and *pixels* have the 
+following meanings:
+
+ - *number* -- can specify a number of pixels or a fraction of
+   the reference window or desktop.  For example:
+
+    - ``(10, 10)`` -- 10 pixels to the right and down from the
+      foreground window's left-top corner
+    - ``(0.5, 0.5)`` -- center of the foreground window
+
+ - *pixels* -- specifies the number of pixels
 
 Mouse button-press action:
    *keyname* [``:`` *repeat*] [``/`` *pause*]
@@ -71,23 +101,6 @@ Mouse button-hold or button-release action:
    Specifies how long to pause *after* clicking the button; same as above.
 
 
-
-Example mouse actions
-............................................................................
-
-The following code types the text "Hello world!" into the foreground 
-application: ::
-
-    Key("H, e, l, l, o, space, w, o, r, l, d, exclamation").execute()
-
-The following code is a bit more useful, as it saves the current file with 
-the name "dragonfly.txt" (this works for many English-language 
-applications): ::
-
-    action = Key("a-f, a/50") + Text("dragonfly.txt") + Key("enter")
-    action.execute()
-
-
 Mouse class reference
 ............................................................................
 
@@ -118,7 +131,7 @@ def get_cursor_position():
     else:       return None
 
 def set_cursor_position(x, y):
-    result = windll.user32.SetCursorPos(x, y)
+    result = windll.user32.SetCursorPos(c_long(int(x)), c_long(int(y)))
     if result:  return False
     else:       return True
 
@@ -160,17 +173,7 @@ class _Move(_EventBase):
         self._move_mouse(horizontal, vertical)
 
     def _move_mouse(self, horizontal, vertical):
-        handle = windll.user32.GetDC(0)
-        horzres = windll.gdi32.GetDeviceCaps(handle, win32con.HORZRES)
-        vertres = windll.gdi32.GetDeviceCaps(handle, win32con.VERTRES)
-        horizontal = int(float(horizontal) / horzres * 0x10000)
-        vertical   = int(float(vertical)   / vertres * 0x10000)
-
-        flags = win32con.MOUSEEVENTF_MOVE | win32con.MOUSEEVENTF_ABSOLUTE
-        zero = pointer(c_ulong(0))
-        input = MouseInput(horizontal, vertical, 0, flags, 0, zero)
-        array = make_input_array([input])
-        send_input_array(array)
+        set_cursor_position(horizontal, vertical)
 
 
 class _MoveWindow(_Move):
@@ -228,18 +231,17 @@ class _Pause(_EventBase):
 #---------------------------------------------------------------------------
 
 class Mouse(DynStrActionBase):
-    """
-        Action that sends mouse events.
-
-        Arguments:
-         - *spec* (*str*) -- the mouse actions to execute
-         - *static* (boolean) --
-           if *True*, do not dynamically interpret *spec*
-           when executing this action
-
-    """
+    """ Action that sends mouse events. """
 
     def __init__(self, spec=None, static=False):
+        """
+            Arguments:
+             - *spec* (*str*) -- the mouse actions to execute
+             - *static* (boolean) --
+               if *True*, do not dynamically interpret *spec*
+               when executing this action
+
+        """
         DynStrActionBase.__init__(self, spec=spec, static=static)
 
     def _parse_spec(self, spec):

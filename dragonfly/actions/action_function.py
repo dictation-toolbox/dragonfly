@@ -22,6 +22,41 @@
 Function action
 ============================================================================
 
+The :class:`Function` action wraps a callable, optionally with some 
+default keyword argument values.  On execution, the execution data 
+(commonly containing the recognition extras) are combined with the 
+default argument values (if present) to form the arguments with which 
+the callable will be called.
+
+Simple usage::
+
+    >>> def func(count):
+    ...     print "count:", count
+    ...
+    >>> action = Function(func)
+    >>> action.execute({"count": 2})
+    count: 2
+    >>> action.execute({"count": 2, "flavor": "vanilla"})
+    count: 2          # Additional keyword arguments are ignored.
+
+Usage with default arguments::
+
+    >>> def func(count, flavor):
+    ...     print "count:", count
+    ...     print "flavor:", flavor
+    ...
+    >>> action = Function(func, flavor="spearmint")
+    >>> action.execute({"count": 2})
+    count: 2
+    flavor: spearmint
+    >>> action.execute({"count": 2, "flavor": "vanilla"})
+    count: 2
+    flavor: vanilla
+
+
+Class reference
+----------------------------------------------------------------------------
+
 """
 
 from inspect           import getargspec
@@ -31,14 +66,21 @@ from .action_base      import ActionBase, ActionError
 #---------------------------------------------------------------------------
 
 class Function(ActionBase):
-    """
-        Call a function with the recognized extras as keyword arguments.
+    """ Call a function with extra keyword arguments. """
 
-    """
+    def __init__(self, function, **defaults):
+        """
+            Constructor arguments:
+             - *function* (callable) --
+               the function to call when this action is executed
+             - defaults --
+               default keyword-values for the arguments with which
+               the function will be called
 
-    def __init__(self, function):
+        """
         ActionBase.__init__(self)
         self._function = function
+        self._defaults = defaults
         self._str = function.__name__
 
         (args, varargs, varkw, defaults) = getargspec(self._function)
@@ -47,17 +89,18 @@ class Function(ActionBase):
         self._valid_keywords = set(args)
 
     def _execute(self, data=None):
-        if not isinstance(data, dict):
-            data = {}
-        else:
-            data = dict(data)
+        arguments = dict(self._defaults)
+        if isinstance(data, dict):
+            arguments.update(data)
 
         if self._filter_keywords:
-            invalid_keywords = set(data.keys()) - self._valid_keywords
+            invalid_keywords = set(arguments.keys()) - self._valid_keywords
             for key in invalid_keywords:
-                del data[key]
+                del arguments[key]
 
         try:
-            self._function(**data)
+            self._function(**arguments)
         except Exception, e:
+            self._log.exception("Exception from function %s:"
+                                % self._function.__name__)
             raise ActionError("%s: %s" % (self, e))
