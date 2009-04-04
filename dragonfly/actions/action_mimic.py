@@ -112,6 +112,8 @@ class Mimic(ActionBase):
         # Mimic the series of words.
         self._log.debug("Mimicking recognition: %r" % (words,))
         try:
+            engine.disable_recognition_observers()
             engine.mimic(words)
+            engine.enable_recognition_observers()
         except Exception, e:
             raise ActionError("Mimicking failed: %s" % e)

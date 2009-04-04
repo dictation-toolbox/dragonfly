@@ -60,6 +60,12 @@ class EngineBase(object):
     def unregister_recognition_observer(self, observer):
         self._recognition_observer_manager.unregister(observer)
 
+    def enable_recognition_observers(self):
+        self._recognition_observer_manager.enable()
+
+    def disable_recognition_observers(self):
+        self._recognition_observer_manager.disable()
+
 
     #-----------------------------------------------------------------------
     #  Miscellaneous methods.

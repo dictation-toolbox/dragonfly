@@ -35,8 +35,19 @@ class RecObsManagerBase(object):
 
     def __init__(self, engine):
         self._engine = engine
+        self._enabled = True
         self._observers = []
         self._observer_ids = set()
+
+    def enable(self):
+        if not self._enabled:
+            self._enabled = True
+            self._activate()
+
+    def disable(self):
+        if self._enabled:
+            self._enabled = False
+            self._deactivate()
 
     def register(self, observer):
         if id(observer) in self._observer_ids:
@@ -55,6 +66,11 @@ class RecObsManagerBase(object):
         else:
             if not self._observers:
                 self._deactivate()
+
+    def notify_begin(self):
+        for observer in self._observers:
+            if hasattr(observer, "on_begin"):
+                observer.on_begin()
 
     def notify_recognition(self, result, words):
         for observer in self._observers:

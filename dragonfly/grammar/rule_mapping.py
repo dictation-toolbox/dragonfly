@@ -137,7 +137,8 @@ class MappingRule(Rule):
             c = Compound(spec, elements=self._extras, value=value)
             children.append(c)
 
-        element = Alternative(children)
+        if children:  element = Alternative(children)
+        else:         element = None
         Rule.__init__(self, self._name, element, exported=exported,
                       context=context)
 

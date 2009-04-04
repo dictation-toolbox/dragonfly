@@ -53,6 +53,9 @@ class RecognitionObserver(object):
         engine = get_engine()
         engine.unregister_recognition_observer(self)
 
+#    def on_begin(self):
+#        pass
+#
 #    def on_recognition(self, result, words):
 #        pass
 #
@@ -67,6 +70,7 @@ class RecognitionHistory(list, RecognitionObserver):
     def __init__(self, length=10):
         list.__init__(self)
         RecognitionObserver.__init__(self)
+        self._complete = True
 
         if (length is None or (isinstance(length, int) and length >= 1)):
             self._length = length
@@ -74,7 +78,16 @@ class RecognitionHistory(list, RecognitionObserver):
             raise ValueError("length must be a positive int or None,"
                              " received %r." % length)
 
+    @property
+    def complete(self):
+        """ *False* if phrase-start detected but no recognition yet. """
+        return self._complete        
+
+    def on_begin(self):
+        self._complete = False
+
     def on_recognition(self, result, words):
+        self._complete = True
         self.append(self._recognition_to_item(result, words))
         if self._length:
             while len(self) > self._length:

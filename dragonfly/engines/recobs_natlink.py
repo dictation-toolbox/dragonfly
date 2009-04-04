@@ -86,6 +86,9 @@ class NatlinkRecObsGrammar(Grammar):
     #-----------------------------------------------------------------------
     # Callback methods for handling utterances and recognitions.
 
+    def process_begin(self, executable, title, handle):
+        self._manager.notify_begin()
+
     def process_results(self, words, result):
         if words == "other":
             words = result.getWords(0)

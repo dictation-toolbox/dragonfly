@@ -71,7 +71,6 @@ class Rule(object):
         # The default argument for *element* is NOT acceptable; this
         #  construction is used for backwards compatibility and argument
         #  order.
-        assert element is not None
         self._element = element
         self._imported = imported
         self._exported = exported
@@ -224,7 +223,10 @@ class Rule(object):
         return s
 
     def dependencies(self):
-        return self._element.dependencies()
+        if self._element:
+            return self._element.dependencies()
+        else:
+            return []
 
     #-----------------------------------------------------------------------
     # Methods for decoding and evaluating recognitions.
