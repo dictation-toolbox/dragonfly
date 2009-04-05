@@ -19,4 +19,16 @@ Dragonfly to be able to interact with a speech recognition engine.
    :members: 
 
 
-To be continued: compiler classes, natlink and wsr implementation classes.
+.. automodule:: dragonfly.engines.engine_natlink
+   :members:
+.. automodule:: dragonfly.engines.engine_sapi5
+   :members:
+
+
+Dictation container classes
+----------------------------------------------------------------------------
+
+.. automodule:: dragonfly.engines.dictation_base
+   :members:
+.. automodule:: dragonfly.engines.dictation_natlink
+   :members:

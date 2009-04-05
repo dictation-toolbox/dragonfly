@@ -22,18 +22,50 @@
 Mouse action
 ============================================================================
 
-This section describes the :class:`Mouse` action object. This type of 
+This section describes the :class:`Mouse` action object.  This type of 
 action is used for controlling the mouse cursor and clicking mouse
 button.
+
+Below you'll find some simple examples of :class:`Mouse` usage, followed 
+by a detailed description of the available mouse events.
 
 
 Example mouse actions
 ............................................................................
 
-The following code...::
+The following code moves the mouse cursor to the center of the foreground 
+window (``(0.5, 0.5)``) and then clicks the left mouse button once 
+(``left``)::
 
-    action = Mouse("...")
+    # Parentheses ("(...)") give foreground-window-relative locations.
+    # Fractional locations ("0.5", "0.9") denote a location relative to
+    #  the window or desktop, where "0.0, 0.0" is the top-left corner
+    #  and "1.0, 1.0" is the bottom-right corner.
+    action = Mouse("(0.5, 0.5), left")
     action.execute()
+
+The line below moves the mouse cursor to 100 pixels left of the desktop's 
+right edge and 250 pixels down from its top edge (``[-100, 250]``), and 
+then double clicks the right mouse button (``right:2``)::
+
+    # Square brackets ("[...]") give desktop-relative locations.
+    # Integer locations ("1", "100", etc.) denote numbers of pixels.
+    # Negative numbers ("-100") are counted from the right-edge or the
+    #  bottom-edge of the desktop or window.
+    Mouse("[-100, 250], right:2").execute()
+
+The following command drags the mouse from the top right corner of the 
+foreground window (``(0.9, 10), left:down``) to the bottom left corner 
+(``(25, -0.1), left:up``)::
+
+    Mouse("(0.9, 10), left:down, (25, -0.1), left:up").execute()
+
+The code below moves the mouse cursor 25 pixels right and 25 pixels up
+(``<25, -25>``)::
+
+    # Angle brackets ("<...>") move the cursor from its current position
+    #  by the given number of pixels.
+    Mouse("<25, -25>").execute()
 
 
 Mouse specification format
@@ -312,23 +344,24 @@ class Mouse(DynStrActionBase):
     def _process_button(self, spec, events):
         parts = spec.split(":", 1)
         button = parts[0].strip()
-        if len(parts) == 1:  special = "1"
+        if len(parts) == 1:  special = 1
         else:                special = parts[1].strip()
 
         if button not in self._button_flags:
             return False
         flag_down, flag_up = self._button_flags[button]
 
-        if special in ("0", "1", "2", "3"):
-            repeat = int(special)
-            flag_series = (flag_down, flag_up) * repeat
-            event = _Button(*flag_series)
-        elif special == "down":
+        if special == "down":
             event = _Button(flag_down)
         elif special == "up":
             event = _Button(flag_up)
         else:
-            return False
+            try:
+                repeat = int(special)
+            except ValueError:
+                return False
+            flag_series = (flag_down, flag_up) * repeat
+            event = _Button(*flag_series)
 
         events.append(event)
         return True

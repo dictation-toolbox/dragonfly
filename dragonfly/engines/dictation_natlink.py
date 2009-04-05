@@ -19,9 +19,14 @@
 #
 
 """
-Dictation container for the Natlink engine.
+Dictation container class for Natlink
+============================================================================
+
+This class is derived from :class:`DictationContainerBase` and implements 
+dictation formatting for the Natlink and Dragon NaturallySpeaking engine.
 
 """
+
 
 # Attempt to import Natlink.  If this fails, Natlink is probably
 #  not available and the dictation container implemented here
@@ -40,6 +45,11 @@ from .dictation_base import DictationContainerBase
 # Natlink dictation class -- container for a series of dictated words.
 
 class NatlinkDictationContainer(DictationContainerBase):
+    """
+        Container class for dictated words as recognized by the
+        :class:`Dictation` element for the Natlink and DNS engine.
+
+    """
 
     def __init__(self, words):
         DictationContainerBase.__init__(self, words=words)

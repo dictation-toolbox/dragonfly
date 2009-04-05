@@ -19,7 +19,8 @@
 #
 
 """
-This file implements the engine base class.
+Engine base class
+============================================================================
 
 """
 
@@ -29,11 +30,13 @@ from ..log import get_log
 #---------------------------------------------------------------------------
 
 class EngineBase(object):
+    """ Base class for engine-specific back-ends. """
 
     _log = get_log("engine")
 
     @classmethod
     def is_available(cls):
+        """ Check whether this engine is available. """
         return False
 
     #-----------------------------------------------------------------------

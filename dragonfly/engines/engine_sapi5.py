@@ -19,7 +19,9 @@
 #
 
 """
-This file implements the SAPI 5 engine back-end.
+SAPI 5 engine class
+============================================================================
+
 """
 
 
@@ -39,10 +41,7 @@ from ..windows.window          import Window
 #---------------------------------------------------------------------------
 
 class Sapi5Engine(EngineBase):
-
-    """
-        Speech recognition engine back-end for SAPI 5.
-    """
+    """ Speech recognition engine back-end for SAPI 5. """
 
     DictationContainer = Sapi5DictationContainer
 

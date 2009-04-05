@@ -19,7 +19,8 @@
 #
 
 """
-This file implements the Natlink engine class.
+Natlink and DNS engine class
+============================================================================
 
 """
 
@@ -34,10 +35,7 @@ from .recobs_natlink     import NatlinkRecObsManager
 #---------------------------------------------------------------------------
 
 class NatlinkEngine(EngineBase):
-
-    """
-        Speech recognition engine back-end for Natlink.
-    """
+    """ Speech recognition engine back-end for Natlink and DNS. """
 
     DictationContainer = NatlinkDictationContainer
 
@@ -48,7 +46,11 @@ class NatlinkEngine(EngineBase):
             import natlink
         except ImportError:
             return False
-        return True
+
+        if natlink.isNatSpeakRunning():
+            return True
+        else:
+            return False
 
 
     #-----------------------------------------------------------------------
@@ -107,6 +109,7 @@ class NatlinkEngine(EngineBase):
         except self._natlink.NatError, e:
             self._log.warning("%s: failed to load grammar %r: %s."
                               % (self, grammar.name, e))
+            self._set_grammar_wrapper(grammar, None)
             return
 
         self._set_grammar_wrapper(grammar, wrapper)
@@ -133,19 +136,25 @@ class NatlinkEngine(EngineBase):
 
     def activate_rule(self, rule, grammar):
         self._log.debug("Activating rule %s in grammar %s." % (rule.name, grammar.name))
-        grammar_object = self._get_grammar_wrapper(grammar).grammar_object
+        wrapper = self._get_grammar_wrapper(grammar)
+        if not wrapper:
+            return
+        grammar_object = wrapper.grammar_object
         grammar_object.activate(rule.name, 0)
 
     def deactivate_rule(self, rule, grammar):
         self._log.debug("Deactivating rule %s in grammar %s." % (rule.name, grammar.name))
-        grammar_object = self._get_grammar_wrapper(grammar).grammar_object
+        wrapper = self._get_grammar_wrapper(grammar)
+        if not wrapper:
+            return
+        grammar_object = wrapper.grammar_object
         grammar_object.deactivate(rule.name)
 
     def update_list(self, lst, grammar):
-        try:
-            grammar_object = self._get_grammar_wrapper(grammar).grammar_object
-        except AttributeError:
+        wrapper = self._get_grammar_wrapper(grammar)
+        if not wrapper:
             return
+        grammar_object = wrapper.grammar_object
 
         # First empty then populate the list.  Use the local variables
         #  n and f as an optimization.

@@ -137,8 +137,14 @@ class _ElementRef(parser_.Sequence):
 
     def value(self, node):
         name = node.children[1].value()
-        try: return self._identifiers[name]
-        except KeyError: raise
+        try:
+            return self._identifiers[name]
+        except KeyError:
+            root = node
+            while root.parent:
+                root = root.parent
+            s = "Unknown reference name %r in %r" % (node.data, root.data)
+            raise Exception(s)
 
 
 class _ActionRef(parser_.Sequence):
@@ -155,8 +161,14 @@ class _ActionRef(parser_.Sequence):
 
     def value(self, node):
         name = node.children[1].value()
-        try: return self._identifiers[name]
-        except KeyError: raise
+        try:
+            return self._identifiers[name]
+        except KeyError:
+            root = node
+            while root.parent:
+                root = root.parent
+            s = "Unknown reference name %r in %r" % (node.data, root.data)
+            raise Exception(s)
 
 
 class _Literal(parser_.Sequence):
