@@ -38,7 +38,7 @@ class DigitsBase(Repetition):
 
     def __init__(self, name=None, min=1, max=12, as_int=False):
         self._as_int = as_int
-        if self._as_int: self._base = len(self._digits) - 1
+        if self._as_int: self._base = len(self._digits)
 
         pairs = []
         for value, word in enumerate(self._digits):
@@ -74,6 +74,6 @@ class DigitsBase(Repetition):
             for d in digits:
                 value *= self._base
                 value += d
-            return d
+            return value
         else:
             return digits

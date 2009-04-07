@@ -282,7 +282,12 @@ class Compound(elements_.Alternative):
                 extra_node = node.get_child_by_name(name, shallow=True)
                 if not extra_node: continue
                 extras[name] = extra_node.value()
-            return self._value_func(node, extras)
+            try:
+                value = self._value_func(node, extras)
+            except Exception, e:
+                self._log.warning("Exception from value_func: %s" % e)
+                raise
+            return value
         elif self._value is not None:
             return self._value
         else:
