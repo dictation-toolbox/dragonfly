@@ -37,6 +37,7 @@ from .recobs_natlink     import NatlinkRecObsManager
 class NatlinkEngine(EngineBase):
     """ Speech recognition engine back-end for Natlink and DNS. """
 
+    _name = "natlink"
     DictationContainer = NatlinkDictationContainer
 
     @classmethod

@@ -33,6 +33,7 @@ class EngineBase(object):
     """ Base class for engine-specific back-ends. """
 
     _log = get_log("engine")
+    _name = "base"
 
     @classmethod
     def is_available(cls):
@@ -43,6 +44,11 @@ class EngineBase(object):
 
     def __str__(self):
         return "%s()" % self.__class__.__name__
+
+    @property
+    def name(self):
+        """ The human-readable name of this engine. """
+        return self._name
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.

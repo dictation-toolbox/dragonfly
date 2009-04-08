@@ -43,6 +43,7 @@ from ..windows.window          import Window
 class Sapi5Engine(EngineBase):
     """ Speech recognition engine back-end for SAPI 5. """
 
+    _name = "sapi5"
     DictationContainer = Sapi5DictationContainer
 
     @classmethod
