@@ -43,7 +43,7 @@ def build_commands(commands, directory, setup_path):
 def build_distribution_and_upload(directory, setup_path):
     # Register and upload to pypi.
     commands = [
-                "egg_info", "--tag-build=.dev", "-r",
+                "egg_info", # "--tag-build=.dev", "-r",
                 "register",
                 "sdist",
                 "bdist_wininst",
@@ -82,7 +82,7 @@ def build_distribution_and_upload(directory, setup_path):
 
 def build_distribution(directory, setup_path):
     commands = [
-                "egg_info", "--tag-build=.dev", "-r",
+                "egg_info", # "--tag-build=.dev", "-r",
                 "sdist",
                 "bdist_wininst",
                 "bdist_egg",
