@@ -1,0 +1,965 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Grammar sub-package &mdash; Dragonfly v0.6.5 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.6.5',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Dragonfly v0.6.5 documentation" href="index.html" />
+    <link rel="next" title="Engines sub-package" href="engines.html" />
+    <link rel="prev" title="Object model" href="objectmodel.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="engines.html" title="Engines sub-package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="objectmodel.html" title="Object model"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Dragonfly v0.6.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  
+  <div class="section" id="grammar-sub-package">
+<span id="refgrammar"></span><h1>Grammar sub-package<a class="headerlink" href="#grammar-sub-package" title="Permalink to this headline">¶</a></h1>
+<p>Dragonfly&#8217;s core is a language object model containing the following
+objects:</p>
+<blockquote>
+<ul class="simple">
+<li><em>Grammars</em> &#8211; these represent collections of <em>rules</em>.</li>
+<li><em>Rules</em> &#8211; these implement complete or partial voice commands, and
+contain a hierarchy of <em>elements</em>.</li>
+<li><em>Elements</em> &#8211; these form the language building blocks of voice commands,
+and represent literal words, element sequences, references to other
+rules, etc.</li>
+</ul>
+</blockquote>
+<p>To illustrate this language model, we discuss an example grammar which
+contains 2 voice commands: <strong>&#8220;command one&#8221;</strong> and <strong>&#8220;(second command |
+command two) [test]&#8221;</strong>.</p>
+<blockquote>
+<ul>
+<li><dl class="first docutils">
+<dt><em>Grammar</em>: container for the two voice commands</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>Rule</em>: first voice command rule <strong>&#8220;command one&#8221;</strong></dt>
+<dd><ul class="first last simple">
+<li><em>Literal element</em>: element for the literal words <strong>&#8220;command one&#8221;</strong>.
+This element is the root-element of the first command rule</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>Rule</em>: second voice command rule <strong>&#8220;(second command | command two) [test]&#8221;</strong></dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>Sequence element</em>: root-element of the second command rule</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>Alternative element</em>: first child element of the sequence</dt>
+<dd><ul class="first last simple">
+<li><em>Literal element</em>: element for the literal words <strong>&#8220;second command&#8221;</strong></li>
+<li><em>Literal element</em>: element for the literal words <strong>&#8220;command two&#8221;</strong></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>Optional element</em>: second child element of the sequence</dt>
+<dd><ul class="first last simple">
+<li><em>Literal element</em>: element for the literal words <strong>&#8220;test&#8221;</strong></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</blockquote>
+<p>All of these different objects are described below.</p>
+<div class="section" id="grammar-classes">
+<h2>Grammar classes<a class="headerlink" href="#grammar-classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="grammar-class">
+<h3>Grammar class<a class="headerlink" href="#grammar-class" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="dragonfly.grammar.grammar_base.Grammar">
+<!--[dragonfly.grammar.grammar_base.Grammar]-->class <tt class="descname">Grammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grammar class for managing a set of rules.</p>
+<p>This base grammar class takes care of the communication 
+between Dragonfly&#8217;s object model and the backend speech 
+recognition engine.  This includes compiling rules and 
+elements, loading them, activating and deactivating 
+them, and unloading them.  It may, depending on the 
+engine, also include receiving recognition results and 
+dispatching them to the appropriate rule.</p>
+<blockquote>
+<ul class="simple">
+<li><em>name</em> &#8211; name of this grammar</li>
+<li><em>description</em> (str, default: None) &#8211;
+description for this grammar</li>
+<li><em>context</em> (Context, default: None) &#8211;
+context within which to be active.  If <em>None</em>, the grammar will
+always be active.</li>
+</ul>
+</blockquote>
+<dl class="attribute">
+<dt id="dragonfly.grammar.grammar_base.Grammar.name">
+<!--[dragonfly.grammar.grammar_base.Grammar.name]--><tt class="descname">name</tt><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.name" title="Permalink to this definition">¶</a></dt>
+<dd>A grammar&#8217;s name.</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.grammar_base.Grammar.engine">
+<!--[dragonfly.grammar.grammar_base.Grammar.engine]--><tt class="descname">engine</tt><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.engine" title="Permalink to this definition">¶</a></dt>
+<dd>A grammar&#8217;s SR engine.</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.grammar_base.Grammar.rules">
+<!--[dragonfly.grammar.grammar_base.Grammar.rules]--><tt class="descname">rules</tt><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.rules" title="Permalink to this definition">¶</a></dt>
+<dd>List of a grammar&#8217;s rules.</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.grammar_base.Grammar.lists">
+<!--[dragonfly.grammar.grammar_base.Grammar.lists]--><tt class="descname">lists</tt><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.lists" title="Permalink to this definition">¶</a></dt>
+<dd>List of a grammar&#8217;s lists.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_base.Grammar.load">
+<!--[dragonfly.grammar.grammar_base.Grammar.load]--><tt class="descname">load</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.load" title="Permalink to this definition">¶</a></dt>
+<dd>Load this grammar into its SR engine.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_base.Grammar.unload">
+<!--[dragonfly.grammar.grammar_base.Grammar.unload]--><tt class="descname">unload</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.unload" title="Permalink to this definition">¶</a></dt>
+<dd>Unload this grammar from its SR engine.</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.grammar_base.Grammar.loaded">
+<!--[dragonfly.grammar.grammar_base.Grammar.loaded]--><tt class="descname">loaded</tt><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.loaded" title="Permalink to this definition">¶</a></dt>
+<dd>Whether a grammar is loaded into its SR engine or not.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_base.Grammar.enable">
+<!--[dragonfly.grammar.grammar_base.Grammar.enable]--><tt class="descname">enable</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.enable" title="Permalink to this definition">¶</a></dt>
+<dd>Enable this grammar so that it is active to receive 
+recognitions.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_base.Grammar.disable">
+<!--[dragonfly.grammar.grammar_base.Grammar.disable]--><tt class="descname">disable</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.disable" title="Permalink to this definition">¶</a></dt>
+<dd>Disable this grammar so that it is not active to 
+receive recognitions.</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.grammar_base.Grammar.enabled">
+<!--[dragonfly.grammar.grammar_base.Grammar.enabled]--><tt class="descname">enabled</tt><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.enabled" title="Permalink to this definition">¶</a></dt>
+<dd>Whether a grammar is active to receive recognitions or not.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_base.Grammar.process_begin">
+<!--[dragonfly.grammar.grammar_base.Grammar.process_begin]--><tt class="descname">process_begin</tt><big>(</big><em>executable</em>, <em>title</em>, <em>handle</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.process_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start of phrase callback.</p>
+<p>This method is called when the speech recognition 
+engine detects that the user has begun to speak a 
+phrase.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>executable</em> &#8211; the full path to the module whose 
+window is currently in the foreground.</li>
+<li><em>title</em> &#8211; window title of the foreground window.</li>
+<li><em>handle</em> &#8211; window handle to the foreground window.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_base.Grammar._process_begin">
+<!--[dragonfly.grammar.grammar_base.Grammar._process_begin]--><tt class="descname">_process_begin</tt><big>(</big><em>executable</em>, <em>title</em>, <em>handle</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar._process_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start of phrase callback.</p>
+<p><em>This usually the method which should be overridden 
+to give derived grammar classes custom behavior.</em></p>
+<p>This method is called when the speech recognition 
+engine detects that the user has begun to speak a 
+phrase.  This method is only called when this 
+grammar&#8217;s context does match positively.  It is 
+called by the <tt class="docutils literal"><span class="pre">Grammar.process_begin</span></tt> method.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>executable</em> &#8211; the full path to the module whose 
+window is currently in the foreground.</li>
+<li><em>title</em> &#8211; window title of the foreground window.</li>
+<li><em>handle</em> &#8211; window handle to the foreground window.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_base.Grammar.enter_context">
+<!--[dragonfly.grammar.grammar_base.Grammar.enter_context]--><tt class="descname">enter_context</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.enter_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enter context callback.</p>
+<p>This method is called when a phrase-start has been 
+detected.  It is only called if this grammar&#8217;s 
+context previously did not match but now does
+match positively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_base.Grammar.exit_context">
+<!--[dragonfly.grammar.grammar_base.Grammar.exit_context]--><tt class="descname">exit_context</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar.exit_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exit context callback.</p>
+<p>This method is called when a phrase-start has been 
+detected.  It is only called if this grammar&#8217;s 
+context previously did match but now doesn&#8217;t 
+match positively anymore.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="connectiongrammar-class">
+<h3>ConnectionGrammar class<a class="headerlink" href="#connectiongrammar-class" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="dragonfly.grammar.grammar_connection.ConnectionGrammar">
+<!--[dragonfly.grammar.grammar_connection.ConnectionGrammar]-->class <tt class="descname">ConnectionGrammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em>, <em>app_name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grammar class for maintaining a COM connection well 
+within a given context.  This is useful for controlling 
+applications through COM while they are in the 
+foreground.  This grammar class will take care of 
+dispatching the correct COM interface when the 
+application comes to the foreground, and releasing it 
+when the application is no longer there.</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">name</span></tt> &#8211; name of this grammar.</li>
+<li><tt class="docutils literal"><span class="pre">description</span></tt> &#8211; description for this grammar.</li>
+<li><tt class="docutils literal"><span class="pre">context</span></tt> &#8211; context within which to maintain
+the COM connection.</li>
+<li><tt class="docutils literal"><span class="pre">app_name</span></tt> &#8211; COM name to dispatch.</li>
+</ul>
+</blockquote>
+<dl class="attribute">
+<dt id="dragonfly.grammar.grammar_connection.ConnectionGrammar.application">
+<!--[dragonfly.grammar.grammar_connection.ConnectionGrammar.application]--><tt class="descname">application</tt><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar.application" title="Permalink to this definition">¶</a></dt>
+<dd>COM handle to the application.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_up">
+<!--[dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_up]--><tt class="descname">connection_up</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method called immediately after entering this 
+instance&#8217;s context and successfully setting up its 
+connection.</p>
+<p>By default this method doesn&#8217;t do anything.
+This method should be overridden by derived classes 
+if they need to synchronize some internal state with 
+the application.  The COM connection is available 
+through the <tt class="docutils literal"><span class="pre">self.application</span></tt> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_down">
+<!--[dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_down]--><tt class="descname">connection_down</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar.connection_down" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method called immediately after exiting this 
+instance&#8217;s context and disconnecting from the 
+application.</p>
+<p>By default this method doesn&#8217;t do anything.
+This method should be overridden by derived classes 
+if they need to clean up after disconnection.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-dragonfly.grammar.rule_mapping">
+<h2>Rule classes<a class="headerlink" href="#module-dragonfly.grammar.rule_mapping" title="Permalink to this headline">¶</a></h2>
+<p>This section describes the following classes:</p>
+<blockquote>
+<ul class="simple">
+<li><a title="dragonfly.grammar.rule_base.Rule" class="reference internal" href="#dragonfly.grammar.rule_base.Rule"><tt class="xref docutils literal"><span class="pre">dragonfly.grammar.rule_base.Rule</span></tt></a> &#8211; the base rule class</li>
+<li><a title="dragonfly.grammar.rule_compound.CompoundRule" class="reference internal" href="#dragonfly.grammar.rule_compound.CompoundRule"><tt class="xref docutils literal"><span class="pre">dragonfly.grammar.rule_compound.CompoundRule</span></tt></a> &#8211; a rule class
+of which the root element is a
+<tt class="xref docutils literal"><span class="pre">dragonfly.grammar.element_compound.Compound</span></tt> element.</li>
+<li><a title="dragonfly.grammar.rule_mapping.MappingRule" class="reference internal" href="#dragonfly.grammar.rule_mapping.MappingRule"><tt class="xref docutils literal"><span class="pre">dragonfly.grammar.rule_mapping.MappingRule</span></tt></a> &#8211; a rule class for
+creating multiple spoken-form -&gt; semantic value voice-commands.</li>
+</ul>
+</blockquote>
+<div class="section" id="rule-class">
+<h3>Rule class<a class="headerlink" href="#rule-class" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="dragonfly.grammar.rule_base.Rule">
+<!--[dragonfly.grammar.rule_base.Rule]-->class <tt class="descname">Rule</tt><big>(</big><em>name=None</em>, <em>element=None</em>, <em>context=None</em>, <em>imported=False</em>, <em>exported=False</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rule class for implementing complete or partial voice-commands.</p>
+<p>This rule class represents a voice-command or part of a voice-
+command.  It contains a root element, which defines the language 
+construct of this rule.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>name</em> (<em>str</em>) &#8211; name of this rule.  If <em>None</em>, a unique
+name will automatically be generated.</li>
+<li><em>element</em> (<em>Element</em>) &#8211;
+root element for this rule</li>
+<li><em>context</em> (<em>Context</em>, default: <em>None</em>) &#8211;
+context within which to be active.  If <em>None</em>, the rule will
+always be active when its grammar is active.</li>
+<li><em>imported</em> (boolean, default: <em>False</em>) &#8211;
+if true, this rule is imported from outside its grammar</li>
+<li><em>exported</em> (boolean, default: <em>False</em>) &#8211;
+if true, this rule is a complete top-level rule which can be
+spoken by the user.  This should be <em>True</em> for voice-commands
+that the user can speak.</li>
+</ul>
+</dd>
+</dl>
+<p>The <em>self._log</em> logger objects should be used in methods of 
+derived classes for logging purposes.  It is a standard logger 
+object from the <em>logger</em> module in the Python standard library.</p>
+<dl class="attribute">
+<dt id="dragonfly.grammar.rule_base.Rule.active">
+<!--[dragonfly.grammar.rule_base.Rule.active]--><tt class="descname">active</tt><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.active" title="Permalink to this definition">¶</a></dt>
+<dd>Read-only access to a rule&#8217;s active state.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.rule_base.Rule.disable">
+<!--[dragonfly.grammar.rule_base.Rule.disable]--><tt class="descname">disable</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.disable" title="Permalink to this definition">¶</a></dt>
+<dd>Disable this grammar so that it is not active to 
+receive recognitions.</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.rule_base.Rule.element">
+<!--[dragonfly.grammar.rule_base.Rule.element]--><tt class="descname">element</tt><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.element" title="Permalink to this definition">¶</a></dt>
+<dd>This rule&#8217;s root element.  (Read-only)</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.rule_base.Rule.enable">
+<!--[dragonfly.grammar.rule_base.Rule.enable]--><tt class="descname">enable</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.enable" title="Permalink to this definition">¶</a></dt>
+<dd>Enable this grammar so that it is active to receive 
+recognitions.</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.rule_base.Rule.enabled">
+<!--[dragonfly.grammar.rule_base.Rule.enabled]--><tt class="descname">enabled</tt><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.enabled" title="Permalink to this definition">¶</a></dt>
+<dd>Whether a grammar is active to receive recognitions or not.</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.rule_base.Rule.exported">
+<!--[dragonfly.grammar.rule_base.Rule.exported]--><tt class="descname">exported</tt><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.exported" title="Permalink to this definition">¶</a></dt>
+<dd>Read-only access to a rule&#8217;s exported state.</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.rule_base.Rule.grammar">
+<!--[dragonfly.grammar.rule_base.Rule.grammar]--><tt class="descname">grammar</tt><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.grammar" title="Permalink to this definition">¶</a></dt>
+<dd>This rule&#8217;s grammar object.  (Set once)</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.rule_base.Rule.imported">
+<!--[dragonfly.grammar.rule_base.Rule.imported]--><tt class="descname">imported</tt><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.imported" title="Permalink to this definition">¶</a></dt>
+<dd>This rule&#8217;s imported status.  (Read-only)</dd></dl>
+
+<dl class="attribute">
+<dt id="dragonfly.grammar.rule_base.Rule.name">
+<!--[dragonfly.grammar.rule_base.Rule.name]--><tt class="descname">name</tt><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.name" title="Permalink to this definition">¶</a></dt>
+<dd>This rule&#8217;s name.  (Read-only)</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.rule_base.Rule.process_begin">
+<!--[dragonfly.grammar.rule_base.Rule.process_begin]--><tt class="descname">process_begin</tt><big>(</big><em>executable</em>, <em>title</em>, <em>handle</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.process_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start of phrase callback.</p>
+<p>This method is called when the speech recognition 
+engine detects that the user has begun to speak a 
+phrase.  It is called by the rule&#8217;s containing grammar
+if the grammar and this rule are active.</p>
+<p>The default implementation of this method checks
+whether this rule&#8217;s context matches, and if it does
+this method calls
+<tt class="xref docutils literal"><span class="pre">_process_begin()</span></tt>.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>executable</em> &#8211; the full path to the module whose 
+window is currently in the foreground</li>
+<li><em>title</em> &#8211; window title of the foreground window</li>
+<li><em>handle</em> &#8211; window handle to the foreground window</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.rule_base.Rule.process_recognition">
+<!--[dragonfly.grammar.rule_base.Rule.process_recognition]--><tt class="descname">process_recognition</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.process_recognition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rule recognition callback.</p>
+<p>This method is called when the user has spoken words matching 
+this rule&#8217;s contents.  This method is called only once for 
+each recognition, and only for the matching top-level rule.</p>
+<p>The default implementation of this method does nothing.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is generally the method which developers should
+override in derived rule classes to give them custom
+functionality when a top-level rule is recognized.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.rule_base.Rule.value">
+<!--[dragonfly.grammar.rule_base.Rule.value]--><tt class="descname">value</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start of phrase callback.</p>
+<p>This method is called to obtain the semantic value associated 
+with a particular recognition.  It could be called from 
+another rule&#8217;s <a title="dragonfly.grammar.rule_base.Rule.value" class="reference internal" href="#dragonfly.grammar.rule_base.Rule.value"><tt class="xref docutils literal"><span class="pre">value()</span></tt></a> if 
+that rule references this rule.  If also be called from this 
+rule&#8217;s <a title="dragonfly.grammar.rule_base.Rule.process_recognition" class="reference internal" href="#dragonfly.grammar.rule_base.Rule.process_recognition"><tt class="xref docutils literal"><span class="pre">process_recognition()</span></tt></a>
+if that method has been overridden to do so in a derived
+class.</p>
+<p>The default implementation of this method returns the value of 
+this rule&#8217;s root element.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is generally the method which developers should 
+override in derived rule classes to change the default
+semantic value of a recognized rule.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="compoundrule-class">
+<h3>CompoundRule class<a class="headerlink" href="#compoundrule-class" title="Permalink to this headline">¶</a></h3>
+<p>The CompoundRule class is designed to make it very easy to create a rule 
+based on a single compound spec.</p>
+<p>This rule class has the following parameters to customize its behavior:</p>
+<blockquote>
+<ul class="simple">
+<li><em>spec</em> &#8211; compound specification for the rule&#8217;s root element</li>
+<li><em>extras</em> &#8211; extras elements referenced from the compound spec</li>
+<li><em>defaults</em> &#8211; default values for the extras</li>
+<li><em>exported</em> &#8211; whether the rule is exported</li>
+<li><em>context</em> &#8211; context in which the rule will be active</li>
+</ul>
+</blockquote>
+<p>Each of these parameters can be passed as a (keyword) arguments to the 
+constructor, or defined as a class attribute in a derived class.</p>
+<div class="section" id="example-usage">
+<h4>Example usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h4>
+<p>The CompoundRule class can be used to define a voice-command as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">ExampleRule</span><span class="p">(</span><span class="n">CompoundRule</span><span class="p">):</span>
+
+    <span class="n">spec</span> <span class="o">=</span> <span class="s">&quot;I want to eat &lt;food&gt;&quot;</span>
+    <span class="n">extras</span> <span class="o">=</span> <span class="p">[</span><span class="n">Choice</span><span class="p">(</span><span class="s">&quot;food&quot;</span><span class="p">,</span> <span class="p">{</span>
+                              <span class="s">&quot;(an | a juicy) apple&quot;</span><span class="p">:</span> <span class="s">&quot;good&quot;</span><span class="p">,</span>
+                              <span class="s">&quot;a [greasy] hamburger&quot;</span><span class="p">:</span> <span class="s">&quot;bad&quot;</span><span class="p">,</span>
+                             <span class="p">}</span>
+                    <span class="p">)</span>
+             <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_process_recognition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">extras</span><span class="p">):</span>
+        <span class="n">good_or_bad</span> <span class="o">=</span> <span class="n">extras</span><span class="p">[</span><span class="s">&quot;food&quot;</span><span class="p">]</span>
+        <span class="k">print</span> <span class="s">&quot;That is a </span><span class="si">%s</span><span class="s"> idea!&quot;</span> <span class="o">%</span> <span class="n">good_or_bad</span>
+
+<span class="n">rule</span> <span class="o">=</span> <span class="n">ExampleRule</span><span class="p">()</span>
+<span class="n">grammar</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="class-reference">
+<h4>Class reference<a class="headerlink" href="#class-reference" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="dragonfly.grammar.rule_compound.CompoundRule">
+<!--[dragonfly.grammar.rule_compound.CompoundRule]-->class <tt class="descname">CompoundRule</tt><big>(</big><em>name=None</em>, <em>spec=None</em>, <em>extras=None</em>, <em>defaults=None</em>, <em>exported=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_compound.CompoundRule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rule class based on the compound element.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>name</em> (<em>str</em>) &#8211; the rule&#8217;s name</li>
+<li><em>spec</em> (<em>str</em>) &#8211; compound specification for the rule&#8217;s
+root element</li>
+<li><em>extras</em> (sequence) &#8211; extras elements referenced from the
+compound spec</li>
+<li><em>defaults</em> (<em>dict</em>) &#8211; default values for the extras</li>
+<li><em>exported</em> (boolean) &#8211; whether the rule is exported</li>
+<li><em>context</em> (<em>Context</em>) &#8211; context in which the rule will be active</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="dragonfly.grammar.rule_compound.CompoundRule.process_recognition">
+<!--[dragonfly.grammar.rule_compound.CompoundRule.process_recognition]--><tt class="descname">process_recognition</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_compound.CompoundRule.process_recognition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a recognition of this rule.</p>
+<p>This method is called by the containing Grammar when this
+rule is recognized.  This method collects information about
+the recognition and then calls <em>self._process_recognition</em>.</p>
+<ul class="simple">
+<li><em>node</em> &#8211; The root node of the recognition parse tree.</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="mappingrule-class">
+<h3>MappingRule class<a class="headerlink" href="#mappingrule-class" title="Permalink to this headline">¶</a></h3>
+<p>The MappingRule class is designed to make it very easy to create a rule 
+based on a mapping of spoken-forms to semantic values.</p>
+<p>This class has the following parameters to customize its behavior:</p>
+<blockquote>
+<ul class="simple">
+<li><em>mapping</em> &#8211; mapping of spoken-forms to semantic values</li>
+<li><em>extras</em> &#8211; extras elements referenced from the compound spec</li>
+<li><em>defaults</em> &#8211; default values for the extras</li>
+<li><em>exported</em> &#8211; whether the rule is exported</li>
+<li><em>context</em> &#8211; context in which the rule will be active</li>
+</ul>
+</blockquote>
+<p>Each of these parameters can be passed as a (keyword) arguments to the 
+constructor, or defined as a class attribute in a derived class.</p>
+<div class="section" id="id1">
+<h4>Example usage<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>The MappingRule class can be used to define a voice-command as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">ExampleRule</span><span class="p">(</span><span class="n">MappingRule</span><span class="p">):</span>
+
+    <span class="n">mapping</span>  <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&quot;[feed] address [bar]&quot;</span><span class="p">:</span>                <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-d&quot;</span><span class="p">),</span>
+                <span class="s">&quot;subscribe [[to] [this] feed]&quot;</span><span class="p">:</span>        <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-u&quot;</span><span class="p">),</span>
+                <span class="s">&quot;paste [feed] address&quot;</span><span class="p">:</span>                <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-d, c-v, enter&quot;</span><span class="p">),</span>
+                <span class="s">&quot;feeds | feed (list | window | win)&quot;</span><span class="p">:</span>  <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-d, tab:2, s-tab&quot;</span><span class="p">),</span>
+                <span class="s">&quot;down [&lt;n&gt;] (feed | feeds)&quot;</span><span class="p">:</span>           <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-d, tab:2, s-tab, down:</span><span class="si">%(n)d</span><span class="s">&quot;</span><span class="p">),</span>
+                <span class="s">&quot;up [&lt;n&gt;] (feed | feeds)&quot;</span><span class="p">:</span>             <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-d, tab:2, s-tab, up:</span><span class="si">%(n)d</span><span class="s">&quot;</span><span class="p">),</span>
+                <span class="s">&quot;open [item]&quot;</span><span class="p">:</span>                         <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-d, tab:2, c-s&quot;</span><span class="p">),</span>
+                <span class="s">&quot;newer [&lt;n&gt;]&quot;</span><span class="p">:</span>                         <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-d, tab:2, up:</span><span class="si">%(n)d</span><span class="s">&quot;</span><span class="p">),</span>
+                <span class="s">&quot;older [&lt;n&gt;]&quot;</span><span class="p">:</span>                         <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-d, tab:2, down:</span><span class="si">%(n)d</span><span class="s">&quot;</span><span class="p">),</span>
+                <span class="s">&quot;mark all [as] read&quot;</span><span class="p">:</span>                  <span class="n">Key</span><span class="p">(</span><span class="s">&quot;cs-r&quot;</span><span class="p">),</span>
+                <span class="s">&quot;mark all [as] unread&quot;</span><span class="p">:</span>                <span class="n">Key</span><span class="p">(</span><span class="s">&quot;cs-u&quot;</span><span class="p">),</span>
+                <span class="s">&quot;search [bar]&quot;</span><span class="p">:</span>                        <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-s&quot;</span><span class="p">),</span>
+                <span class="s">&quot;search [for] &lt;text&gt;&quot;</span><span class="p">:</span>                 <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-s&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Text</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(text)s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">),</span>
+               <span class="p">}</span>
+    <span class="n">extras</span>   <span class="o">=</span> <span class="p">[</span>
+                <span class="n">Integer</span><span class="p">(</span><span class="s">&quot;n&quot;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">20</span><span class="p">),</span>
+                <span class="n">Dictation</span><span class="p">(</span><span class="s">&quot;text&quot;</span><span class="p">),</span>
+               <span class="p">]</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&quot;n&quot;</span><span class="p">:</span> <span class="mf">1</span><span class="p">,</span>
+               <span class="p">}</span>
+
+    <span class="n">rule</span> <span class="o">=</span> <span class="n">ExampleRule</span><span class="p">()</span>
+    <span class="n">grammar</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h4>Class reference<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="dragonfly.grammar.rule_mapping.MappingRule">
+<!--[dragonfly.grammar.rule_mapping.MappingRule]-->class <tt class="descname">MappingRule</tt><big>(</big><em>name=None</em>, <em>mapping=None</em>, <em>extras=None</em>, <em>defaults=None</em>, <em>exported=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_mapping.MappingRule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rule class based on a mapping of spoken-forms to semantic values.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>name</em> (<em>str</em>) &#8211; the rule&#8217;s name</li>
+<li><em>mapping</em> (<em>dict</em>) &#8211; mapping of spoken-forms to semantic
+values</li>
+<li><em>extras</em> (sequence) &#8211; extras elements referenced from the
+spoken-forms in <em>mapping</em></li>
+<li><em>defaults</em> (<em>dict</em>) &#8211; default values for the extras</li>
+<li><em>exported</em> (boolean) &#8211; whether the rule is exported</li>
+<li><em>context</em> (<em>Context</em>) &#8211; context in which the rule will be active</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="dragonfly.grammar.rule_mapping.MappingRule.process_recognition">
+<!--[dragonfly.grammar.rule_mapping.MappingRule.process_recognition]--><tt class="descname">process_recognition</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_mapping.MappingRule.process_recognition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a recognition of this rule.</p>
+<p>This method is called by the containing Grammar when 
+this rule is recognized.  This method collects information
+about the recognition and then calls
+MappingRule._process_recognition.</p>
+<ul class="simple">
+<li><em>node</em> &#8211; The root node of the recognition parse tree.</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+<div class="section" id="module-dragonfly.grammar.elements_compound">
+<h2>Element classes<a class="headerlink" href="#module-dragonfly.grammar.elements_compound" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fundamental-element-classes">
+<h3>Fundamental element classes<a class="headerlink" href="#fundamental-element-classes" title="Permalink to this headline">¶</a></h3>
+<p>Dragonfly grammars are built up out of a small set of fundamental building 
+blocks.  These building blocks are implemented by the following <em>element</em> 
+classes:</p>
+<blockquote>
+<ul class="simple">
+<li><a title="dragonfly.grammar.elements_basic.ElementBase" class="reference internal" href="#dragonfly.grammar.elements_basic.ElementBase"><tt class="xref docutils literal"><span class="pre">ElementBase</span></tt></a> &#8211;
+the base class from which all other element classes are derived</li>
+<li><a title="dragonfly.grammar.elements_basic.Sequence" class="reference internal" href="#dragonfly.grammar.elements_basic.Sequence"><tt class="xref docutils literal"><span class="pre">Sequence</span></tt></a> &#8211;
+sequence of child elements which must all match in the order given</li>
+<li><a title="dragonfly.grammar.elements_basic.Alternative" class="reference internal" href="#dragonfly.grammar.elements_basic.Alternative"><tt class="xref docutils literal"><span class="pre">Alternative</span></tt></a> &#8211;
+list of possibilities of which only one will be matched</li>
+<li><a title="dragonfly.grammar.elements_basic.Optional" class="reference internal" href="#dragonfly.grammar.elements_basic.Optional"><tt class="xref docutils literal"><span class="pre">Optional</span></tt></a> &#8211;
+wrapper around a child element which makes the child element optional</li>
+<li><a title="dragonfly.grammar.elements_basic.Repetition" class="reference internal" href="#dragonfly.grammar.elements_basic.Repetition"><tt class="xref docutils literal"><span class="pre">Repetition</span></tt></a> &#8211;
+repetition of a child element</li>
+<li><tt class="xref docutils literal"><span class="pre">Literal</span></tt> &#8211;
+literal word which must be said exactly by the speaker as given</li>
+<li><tt class="xref docutils literal"><span class="pre">RuleRef</span></tt> &#8211;
+reference to a <a title="dragonfly.grammar.rule_base.Rule" class="reference internal" href="#dragonfly.grammar.rule_base.Rule"><tt class="xref docutils literal"><span class="pre">dragonfly.grammar.rule_base.Rule</span></tt></a> object;
+this element allows a rule to include (i.e. reference) another rule</li>
+<li><tt class="xref docutils literal"><span class="pre">ListRef</span></tt> &#8211;
+reference to a <tt class="xref docutils literal"><span class="pre">dragonfly.grammar.list.List</span></tt> object</li>
+</ul>
+</blockquote>
+<p>The following <em>element</em> classes are built up out of the fundamental 
+classes listed above:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="xref docutils literal"><span class="pre">Dictation</span></tt> &#8211;
+free-form dictation; this element matches any words the speaker says,
+and includes facilities for formatting the spoken words with correct
+spacing and capitalization</li>
+<li><tt class="xref docutils literal"><span class="pre">DictListRef</span></tt> &#8211;
+reference to a <tt class="xref docutils literal"><span class="pre">dragonfly.all.DictList</span></tt> object; this element is 
+similar to the <tt class="xref docutils literal"><span class="pre">dragonfly.all.ListRef</span></tt> element, except that it 
+returns the value associated with the spoken words instead of the 
+spoken words themselves</li>
+</ul>
+</blockquote>
+<dl class="class">
+<dt id="dragonfly.grammar.elements_basic.Alternative">
+<!--[dragonfly.grammar.elements_basic.Alternative]-->class <tt class="descname">Alternative</tt><big>(</big><em>children=()</em>, <em>name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Alternative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Element class representing several child elements of which only
+one will match.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>children</em> (iterable, default: <em>()</em>) &#8211;
+the child elements of this element</li>
+<li><em>name</em> (<em>str</em>, default: <em>None</em>) &#8211;
+the name of this element</li>
+</ul>
+</dd>
+</dl>
+<p>For a recognition to match, at least one of the child elements
+must match the recognition.  The first matching child is
+used.  Child elements are searched in the order they are given
+in the <em>children</em> constructor argument.</p>
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.Alternative.value">
+<!--[dragonfly.grammar.elements_basic.Alternative.value]--><tt class="descname">value</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Alternative.value" title="Permalink to this definition">¶</a></dt>
+<dd>The <em>value</em> of an <a title="dragonfly.grammar.elements_basic.Alternative" class="reference internal" href="#dragonfly.grammar.elements_basic.Alternative"><tt class="xref docutils literal"><span class="pre">Alternative</span></tt></a> is the value of its
+child that matched the recognition.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dragonfly.grammar.elements_basic.ElementBase">
+<!--[dragonfly.grammar.elements_basic.ElementBase]-->class <tt class="descname">ElementBase</tt><big>(</big><em>name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ElementBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for all other element classes.</p>
+<dl class="docutils">
+<dt>Constructor argument:</dt>
+<dd><ul class="first last simple">
+<li><em>name</em> (<em>str</em>, default: <em>None</em>) &#8211;
+the name of this element; can be used when interpreting
+complex recognition for retrieving elements by name.</li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="dragonfly.grammar.elements_basic.ElementBase.children">
+<!--[dragonfly.grammar.elements_basic.ElementBase.children]--><tt class="descname">children</tt><a class="headerlink" href="#dragonfly.grammar.elements_basic.ElementBase.children" title="Permalink to this definition">¶</a></dt>
+<dd>Iterable of child elements.  (Read-only)</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.ElementBase.decode">
+<!--[dragonfly.grammar.elements_basic.ElementBase.decode]--><tt class="descname">decode</tt><big>(</big><em>state</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ElementBase.decode" title="Permalink to this definition">¶</a></dt>
+<dd>Attempt to decode the recognition stored in the given <em>state</em>.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.ElementBase.dependencies">
+<!--[dragonfly.grammar.elements_basic.ElementBase.dependencies]--><tt class="descname">dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ElementBase.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterable containing the dependencies of this
+element and of this element&#8217;s children.</p>
+<p>The dependencies are the objects that are necessary
+for this element.  These include lists and other rules.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.ElementBase.element_tree_string">
+<!--[dragonfly.grammar.elements_basic.ElementBase.element_tree_string]--><tt class="descname">element_tree_string</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ElementBase.element_tree_string" title="Permalink to this definition">¶</a></dt>
+<dd>Returns a formatted multi-line string representing this
+element and its children.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.ElementBase.gstring">
+<!--[dragonfly.grammar.elements_basic.ElementBase.gstring]--><tt class="descname">gstring</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ElementBase.gstring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a formatted grammar string of the contents
+of this element and its children.</p>
+<p>The grammar string is of a format similar to that used
+by Natlink to define its grammars.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.ElementBase.value">
+<!--[dragonfly.grammar.elements_basic.ElementBase.value]--><tt class="descname">value</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ElementBase.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the semantic value of this element given the
+recognition results stored in the <em>node</em>.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><ul class="first last simple">
+<li><em>node</em> &#8211;
+a <tt class="xref docutils literal"><span class="pre">dragonfly.grammar.state.Node</span></tt> instance
+representing this element within the recognition
+parse tree</li>
+</ul>
+</dd>
+</dl>
+<p>The default behavior of this method is to return
+an iterable containing the recognized words matched
+by this element (i.e. <em>node.words()</em>).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dragonfly.grammar.elements_basic.Optional">
+<!--[dragonfly.grammar.elements_basic.Optional]-->class <tt class="descname">Optional</tt><big>(</big><em>child</em>, <em>name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Optional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Element class representing an optional child element.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>child</em> (<em>ElementBase</em>) &#8211;
+the child element of this element</li>
+<li><em>name</em> (<em>str</em>, default: <em>None</em>) &#8211;
+the name of this element</li>
+</ul>
+</dd>
+</dl>
+<p>Recognitions always match this element.  If the child element
+does match the recognition, then that result is used.
+Otherwise, this element itself does match but the child
+is not processed.</p>
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.Optional.value">
+<!--[dragonfly.grammar.elements_basic.Optional.value]--><tt class="descname">value</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Optional.value" title="Permalink to this definition">¶</a></dt>
+<dd>The <em>value</em> of a <a title="dragonfly.grammar.elements_basic.Optional" class="reference internal" href="#dragonfly.grammar.elements_basic.Optional"><tt class="xref docutils literal"><span class="pre">Optional</span></tt></a> is the value of its child,
+if the child did match the recognition.  Otherwise the
+<em>value</em> is <em>None</em>.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dragonfly.grammar.elements_basic.Repetition">
+<!--[dragonfly.grammar.elements_basic.Repetition]-->class <tt class="descname">Repetition</tt><big>(</big><em>child</em>, <em>min=1</em>, <em>max=None</em>, <em>name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Repetition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Element class representing a repetition of one child element.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>child</em> (<em>ElementBase</em>) &#8211;
+the child element of this element</li>
+<li><em>min</em> (<em>int</em>, default: <em>1</em>) &#8211;
+the minimum number of times that the child element must
+be recognized; may be 0</li>
+<li><em>max</em> (<em>int</em>, default: <em>None</em>) &#8211;
+the maximum number of times that the child element must
+be recognized; if <em>None</em>, the child element must be recognized
+exactly <em>min</em> times (i.e. <em>max = min + 1</em>)</li>
+<li><em>name</em> (<em>str</em>, default: <em>None</em>) &#8211;
+the name of this element</li>
+</ul>
+</dd>
+</dl>
+<p>For a recognition to match, at least one of the child elements
+must match the recognition.  The first matching child is
+used.  Child elements are searched in the order they are given
+in the <em>children</em> constructor argument.</p>
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.Repetition.get_repetitions">
+<!--[dragonfly.grammar.elements_basic.Repetition.get_repetitions]--><tt class="descname">get_repetitions</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Repetition.get_repetitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list containing the nodes associated with
+each repetition of this element&#8217;s child element.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><ul class="first last simple">
+<li><em>node</em> (<em>Node</em>) &#8211;
+the parse tree node associated with this repetition element;
+necessary for searching for child elements within the parse
+tree</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.Repetition.value">
+<!--[dragonfly.grammar.elements_basic.Repetition.value]--><tt class="descname">value</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Repetition.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <em>value</em> of a <a title="dragonfly.grammar.elements_basic.Repetition" class="reference internal" href="#dragonfly.grammar.elements_basic.Repetition"><tt class="xref docutils literal"><span class="pre">Repetition</span></tt></a> is a list containing
+the values of its child.</p>
+<p>The length of this list is equal to the number of times
+that the child element was recognized.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dragonfly.grammar.elements_basic.Sequence">
+<!--[dragonfly.grammar.elements_basic.Sequence]-->class <tt class="descname">Sequence</tt><big>(</big><em>children=()</em>, <em>name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Element class representing a sequence of child elements
+which must all match a recognition in the correct order.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>children</em> (iterable, default: <em>()</em>) &#8211;
+the child elements of this element</li>
+<li><em>name</em> (<em>str</em>, default: <em>None</em>) &#8211;
+the name of this element</li>
+</ul>
+</dd>
+</dl>
+<p>For a recognition to match, all child elements must match
+the recognition in the order that they were given in the
+<em>children</em> constructor argument.</p>
+<dl class="method">
+<dt id="dragonfly.grammar.elements_basic.Sequence.value">
+<!--[dragonfly.grammar.elements_basic.Sequence.value]--><tt class="descname">value</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Sequence.value" title="Permalink to this definition">¶</a></dt>
+<dd>The <em>value</em> of a <a title="dragonfly.grammar.elements_basic.Sequence" class="reference internal" href="#dragonfly.grammar.elements_basic.Sequence"><tt class="xref docutils literal"><span class="pre">Sequence</span></tt></a> is a list containing
+the values of each of its children.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="compound-element-classes">
+<h3>Compound element classes<a class="headerlink" href="#compound-element-classes" title="Permalink to this headline">¶</a></h3>
+<p>This file implements the Compound grammar element class for
+creating grammar element structures based on a simple text format.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Grammar sub-package</a><ul>
+<li><a class="reference external" href="#grammar-classes">Grammar classes</a><ul>
+<li><a class="reference external" href="#grammar-class">Grammar class</a></li>
+<li><a class="reference external" href="#connectiongrammar-class">ConnectionGrammar class</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#module-dragonfly.grammar.rule_mapping">Rule classes</a><ul>
+<li><a class="reference external" href="#rule-class">Rule class</a></li>
+<li><a class="reference external" href="#compoundrule-class">CompoundRule class</a><ul>
+<li><a class="reference external" href="#example-usage">Example usage</a></li>
+<li><a class="reference external" href="#class-reference">Class reference</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#mappingrule-class">MappingRule class</a><ul>
+<li><a class="reference external" href="#id1">Example usage</a></li>
+<li><a class="reference external" href="#id2">Class reference</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference external" href="#module-dragonfly.grammar.elements_compound">Element classes</a><ul>
+<li><a class="reference external" href="#fundamental-element-classes">Fundamental element classes</a></li>
+<li><a class="reference external" href="#compound-element-classes">Compound element classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="objectmodel.html" title="previous chapter">Object model</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="engines.html" title="next chapter">Engines sub-package</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/grammar.txt">Show Source</a></li>
+            </ul>
+          <h3>Quick search</h3>
+            <form class="search" action="search.html" method="get">
+              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="engines.html" title="Engines sub-package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="objectmodel.html" title="Object model"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Dragonfly v0.6.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008, Christo Butcher.
+      Last updated on Apr 10, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+    </div>
+  </body>
+</html>

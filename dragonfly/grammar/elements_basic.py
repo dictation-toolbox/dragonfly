@@ -39,10 +39,10 @@ classes:
  - :class:`Literal` --
    literal word which must be said exactly by the speaker as given
  - :class:`RuleRef` --
-   reference to a :class:`dragonfly.all.Rule` object; this element
-   allows a rule to include (i.e. reference) another rule
+   reference to a :class:`dragonfly.grammar.rule_base.Rule` object;
+   this element allows a rule to include (i.e. reference) another rule
  - :class:`ListRef` --
-   reference to a :class:`dragonfly.all.List` object
+   reference to a :class:`dragonfly.grammar.list.List` object
 
 The following *element* classes are built up out of the fundamental 
 classes listed above:
@@ -56,10 +56,6 @@ classes listed above:
    similar to the :class:`dragonfly.all.ListRef` element, except that it 
    returns the value associated with the spoken words instead of the 
    spoken words themselves
-
-
-Class reference
-----------------------------------------------------------------------------
 
 """
 

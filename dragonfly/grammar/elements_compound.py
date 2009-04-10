@@ -19,8 +19,12 @@
 #
 
 """
-    This file implements the Compound grammar element class for
-    creating grammar element structures based on a simple text format.
+Compound element classes
+============================================================================
+
+This file implements the Compound grammar element class for
+creating grammar element structures based on a simple text format.
+
 """
 
 
