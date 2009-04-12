@@ -22,7 +22,7 @@ functionality.  Normally the rules within a grammar are somehow
 related to each other.  However, neither of these is strictly 
 necessary, they are just common use patterns.
 
-The ``Grammar`` class and derived classes are described 
+The :class:`Grammar` class and derived classes are described 
 in section :ref:`RefGrammarClasses`.
 
 
@@ -70,4 +70,4 @@ element types from a string specification:
 
  * ``Compound(...)`` -- a special element which parses a string 
    spec to create a hierarchy of basic elements.  The format of 
-   this spec is described :ref:`RefCompound`.
+   this spec is described :ref:`RefElementClasses`.

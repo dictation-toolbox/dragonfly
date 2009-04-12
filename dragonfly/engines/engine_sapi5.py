@@ -83,6 +83,7 @@ class Sapi5Engine(EngineBase):
         self.activate_grammar(grammar)
         for l in grammar.lists:
             l._update()
+        handle.CmdSetRuleState("_FakeRule", constants.SGDSActive)
 
     def activate_grammar(self, grammar):
         """ Activate the given *grammar*. """
@@ -101,30 +102,14 @@ class Sapi5Engine(EngineBase):
         self._log.debug("Activating rule %s in grammar %s."
                         % (rule.name, grammar.name))
         grammar_handle = self._get_grammar_wrapper(grammar).handle
-#        grammar_handle.Rules.Commit()
         grammar_handle.CmdSetRuleState(rule.name, constants.SGDSActive)
-#        grammar_handle.Rules.CommitAndSave()
-#        grammar_handle.Rules.Commit()
-
-        rule_handle = grammar_handle.Rules.FindRule(rule.name)
-        self._log.debug("Activating rule %r (id %r)." % (rule_handle.Name, rule_handle.Id))
-        self._log.debug("Activating rule %r -> %r." % (rule_handle.Id, constants.SGDSActive))
-#        grammar_handle.CmdSetRuleIdState(rule_handle.Id, constants.SGDSActive)
 
     def deactivate_rule(self, rule, grammar):
         """ Deactivate the given *rule*. """
         self._log.debug("Deactivating rule %s in grammar %s."
                         % (rule.name, grammar.name))
         grammar_handle = self._get_grammar_wrapper(grammar).handle
-#        grammar_handle.Rules.Commit()
         grammar_handle.CmdSetRuleState(rule.name, constants.SGDSInactive)
-#        grammar_handle.Rules.CommitAndSave()
-#        grammar_handle.Rules.Commit()
-
-        rule_handle = grammar_handle.Rules.FindRule(rule.name)
-        self._log.debug("Deactivating rule %r (id %r)." % (rule_handle.Name, rule_handle.Id))
-        self._log.debug("Deactivating rule %r -> %r." % (rule_handle.Id, constants.SGDSInactive))
-#        grammar_handle.CmdSetRuleIdState(rule_handle.Id, constants.SGDSInactive)
 
     def update_list(self, lst, grammar):
         grammar_handle = self._get_grammar_wrapper(grammar).handle
@@ -184,6 +169,7 @@ class GrammarWrapper(object):
         self.grammar = grammar
         self.handle = handle
         self.engine = engine
+        self.context = context
 
         base = getevents("SAPI.SpSharedRecoContext")
         class ContextEvents(base): pass
@@ -201,10 +187,6 @@ class GrammarWrapper(object):
             newResult = Dispatch(Result)
             phrase_info = newResult.PhraseInfo
             rule_name = phrase_info.Rule.Name
-
-            #---------------------------------------------------------------
-#            speaker = Dispatch("SAPI.SpVoice")
-#            speaker.Speak('you said '+phrase_info.GetText())
 
             #---------------------------------------------------------------
             # Build a list of rule names for each element.

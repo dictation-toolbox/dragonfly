@@ -34,6 +34,8 @@ command two) [test]"**.
 All of these different objects are described below.
 
 
+.. _RefGrammarClasses:
+
 Grammar classes
 ============================================================================
 
@@ -54,6 +56,8 @@ ConnectionGrammar class
 .. autoclass:: dragonfly.grammar.grammar_connection.ConnectionGrammar
    :members: application, connection_up, connection_down
 
+
+.. _RefRuleClasses:
 
 Rule classes
 ============================================================================
@@ -77,6 +81,8 @@ This section describes the following classes:
 .. automodule:: dragonfly.grammar.rule_mapping
    :members:
 
+
+.. _RefElementClasses:
 
 Element classes
 ============================================================================

@@ -30,7 +30,9 @@
 import sys
 from win32com.client import constants
 
-from dragonfly.engines.compiler_base import CompilerBase, CompilerError
+from .compiler_base            import CompilerBase, CompilerError
+from ..grammar.rule_base       import Rule
+from ..grammar.elements_basic  import Impossible, Literal
 
 
 #---------------------------------------------------------------------------
@@ -69,6 +71,8 @@ class Sapi5Compiler(CompilerBase):
 
         for rule in grammar.rules:
             self._compile_rule(rule, grammar, grammar_handle)
+        fake_rule = Rule(name="_FakeRule", element=Literal("impossible " *20), exported=True)
+        self._compile_rule(fake_rule, grammar, grammar_handle)
         grammar_handle.Rules.Commit()
 
         return grammar_handle
@@ -208,3 +212,7 @@ class Sapi5Compiler(CompilerBase):
             s1.AddSpecialTransition(s2, 2)
 
         return rule_handle
+
+    @trace_compile
+    def _compile_impossible(self, element, src_state, dst_state, grammar, grammar_handle):
+        return
