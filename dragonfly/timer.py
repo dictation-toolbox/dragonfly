@@ -19,44 +19,49 @@
 #
 
 """
-	This file implements a basic multiplexing interface to the natlink timer.
+    This file implements a basic multiplexing interface to the natlink timer.
 """
 
 
 import time
 import natlink
+from .log import get_log
 
 
 class _Timer(object):
 
-	class Callback(object):
-		def __init__(self, function, interval):
-			self.function = function
-			self.interval = interval
-			self.next_time = time.clock() + self.interval
-		def call(self):
-			self.next_time += self.interval
-			self.function()
+    class Callback(object):
+        def __init__(self, function, interval):
+            self.function = function
+            self.interval = interval
+            self.next_time = time.clock() + self.interval
+        def call(self):
+            self.next_time += self.interval
+            try:
+                self.function()
+            except Exception, e:
+                get_log("timer").exception("Exception during timer callback")
+                print "Exception during timer callback: %s (%r)" % (e, e)
 
-	def __init__(self, interval):
-		self.interval = interval
-		self.callbacks = []
+    def __init__(self, interval):
+        self.interval = interval
+        self.callbacks = []
 
-	def add_callback(self, function, interval):
-		self.callbacks.append(self.Callback(function, interval))
-		if len(self.callbacks) == 1:
-			natlink.setTimerCallback(self.callback, int(self.interval * 1000))
+    def add_callback(self, function, interval):
+        self.callbacks.append(self.Callback(function, interval))
+        if len(self.callbacks) == 1:
+            natlink.setTimerCallback(self.callback, int(self.interval * 1000))
 
-	def remove_callback(self, function):
-		for c in self.callbacks:
-			if c.function == function: self.callbacks.remove(c)
-		if len(self.callbacks) == 0:
-			natlink.setTimerCallback(None, 0)
+    def remove_callback(self, function):
+        for c in self.callbacks:
+            if c.function == function: self.callbacks.remove(c)
+        if len(self.callbacks) == 0:
+            natlink.setTimerCallback(None, 0)
 
-	def callback(self):
-		now = time.clock()
-		for c in self.callbacks:
-			if c.next_time < now: c.call()
+    def callback(self):
+        now = time.clock()
+        for c in self.callbacks:
+            if c.next_time < now: c.call()
 
 
 timer = _Timer(0.025)

@@ -88,7 +88,64 @@ Element classes
 ============================================================================
 
 .. automodule:: dragonfly.grammar.elements_basic
+
+ElementBase class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.ElementBase
+   :members: dependencies, gstring, decode, value,
+             children, _get_children, element_tree_string, _copy_sequence
+
+Sequence class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Sequence
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+Alternative class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Alternative
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+Optional class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Optional
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+Repetition class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Repetition
+   :members: dependencies, gstring, decode, value, children, get_repetitions
+
+Literal class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Literal
+   :members: dependencies, gstring, decode, value, children
+
+RuleRef class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.RuleRef
+   :members: dependencies, gstring, decode, value, children
+
+ListRef class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.ListRef
+   :members: dependencies, gstring, decode, value, children
+
+DictListRef class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.DictListRef
+   :members: dependencies, gstring, decode, value, children
+
+Dictation class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Dictation
+   :members: dependencies, gstring, decode, value, children
+
+Compound class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_compound.Compound
    :members:
 
-.. automodule:: dragonfly.grammar.elements_compound
+Choice class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_compound.Choice
    :members:

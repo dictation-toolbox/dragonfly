@@ -19,21 +19,28 @@
 #
 
 """
-    This file implements a Window class as an interface to the Win32
-    window control and placement.
+Window class
+============================================================================
+
 """
 
 
 import win32gui
 import win32con
-from ctypes      import windll, pointer, c_wchar, c_ulong
-from .rectangle  import Rectangle, unit
-from .monitor    import monitors
+from ctypes          import windll, pointer, c_wchar, c_ulong
+from .rectangle      import Rectangle, unit
+from .monitor        import monitors
+from .window_movers  import window_movers
 
 
 #===========================================================================
 
 class Window(object):
+    """
+        The Window class is an interface to the Win32 window control
+        and placement.
+
+    """
 
     #-----------------------------------------------------------------------
     # Class attributes to retrieve existing Window objects.
@@ -202,3 +209,14 @@ class Window(object):
         if self.is_minimized:
             self.restore()
         self._set_foreground()
+
+    def move(self, rectangle, animate=None):
+        if not animate:
+            self.set_position(rectangle)
+        else:
+            try:
+                window_mover = window_movers[animate]
+            except KeyError:
+                self.set_position(rectangle)
+                return
+            window_mover.move_window(self, self.get_position(), rectangle)

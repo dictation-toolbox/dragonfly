@@ -4,5 +4,148 @@
 Grammar sub-package
 ****************************************************************************
 
+Dragonfly's core is a language object model containing the following
+objects:
+
+ - *Grammars* -- these represent collections of *rules*.
+ - *Rules* -- these implement complete or partial voice commands, and
+   contain a hierarchy of *elements*.
+ - *Elements* -- these form the language building blocks of voice commands,
+   and represent literal words, element sequences, references to other
+   rules, etc.
+
+
+To illustrate this language model, we discuss an example grammar which
+contains 2 voice commands: **"command one"** and **"(second command |
+command two) [test]"**.
+
+ - *Grammar*: container for the two voice commands
+    - *Rule*: first voice command rule **"command one"**
+       - *Literal element*: element for the literal words **"command one"**.
+         This element is the root-element of the first command rule
+    - *Rule*: second voice command rule **"(second command | command two) [test]"**
+       - *Sequence element*: root-element of the second command rule
+          - *Alternative element*: first child element of the sequence
+             - *Literal element*: element for the literal words **"second command"**
+             - *Literal element*: element for the literal words **"command two"**
+          - *Optional element*: second child element of the sequence
+             - *Literal element*: element for the literal words **"test"**
+
+All of these different objects are described below.
+
+
+.. _RefGrammarClasses:
+
+Grammar classes
+============================================================================
+
+Grammar class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.grammar.grammar_base.Grammar
+   :members: name, engine, rules, lists,
+             load, unload, loaded,
+             enable, disable, enabled,
+             process_begin, _process_begin,
+             enter_context, exit_context
+
+
+ConnectionGrammar class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.grammar.grammar_connection.ConnectionGrammar
+   :members: application, connection_up, connection_down
+
+
+.. _RefRuleClasses:
+
+Rule classes
+============================================================================
+
+This section describes the following classes:
+
+ * :class:`dragonfly.grammar.rule_base.Rule` -- the base rule class
+ * :class:`dragonfly.grammar.rule_compound.CompoundRule` -- a rule class
+   of which the root element is a
+   :class:`dragonfly.grammar.element_compound.Compound` element.
+ * :class:`dragonfly.grammar.rule_mapping.MappingRule` -- a rule class for
+   creating multiple spoken-form -> semantic value voice-commands.
+
+
+.. automodule:: dragonfly.grammar.rule_base
+   :members:
+
+.. automodule:: dragonfly.grammar.rule_compound
+   :members:
+
+.. automodule:: dragonfly.grammar.rule_mapping
+   :members:
+
+
+.. _RefElementClasses:
+
+Element classes
+============================================================================
+
 .. automodule:: dragonfly.grammar.elements_basic
+
+ElementBase class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.ElementBase
+   :members: dependencies, gstring, decode, value,
+             children, _get_children, element_tree_string, _copy_sequence
+
+Sequence class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Sequence
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+Alternative class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Alternative
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+Optional class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Optional
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+Repetition class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Repetition
+   :members: dependencies, gstring, decode, value, children, get_repetitions
+
+Literal class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Literal
+   :members: dependencies, gstring, decode, value, children
+
+RuleRef class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.RuleRef
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+ListRef class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.ListRef
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+DictListRef class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.DictListRef
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+Dictation class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Dictation
+   :members: dependencies, gstring, decode, value, children, _get_children
+
+Compound class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_compound.Compound
+   :members:
+
+Choice class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_compound.Choice
    :members:

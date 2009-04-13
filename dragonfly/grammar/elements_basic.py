@@ -70,15 +70,7 @@ from .list       import ListBase, DictList
 # Element base class.
 
 class ElementBase(object):
-    """
-        Base class for all other element classes.
-
-        Constructor argument:
-         - *name* (*str*, default: *None*) --
-           the name of this element; can be used when interpreting
-           complex recognition for retrieving elements by name.
-
-    """
+    """ Base class for all other element classes. """
 
     name = "uninitialized"
 
@@ -86,6 +78,13 @@ class ElementBase(object):
     _log_eval = get_log("grammar.eval")
 
     def __init__(self, name=None):
+        """
+            Constructor argument:
+             - *name* (*str*, default: *None*) --
+               the name of this element; can be used when interpreting
+               complex recognition for retrieving elements by name.
+
+        """
         if not name:
             name = None
         self.name = name
@@ -99,6 +98,16 @@ class ElementBase(object):
         return "%s(...%s)" % (self.__class__.__name__, name_str)
 
     def _get_children(self):
+        """
+            Returns an iterable of this element's children.
+
+            This method is used by the :meth:`.children` property, and
+            should be overloaded by any derived classes to give
+            the correct children element.
+
+            By default, this method returns an empty tuple.
+
+        """
         return ()
     children = property(lambda self: self._get_children(),
                         doc="Iterable of child elements.  (Read-only)")
@@ -189,8 +198,9 @@ class ElementBase(object):
 
     def _copy_sequence(self, sequence, name, item_types=None):
         """
-            Check that a given object is a sequence, copy its contents
-            into a new tuple, and check that each item is of a given type.
+            Utility function for derived classes that checks that a given 
+            object is a sequence, copies its contents into a new tuple, 
+            and checks that each item is of a given type.
 
         """
         try:
@@ -236,6 +246,7 @@ class Sequence(ElementBase):
     # Methods for runtime introspection.
 
     def _get_children(self):
+        """ Returns the child elements contained within the sequence. """
         return self._children
 
     #-----------------------------------------------------------------------
@@ -332,6 +343,7 @@ class Optional(ElementBase):
     # Methods for runtime introspection.
 
     def _get_children(self):
+        """ Returns the optional child element. """
         return (self._child, )
 
     #-----------------------------------------------------------------------
@@ -417,6 +429,7 @@ class Alternative(ElementBase):
     # Methods for runtime introspection.
 
     def _get_children(self):
+        """ Returns the alternative child elements. """
         return self._children
 
     #-----------------------------------------------------------------------
