@@ -127,6 +127,14 @@ class NatlinkEngine(EngineBase):
             self._log.warning("Engine %s: failed to unload: %s."
                               % (self, e))
 
+    def set_exclusive(self, grammar, exclusive):
+        try:
+            grammar_object = self._get_grammar_wrapper(grammar).grammar_object
+            grammar_object.setExclusive(exclusive)
+        except self._natlink.NatError, e:
+            self._log.warning("Engine %s: failed set exclusive: %s."
+                              % (self, e))
+
     def activate_grammar(self, grammar):
         self._log.debug("Activating grammar %s." % grammar.name)
         pass

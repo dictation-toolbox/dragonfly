@@ -21,7 +21,7 @@
 """
 .. _RefKey:
 
-Key action -- send a sequence of keystrokes
+Key action
 ============================================================================
 
 This section describes the :class:`Key` action object.  This 

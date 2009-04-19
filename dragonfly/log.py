@@ -97,7 +97,7 @@ def get_log(name):
     else:
         global root_logger
         root_logger.error("Request for unknown log name: '%s'" % name)
-        _log_cache[name] = logging.getLogger("UNKNOWN")
+        _log_cache[name] = logging.getLogger(name)
         return _log_cache[name]
 
 

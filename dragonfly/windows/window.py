@@ -217,6 +217,7 @@ class Window(object):
             try:
                 window_mover = window_movers[animate]
             except KeyError:
+                # If the given window mover name isn't found, don't animate.
                 self.set_position(rectangle)
-                return
-            window_mover.move_window(self, self.get_position(), rectangle)
+            else:
+                window_mover.move_window(self, self.get_position(), rectangle)

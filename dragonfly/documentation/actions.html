@@ -130,8 +130,8 @@ what the dynamic element <em>&#8220;text&#8221;</em> is.</p>
 <dd>Base class for Dragonfly&#8217;s action classes.</dd></dl>
 
 </div>
-<div class="section" id="key-action-send-a-sequence-of-keystrokes">
-<span id="refkey"></span><h3>Key action &#8211; send a sequence of keystrokes<a class="headerlink" href="#key-action-send-a-sequence-of-keystrokes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="key-action">
+<span id="refkey"></span><h3>Key action<a class="headerlink" href="#key-action" title="Permalink to this headline">¶</a></h3>
 <p>This section describes the <a title="dragonfly.actions.action_key.Key" class="reference internal" href="#dragonfly.actions.action_key.Key"><tt class="xref docutils literal"><span class="pre">Key</span></tt></a> action object.  This 
 type of action is used for sending keystrokes to the foreground 
 application.  Examples of how to use this class are given in
@@ -280,8 +280,8 @@ modules.  These use the <tt class="docutils literal"><span class="pre">sendinput
 
 </div>
 </div>
-<div class="section" id="text-action-type-a-given-text">
-<h3>Text action &#8211; type a given text<a class="headerlink" href="#text-action-type-a-given-text" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="text-action">
+<h3>Text action<a class="headerlink" href="#text-action" title="Permalink to this headline">¶</a></h3>
 <p>This section describes the <a title="dragonfly.actions.action_text.Text" class="reference internal" href="#dragonfly.actions.action_text.Text"><tt class="xref docutils literal"><span class="pre">Text</span></tt></a> action object. This type of 
 action is used for typing text into the foreground application.</p>
 <p>It differs from the <tt class="xref docutils literal"><span class="pre">Key</span></tt> action in that <a title="dragonfly.actions.action_text.Text" class="reference internal" href="#dragonfly.actions.action_text.Text"><tt class="xref docutils literal"><span class="pre">Text</span></tt></a> is used for 
@@ -315,8 +315,8 @@ capitalization and applying the same formatting to the text.</li>
 </dd></dl>
 
 </div>
-<div class="section" id="paste-action-insert-a-specific-text-by-pasting-it-from-the-clipboard">
-<h3>Paste action &#8211; insert a specific text by pasting it from the clipboard<a class="headerlink" href="#paste-action-insert-a-specific-text-by-pasting-it-from-the-clipboard" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="paste-action">
+<h3>Paste action<a class="headerlink" href="#paste-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_paste.Paste">
 <!--[dragonfly.actions.action_paste.Paste]-->class <tt class="descname">Paste</tt><big>(</big><em>contents</em>, <em>format=None</em>, <em>paste=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_paste.Paste" title="Permalink to this definition">¶</a></dt>
@@ -637,8 +637,8 @@ after each mimic are divided by this number.</li>
 
 </div>
 </div>
-<div class="section" id="waitwindow-action-wait-for-a-specific-window-context">
-<h3>WaitWindow action &#8211; wait for a specific window context<a class="headerlink" href="#waitwindow-action-wait-for-a-specific-window-context" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="waitwindow-action">
+<h3>WaitWindow action<a class="headerlink" href="#waitwindow-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_waitwindow.WaitWindow">
 <!--[dragonfly.actions.action_waitwindow.WaitWindow]-->class <tt class="descname">WaitWindow</tt><big>(</big><em>title=None</em>, <em>executable=None</em>, <em>timeout=15</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_waitwindow.WaitWindow" title="Permalink to this definition">¶</a></dt>
@@ -669,8 +669,8 @@ indicate the timeout.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="focuswindow-action-bring-a-window-to-the-foreground">
-<h3>FocusWindow action &#8211; bring a window to the foreground<a class="headerlink" href="#focuswindow-action-bring-a-window-to-the-foreground" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="focuswindow-action">
+<h3>FocusWindow action<a class="headerlink" href="#focuswindow-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_focuswindow.FocusWindow">
 <!--[dragonfly.actions.action_focuswindow.FocusWindow]-->class <tt class="descname">FocusWindow</tt><big>(</big><em>executable=None</em>, <em>title=None</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_focuswindow.FocusWindow" title="Permalink to this definition">¶</a></dt>
@@ -691,8 +691,46 @@ matches the given parameters.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="pause-action-wait-for-a-specific-amount-of-time">
-<h3>Pause action &#8211; wait for a specific amount of time<a class="headerlink" href="#pause-action-wait-for-a-specific-amount-of-time" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="startapp-action">
+<h3>StartApp action<a class="headerlink" href="#startapp-action" title="Permalink to this headline">¶</a></h3>
+<p>The <a title="dragonfly.actions.action_startapp.StartApp" class="reference internal" href="#dragonfly.actions.action_startapp.StartApp"><tt class="xref docutils literal"><span class="pre">StartApp</span></tt></a> action class can be used to start an application by 
+running an executable file.</p>
+<div class="section" id="example-usage">
+<h4>Example usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h4>
+<p>The following example starts Notepad:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">StartApp</span><span class="p">(</span><span class="s">r&quot;C:\Windows\system32\notepad.exe&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Note that the path to <em>notepad.exe</em> given above might not be correct for 
+your computer, since it depends on the operating system and its 
+configuration.</p>
+</div>
+<div class="section" id="id2">
+<h4>Class reference<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="dragonfly.actions.action_startapp.StartApp">
+<!--[dragonfly.actions.action_startapp.StartApp]-->class <tt class="descname">StartApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.StartApp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start an application.</p>
+<p>This action can be used to run a file (executable), optionally 
+with commandline arguments.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>args</em> (variable argument list of <em>str</em>&#8216;s) &#8211;
+these strings are passed to subprocess.Popen()
+to start the application as a child process</li>
+<li><em>cwd</em> (<em>str</em>, default <em>None</em>) &#8211;
+if not <em>None</em>, then start the application in this
+directory</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="pause-action">
+<h3>Pause action<a class="headerlink" href="#pause-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_pause.Pause">
 <!--[dragonfly.actions.action_pause.Pause]-->class <tt class="descname">Pause</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_pause.Pause" title="Permalink to this definition">¶</a></dt>
@@ -731,15 +769,15 @@ following code determines the time to pause at execution time:</p>
 <li><a class="reference external" href="#combining-voice-commands-and-actions">Combining voice commands and actions</a></li>
 <li><a class="reference external" href="#module-dragonfly.actions.action_pause">Action class reference</a><ul>
 <li><a class="reference external" href="#actionbase-base-class">ActionBase base class</a></li>
-<li><a class="reference external" href="#key-action-send-a-sequence-of-keystrokes">Key action &#8211; send a sequence of keystrokes</a><ul>
+<li><a class="reference external" href="#key-action">Key action</a><ul>
 <li><a class="reference external" href="#keystroke-specification-format">Keystroke specification format</a></li>
 <li><a class="reference external" href="#key-names">Key names</a></li>
 <li><a class="reference external" href="#example-key-actions">Example key actions</a></li>
 <li><a class="reference external" href="#key-class-reference">Key class reference</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#text-action-type-a-given-text">Text action &#8211; type a given text</a></li>
-<li><a class="reference external" href="#paste-action-insert-a-specific-text-by-pasting-it-from-the-clipboard">Paste action &#8211; insert a specific text by pasting it from the clipboard</a></li>
+<li><a class="reference external" href="#text-action">Text action</a></li>
+<li><a class="reference external" href="#paste-action">Paste action</a></li>
 <li><a class="reference external" href="#mouse-action">Mouse action</a><ul>
 <li><a class="reference external" href="#example-mouse-actions">Example mouse actions</a></li>
 <li><a class="reference external" href="#mouse-specification-format">Mouse specification format</a></li>
@@ -755,9 +793,14 @@ following code determines the time to pause at execution time:</p>
 <li><a class="reference external" href="#id1">Class reference</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#waitwindow-action-wait-for-a-specific-window-context">WaitWindow action &#8211; wait for a specific window context</a></li>
-<li><a class="reference external" href="#focuswindow-action-bring-a-window-to-the-foreground">FocusWindow action &#8211; bring a window to the foreground</a></li>
-<li><a class="reference external" href="#pause-action-wait-for-a-specific-amount-of-time">Pause action &#8211; wait for a specific amount of time</a></li>
+<li><a class="reference external" href="#waitwindow-action">WaitWindow action</a></li>
+<li><a class="reference external" href="#focuswindow-action">FocusWindow action</a></li>
+<li><a class="reference external" href="#startapp-action">StartApp action</a><ul>
+<li><a class="reference external" href="#example-usage">Example usage</a></li>
+<li><a class="reference external" href="#id2">Class reference</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#pause-action">Pause action</a></li>
 </ul>
 </li>
 </ul>
@@ -802,7 +845,7 @@ following code determines the time to pause at execution time:</p>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Apr 13, 2009.
+      Last updated on Apr 19, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
     </div>
   </body>

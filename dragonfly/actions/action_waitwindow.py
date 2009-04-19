@@ -19,7 +19,7 @@
 #
 
 """
-WaitWindow action -- wait for a specific window context
+WaitWindow action
 ============================================================================
 
 """

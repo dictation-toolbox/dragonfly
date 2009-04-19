@@ -22,6 +22,8 @@
     This file implements a Point class for geometry operations.
 """
 
+import math
+
 
 #===========================================================================
 
@@ -62,6 +64,10 @@ class Point(object):
                  fset=_set_y,
                  doc="Protected access to y attribute.")
 
+    @property
+    def magnitude(self):
+        return math.hypot(self._x, self._y)
+
     #-----------------------------------------------------------------------
     # Methods for manipulating point objects.
 
@@ -78,6 +84,21 @@ class Point(object):
         if not isinstance(other, Point): return NotImplemented
         clone = self.copy()
         clone += other
+        return clone
+
+    def __isub__(self, other):
+        """Translate point by adding another point's coordinates."""
+        if not isinstance(other, Point): return NotImplemented
+        self._x -= other._x
+        self._y -= other._y
+        return self
+
+    def __sub__(self, other):
+        """Create a new point with coordinates of this point and other
+            added up."""
+        if not isinstance(other, Point): return NotImplemented
+        clone = self.copy()
+        clone -= other
         return clone
 
     def translate(self, dx, dy):

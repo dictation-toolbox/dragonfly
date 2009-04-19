@@ -45,10 +45,10 @@ from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
                                 Number, NumberRef)
 
 #---------------------------------------------------------------------------
-from .actions.actions   import (ActionBase, DynStrActionBase, ActionError,
+from .actions           import (ActionBase, DynStrActionBase, ActionError,
                                 Repeat, Key, Text, Mouse, Paste, Pause,
                                 Mimic, Playback, WaitWindow, FocusWindow,
-                                Function)
+                                Function, StartApp)
 from .actions.keyboard  import Typeable, Keyboard
 from .actions.typeables import typeables
 from .actions.sendinput import (KeyboardInput, MouseInput, HardwareInput,

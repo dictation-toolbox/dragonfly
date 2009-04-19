@@ -24,9 +24,82 @@ Window mover classes
 
 """
 
+import math
+import random
 from math          import sqrt
+from .point        import Point
 from .rectangle    import Rectangle, unit
 from ..timer       import timer
+
+
+#===========================================================================
+
+def linear_fraction_generator():
+    def _linear_fraction_generator(count):
+        step = float(1) / count
+        for index in range(count):
+            yield step * index
+    return _linear_fraction_generator
+
+def sine_fraction_generator(begin=-0.5, end=0.5):
+    begin_radians = -begin * math.pi
+    end_radians   = -end   * math.pi
+    def _sine_fraction_generator(count):
+        step = (end_radians - begin_radians) / count
+    
+        sample_points = [(step*i - begin_radians) for i in range(count)]
+        fractions = [math.sin(x) for x in sample_points]
+        minimum = min(fractions)
+        maximum = max(fractions)
+        for f in fractions:
+            yield (f - minimum) / (maximum - minimum)
+    return _sine_fraction_generator
+
+
+#---------------------------------------------------------------------------
+
+def linear_path():
+    def _linear_path(p1, p2, fractions):
+        for fraction in fractions:
+            p = p1.interpolate(p2, fraction)
+            yield p
+    return _linear_path
+
+def spline_path():
+    distance_min = 0.5
+    distance_max = 1.0
+    offset_max = 0.7
+
+    def _spline_path(p1, p2, fractions):
+        distance_factor = random.uniform(distance_min, distance_max)
+        offset_factor = random.uniform(-offset_max, offset_max)
+        delta = p2 - p1
+        base = p1.interpolate(p2, distance_factor)
+        spline_x = base.x + delta.y * offset_factor
+        spline_y = base.y - delta.x * offset_factor
+        pm = Point(spline_x, spline_y)
+
+        for fraction in fractions:
+            p1m = p1.interpolate(pm, fraction)
+            pm2 = pm.interpolate(p2, fraction)
+            p = p1m.interpolate(pm2, fraction)
+            yield p
+
+    return _spline_path
+
+def linear_resize_path(max_count=10):
+    def _linear_resize_path(r1, r2, count):
+        if count > max_count:  step = 1.0 / max_count
+        else:                  step = 1.0 / count
+        for index in range(count):
+            if index >= max_count:
+                yield r2.dx, r2.dy
+            else:
+                fraction = step * index
+                dx = r1.dx + (r2.dx - r1.dx) * fraction
+                dy = r1.dy + (r2.dy - r1.dy) * fraction
+                yield dx, dy
+    return _linear_resize_path
 
 
 #===========================================================================
@@ -35,67 +108,78 @@ class PathBase(object):
 
     _interval = 0.025
 
-    def __init__(self, window, origin, destination, speed=1.0):
+    def __init__(self, window, origin, destination, fraction_generator, position_generator, size_generator, speed=1.0):
         self._window = window
         self._origin = origin
         self._destination = destination
         self._speed = speed
-        self._fractions = self._calc_fraction_list()
+        self._fraction_generator = fraction_generator
+        self._position_generator = position_generator
+        self._size_generator     = size_generator
+
+        distance = (destination.center - origin.center).magnitude
+        count = int(distance / 40 / speed)
+        if count < 10:
+            count = 10
+        self._rectangles = self._rectangle_generator(origin, destination, count)
 
     def start(self):
         timer.add_callback(self.timer_callback, self._interval)
 
     def stop(self):
         timer.remove_callback(self.timer_callback)
+        self._rectangles = None
 
     def timer_callback(self):
-        if not self._fractions:
+        if not self._rectangles:
             self.stop()
             self._window.set_position(self._destination)
             return
-        fraction = self._fractions.pop(0)
-        rectangle = self._calc_rect_from_fraction(fraction)
+        try:
+            rectangle = self._rectangles.next()
+        except StopIteration:
+            self._rectangles = None
+            self.stop()
+            rectangle = self._destination
         self._window.set_position(rectangle)
 
-
-class LinearPath(PathBase):
-
-    _step_size = 30
-
-    def _calc_fraction_list(self):
-        step_size = float(self._step_size) * self._speed
-        oc = self._origin.center
-        dc = self._destination.center
-        dx = oc.x - dc.x
-        dy = oc.y - dc.y
-        distance = sqrt(dx**2 + dy**2)
-        print "distance", distance
-        print "step size", step_size
-        print "fraction size", step_size/distance
-        step_fraction = step_size / distance
-        return [(i * step_fraction) for i in range(0, int(distance / step_size))]
-
-    def _calc_rect_from_fraction(self, fraction):
-        p1 = self._origin.p1.interpolate(self._destination.p1, fraction)
-        p2 = self._origin.p2.interpolate(self._destination.p2, fraction)
-        rectangle = Rectangle(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y)
-        return rectangle
+    def _rectangle_generator(self, r1, r2, count):
+        fractions = self._fraction_generator(count)
+        positions = self._position_generator(r1.center, r2.center, fractions)
+        sizes     = self._size_generator(r1, r2, count)
+        for position, size in zip(positions, sizes):
+            dx, dy = size
+            x = position.x - dx/2
+            y = position.y - dy/2
+            yield Rectangle(x, y, dx, dy)
 
 
 #===========================================================================
 
 class WindowMover(object):
 
-    def __init__(self, path_type):
-        self._path_type = path_type
+    def __init__(self, fraction_generator, position_generator, size_generator, speed=1.0):
+        self._fraction_generator = fraction_generator
+        self._position_generator = position_generator
+        self._size_generator     = size_generator
+        self._speed = speed
 
     def move_window(self, window, origin, destination):
-        path = self._path_type(window, origin, destination)
+        path = PathBase(window, origin, destination, self._fraction_generator, self._position_generator, self._size_generator)
         path.start()
 
 
 #===========================================================================
 
 window_movers = {
-                 "linear": WindowMover(LinearPath),
+                 "spline":   WindowMover(
+                                         sine_fraction_generator(),
+                                         spline_path(),
+                                         linear_resize_path(20),
+                                        ),
+                 "linear":   WindowMover(
+                                         linear_fraction_generator(),
+                                         linear_path(),
+                                         linear_resize_path(20),
+                                        ),
                 }

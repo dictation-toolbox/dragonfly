@@ -21,9 +21,6 @@
 """
 This file offers access to various action classes.
 
-This is the file normally imported by end-user code which needs
-to use the dragonfly action system.
-
 """
 
 
@@ -39,3 +36,4 @@ from .action_playback     import Playback
 from .action_function     import Function
 from .action_waitwindow   import WaitWindow
 from .action_focuswindow  import FocusWindow
+from .action_startapp     import StartApp

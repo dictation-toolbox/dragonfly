@@ -19,7 +19,7 @@
 #
 
 """
-Text action -- type a given text
+Text action
 ============================================================================
 
 This section describes the :class:`Text` action object. This type of 

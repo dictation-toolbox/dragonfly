@@ -19,7 +19,7 @@
 #
 
 """
-FocusWindow action -- bring a window to the foreground
+FocusWindow action
 ============================================================================
 
 """

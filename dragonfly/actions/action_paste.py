@@ -19,7 +19,7 @@
 #
 
 """
-Paste action -- insert a specific text by pasting it from the clipboard
+Paste action
 ============================================================================
 
 """

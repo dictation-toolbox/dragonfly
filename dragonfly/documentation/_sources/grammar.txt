@@ -123,22 +123,22 @@ Literal class
 RuleRef class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_basic.RuleRef
-   :members: dependencies, gstring, decode, value, children, _get_children
+   :members: dependencies, gstring, decode, value, children
 
 ListRef class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_basic.ListRef
-   :members: dependencies, gstring, decode, value, children, _get_children
+   :members: dependencies, gstring, decode, value, children
 
 DictListRef class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_basic.DictListRef
-   :members: dependencies, gstring, decode, value, children, _get_children
+   :members: dependencies, gstring, decode, value, children
 
 Dictation class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_basic.Dictation
-   :members: dependencies, gstring, decode, value, children, _get_children
+   :members: dependencies, gstring, decode, value, children
 
 Compound class
 ----------------------------------------------------------------------------

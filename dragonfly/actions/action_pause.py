@@ -19,7 +19,7 @@
 #
 
 """
-Pause action -- wait for a specific amount of time
+Pause action
 ============================================================================
 
 """

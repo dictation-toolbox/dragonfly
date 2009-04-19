@@ -127,6 +127,9 @@ class Grammar(object):
                 doc = "Whether a grammar is active to receive"
                       " recognitions or not.")
 
+    def set_exclusive(self, exclusive):
+        self._engine.set_exclusive(self, exclusive)
+
     def _set_engine(self, engine):
         if self._loaded:
             raise GrammarError(" Grammar %s: Cannot set engine while loaded."
