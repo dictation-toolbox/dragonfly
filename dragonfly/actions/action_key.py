@@ -95,7 +95,7 @@ Key names
    ``8``, ``9``
  - Navigation keys: ``left``, ``right``, ``up``, ``down``, ``pgup``,
    ``pgdown``, ``home``, ``end``
- - Editing keys: ``space``, ``enter``, ``backspace``, ``del``,
+ - Editing keys: ``space``, ``tab``, ``enter``, ``backspace``, ``del``,
    ``insert``
  - Symbols: ``ampersand``, ``apostrophe``, ``asterisk``, ``at``,
    ``backslash``, ``backtick``, ``bar``, ``caret``, ``colon``,

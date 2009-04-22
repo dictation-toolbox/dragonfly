@@ -208,7 +208,7 @@ cause an error.  It harmlessly does nothing.</p>
 <tt class="docutils literal"><span class="pre">8</span></tt>, <tt class="docutils literal"><span class="pre">9</span></tt></li>
 <li>Navigation keys: <tt class="docutils literal"><span class="pre">left</span></tt>, <tt class="docutils literal"><span class="pre">right</span></tt>, <tt class="docutils literal"><span class="pre">up</span></tt>, <tt class="docutils literal"><span class="pre">down</span></tt>, <tt class="docutils literal"><span class="pre">pgup</span></tt>,
 <tt class="docutils literal"><span class="pre">pgdown</span></tt>, <tt class="docutils literal"><span class="pre">home</span></tt>, <tt class="docutils literal"><span class="pre">end</span></tt></li>
-<li>Editing keys: <tt class="docutils literal"><span class="pre">space</span></tt>, <tt class="docutils literal"><span class="pre">enter</span></tt>, <tt class="docutils literal"><span class="pre">backspace</span></tt>, <tt class="docutils literal"><span class="pre">del</span></tt>,
+<li>Editing keys: <tt class="docutils literal"><span class="pre">space</span></tt>, <tt class="docutils literal"><span class="pre">tab</span></tt>, <tt class="docutils literal"><span class="pre">enter</span></tt>, <tt class="docutils literal"><span class="pre">backspace</span></tt>, <tt class="docutils literal"><span class="pre">del</span></tt>,
 <tt class="docutils literal"><span class="pre">insert</span></tt></li>
 <li>Symbols: <tt class="docutils literal"><span class="pre">ampersand</span></tt>, <tt class="docutils literal"><span class="pre">apostrophe</span></tt>, <tt class="docutils literal"><span class="pre">asterisk</span></tt>, <tt class="docutils literal"><span class="pre">at</span></tt>,
 <tt class="docutils literal"><span class="pre">backslash</span></tt>, <tt class="docutils literal"><span class="pre">backtick</span></tt>, <tt class="docutils literal"><span class="pre">bar</span></tt>, <tt class="docutils literal"><span class="pre">caret</span></tt>, <tt class="docutils literal"><span class="pre">colon</span></tt>,
@@ -691,28 +691,66 @@ matches the given parameters.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="startapp-action">
-<h3>StartApp action<a class="headerlink" href="#startapp-action" title="Permalink to this headline">¶</a></h3>
-<p>The <a title="dragonfly.actions.action_startapp.StartApp" class="reference internal" href="#dragonfly.actions.action_startapp.StartApp"><tt class="xref docutils literal"><span class="pre">StartApp</span></tt></a> action class can be used to start an application by 
-running an executable file.</p>
+<div class="section" id="bringapp-and-startapp-actions">
+<h3>BringApp and StartApp actions<a class="headerlink" href="#bringapp-and-startapp-actions" title="Permalink to this headline">¶</a></h3>
+<p>The <a title="dragonfly.actions.action_startapp.StartApp" class="reference internal" href="#dragonfly.actions.action_startapp.StartApp"><tt class="xref docutils literal"><span class="pre">StartApp</span></tt></a> and <a title="dragonfly.actions.action_startapp.BringApp" class="reference internal" href="#dragonfly.actions.action_startapp.BringApp"><tt class="xref docutils literal"><span class="pre">BringApp</span></tt></a> action classes are used to 
+start an application and bring it to the foreground.  <a title="dragonfly.actions.action_startapp.StartApp" class="reference internal" href="#dragonfly.actions.action_startapp.StartApp"><tt class="xref docutils literal"><span class="pre">StartApp</span></tt></a> 
+starts an application by running an executable file, while 
+<a title="dragonfly.actions.action_startapp.BringApp" class="reference internal" href="#dragonfly.actions.action_startapp.BringApp"><tt class="xref docutils literal"><span class="pre">BringApp</span></tt></a> first checks whether the application is already running 
+and if so brings it to the foreground, otherwise starts it by running the 
+executable file.</p>
 <div class="section" id="example-usage">
 <h4>Example usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h4>
-<p>The following example starts Notepad:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">StartApp</span><span class="p">(</span><span class="s">r&quot;C:\Windows\system32\notepad.exe&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<p>The following example brings Notepad to the foreground if it is already 
+open, otherwise it starts Notepad:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">BringApp</span><span class="p">(</span><span class="s">r&quot;C:\Windows\system32\notepad.exe&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Note that the path to <em>notepad.exe</em> given above might not be correct for 
 your computer, since it depends on the operating system and its 
 configuration.</p>
+<p>In some cases an application might be accessible simply through the file 
+name of its executable, without specifying the directory.  This depends on 
+the operating system&#8217;s path configuration.  For example, on the author&#8217;s 
+computer the following command successfully starts Notepad:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">BringApp</span><span class="p">(</span><span class="s">&quot;notepad&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id2">
 <h4>Class reference<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
+<dt id="dragonfly.actions.action_startapp.BringApp">
+<!--[dragonfly.actions.action_startapp.BringApp]-->class <tt class="descname">BringApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.BringApp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bring an application to the foreground, starting it if it is not 
+yet running.</p>
+<p>When this action is executed, it looks for an existing window of 
+the application specified in the constructor arguments.  If an 
+existing window is found, that window is brought to the 
+foreground.  On the other hand, if no window is found the 
+application is started.</p>
+<p>Note that the constructor arguments are identical to those used by 
+the <a title="dragonfly.actions.action_startapp.StartApp" class="reference internal" href="#dragonfly.actions.action_startapp.StartApp"><tt class="xref docutils literal"><span class="pre">StartApp</span></tt></a> action class.</p>
+<dl class="docutils">
+<dt>Constructor arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>args</em> (variable argument list of <em>str</em>&#8216;s) &#8211;
+these strings are passed to <tt class="xref docutils literal"><span class="pre">subprocess.Popen()</span></tt>
+to start the application as a child process</li>
+<li><em>cwd</em> (<em>str</em>, default <em>None</em>) &#8211;
+if not <em>None</em>, then start the application in this
+directory</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
 <dt id="dragonfly.actions.action_startapp.StartApp">
 <!--[dragonfly.actions.action_startapp.StartApp]-->class <tt class="descname">StartApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.StartApp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start an application.</p>
-<p>This action can be used to run a file (executable), optionally 
-with commandline arguments.</p>
+<p>When this action is executed, it runs a file (executable), 
+optionally with commandline arguments.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
 <dd><ul class="first last simple">
@@ -795,7 +833,7 @@ following code determines the time to pause at execution time:</p>
 </li>
 <li><a class="reference external" href="#waitwindow-action">WaitWindow action</a></li>
 <li><a class="reference external" href="#focuswindow-action">FocusWindow action</a></li>
-<li><a class="reference external" href="#startapp-action">StartApp action</a><ul>
+<li><a class="reference external" href="#bringapp-and-startapp-actions">BringApp and StartApp actions</a><ul>
 <li><a class="reference external" href="#example-usage">Example usage</a></li>
 <li><a class="reference external" href="#id2">Class reference</a></li>
 </ul>
@@ -845,7 +883,7 @@ following code determines the time to pause at execution time:</p>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Apr 19, 2009.
+      Last updated on Apr 22, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
     </div>
   </body>
