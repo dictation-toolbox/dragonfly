@@ -37,3 +37,4 @@ from .action_function     import Function
 from .action_waitwindow   import WaitWindow
 from .action_focuswindow  import FocusWindow
 from .action_startapp     import StartApp, BringApp
+from .action_playsound    import PlaySound

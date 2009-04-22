@@ -1,4 +1,4 @@
-#
+﻿#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -18,17 +18,30 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from .action_base         import (ActionBase, DynStrActionBase,
-                                  Repeat, ActionError)
-from .action_key          import Key
-from .action_text         import Text
-from .action_mouse        import Mouse
-from .action_paste        import Paste
-from .action_pause        import Pause
-from .action_mimic        import Mimic
-from .action_playback     import Playback
-from .action_function     import Function
-from .action_waitwindow   import WaitWindow
-from .action_focuswindow  import FocusWindow
-from .action_startapp     import StartApp, BringApp
-from .action_playsound    import PlaySound
+"""
+PlaySound action
+============================================================================
+
+"""
+
+import winsound
+from .action_base         import ActionBase, ActionError
+
+
+#---------------------------------------------------------------------------
+
+class PlaySound(ActionBase):
+
+    def __init__(self, name=None, file=None):
+        ActionBase.__init__(self)
+        if name is not None:
+            self._name = name
+            self._flags = winsound.SND_ASYNC | winsound.SND_ALIAS
+        elif file is not None:
+            self._name = file
+            self._flags = winsound.SND_ASYNC | winsound.SND_FILENAME
+
+        self._str = str(self._name)
+
+    def _execute(self, data=None):
+        winsound.PlaySound(self._name, self._flags)
