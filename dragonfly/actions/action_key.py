@@ -187,7 +187,8 @@ class Key(DynStrActionBase):
         's': typeables["shift"],
         'w': typeables["win"],
         }
-    _pause_factor = 0.02
+    interval_factor = 0.01
+    interval_default = 0.0
     _keyboard = Keyboard()
 
     def _parse_spec(self, spec):
@@ -264,7 +265,7 @@ class Key(DynStrActionBase):
         if inner_pause is not None:
             s = inner_pause
             try:
-                inner_pause = float(s) * self._pause_factor
+                inner_pause = float(s) * self.interval_factor
                 if inner_pause < 0: raise ValueError
             except ValueError:
                 raise ActionError("Invalid inner pause value: %r,"
@@ -272,11 +273,13 @@ class Key(DynStrActionBase):
         if outer_pause is not None:
             s = outer_pause
             try:
-                outer_pause = float(s) * self._pause_factor
+                outer_pause = float(s) * self.interval_factor
                 if outer_pause < 0: raise ValueError
             except ValueError:
                 raise ActionError("Invalid outer pause value: %r,"
                                   " should be a positive number." % s)
+        else:
+            outer_pause = self.interval_default * self.interval_factor
 
         direction = None; repeat = 1
         if special is not None:
@@ -292,6 +295,8 @@ class Key(DynStrActionBase):
                                       " should be a positive integer." % s)
 
         if direction is None:
+            if inner_pause is None:
+                inner_pause = self.interval_default * self.interval_factor
             if repeat == 0:
                 events = []
             else:

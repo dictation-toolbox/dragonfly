@@ -73,7 +73,7 @@ class Context(object):
         Base class for other context classes.
 
         This base class implements some basic 
-        infrastructure, including that's required for 
+        infrastructure, including what's required for 
         logical operations on context objects.  Derived 
         classes should at least do the following things:
 
