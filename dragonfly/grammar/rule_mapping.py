@@ -149,7 +149,13 @@ class MappingRule(Rule):
         value = node.value()
 
         if hasattr(value, "copy_bind"):        
-            extras = dict(self._defaults)
+            # Prepare *extras* dict for passing to _copy_bind().
+            extras = {
+                      "_grammar":  self.grammar,
+                      "_rule":     self,
+                      "_node":     node,
+                     }
+            extras.update(self._defaults)
             for name, element in self._extras.iteritems():
                 extra_node = node.get_child_by_name(name, shallow=True)
                 if not extra_node: continue
@@ -171,7 +177,13 @@ class MappingRule(Rule):
         """
         item_value = node.value()
 
-        extras = dict(self._defaults)
+        # Prepare *extras* dict for passing to _process_recognition().
+        extras = {
+                  "_grammar":  self.grammar,
+                  "_rule":     self,
+                  "_node":     node,
+                 }
+        extras.update(self._defaults)
         for name, element in self._extras.iteritems():
             extra_node = node.get_child_by_name(name, shallow=True)
             if not extra_node: continue

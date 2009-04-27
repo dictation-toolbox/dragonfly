@@ -281,7 +281,8 @@ class Compound(elements_.Alternative):
 
     def value(self, node):
         if self._value_func is not None:
-            extras = {}
+            # Prepare *extras* dict for passing to value_func().
+            extras = {"_node": node}
             for name, element in self._extras.iteritems():
                 extra_node = node.get_child_by_name(name, shallow=True)
                 if not extra_node: continue
