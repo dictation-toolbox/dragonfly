@@ -72,8 +72,27 @@ class ActionBase(object):
             s = "%s %% %r" % (s, self._data)
         return s
 
+    _shallow_attributes = ["_data"]
+
     def copy(self):
         return copy_.deepcopy(self)
+        clone = self.__class__()
+        clone._str = self._str
+        clone._following = list(self._following)
+        if isinstance(self._data, dict):  clone._data = dict(self._data)
+        else:                             clone._data = self._data
+        clone._bound = self._bound
+        clone._repeat_factors = list(self._repeat_factors)
+        return clone
+
+    def __deepcopy__(self, memo):
+        clone = copy_.copy(self)
+        for name, value in self.__dict__.items():
+            if name in self._shallow_attributes:
+                clone.__dict__[name] = copy_.copy(value)
+            else:
+                clone.__dict__[name] = copy_.deepcopy(value, memo)
+        return clone
 
     def append(self, other):
         assert isinstance(other, ActionBase)
@@ -141,6 +160,8 @@ class ActionBase(object):
 #---------------------------------------------------------------------------
 
 class DynStrActionBase(ActionBase):
+
+    _shallow_attributes = ActionBase._shallow_attributes + ["_bound_data"]
 
     #-----------------------------------------------------------------------
     # Initialization methods.
