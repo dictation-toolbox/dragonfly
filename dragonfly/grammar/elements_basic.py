@@ -134,7 +134,7 @@ class ElementBase(object):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def dependencies(self):
+    def dependencies(self, memo):
         """
             Returns an iterable containing the dependencies of this
             element and of this element's children.
@@ -143,9 +143,12 @@ class ElementBase(object):
             for this element.  These include lists and other rules.
 
         """
+        if self in memo:
+            return []
+        memo.append(self)
         dependencies = []
         for c in self.children:
-            dependencies.extend(c.dependencies())
+            dependencies.extend(c.dependencies(memo))
         return dependencies
 
     def compile(self, compiler):
@@ -252,10 +255,13 @@ class Sequence(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def dependencies(self):
+    def dependencies(self, memo):
+        if self in memo:
+            return []
+        memo.append(self)
         dependencies = []
         for c in self._children:
-            dependencies.extend(c.dependencies())
+            dependencies.extend(c.dependencies(memo))
         return dependencies
 
     def gstring(self):
@@ -349,8 +355,11 @@ class Optional(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def dependencies(self):
-        return self._child.dependencies()
+    def dependencies(self, memo):
+        if self in memo:
+            return []
+        memo.append(self)
+        return self._child.dependencies(memo)
 
     def gstring(self):
         return "[" + self._child.gstring() + "]"
@@ -440,10 +449,13 @@ class Alternative(ElementBase):
              + " | ".join(map(lambda e: e.gstring(), self._children)) \
              + ")"
 
-    def dependencies(self):
+    def dependencies(self, memo):
+        if self in memo:
+            return []
+        memo.append(self)
         dependencies = []
         for c in self._children:
-            dependencies.extend(c.dependencies())
+            dependencies.extend(c.dependencies(memo))
         return dependencies
 
     #-----------------------------------------------------------------------
@@ -543,8 +555,11 @@ class Repetition(Sequence):
 
         Sequence.__init__(self, children, name=name)
 
-    def dependencies(self):
-        return self._child.dependencies()
+    def dependencies(self, memo):
+        if self in memo:
+            return []
+        memo.append(self)
+        return self._child.dependencies(memo)
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
@@ -681,8 +696,11 @@ class RuleRef(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def dependencies(self):
-        return [self._rule] + self._rule.dependencies()
+    def dependencies(self, memo):
+        if self in memo:
+            return []
+        memo.append(self)
+        return [self._rule] + self._rule.dependencies(memo)
 
     def gstring(self):
         return "<" + self._rule.name + ">"
@@ -734,7 +752,10 @@ class ListRef(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
-    def dependencies(self):
+    def dependencies(self, memo):
+        if self in memo:
+            return []
+        memo.append(self)
         return [self._list]
 
     def compile(self, compiler):

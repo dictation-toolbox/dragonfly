@@ -157,7 +157,7 @@ class Grammar(object):
             return
         elif [True for r in self._rules if r.name == rule.name]:
             raise GrammarError("Two rules with the same name '%s' not"
-                "allowed." % rule.name)
+                " allowed." % rule.name)
 
         # Append the rule to this grammar object's internal list.
         self._rules.append(rule)

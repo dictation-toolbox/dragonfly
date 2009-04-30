@@ -222,9 +222,12 @@ class Rule(object):
         s += " = " + self.element.gstring() + ";"
         return s
 
-    def dependencies(self):
+    def dependencies(self, memo):
+        if self in memo:
+            return []
+        memo.append(self)
         if self._element:
-            return self._element.dependencies()
+            return self._element.dependencies(memo)
         else:
             return []
 
@@ -325,5 +328,5 @@ class ImportedRule(Rule):
     #-----------------------------------------------------------------------
     # Compilation related methods.
 
-    def dependencies(self):
+    def dependencies(self, memo):
         return ()

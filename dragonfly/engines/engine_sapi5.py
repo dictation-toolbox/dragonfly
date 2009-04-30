@@ -75,6 +75,13 @@ class Sapi5Engine(EngineBase):
         """ Load the given *grammar*. """
         self._log.debug("Loading grammar %s." % grammar.name)
         grammar.engine = self
+
+        # Dependency checking.
+        memo = []
+        for r in grammar._rules:
+            for d in r.dependencies(memo):
+                grammar.add_dependency(d)
+
         context = self._recognizer.CreateRecoContext()
         handle = self._compiler.compile_grammar(grammar, context)
         wrapper = GrammarWrapper(grammar, handle, context, self)
