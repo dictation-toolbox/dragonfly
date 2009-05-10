@@ -138,7 +138,8 @@ class _Compiler(object):
             raise CompilerError("Cannot start defining a rule while" \
                                "a different rule is already being defined.")
 
-        assert isinstance(name, str), "The rule name must be a string."
+        assert isinstance(name, basestring), ("The rule name must be a"
+                                              " string, received %r." % name)
         self._current_rule_name = name
         self._current_rule_export = exported
         self._current_rule_definition = []
@@ -355,7 +356,7 @@ class _Compiler(object):
             #  characters, so that its size in bytes is a multiple of 4.
             padded_len = (len(name) + 4) & (~3)
             element = struct.pack("LL%ds" % padded_len,
-                padded_len + 8, id, name)
+                padded_len + 8, id, str(name))
             elements.append(element)
 
         # Concatenate all the elements.

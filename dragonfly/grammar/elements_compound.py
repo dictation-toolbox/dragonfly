@@ -307,10 +307,10 @@ class Choice(elements_.Alternative):
     def __init__(self, name, choices, extras=None):
 
         # Argument type checking.
-        assert isinstance(name, str) or name is None
+        assert isinstance(name, basestring) or name is None
         assert isinstance(choices, dict)
         for k, v in choices.iteritems():
-            assert isinstance(k, str)
+            assert isinstance(k, basestring)
 
         # Construct children from the given choice keys and values.
         self._choices = choices
