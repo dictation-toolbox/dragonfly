@@ -102,8 +102,8 @@ class MappingRule(Rule):
     mapping  = {}
     extras   = []
     defaults = {}
-    exported = True
     context  = None
+    _default_exported = True
 
     #-----------------------------------------------------------------------
 
@@ -113,8 +113,17 @@ class MappingRule(Rule):
         if mapping  is None: mapping  = self.mapping
         if extras   is None: extras   = self.extras
         if defaults is None: defaults = self.defaults
-        if exported is None: exported = self.exported
         if context  is None: context  = self.context
+
+        # Complex handling of exported, because of clashing use of the
+        #  exported name at the class level: property & class-value.
+        if exported is not None:
+            pass
+        elif (hasattr(self.__class__, "exported")
+            and not isinstance(self.__class__.exported, property)):
+            exported = self.__class__.exported
+        else:
+            exported = self._default_exported
 
         # Type checking of initialization values.
         assert isinstance(name, (str, unicode))

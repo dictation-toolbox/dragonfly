@@ -814,7 +814,8 @@ class DictListRef(ListRef):
 
 class Empty(ElementBase):
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, value=True):
+        self._value = value
         ElementBase.__init__(self, name)
 
     #-----------------------------------------------------------------------
@@ -838,6 +839,9 @@ class Empty(ElementBase):
 
         state.decode_failure(self)
         return
+
+    def value(self, node):
+        return self._value
 
 
 #===========================================================================

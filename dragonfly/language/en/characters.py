@@ -24,7 +24,8 @@ Characters in text symbols for the English language.
 
 """
 
-from ...grammar.elements   import Choice, RuleRef, Repetition
+from ...grammar.elements   import (Choice, RuleRef, Repetition, Sequence,
+                                   Alternative, Optional, Compound)
 from ...grammar.rule_base  import Rule
 
 
@@ -32,34 +33,34 @@ from ...grammar.rule_base  import Rule
 # Letter names.
 
 letter_names = {
-                "alpha":     "a",
-                "bravo":     "b",
-                "charlie":   "c",
-                "delta":     "d",
-                "echo":      "e",
-                "foxtrot":   "f",
-                "golf":      "g",
-                "hotel":     "h",
-                "india":     "i",
-                "juliett":   "j",
-                "kilo":      "k",
-                "lima":      "l",
-                "mike":      "m",
-                "november":  "n",
-                "oscar":     "o",
-                "papa":      "p",
-                "quebec":    "q",
-                "romeo":     "r",
-                "sierra":    "s",
-                "tango":     "t",
-                "uniform":   "u",
-                "victor":    "v",
-                "whiskey":   "w",
-                "x-ray":     "x",
-                "yankee":    "y",
-                "zulu":      "z",
+                "Alpha":     "a",
+                "Bravo":     "b",
+                "Charlie":   "c",
+                "Delta":     "d",
+                "Echo":      "e",
+                "Foxtrot":   "f",
+                "Golf":      "g",
+                "Hotel":     "h",
+                "India":     "i",
+                "Juliett":   "j",
+                "Kilo":      "k",
+                "Lima":      "l",
+                "Mike":      "m",
+                "November":  "n",
+                "Oscar":     "o",
+                "Papa":      "p",
+                "Quebec":    "q",
+                "Romeo":     "r",
+                "Sierra":    "s",
+                "Tango":     "t",
+                "Uniform":   "u",
+                "Victor":    "v",
+                "Whiskey":   "w",
+                "X-ray":     "x",
+                "Yankee":    "y",
+                "Zulu":      "z",
                }
-uppercase_prefix = "(cap | shift)"
+uppercase_prefix = "(Cap | Shift)"
 
 lowercase_letter_names = letter_names
 uppercase_letter_names = dict((name, char.upper())
@@ -70,16 +71,16 @@ uppercase_letter_names = dict((name, char.upper())
 # Digit names.
 
 digit_names = {
-               "zero":    "0",
-               "one":     "1",
-               "two":     "2",
-               "three":   "3",
-               "four":    "4",
-               "five":    "5",
-               "six":     "6",
-               "seven":   "7",
-               "eight":   "8",
-               "nine":    "9",
+               "Zero":    "0",
+               "One":     "1",
+               "Two":     "2",
+               "Three":   "3",
+               "Four":    "4",
+               "Five":    "5",
+               "Six":     "6",
+               "Seven":   "7",
+               "Eight":   "8",
+               "Nine":    "9",
               }
 
 
@@ -87,40 +88,40 @@ digit_names = {
 # Symbol names.
 
 symbol_names = {
-                "enter":                                  "\n",
-                "tab":                                    "\t",
-                "space":                                  " ",
-                "exclamation [mark]":                     "!",
-                "at [sign]":                              "@",
-                "(hash | pound) [sign]":                  "#",
-                "dollar [sign]":                          "$",
-                "percent [sign]":                         "%",
-                "caret":                                  "^",
-                "(ampersand | and sign)":                 "&",
-                "(asterisk | star)":                      "*",
-                "(left | open) (paren | parenthesis)":    "(",
-                "(right | close) (paren | parenthesis)":  ")",
-                "(hyphen | minus [sign])":                "-",
-                "underscore":                             "_",
-                "(equal | equals) [sign]":                "=",
-                "plus":                                   "+",
-                "backtick":                               "`",
-                "tilde":                                  "~",
-                "(left | open) bracket":                  "[",
-                "(right | close) bracket":                "]",
-                "(left | open) brace":                    "{",
-                "(right | close) brace":                  "}",
-                "backslash":                              "\\",
-                "[vertical] bar":                         "|",
-                "colon":                                  ":",
-                "(apostrophe | single quote)":            "'",
-                "double quote":                           '"',
-                "comma":                                  ",",
-                "(dot | period | full stop)":             ".",
-                "slash":                                  "/",
-                "left angle bracket":                     "<",
-                "right angle bracket":                    ">",
-                "question [mark]":                        "?",
+                "Enter":                                  "\n",
+                "Tab":                                    "\t",
+                "Space":                                  " ",
+                "Exclamation [Mark]":                     "!",
+                "At [Sign]":                              "@",
+                "(Hash | Pound) [Sign]":                  "#",
+                "Dollar [Sign]":                          "$",
+                "Percent [Sign]":                         "%",
+                "Caret":                                  "^",
+                "(Ampersand | and Sign)":                 "&",
+                "(Asterisk | Star)":                      "*",
+                "(Left | Open) (Paren | Parenthesis)":    "(",
+                "(Right | Close) (Paren | Parenthesis)":  ")",
+                "(Hyphen | Minus [Sign])":                "-",
+                "Underscore":                             "_",
+                "(Equal | Equals) [Sign]":                "=",
+                "Plus":                                   "+",
+                "Backtick":                               "`",
+                "Tilde":                                  "~",
+                "(Left | Open) Bracket":                  "[",
+                "(Right | Close) Bracket":                "]",
+                "(Left | Open) Brace":                    "{",
+                "(Right | Close) Brace":                  "}",
+                "Backslash":                              "\\",
+                "[Vertical] Bar":                         "|",
+                "Colon":                                  ":",
+                "(Apostrophe | Single Quote)":            "'",
+                "Double Quote":                           '"',
+                "Comma":                                  ",",
+                "(Dot | Period | Full Stop)":             ".",
+                "Slash":                                  "/",
+                "Left Angle Bracket":                     "<",
+                "Right Angle Bracket":                    ">",
+                "Question [Mark]":                        "?",
                }
 
 
@@ -135,10 +136,40 @@ char_names.update(symbol_names)
 #---------------------------------------------------------------------------
 # Helper functions to create special element classes.
 
+class CharChoice(RuleRef):
+
+    def __init__(self, name=None):
+        letter_element = Sequence([
+                  Optional(Compound(uppercase_prefix, name="upper")),
+                  Choice("letter", letter_names),
+                ])
+        other_choices = {}
+        other_choices.update(digit_names)
+        other_choices.update(symbol_names)
+        other_element = Choice(name="other", choices=other_choices)
+
+        root_element = Alternative([letter_element, other_element])
+        root_rule = Rule(element=root_element)
+        RuleRef.__init__(self, name=name, rule=root_rule)
+
+    def value(self, node):
+        child = node.get_child_by_name("letter")
+        if child:
+            value = child.value()
+            if node.has_child_with_name("upper"):
+                value = value.upper()
+            return value
+        child = node.get_child_by_name("other")
+        return child.value()
+
+
+#---------------------------------------------------------------------------
+# Helper functions to create special element classes.
+
 def choice_wrap_class(choices):
     class _ChoiceWrapClass(RuleRef):
         _choices = choices
-        def __init__(self, name):
+        def __init__(self, name=None):
             choice_element = Choice(name=None, choices=self._choices)
             choice_rule = Rule(element=choice_element)
             RuleRef.__init__(self, name=name, rule=choice_rule)
@@ -147,11 +178,23 @@ def choice_wrap_class(choices):
 def choice_series_wrap_class(choices):
     class _ChoiceWrapClass(RuleRef):
         _choices = choices
-        def __init__(self, name, min=1, max=8):
+        def __init__(self, name=None, min=1, max=8):
             choice_element   = Choice(name=None, choices=self._choices)
             choice_rule      = Rule(element=choice_element)
             choice_ref       = RuleRef(rule=choice_rule)
             series_element   = Repetition(child=choice_ref, min=min, max=max)
+            series_rule      = Rule(element=series_element)
+            RuleRef.__init__(self, name=name, rule=series_rule)
+        def value(self, node):
+            child_values = RuleRef.value(self, node)
+            return "".join(child_values)
+    return _ChoiceWrapClass
+
+def element_series_wrap_class(element):
+    class _ChoiceWrapClass(RuleRef):
+        _element = element
+        def __init__(self, name=None, min=1, max=8):
+            series_element   = Repetition(child=self._element, min=min, max=max)
             series_rule      = Rule(element=series_element)
             RuleRef.__init__(self, name=name, rule=series_rule)
         def value(self, node):
@@ -165,5 +208,6 @@ def choice_series_wrap_class(choices):
 
 LetterChoice  = choice_wrap_class(lowercase_letter_names)
 LetterSeries  = choice_series_wrap_class(lowercase_letter_names)
-CharChoice    = choice_wrap_class(char_names)
-CharSeries    = choice_series_wrap_class(char_names)
+#CharChoice    = choice_wrap_class(char_names)
+#CharSeries    = choice_series_wrap_class(char_names)
+CharSeries    = element_series_wrap_class(CharChoice())

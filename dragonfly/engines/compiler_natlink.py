@@ -106,6 +106,9 @@ class NatlinkCompiler(CompilerBase):
     def _compile_impossible(self, element, compiler):
         compiler.add_list("_empty_list")
 
+    def _compile_empty(self, element, compiler):
+        pass
+
 
 #===========================================================================
 # Internal compiler class which takes care of the binary format

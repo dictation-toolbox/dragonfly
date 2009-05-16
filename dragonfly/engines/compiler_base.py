@@ -48,6 +48,7 @@ class CompilerBase(object):
         (elements_.ListRef,     lambda s,e,*a,**k: s._compile_list_ref(e,*a,**k)),
         (elements_.Dictation,   lambda s,e,*a,**k: s._compile_dictation(e,*a,**k)),
         (elements_.Impossible,  lambda s,e,*a,**k: s._compile_impossible(e,*a,**k)),
+        (elements_.Empty,       lambda s,e,*a,**k: s._compile_empty(e,*a,**k)),
         ]
 
     #-----------------------------------------------------------------------
@@ -91,3 +92,4 @@ class CompilerBase(object):
     _compile_list_ref     = _compile_unknown_element
     _compile_dictation    = _compile_unknown_element
     _compile_impossible   = _compile_unknown_element
+    _compile_empty        = _compile_unknown_element
