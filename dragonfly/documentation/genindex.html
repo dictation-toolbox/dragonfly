@@ -1,5 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
@@ -17,8 +19,6 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Dragonfly v0.6.6b1 documentation" href="index.html" /> 
   </head>
   <body>
@@ -34,6 +34,7 @@
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
+
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
@@ -123,7 +124,7 @@
     <dt><a href="grammar.html#dragonfly.grammar.elements_basic.Literal.dependencies">(Literal method)</a></dt>
   </dl></dd>
 <dt><a href="grammar.html#dragonfly.grammar.elements_basic.Dictation">Dictation (class in dragonfly.grammar.elements_basic)</a></dt>
-<dt><a href="engines.html#dragonfly.engines.engine_natlink.NatlinkEngine.DictationContainer">DictationContainer() (NatlinkEngine method)</a></dt>
+<dt><a href="engines.html#dragonfly.engines.engine_natlink.NatlinkEngine.DictationContainer">DictationContainer (NatlinkEngine attribute)</a></dt>
 <dt><a href="engines.html#dragonfly.engines.dictation_base.DictationContainerBase">DictationContainerBase (class in dragonfly.engines.dictation_base)</a></dt>
 <dt><a href="grammar.html#dragonfly.grammar.elements_basic.DictListRef">DictListRef (class in dragonfly.grammar.elements_basic)</a></dt>
 <dt><a href="grammar.html#dragonfly.grammar.grammar_base.Grammar.disable">disable() (Grammar method)</a></dt>
@@ -193,12 +194,9 @@
 <dl>
 
 <dt><a href="misc.html#dragonfly.config.Config.generate_config_file">generate_config_file() (Config method)</a></dt>
-<dt><a href="misc.html#dragonfly.config.Config.get_by_name">get_by_name (Config attribute)</a></dt>
 <dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.get_format">get_format() (Clipboard method)</a></dt>
-<dt><a href="misc.html#dragonfly.config.Config.get_instances">get_instances (Config attribute)</a></dt>
 <dt><a href="grammar.html#dragonfly.grammar.elements_basic.Repetition.get_repetitions">get_repetitions() (Repetition method)</a></dt>
-<dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.get_system_text">get_system_text (Clipboard attribute)</a></dt></dl></td><td width="33%" valign="top"><dl>
-<dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.get_text">get_text() (Clipboard method)</a></dt>
+<dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.get_text">get_text() (Clipboard method)</a></dt></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="grammar.html#dragonfly.grammar.grammar_base.Grammar">Grammar (class in dragonfly.grammar.grammar_base)</a></dt>
 <dt><a href="grammar.html#dragonfly.grammar.rule_base.Rule.grammar">grammar (Rule attribute)</a></dt>
 <dt><a href="grammar.html#dragonfly.grammar.elements_basic.ElementBase.gstring">gstring() (ElementBase method)</a></dt>
@@ -217,10 +215,10 @@
 <dl>
 
 <dt><a href="grammar.html#dragonfly.grammar.rule_base.Rule.imported">imported (Rule attribute)</a></dt>
-<dt><a href="engines.html#dragonfly.engines.engine_base.EngineBase.is_available">is_available (EngineBase attribute)</a></dt>
+<dt><a href="engines.html#dragonfly.engines.engine_base.EngineBase.is_available">is_available() (dragonfly.engines.engine_base.EngineBase class method)</a></dt>
   <dd><dl>
-    <dt><a href="engines.html#dragonfly.engines.engine_natlink.NatlinkEngine.is_available">(NatlinkEngine attribute)</a></dt>
-    <dt><a href="engines.html#dragonfly.engines.engine_sapi5.Sapi5Engine.is_available">(Sapi5Engine attribute)</a></dt>
+    <dt><a href="engines.html#dragonfly.engines.engine_natlink.NatlinkEngine.is_available">(dragonfly.engines.engine_natlink.NatlinkEngine class method)</a></dt>
+    <dt><a href="engines.html#dragonfly.engines.engine_sapi5.Sapi5Engine.is_available">(dragonfly.engines.engine_sapi5.Sapi5Engine class method)</a></dt>
   </dl></dd></dl></td><td width="33%" valign="top"><dl>
 <dt><a href="misc.html#dragonfly.config.Item">Item (class in dragonfly.config)</a></dt>
 </dl></td></tr></table>
@@ -322,7 +320,6 @@
 <dt><a href="engines.html#dragonfly.engines.engine_sapi5.Sapi5Engine">Sapi5Engine (class in dragonfly.engines.engine_sapi5)</a></dt>
 <dt><a href="misc.html#dragonfly.config.Section">Section (class in dragonfly.config)</a></dt>
 <dt><a href="grammar.html#dragonfly.grammar.elements_basic.Sequence">Sequence (class in dragonfly.grammar.elements_basic)</a></dt>
-<dt><a href="clipboard.html#dragonfly.windows.clipboard.Clipboard.set_system_text">set_system_text (Clipboard attribute)</a></dt>
 <dt><a href="engines.html#dragonfly.engines.engine_base.EngineBase.speak">speak() (EngineBase method)</a></dt>
   <dd><dl>
     <dt><a href="engines.html#dragonfly.engines.engine_natlink.NatlinkEngine.speak">(NatlinkEngine method)</a></dt>
@@ -380,12 +377,19 @@
 
    
 
-          <h3>Quick search</h3>
-            <form class="search" action="search.html" method="get">
-              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
-              <input type="hidden" name="check_keywords" value="yes" />
-              <input type="hidden" name="area" value="default" />
-            </form>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -395,17 +399,17 @@
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="" title="General Index"
-             accesskey="I">index</a></li>
+             >index</a></li>
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+             >modules</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Apr 22, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+      Last updated on May 22, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
     </div>
   </body>
 </html>

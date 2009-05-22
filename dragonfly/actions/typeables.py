@@ -261,6 +261,7 @@ typeables = {
     "backslash":    keyboard.get_typeable(char='\\'),
     "bar":          keyboard.get_typeable(char='|'),
     "colon":        keyboard.get_typeable(char=':'),
+    "semicolon":    keyboard.get_typeable(char=';'),
     "apostrophe":   keyboard.get_typeable(char="'"),
     "singlequote":  keyboard.get_typeable(char="'"),
     "squote":       keyboard.get_typeable(char="'"),

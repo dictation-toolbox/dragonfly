@@ -1,9 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Engines sub-package &mdash; Dragonfly v0.6.6b1 documentation</title>
+    <title>EngineBase class &mdash; Dragonfly v0.6.6b1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -17,8 +19,6 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Dragonfly v0.6.6b1 documentation" href="index.html" />
     <link rel="next" title="Actions sub-package" href="actions.html" />
     <link rel="prev" title="Grammar sub-package" href="grammar.html" /> 
@@ -42,143 +42,149 @@
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
+
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
             
-  
-  <div class="section" id="engines-sub-package">
-<h1>Engines sub-package<a class="headerlink" href="#engines-sub-package" title="Permalink to this headline">¶</a></h1>
+  <p>﻿
+Engines sub-package
+============================================================================</p>
 <p>Dragonfly supports multiple speech recognition engines as its backend.
 The <em>engines</em> sub-package implements the interface code for each
 supported engine.</p>
 <div class="section" id="module-dragonfly.engines.engine_sapi5">
-<h2>EngineBase class<a class="headerlink" href="#module-dragonfly.engines.engine_sapi5" title="Permalink to this headline">¶</a></h2>
+<h1>EngineBase class<a class="headerlink" href="#module-dragonfly.engines.engine_sapi5" title="Permalink to this headline">¶</a></h1>
 <p>The <a title="dragonfly.engines.engine_base.EngineBase" class="reference internal" href="#dragonfly.engines.engine_base.EngineBase"><tt class="xref docutils literal"><span class="pre">dragonfly.engines.engine_base.EngineBase</span></tt></a> class forms the base
 class for this specific speech recognition engine classes.  It defines
 the stubs required and performs some of the logic necessary for
 Dragonfly to be able to interact with a speech recognition engine.</p>
 <dl class="class">
 <dt id="dragonfly.engines.engine_base.EngineBase">
-<!--[dragonfly.engines.engine_base.EngineBase]-->class <tt class="descname">EngineBase</tt><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">EngineBase</tt><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for engine-specific back-ends.</p>
-<dl class="attribute">
+<dl class="classmethod">
 <dt id="dragonfly.engines.engine_base.EngineBase.is_available">
-<!--[dragonfly.engines.engine_base.EngineBase.is_available]--><tt class="descname">is_available</tt><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.is_available" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+classmethod </em><tt class="descname">is_available</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.is_available" title="Permalink to this definition">¶</a></dt>
 <dd>Check whether this engine is available.</dd></dl>
 
 <dl class="attribute">
 <dt id="dragonfly.engines.engine_base.EngineBase.language">
-<!--[dragonfly.engines.engine_base.EngineBase.language]--><tt class="descname">language</tt><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.language" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">language</tt><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.language" title="Permalink to this definition">¶</a></dt>
 <dd>Current user language of the SR engine.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_base.EngineBase.mimic">
-<!--[dragonfly.engines.engine_base.EngineBase.mimic]--><tt class="descname">mimic</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.mimic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">mimic</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.mimic" title="Permalink to this definition">¶</a></dt>
 <dd>Mimic a recognition of the given <em>words</em>.</dd></dl>
 
 <dl class="attribute">
 <dt id="dragonfly.engines.engine_base.EngineBase.name">
-<!--[dragonfly.engines.engine_base.EngineBase.name]--><tt class="descname">name</tt><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.name" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">name</tt><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.name" title="Permalink to this definition">¶</a></dt>
 <dd>The human-readable name of this engine.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_base.EngineBase.speak">
-<!--[dragonfly.engines.engine_base.EngineBase.speak]--><tt class="descname">speak</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.speak" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">speak</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.speak" title="Permalink to this definition">¶</a></dt>
 <dd>Speak the given <em>text</em> using text-to-speech.</dd></dl>
 
 </dd></dl>
 
 <div class="section" id="natlink-and-dns-engine-class">
-<h3>Natlink and DNS engine class<a class="headerlink" href="#natlink-and-dns-engine-class" title="Permalink to this headline">¶</a></h3>
+<h2>Natlink and DNS engine class<a class="headerlink" href="#natlink-and-dns-engine-class" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine">
-<!--[dragonfly.engines.engine_natlink.NatlinkEngine]-->class <tt class="descname">NatlinkEngine</tt><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">NatlinkEngine</tt><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Speech recognition engine back-end for Natlink and DNS.</p>
-<dl class="method">
-<dt id="dragonfly.engines.engine_natlink.NatlinkEngine.DictationContainer">
-<!--[dragonfly.engines.engine_natlink.NatlinkEngine.DictationContainer]--><tt class="descname">DictationContainer</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.DictationContainer" title="Permalink to this definition">¶</a></dt>
-<dd>Container class for dictated words as recognized by the
-<tt class="xref docutils literal"><span class="pre">Dictation</span></tt> element for the Natlink and DNS engine.</dd></dl>
-
 <dl class="attribute">
+<dt id="dragonfly.engines.engine_natlink.NatlinkEngine.DictationContainer">
+<tt class="descname">DictationContainer</tt><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.DictationContainer" title="Permalink to this definition">¶</a></dt>
+<dd>alias of <tt class="xref docutils literal"><span class="pre">NatlinkDictationContainer</span></tt></dd></dl>
+
+<dl class="classmethod">
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine.is_available">
-<!--[dragonfly.engines.engine_natlink.NatlinkEngine.is_available]--><tt class="descname">is_available</tt><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.is_available" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+classmethod </em><tt class="descname">is_available</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.is_available" title="Permalink to this definition">¶</a></dt>
 <dd>Check whether Natlink is available.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine.load_grammar">
-<!--[dragonfly.engines.engine_natlink.NatlinkEngine.load_grammar]--><tt class="descname">load_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.load_grammar" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">load_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.load_grammar" title="Permalink to this definition">¶</a></dt>
 <dd>Load the given <em>grammar</em> into natlink.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine.load_natlink_grammar">
-<!--[dragonfly.engines.engine_natlink.NatlinkEngine.load_natlink_grammar]--><tt class="descname">load_natlink_grammar</tt><big>(</big><em>grammar</em>, <em>all_results=False</em>, <em>hypothesis=False</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.load_natlink_grammar" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">load_natlink_grammar</tt><big>(</big><em>grammar</em>, <em>all_results=False</em>, <em>hypothesis=False</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.load_natlink_grammar" title="Permalink to this definition">¶</a></dt>
 <dd>Load the given <em>grammar</em> into natlink.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine.mimic">
-<!--[dragonfly.engines.engine_natlink.NatlinkEngine.mimic]--><tt class="descname">mimic</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.mimic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">mimic</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.mimic" title="Permalink to this definition">¶</a></dt>
 <dd>Mimic a recognition of the given <em>words</em>.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine.speak">
-<!--[dragonfly.engines.engine_natlink.NatlinkEngine.speak]--><tt class="descname">speak</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.speak" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">speak</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.speak" title="Permalink to this definition">¶</a></dt>
 <dd>Speak the given <em>text</em> using text-to-speech.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine.unload_grammar">
-<!--[dragonfly.engines.engine_natlink.NatlinkEngine.unload_grammar]--><tt class="descname">unload_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.unload_grammar" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">unload_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.unload_grammar" title="Permalink to this definition">¶</a></dt>
 <dd>Unload the given <em>grammar</em> from natlink.</dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="sapi-5-engine-class">
-<h3>SAPI 5 engine class<a class="headerlink" href="#sapi-5-engine-class" title="Permalink to this headline">¶</a></h3>
+<h2>SAPI 5 engine class<a class="headerlink" href="#sapi-5-engine-class" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine">
-<!--[dragonfly.engines.engine_sapi5.Sapi5Engine]-->class <tt class="descname">Sapi5Engine</tt><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Sapi5Engine</tt><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Speech recognition engine back-end for SAPI 5.</p>
 <dl class="method">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.activate_grammar">
-<!--[dragonfly.engines.engine_sapi5.Sapi5Engine.activate_grammar]--><tt class="descname">activate_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.activate_grammar" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">activate_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.activate_grammar" title="Permalink to this definition">¶</a></dt>
 <dd>Activate the given <em>grammar</em>.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.activate_rule">
-<!--[dragonfly.engines.engine_sapi5.Sapi5Engine.activate_rule]--><tt class="descname">activate_rule</tt><big>(</big><em>rule</em>, <em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.activate_rule" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">activate_rule</tt><big>(</big><em>rule</em>, <em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.activate_rule" title="Permalink to this definition">¶</a></dt>
 <dd>Activate the given <em>rule</em>.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_grammar">
-<!--[dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_grammar]--><tt class="descname">deactivate_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_grammar" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">deactivate_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_grammar" title="Permalink to this definition">¶</a></dt>
 <dd>Deactivate the given <em>grammar</em>.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_rule">
-<!--[dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_rule]--><tt class="descname">deactivate_rule</tt><big>(</big><em>rule</em>, <em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_rule" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">deactivate_rule</tt><big>(</big><em>rule</em>, <em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_rule" title="Permalink to this definition">¶</a></dt>
 <dd>Deactivate the given <em>rule</em>.</dd></dl>
 
-<dl class="attribute">
+<dl class="classmethod">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.is_available">
-<!--[dragonfly.engines.engine_sapi5.Sapi5Engine.is_available]--><tt class="descname">is_available</tt><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.is_available" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+classmethod </em><tt class="descname">is_available</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.is_available" title="Permalink to this definition">¶</a></dt>
 <dd>Check whether this engine is available.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.load_grammar">
-<!--[dragonfly.engines.engine_sapi5.Sapi5Engine.load_grammar]--><tt class="descname">load_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.load_grammar" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">load_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.load_grammar" title="Permalink to this definition">¶</a></dt>
 <dd>Load the given <em>grammar</em>.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.mimic">
-<!--[dragonfly.engines.engine_sapi5.Sapi5Engine.mimic]--><tt class="descname">mimic</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.mimic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">mimic</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.mimic" title="Permalink to this definition">¶</a></dt>
 <dd>Mimic a recognition of the given <em>words</em>.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.speak">
-<!--[dragonfly.engines.engine_sapi5.Sapi5Engine.speak]--><tt class="descname">speak</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.speak" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">speak</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.speak" title="Permalink to this definition">¶</a></dt>
 <dd>Speak the given <em>text</em> using text-to-speech.</dd></dl>
 
 </dd></dl>
@@ -186,9 +192,9 @@ Dragonfly to be able to interact with a speech recognition engine.</p>
 </div>
 </div>
 <div class="section" id="module-dragonfly.engines.dictation_natlink">
-<h2>Dictation container classes<a class="headerlink" href="#module-dragonfly.engines.dictation_natlink" title="Permalink to this headline">¶</a></h2>
+<h1>Dictation container classes<a class="headerlink" href="#module-dragonfly.engines.dictation_natlink" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="dictation-container-base-class">
-<h3>Dictation container base class<a class="headerlink" href="#dictation-container-base-class" title="Permalink to this headline">¶</a></h3>
+<h2>Dictation container base class<a class="headerlink" href="#dictation-container-base-class" title="Permalink to this headline">¶</a></h2>
 <p>This class is used to store the recognized results of dictation elements 
 within voice-commands.  It offers access to both the raw spoken-form words 
 and be formatted written-form text.</p>
@@ -197,7 +203,8 @@ calling <tt class="docutils literal"><span class="pre">str(...)</span></tt> on a
 spoken words can be retrieved using <tt class="xref docutils literal"><span class="pre">words()</span></tt>.</p>
 <dl class="class">
 <dt id="dragonfly.engines.dictation_base.DictationContainerBase">
-<!--[dragonfly.engines.dictation_base.DictationContainerBase]-->class <tt class="descname">DictationContainerBase</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.dictation_base.DictationContainerBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">DictationContainerBase</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.dictation_base.DictationContainerBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Container class for dictated words as recognized by the
 <tt class="xref docutils literal"><span class="pre">Dictation</span></tt> element.</p>
 <p>This base class implements the general functionality of dictation 
@@ -206,34 +213,34 @@ dictation container class which performs the actual engine-
 specific formatting of dictated text.</p>
 <dl class="method">
 <dt id="dragonfly.engines.dictation_base.DictationContainerBase.format">
-<!--[dragonfly.engines.dictation_base.DictationContainerBase.format]--><tt class="descname">format</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.dictation_base.DictationContainerBase.format" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">format</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.dictation_base.DictationContainerBase.format" title="Permalink to this definition">¶</a></dt>
 <dd>Format and return this dictation.</dd></dl>
 
 <dl class="attribute">
 <dt id="dragonfly.engines.dictation_base.DictationContainerBase.words">
-<!--[dragonfly.engines.dictation_base.DictationContainerBase.words]--><tt class="descname">words</tt><a class="headerlink" href="#dragonfly.engines.dictation_base.DictationContainerBase.words" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">words</tt><a class="headerlink" href="#dragonfly.engines.dictation_base.DictationContainerBase.words" title="Permalink to this definition">¶</a></dt>
 <dd>Sequence of the words forming this dictation.</dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="dictation-container-class-for-natlink">
-<h3>Dictation container class for Natlink<a class="headerlink" href="#dictation-container-class-for-natlink" title="Permalink to this headline">¶</a></h3>
+<h2>Dictation container class for Natlink<a class="headerlink" href="#dictation-container-class-for-natlink" title="Permalink to this headline">¶</a></h2>
 <p>This class is derived from <tt class="xref docutils literal"><span class="pre">DictationContainerBase</span></tt> and implements 
 dictation formatting for the Natlink and Dragon NaturallySpeaking engine.</p>
 <dl class="class">
 <dt id="dragonfly.engines.dictation_natlink.NatlinkDictationContainer">
-<!--[dragonfly.engines.dictation_natlink.NatlinkDictationContainer]-->class <tt class="descname">NatlinkDictationContainer</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.dictation_natlink.NatlinkDictationContainer" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">NatlinkDictationContainer</tt><big>(</big><em>words</em><big>)</big><a class="headerlink" href="#dragonfly.engines.dictation_natlink.NatlinkDictationContainer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Container class for dictated words as recognized by the
 <tt class="xref docutils literal"><span class="pre">Dictation</span></tt> element for the Natlink and DNS engine.</p>
 <dl class="method">
 <dt id="dragonfly.engines.dictation_natlink.NatlinkDictationContainer.format">
-<!--[dragonfly.engines.dictation_natlink.NatlinkDictationContainer.format]--><tt class="descname">format</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.dictation_natlink.NatlinkDictationContainer.format" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">format</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.dictation_natlink.NatlinkDictationContainer.format" title="Permalink to this definition">¶</a></dt>
 <dd>Format and return this dictation.</dd></dl>
 
 </dd></dl>
 
-</div>
 </div>
 </div>
 
@@ -245,8 +252,7 @@ dictation formatting for the Natlink and Dragon NaturallySpeaking engine.</p>
         <div class="sphinxsidebarwrapper">
             <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">Engines sub-package</a><ul>
-<li><a class="reference external" href="#module-dragonfly.engines.engine_sapi5">EngineBase class</a><ul>
+<li><a class="reference external" href="">EngineBase class</a><ul>
 <li><a class="reference external" href="#natlink-and-dns-engine-class">Natlink and DNS engine class</a></li>
 <li><a class="reference external" href="#sapi-5-engine-class">SAPI 5 engine class</a></li>
 </ul>
@@ -257,23 +263,31 @@ dictation formatting for the Natlink and Dragon NaturallySpeaking engine.</p>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="grammar.html" title="previous chapter">Grammar sub-package</a></p>
+            <p class="topless"><a href="grammar.html"
+                                  title="previous chapter">Grammar sub-package</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="actions.html" title="next chapter">Actions sub-package</a></p>
+            <p class="topless"><a href="actions.html"
+                                  title="next chapter">Actions sub-package</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="_sources/engines.txt">Show Source</a></li>
+              <li><a href="_sources/engines.txt"
+                     rel="nofollow">Show Source</a></li>
             </ul>
-          <h3>Quick search</h3>
-            <form class="search" action="search.html" method="get">
-              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
-              <input type="hidden" name="check_keywords" value="yes" />
-              <input type="hidden" name="area" value="default" />
-            </form>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -283,23 +297,23 @@ dictation formatting for the Natlink and Dragon NaturallySpeaking engine.</p>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
+             >index</a></li>
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+             >modules</a> |</li>
         <li class="right" >
           <a href="actions.html" title="Actions sub-package"
-             accesskey="N">next</a> |</li>
+             >next</a> |</li>
         <li class="right" >
           <a href="grammar.html" title="Grammar sub-package"
-             accesskey="P">previous</a> |</li>
+             >previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Apr 22, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+      Last updated on May 22, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
     </div>
   </body>
 </html>

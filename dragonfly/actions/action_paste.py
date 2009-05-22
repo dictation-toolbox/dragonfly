@@ -59,7 +59,7 @@ class Paste(DynStrActionBase):
 
     # Default paste action.
     _default_format = win32con.CF_UNICODETEXT
-    _default_paste = Key("c-v/5")
+    _default_paste = Key("c-v/20")
 
     def __init__(self, contents, format=None, paste=None, static=False):
         if not format: format = self._default_format

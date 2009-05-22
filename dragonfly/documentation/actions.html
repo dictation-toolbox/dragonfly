@@ -1,5 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
@@ -17,11 +19,8 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Dragonfly v0.6.6b1 documentation" href="index.html" />
-    <link rel="next" title="Windows sub-package" href="windows.html" />
-    <link rel="prev" title="Engines sub-package" href="engines.html" /> 
+    <link rel="prev" title="EngineBase class" href="engines.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,20 +33,17 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="windows.html" title="Windows sub-package"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="engines.html" title="Engines sub-package"
+          <a href="engines.html" title="EngineBase class"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
+
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
             
-  
   <div class="section" id="actions-sub-package">
 <h1>Actions sub-package<a class="headerlink" href="#actions-sub-package" title="Permalink to this headline">¶</a></h1>
 <p>The Dragonfly library contains an action framework which offers easy and
@@ -126,7 +122,8 @@ what the dynamic element <em>&#8220;text&#8221;</em> is.</p>
 <h3>ActionBase base class<a class="headerlink" href="#actionbase-base-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_base.ActionBase">
-<!--[dragonfly.actions.action_base.ActionBase]-->class <tt class="descname">ActionBase</tt><a class="headerlink" href="#dragonfly.actions.action_base.ActionBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">ActionBase</tt><a class="headerlink" href="#dragonfly.actions.action_base.ActionBase" title="Permalink to this definition">¶</a></dt>
 <dd>Base class for Dragonfly&#8217;s action classes.</dd></dl>
 
 </div>
@@ -214,8 +211,8 @@ cause an error.  It harmlessly does nothing.</p>
 <tt class="docutils literal"><span class="pre">backslash</span></tt>, <tt class="docutils literal"><span class="pre">backtick</span></tt>, <tt class="docutils literal"><span class="pre">bar</span></tt>, <tt class="docutils literal"><span class="pre">caret</span></tt>, <tt class="docutils literal"><span class="pre">colon</span></tt>,
 <tt class="docutils literal"><span class="pre">comma</span></tt>, <tt class="docutils literal"><span class="pre">dollar</span></tt>, <tt class="docutils literal"><span class="pre">dot</span></tt>, <tt class="docutils literal"><span class="pre">dquote</span></tt>, <tt class="docutils literal"><span class="pre">equal</span></tt>, <tt class="docutils literal"><span class="pre">escape</span></tt>,
 <tt class="docutils literal"><span class="pre">exclamation</span></tt>, <tt class="docutils literal"><span class="pre">hash</span></tt>, <tt class="docutils literal"><span class="pre">hyphen</span></tt>, <tt class="docutils literal"><span class="pre">minus</span></tt>, <tt class="docutils literal"><span class="pre">percent</span></tt>,
-<tt class="docutils literal"><span class="pre">plus</span></tt>, <tt class="docutils literal"><span class="pre">question</span></tt>, <tt class="docutils literal"><span class="pre">slash</span></tt>, <tt class="docutils literal"><span class="pre">squote</span></tt>, <tt class="docutils literal"><span class="pre">tilde</span></tt>,
-<tt class="docutils literal"><span class="pre">underscore</span></tt></li>
+<tt class="docutils literal"><span class="pre">plus</span></tt>, <tt class="docutils literal"><span class="pre">question</span></tt>, <tt class="docutils literal"><span class="pre">semicolon</span></tt>, <tt class="docutils literal"><span class="pre">slash</span></tt>, <tt class="docutils literal"><span class="pre">squote</span></tt>,
+<tt class="docutils literal"><span class="pre">tilde</span></tt>, <tt class="docutils literal"><span class="pre">underscore</span></tt></li>
 <li>Function keys: <tt class="docutils literal"><span class="pre">f1</span></tt>, <tt class="docutils literal"><span class="pre">f2</span></tt>, <tt class="docutils literal"><span class="pre">f3</span></tt>, <tt class="docutils literal"><span class="pre">f4</span></tt>, <tt class="docutils literal"><span class="pre">f5</span></tt>, <tt class="docutils literal"><span class="pre">f6</span></tt>,
 <tt class="docutils literal"><span class="pre">f7</span></tt>, <tt class="docutils literal"><span class="pre">f8</span></tt>, <tt class="docutils literal"><span class="pre">f9</span></tt>, <tt class="docutils literal"><span class="pre">f10</span></tt>, <tt class="docutils literal"><span class="pre">f11</span></tt>, <tt class="docutils literal"><span class="pre">f12</span></tt>, <tt class="docutils literal"><span class="pre">f13</span></tt>, <tt class="docutils literal"><span class="pre">f14</span></tt>,
 <tt class="docutils literal"><span class="pre">f15</span></tt>, <tt class="docutils literal"><span class="pre">f16</span></tt>, <tt class="docutils literal"><span class="pre">f17</span></tt>, <tt class="docutils literal"><span class="pre">f18</span></tt>, <tt class="docutils literal"><span class="pre">f19</span></tt>, <tt class="docutils literal"><span class="pre">f20</span></tt>, <tt class="docutils literal"><span class="pre">f21</span></tt>,
@@ -259,7 +256,8 @@ with the <em>l</em>:</p>
 <h4>Key class reference<a class="headerlink" href="#key-class-reference" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_key.Key">
-<!--[dragonfly.actions.action_key.Key]-->class <tt class="descname">Key</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_key.Key" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Key</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_key.Key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keystroke emulation action.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -292,7 +290,8 @@ arrow-keys are not part of a text and so cannot be typed using the
 <a title="dragonfly.actions.action_key.Key" class="reference internal" href="#dragonfly.actions.action_key.Key"><tt class="xref docutils literal"><span class="pre">dragonfly.actions.action_key.Key</span></tt></a> action.</p>
 <dl class="class">
 <dt id="dragonfly.actions.action_text.Text">
-<!--[dragonfly.actions.action_text.Text]-->class <tt class="descname">Text</tt><big>(</big><em>spec=None</em>, <em>static=False</em>, <em>pause=0.02</em>, <em>autofmt=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_text.Text" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Text</tt><big>(</big><em>spec=None</em>, <em>static=False</em>, <em>pause=0.02</em>, <em>autofmt=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_text.Text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Action that sends keyboard events to type text.</p>
 <dl class="docutils">
 <dt>Arguments:</dt>
@@ -319,7 +318,8 @@ capitalization and applying the same formatting to the text.</li>
 <h3>Paste action<a class="headerlink" href="#paste-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_paste.Paste">
-<!--[dragonfly.actions.action_paste.Paste]-->class <tt class="descname">Paste</tt><big>(</big><em>contents</em>, <em>format=None</em>, <em>paste=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_paste.Paste" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Paste</tt><big>(</big><em>contents</em>, <em>format=None</em>, <em>paste=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_paste.Paste" title="Permalink to this definition">¶</a></dt>
 <dd><p>Paste-from-clipboard action.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -479,7 +479,8 @@ Specifies how long to pause <em>after</em> clicking the button; same as above.</
 <h4>Mouse class reference<a class="headerlink" href="#mouse-class-reference" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_mouse.Mouse">
-<!--[dragonfly.actions.action_mouse.Mouse]-->class <tt class="descname">Mouse</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mouse.Mouse" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Mouse</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mouse.Mouse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Action that sends mouse events.</p>
 <dl class="docutils">
 <dt>Arguments:</dt>
@@ -531,7 +532,8 @@ the callable will be called.</p>
 <h4>Class reference<a class="headerlink" href="#class-reference" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_function.Function">
-<!--[dragonfly.actions.action_function.Function]-->class <tt class="descname">Function</tt><big>(</big><em>function</em>, <em>**defaults</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_function.Function" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Function</tt><big>(</big><em>function</em>, <em>**defaults</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_function.Function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call a function with extra keyword arguments.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -552,7 +554,8 @@ the function will be called</li>
 <h3>Mimic action<a class="headerlink" href="#mimic-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_mimic.Mimic">
-<!--[dragonfly.actions.action_mimic.Mimic]-->class <tt class="descname">Mimic</tt><big>(</big><em>*words</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mimic.Mimic" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Mimic</tt><big>(</big><em>*words</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mimic.Mimic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mimic recognition action.</p>
 <p>The constructor arguments are the words which will be mimicked. 
 These should be passed as a variable argument list.  For example:</p>
@@ -612,7 +615,8 @@ voice-commands.</p>
 <h4>Class reference<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_playback.Playback">
-<!--[dragonfly.actions.action_playback.Playback]-->class <tt class="descname">Playback</tt><big>(</big><em>series</em>, <em>speed=1</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_playback.Playback" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Playback</tt><big>(</big><em>series</em>, <em>speed=1</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_playback.Playback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Playback a series of recognitions.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -630,7 +634,7 @@ after each mimic are divided by this number.</li>
 </dl>
 <dl class="attribute">
 <dt id="dragonfly.actions.action_playback.Playback.speed">
-<!--[dragonfly.actions.action_playback.Playback.speed]--><tt class="descname">speed</tt><a class="headerlink" href="#dragonfly.actions.action_playback.Playback.speed" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">speed</tt><a class="headerlink" href="#dragonfly.actions.action_playback.Playback.speed" title="Permalink to this definition">¶</a></dt>
 <dd>Factor to speed up playback.</dd></dl>
 
 </dd></dl>
@@ -641,7 +645,8 @@ after each mimic are divided by this number.</li>
 <h3>WaitWindow action<a class="headerlink" href="#waitwindow-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_waitwindow.WaitWindow">
-<!--[dragonfly.actions.action_waitwindow.WaitWindow]-->class <tt class="descname">WaitWindow</tt><big>(</big><em>title=None</em>, <em>executable=None</em>, <em>timeout=15</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_waitwindow.WaitWindow" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">WaitWindow</tt><big>(</big><em>title=None</em>, <em>executable=None</em>, <em>timeout=15</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_waitwindow.WaitWindow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wait for a specific window context action.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -673,7 +678,8 @@ indicate the timeout.</p>
 <h3>FocusWindow action<a class="headerlink" href="#focuswindow-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_focuswindow.FocusWindow">
-<!--[dragonfly.actions.action_focuswindow.FocusWindow]-->class <tt class="descname">FocusWindow</tt><big>(</big><em>executable=None</em>, <em>title=None</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_focuswindow.FocusWindow" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">FocusWindow</tt><big>(</big><em>executable=None</em>, <em>title=None</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_focuswindow.FocusWindow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bring a window to the foreground action.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -721,7 +727,8 @@ computer the following command successfully starts Notepad:</p>
 <h4>Class reference<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_startapp.BringApp">
-<!--[dragonfly.actions.action_startapp.BringApp]-->class <tt class="descname">BringApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.BringApp" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">BringApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.BringApp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bring an application to the foreground, starting it if it is not 
 yet running.</p>
 <p>When this action is executed, it looks for an existing window of 
@@ -747,7 +754,8 @@ directory</li>
 
 <dl class="class">
 <dt id="dragonfly.actions.action_startapp.StartApp">
-<!--[dragonfly.actions.action_startapp.StartApp]-->class <tt class="descname">StartApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.StartApp" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">StartApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.StartApp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start an application.</p>
 <p>When this action is executed, it runs a file (executable), 
 optionally with commandline arguments.</p>
@@ -771,7 +779,8 @@ directory</li>
 <h3>Pause action<a class="headerlink" href="#pause-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_pause.Pause">
-<!--[dragonfly.actions.action_pause.Pause]-->class <tt class="descname">Pause</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_pause.Pause" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Pause</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_pause.Pause" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pause for the given amount of time.</p>
 <p>The <em>spec</em> constructor argument should be a <em>string</em> giving the 
 time to wait.  It should be given in hundredths of a second.  For 
@@ -846,19 +855,26 @@ following code determines the time to pause at execution time:</p>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="engines.html" title="previous chapter">Engines sub-package</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="windows.html" title="next chapter">Windows sub-package</a></p>
+            <p class="topless"><a href="engines.html"
+                                  title="previous chapter">EngineBase class</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="_sources/actions.txt">Show Source</a></li>
+              <li><a href="_sources/actions.txt"
+                     rel="nofollow">Show Source</a></li>
             </ul>
-          <h3>Quick search</h3>
-            <form class="search" action="search.html" method="get">
-              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
-              <input type="hidden" name="check_keywords" value="yes" />
-              <input type="hidden" name="area" value="default" />
-            </form>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -868,23 +884,20 @@ following code determines the time to pause at execution time:</p>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
+             >index</a></li>
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+             >modules</a> |</li>
         <li class="right" >
-          <a href="windows.html" title="Windows sub-package"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="engines.html" title="Engines sub-package"
-             accesskey="P">previous</a> |</li>
+          <a href="engines.html" title="EngineBase class"
+             >previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Apr 22, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+      Last updated on May 22, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
     </div>
   </body>
 </html>

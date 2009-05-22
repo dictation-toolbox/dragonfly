@@ -1,5 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
@@ -17,8 +19,6 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Dragonfly v0.6.6b1 documentation" href="index.html" />
     <link rel="prev" title="Context classes" href="context.html" /> 
   </head>
@@ -38,12 +38,12 @@
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
+
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
             
-  
   <div class="section" id="module-dragonfly.config">
 <span id="refmisc"></span><h1>Miscellaneous<a class="headerlink" href="#module-dragonfly.config" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="configuration-toolkit">
@@ -132,7 +132,8 @@ or value types, such as integers, boolean values, etc.</p>
 <h3>Configuration class reference<a class="headerlink" href="#configuration-class-reference" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.config.Config">
-<!--[dragonfly.config.Config]-->class <tt class="descname">Config</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Config</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configuration class for storing program settings.</p>
 <dl class="docutils">
 <dt>Constructor argument:</dt>
@@ -149,7 +150,7 @@ The sections merely divide the items up into groups, so that
 different configuration topics can be split for easy readability.</p>
 <dl class="method">
 <dt id="dragonfly.config.Config.generate_config_file">
-<!--[dragonfly.config.Config.generate_config_file]--><tt class="descname">generate_config_file</tt><big>(</big><em>path=None</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config.generate_config_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">generate_config_file</tt><big>(</big><em>path=None</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config.generate_config_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a configuration file containing this
 configuration object&#8217;s current settings.</p>
 <blockquote>
@@ -162,19 +163,9 @@ file name by replacing its extension with &#8220;.txt&#8221;.</li>
 </blockquote>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="dragonfly.config.Config.get_by_name">
-<!--[dragonfly.config.Config.get_by_name]--><tt class="descname">get_by_name</tt><a class="headerlink" href="#dragonfly.config.Config.get_by_name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="dragonfly.config.Config.get_instances">
-<!--[dragonfly.config.Config.get_instances]--><tt class="descname">get_instances</tt><a class="headerlink" href="#dragonfly.config.Config.get_instances" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="method">
 <dt id="dragonfly.config.Config.load">
-<!--[dragonfly.config.Config.load]--><tt class="descname">load</tt><big>(</big><em>path=None</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config.load" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">load</tt><big>(</big><em>path=None</em><big>)</big><a class="headerlink" href="#dragonfly.config.Config.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the configuration file at the given <em>path</em>, or
 look for a configuration file associated with the calling
 module.</p>
@@ -195,7 +186,8 @@ and this configuration&#8217;s defaults remain in place.</p>
 
 <dl class="class">
 <dt id="dragonfly.config.Section">
-<!--[dragonfly.config.Section]-->class <tt class="descname">Section</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#dragonfly.config.Section" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Section</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#dragonfly.config.Section" title="Permalink to this definition">¶</a></dt>
 <dd><p>Section of a configuration for grouping items.</p>
 <dl class="docutils">
 <dt>Constructor argument:</dt>
@@ -211,7 +203,8 @@ configuration items.</p>
 
 <dl class="class">
 <dt id="dragonfly.config.Item">
-<!--[dragonfly.config.Item]-->class <tt class="descname">Item</tt><big>(</big><em>default</em>, <em>doc=None</em>, <em>namespace=None</em><big>)</big><a class="headerlink" href="#dragonfly.config.Item" title="Permalink to this definition">¶</a></dt>
+<em class="property">
+class </em><tt class="descname">Item</tt><big>(</big><em>default</em>, <em>doc=None</em>, <em>namespace=None</em><big>)</big><a class="headerlink" href="#dragonfly.config.Item" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configuration item for storing configuration settings.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -241,7 +234,7 @@ loading will fail.</p>
 the <a title="dragonfly.config.Item.validate" class="reference internal" href="#dragonfly.config.Item.validate"><tt class="xref docutils literal"><span class="pre">Item.validate()</span></tt></a> method of this class.</p>
 <dl class="method">
 <dt id="dragonfly.config.Item.validate">
-<!--[dragonfly.config.Item.validate]--><tt class="descname">validate</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#dragonfly.config.Item.validate" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">validate</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#dragonfly.config.Item.validate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine whether the given <em>value</em> is valid.</p>
 <p>This method performs validity checking of the configuration 
 value assigned to this item during loading of the external 
@@ -276,17 +269,26 @@ as the type of the default value.</p>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="context.html" title="previous chapter">Context classes</a></p>
+            <p class="topless"><a href="context.html"
+                                  title="previous chapter">Context classes</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="_sources/misc.txt">Show Source</a></li>
+              <li><a href="_sources/misc.txt"
+                     rel="nofollow">Show Source</a></li>
             </ul>
-          <h3>Quick search</h3>
-            <form class="search" action="search.html" method="get">
-              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
-              <input type="hidden" name="check_keywords" value="yes" />
-              <input type="hidden" name="area" value="default" />
-            </form>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -296,20 +298,20 @@ as the type of the default value.</p>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
+             >index</a></li>
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+             >modules</a> |</li>
         <li class="right" >
           <a href="context.html" title="Context classes"
-             accesskey="P">previous</a> |</li>
+             >previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Apr 22, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+      Last updated on May 22, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
     </div>
   </body>
 </html>
