@@ -24,7 +24,7 @@ This file implements the Number class.
 """
 
 
-from dragonfly.grammar.elements import (Alternative, Repetition, Sequence)
+from ...grammar.elements import (Alternative, Repetition, Sequence)
 
 
 #---------------------------------------------------------------------------
@@ -37,7 +37,7 @@ class Number(Alternative):
     _int_max = 1000000
     _ser_len = 8
 
-    def __init__(self, name=None, zero=False):
+    def __init__(self, name=None, zero=False, default=None):
         name = str(name)
         int_name = "_Number_int_" + name
         if zero:  int_min = 0
@@ -54,7 +54,7 @@ class Number(Alternative):
             series = Sequence([first, repetition])
 
         children = [single, series]
-        Alternative.__init__(self, children, name=name)
+        Alternative.__init__(self, children, name=name, default=default)
 
     def value(self, node):
         value = Alternative.value(self, node)

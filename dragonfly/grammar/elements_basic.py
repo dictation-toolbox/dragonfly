@@ -77,7 +77,7 @@ class ElementBase(object):
     _log_decode = get_log("grammar.decode")
     _log_eval = get_log("grammar.eval")
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, default=None):
         """
             Constructor argument:
              - *name* (*str*, default: *None*) --
@@ -88,6 +88,7 @@ class ElementBase(object):
         if not name:
             name = None
         self.name = name
+        self._default = default
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
@@ -196,6 +197,17 @@ class ElementBase(object):
         """
         return node.words()
 
+    def has_default(self):
+        """
+        """
+        return self._default is not None
+
+    @property
+    def default(self):
+        """
+        """
+        return self._default
+
     #-----------------------------------------------------------------------
     # Internal utility methods for use by derived classes.
 
@@ -240,8 +252,8 @@ class Sequence(ElementBase):
 
     """
 
-    def __init__(self, children=(), name=None):
-        ElementBase.__init__(self, name=name)
+    def __init__(self, children=(), name=None, default=None):
+        ElementBase.__init__(self, name=name, default=default)
         self._children = self._copy_sequence(children,
                                              "children", ElementBase)
 
@@ -336,8 +348,8 @@ class Optional(ElementBase):
 
     """
 
-    def __init__(self, child, name=None):
-        ElementBase.__init__(self, name)
+    def __init__(self, child, name=None, default=None):
+        ElementBase.__init__(self, name, default=default)
 
         if not isinstance(child, ElementBase):
             raise TypeError("Child of %s object must be an"
@@ -429,8 +441,8 @@ class Alternative(ElementBase):
 
     """
 
-    def __init__(self, children=(), name=None):
-        ElementBase.__init__(self, name)
+    def __init__(self, children=(), name=None, default=None):
+        ElementBase.__init__(self, name, default=default)
         self._children = self._copy_sequence(children,
                                              "children", ElementBase)
 
@@ -525,7 +537,7 @@ class Repetition(Sequence):
 
     """
 
-    def __init__(self, child, min=1, max=None, name=None):
+    def __init__(self, child, min=1, max=None, name=None, default=None):
         if not isinstance(child, ElementBase):
             raise TypeError("Child of %s object must be an"
                             " ElementBase instance." % self)
@@ -553,7 +565,7 @@ class Repetition(Sequence):
         else:
             raise ValueError("Repetition not allowed to be empty.")
 
-        Sequence.__init__(self, children, name=name)
+        Sequence.__init__(self, children, name=name, default=default)
 
     def dependencies(self, memo):
         if self in memo:
@@ -621,8 +633,8 @@ class Repetition(Sequence):
 
 class Literal(ElementBase):
 
-    def __init__(self, text, name=None, value=None):
-        ElementBase.__init__(self, name)
+    def __init__(self, text, name=None, value=None, default=None):
+        ElementBase.__init__(self, name, default=default)
         self._value = value
 
         if not isinstance(text, (str, unicode)):
@@ -675,8 +687,8 @@ class Literal(ElementBase):
 
 class RuleRef(ElementBase):
 
-    def __init__(self, rule, name=None):
-        ElementBase.__init__(self, name)
+    def __init__(self, rule, name=None, default=None):
+        ElementBase.__init__(self, name, default=default)
 
         if not isinstance(rule, Rule):
             raise TypeError("Rule object of %s object must be a"
@@ -730,8 +742,8 @@ class RuleRef(ElementBase):
 
 class ListRef(ElementBase):
 
-    def __init__(self, name, list, key=None):
-        ElementBase.__init__(self, name=name)
+    def __init__(self, name, list, key=None, default=None):
+        ElementBase.__init__(self, name=name, default=default)
 
         if not isinstance(list, ListBase):
             raise TypeError("List object of %s object must be a"
@@ -797,11 +809,11 @@ class ListRef(ElementBase):
 
 class DictListRef(ListRef):
 
-    def __init__(self, name, dict, key=None):
+    def __init__(self, name, dict, key=None, default=None):
         if not isinstance(dict, DictList):
             raise TypeError("Dict object of %s object must be a"
                             " Dragonfly DictList." % self)
-        ListRef.__init__(self, name, dict, key)
+        ListRef.__init__(self, name, dict, key, default=default)
 
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
@@ -814,9 +826,9 @@ class DictListRef(ListRef):
 
 class Empty(ElementBase):
 
-    def __init__(self, name=None, value=True):
+    def __init__(self, name=None, value=True, default=None):
         self._value = value
-        ElementBase.__init__(self, name)
+        ElementBase.__init__(self, name, default=default)
 
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
@@ -849,8 +861,8 @@ class Empty(ElementBase):
 
 class Dictation(ElementBase):
 
-    def __init__(self, name=None, format=True):
-        ElementBase.__init__(self, name)
+    def __init__(self, name=None, format=True, default=None):
+        ElementBase.__init__(self, name, default=default)
         self._format_words = format
 
     def __str__(self):

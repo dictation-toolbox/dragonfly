@@ -36,7 +36,7 @@ class DigitsBase(Repetition):
     _digits = None
     _digit_name = "_digit"
 
-    def __init__(self, name=None, min=1, max=12, as_int=False):
+    def __init__(self, name=None, min=1, max=12, as_int=False, default=None):
         self._as_int = as_int
         if self._as_int: self._base = len(self._digits) - 1
 
@@ -52,7 +52,8 @@ class DigitsBase(Repetition):
         alternatives = [Compound(w, value=v, name=self._digit_name)
                         for w, v in pairs]
         child = Alternative(alternatives)
-        Repetition.__init__(self, child, min, max, name=name)
+        Repetition.__init__(self, child, min, max, name=name,
+                            default=default)
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.

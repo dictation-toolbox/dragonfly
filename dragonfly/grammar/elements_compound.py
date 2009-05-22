@@ -227,7 +227,7 @@ class Compound(elements_.Alternative):
     _parser = parser_.Parser(stuff, _log)
 
     def __init__(self, spec, extras=None, actions=None, name=None,
-                 value=None, value_func=None, elements=None):
+                 value=None, value_func=None, elements=None, default=None):
         self._spec = spec
         self._value = value
         self._value_func = value_func
@@ -271,7 +271,8 @@ class Compound(elements_.Alternative):
         if not element:
             self._log.error("Invalid compound spec: %r" % spec)
             raise SyntaxError("Invalid compound spec: %r" % spec)
-        elements_.Alternative.__init__(self, (element,), name=name)
+        elements_.Alternative.__init__(self, (element,), name=name,
+                                       default=default)
 
     def __str__(self):
         arguments = ["%r" % self._spec]
@@ -285,8 +286,10 @@ class Compound(elements_.Alternative):
             extras = {"_node": node}
             for name, element in self._extras.iteritems():
                 extra_node = node.get_child_by_name(name, shallow=True)
-                if not extra_node: continue
-                extras[name] = extra_node.value()
+                if extra_node:
+                    extras[name] = extra_node.value()
+                elif element.has_default():
+                    extras[name] = element.default
             try:
                 value = self._value_func(node, extras)
             except Exception, e:
@@ -304,7 +307,7 @@ class Compound(elements_.Alternative):
 
 class Choice(elements_.Alternative):
 
-    def __init__(self, name, choices, extras=None):
+    def __init__(self, name, choices, extras=None, default=None):
 
         # Argument type checking.
         assert isinstance(name, basestring) or name is None
@@ -321,4 +324,5 @@ class Choice(elements_.Alternative):
             children.append(child)
 
         # Initialize super class.
-        elements_.Alternative.__init__(self, children=children, name=name)
+        elements_.Alternative.__init__(self, children=children,
+                                       name=name, default=default)

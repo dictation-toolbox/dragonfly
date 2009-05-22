@@ -25,9 +25,9 @@ elements.
 """
 
 
-from dragonfly.grammar.elements import (Alternative, Sequence, Optional,
-                                        Compound, ListRef)
-from dragonfly.grammar.list     import  List
+from ...grammar.elements import (Alternative, Sequence, Optional,
+                                 Compound, ListRef)
+from ...grammar.list     import  List
 
 
 #---------------------------------------------------------------------------
@@ -37,10 +37,10 @@ class IntegerBase(Alternative):
 
     _builders = ()
 
-    def __init__(self, name=None, min=None, max=None):
+    def __init__(self, name=None, min=None, max=None, default=None):
         self._min = min; self._max = max
         children = self._build_children(min, max)
-        Alternative.__init__(self, children, name=name)
+        Alternative.__init__(self, children, name=name, default=default)
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.

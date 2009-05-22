@@ -142,8 +142,10 @@ class CompoundRule(Rule):
         extras.update(self._defaults)
         for name, element in self._extras.iteritems():
             extra_node = node.get_child_by_name(name, shallow=True)
-            if not extra_node: continue
-            extras[name] = extra_node.value()
+            if extra_node:
+                extras[name] = extra_node.value()
+            elif element.has_default():
+                extras[name] = element.default
 
         # Call the method to do the actual processing.
         self._process_recognition(node, extras)

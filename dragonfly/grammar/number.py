@@ -60,39 +60,39 @@ class RuleWrap(RuleRef):
 
     _next_id = 0
 
-    def __init__(self, name, element):
+    def __init__(self, name, element, default=None):
         rule_name = "_%s_%02d" % (self.__class__.__name__, RuleWrap._next_id)
         RuleWrap._next_id += 1
         rule = Rule(name=rule_name, element=element)
-        RuleRef.__init__(self, rule=rule, name=name)
+        RuleRef.__init__(self, rule=rule, name=name, default=default)
 
 
 class IntegerRef(RuleWrap):
 
     _element_type = None
 
-    def __init__(self, name, min, max):
+    def __init__(self, name, min, max, default=None):
         element = self._element_type(None, min, max)
-        RuleWrap.__init__(self, name, element)
+        RuleWrap.__init__(self, name, element, default=default)
 
 
 class DigitsRef(RuleWrap):
 
     _element_type = None
 
-    def __init__(self, name=None, min=1, max=12, as_int=True):
+    def __init__(self, name=None, min=1, max=12, as_int=True, default=None):
         element = self._element_type(name=None, min=min,
                                      max=max, as_int=as_int)
-        RuleWrap.__init__(self, name, element)
+        RuleWrap.__init__(self, name, element, default=default)
 
 
 class NumberRef(RuleWrap):
 
     _element_type = None
 
-    def __init__(self, name=None, zero=False):
+    def __init__(self, name=None, zero=False, default=None):
         element = self._element_type(None, zero=zero)
-        RuleWrap.__init__(self, name, element)
+        RuleWrap.__init__(self, name, element, default=default)
 
 
 #---------------------------------------------------------------------------
