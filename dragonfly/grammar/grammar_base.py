@@ -314,6 +314,8 @@ class Grammar(object):
         for lst in self._lists:
             lst._update()
 
+#        self._log_load.warning(self.get_complexity_string())
+
     def unload(self):
         """ Unload this grammar from its SR engine. """
 
@@ -324,6 +326,38 @@ class Grammar(object):
         self._engine.unload_grammar(self)
         self._loaded = False
         self._in_context = False
+
+    def get_complexity_string(self):
+        """
+            Build and return a human-readable text giving insight into the 
+            complexity of this grammar.
+
+        """
+        rules_all = self.rules
+        rules_top = [r for r in self.rules if r.exported]
+        rules_imp = [r for r in self.rules if r.imported]
+        elements = []
+        for rule in rules_all:
+            elements.extend(self._get_element_list(rule))
+        text = ("Grammar: %3d (%3d, %3d) rules, %4d elements (%3d avg)     %s"
+                % (
+                   len(rules_all), len(rules_top), len(rules_imp),
+                   len(elements), len(elements)/len(rules_all),
+                   self,
+                  )
+               )
+        for rule in rules_all:
+            elements = self._get_element_list(rule)
+            text += "\n  Rule: %4d  %s" % (len(elements), rule)
+        return text
+
+    def _get_element_list(self, thing):
+        if isinstance(thing, Rule):  element = thing.element
+        else:                        element = thing
+        elements = [element]
+        for child in element.children:
+            elements.extend(self._get_element_list(child))
+        return elements
 
     #-----------------------------------------------------------------------
     # Callback methods for handling utterances and recognitions.
