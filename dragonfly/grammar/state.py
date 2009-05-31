@@ -207,10 +207,7 @@ class Node(object):
         return self.results[self.begin:self.end]
 
     def value(self):
-        try:
-            return self.actor.value(self)
-        except:
-            pass
+        return self.actor.value(self)
 
     def pretty_string(self, indent = ""):
         if not self.children:

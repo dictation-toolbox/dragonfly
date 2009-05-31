@@ -120,39 +120,41 @@ class Clipboard(object):
 
         """
         win32clipboard.OpenClipboard()
-
-        # Determine which formats to retrieve.
-        if not formats:
-            format = 0
-            formats = []
-            while 1:
-                format = win32clipboard.EnumClipboardFormats(format)
-                if not format:
-                    break
-                formats.append(format)
-        elif isinstance(formats, int):
-            formats = (formats,)
-
-        # Verify that the given formats are valid.
         try:
+            # Determine which formats to retrieve.
+            if not formats:
+                format = 0
+                formats = []
+                while 1:
+                    format = win32clipboard.EnumClipboardFormats(format)
+                    if not format:
+                        break
+                    formats.append(format)
+            elif isinstance(formats, int):
+                formats = (formats,)
+
+            # Verify that the given formats are valid.
+            try:
+                for format in formats:
+                    if not isinstance(format, int):
+                        raise TypeError("Invalid clipboard format: %r"
+                                        % format)
+            except Exception, e:
+                raise
+
+            # Retrieve Windows system clipboard content.
+            contents = {}
             for format in formats:
-                if not isinstance(format, int):
-                    raise TypeError("Invalid clipboard format: %r"
-                                    % format)
-        except Exception, e:
-            raise
+                content = win32clipboard.GetClipboardData(format)
+                contents[format] = content
+            self._contents = contents
 
-        # Retrieve Windows system clipboard content.
-        contents = {}
-        for format in formats:
-            content = win32clipboard.GetClipboardData(format)
-            contents[format] = content
-        self._contents = contents
+            # Clear the system clipboard, if requested, and close it.
+            if clear:
+                win32clipboard.EmptyClipboard()
 
-        # Clear the system clipboard, if requested, and close it.
-        if clear:
-            win32clipboard.EmptyClipboard()
-        win32clipboard.CloseClipboard()
+        finally:
+            win32clipboard.CloseClipboard()
 
     def copy_to_system(self, clear=True):
         """
@@ -166,16 +168,17 @@ class Clipboard(object):
 
         """
         win32clipboard.OpenClipboard()
+        try:
+            # Clear the system clipboard, if requested.
+            if clear:
+                win32clipboard.EmptyClipboard()
 
-        # Clear the system clipboard, if requested.
-        if clear:
-            win32clipboard.EmptyClipboard()
+            # Transfer content to Windows system clipboard.
+            for format, content in self._contents.items():
+                win32clipboard.SetClipboardData(format, content)
 
-        # Transfer content to Windows system clipboard.
-        for format, content in self._contents.items():
-            win32clipboard.SetClipboardData(format, content)
-
-        win32clipboard.CloseClipboard()
+        finally:
+            win32clipboard.CloseClipboard()
 
     def has_format(self, format):
         """

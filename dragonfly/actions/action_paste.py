@@ -26,6 +26,7 @@ Paste action
 
 
 import win32con
+import pywintypes
 from dragonfly.actions.action_base  import DynStrActionBase, ActionError
 from dragonfly.actions.action_key   import Key
 from dragonfly.actions.action_text  import Text
@@ -82,7 +83,11 @@ class Paste(DynStrActionBase):
 
     def _execute_events(self, events):
         original = Clipboard()
-        original.copy_from_system()
+        try:
+            original.copy_from_system()
+        except pywintypes.error, e:
+            self._log.warning("Failed to store original clipboard contents:"
+                              " %s" % e)
 
         if self.format == win32con.CF_UNICODETEXT:
             events = unicode(events)
