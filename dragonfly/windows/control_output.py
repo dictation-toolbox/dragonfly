@@ -1,4 +1,4 @@
-﻿#
+#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -31,8 +31,24 @@ exception trace back.
 
 import sys
 import win32con
+import win32gui
+import logging
 
 from dragonfly.windows.control_base import ControlBase
+
+
+#---------------------------------------------------------------------------
+
+class OutputLogHandler(logging.Handler):
+
+    def __init__(self, control):
+        self._control = control
+        logging.Handler.__init__(self)
+
+    def emit(self, record):
+        message = self.format(record)
+        message = "\r\n".join(message.splitlines()) + "\r\n"
+        self._control.write(message)
 
 
 #---------------------------------------------------------------------------
@@ -58,6 +74,14 @@ class OutputText(ControlBase):
         self._old_stderr = sys.stderr
         sys.stdout = self
         sys.stderr = self
+
+    def set_as_log_handler(self, name="", level=logging.DEBUG):
+        handler = OutputLogHandler(self)
+        handler.setLevel(level)
+        formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
+                                        " %(message)s")
+        handler.setFormatter(formatter)
+        logging.getLogger(name).addHandler(handler)
 
     def write(self, data):
         length = win32gui.GetWindowTextLength(self.handle)

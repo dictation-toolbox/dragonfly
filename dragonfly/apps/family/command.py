@@ -93,7 +93,7 @@ class CompoundCommand(CommandBase):
         return self._element
 
     def execute(self, node):
-        self._log.warning("executing CompoundCommand: %s" % node.words())
+#        self._log.warning("executing CompoundCommand: %s" % node.words())
 
         extras = {"_node": node}
         for element in self._extras:

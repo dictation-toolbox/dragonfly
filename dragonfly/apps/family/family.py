@@ -52,13 +52,13 @@ class CommandFamily(Grammar):
             ids[post_key] = transition.poststate
             mapping[pre_key][post_key].append(transition)
 
-        # DEBUGGING output.
-        for pre_key, inner_mapping in mapping.items():
-            print "pre-state: %s" % ids[pre_key]
-            for post_key, transitions in inner_mapping.items():
-                print "  post-state: %s" % ids[post_key]
-                for transition in transitions:
-                    print "    command: %s" % transition.command
+#        # DEBUGGING output.
+#        for pre_key, inner_mapping in mapping.items():
+#            print "pre-state: %s" % ids[pre_key]
+#            for post_key, transitions in inner_mapping.items():
+#                print "  post-state: %s" % ids[post_key]
+#                for transition in transitions:
+#                    print "    command: %s" % transition.command
 
         # Build transition-web container.
         web = {}
@@ -134,11 +134,11 @@ class CommandFamily(Grammar):
             self.add_rule(rule)
         Grammar.load(self)
 
-        for rule in self.rules:
-            print "loading rule: %r (exported %s)" % (rule.name, rule.exported)
-            print
-            print "    ", rule.gstring()
-            print
+#        for rule in self.rules:
+#            print "loading rule: %r (exported %s)" % (rule.name, rule.exported)
+#            print
+#            print "    ", rule.gstring()
+#            print
 
     def unload(self):
         Grammar.unload(self)
@@ -156,10 +156,10 @@ class CommandFamily(Grammar):
 
         for rule in self._toplevel_rules:
             if rule.pre_state.is_active_toplevel():
-                print "activating:", rule
+#                print "activating:", rule
                 rule.activate()
             else:
-                print "de-activating:", rule
+#                print "de-activating:", rule
                 rule.deactivate()
 
 
@@ -186,15 +186,15 @@ class ToplevelRule(Rule):
                 path.pop()
                 continue
             if isinstance(head.actor, TransitionsRule):
-                print "transition words:", head.words()
+#                print "transition words:", head.words()
                 transitions.append(head.value())
             else:
                 path.append(iter(head.children))
-        print "transitions:", transitions
+#        print "transitions:", transitions
         return transitions
 
     def process_recognition(self, node):
-        print "processing recognition:", self
+#        print "processing recognition:", self
         transitions = self.value(node)
         for transition in transitions:
             transition.execute()
@@ -213,8 +213,8 @@ class TransitionsRule(Rule):
         if len(alternatives) == 1:  element = alternatives[0]
         else:                       element = Alternative(alternatives)
 
-        for transition in transitions:
-            print "command element", transition.command.element, id (transition.command.element)
+#        for transition in transitions:
+#            print "command element", transition.command.element, id (transition.command.element)
 
         self._transitions_by_id = dict((id(t.command.element), t)
                                        for t in transitions)
@@ -226,9 +226,9 @@ class TransitionsRule(Rule):
         transition_node = node.children[0]
         if id(transition_node.actor) not in self._transitions_by_id:
             transition_node = transition_node.children[0]
-        print "transition node actor", transition_node.actor, id(transition_node.actor)
+#        print "transition node actor", transition_node.actor, id(transition_node.actor)
         transition = self._transitions_by_id[id(transition_node.actor)]
-        print "returning down and transition:", transition_node.words()
+#        print "returning down and transition:", transition_node.words()
         return BoundTransition(transition, transition_node)
 
 

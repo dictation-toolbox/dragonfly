@@ -12,16 +12,23 @@ class StateBase(object):
 
     toplevel = True
 
-    def __init__(self):
+    def __init__(self, name=None):
+        self._name = name
         self._transitions = []
         self._include_states = []
         self._command_chain_rules = {}
         self._recursing_transitions = False
 
     def __str__(self):
-        return "%s()" % self.__class__.__name__
+        return "%s(name=%s)" % (self.__class__.__name__, self._name)
 
     #-----------------------------------------------------------------------
+
+    def _get_name(self):
+        return self._name
+    def _set_name(self, name):
+        self._name = name
+    name = property(_get_name, _set_name)
 
     @property
     def transitions(self):
@@ -31,7 +38,8 @@ class StateBase(object):
         try:
             transitions = self._transitions
             for state in self._include_states:
-                transitions.extend(state.transitions)
+                for transition in state.transitions:
+                    transitions.append(transition.copy_with_prestate(self))
         finally:
             self._recursing_transitions = False
         return transitions
@@ -196,6 +204,10 @@ class Transition(object):
     @property
     def command(self):
         return self._command
+
+    def copy_with_prestate(self, prestate):
+        clone = Transition(self._command, prestate, self._poststate)
+        return clone
 
     def bind(self, node):
         return BoundTransition(self, node)

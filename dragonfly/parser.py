@@ -47,6 +47,17 @@ class Parser(object):
         # Failed to parse.
         return None
 
+    def parse_node(self, input, must_finish=True):
+        state = State(input, log=self._log)
+        generator = self._parser_element.parse(state)
+        for result in generator:
+            if not must_finish or state.finished():
+                # Parse complete, return result.
+                node = state.build_parse_tree()
+                return node
+        # Failed to parse.
+        return None
+
     def parse_multiple(self, input, must_finish=True):
         state = State(input, log=self._log)
         generator = self._parser_element.parse(state)
@@ -160,7 +171,8 @@ class State(object):
     def _build_parse_node(self, index, parent):
         frame = self._stack[index]
         node = Node(parent, frame.actor, self._data,
-                    frame.begin, frame.end, frame.depth)
+                    frame.begin, frame.end, frame.depth,
+                    frame.value)
         if parent: parent.add_child(node)
         index += 1
         while index < len(self._stack):
@@ -173,10 +185,11 @@ class State(object):
     # Methods for tracking parsing of input.
 
     class _Frame(object):
-        __slots__ = ("depth", "actor", "begin", "end")
+        __slots__ = ("depth", "actor", "begin", "end", "value")
         def __init__(self, depth, actor, begin):
             self.depth = depth; self.actor = actor
-            self.begin = begin; self.end = None
+            self.begin = begin
+            self.value = None; self.end = None
 
     def decode_attempt(self, element):
         assert isinstance(element, ParserElementBase)
@@ -202,13 +215,14 @@ class State(object):
             raise grammar_.GrammarError("Parser decoding stack broken")
         self._log_step(element, "rollback")
 
-    def decode_success(self, element):
+    def decode_success(self, element, value=None):
         assert isinstance(element, ParserElementBase)
         self._log_step(element, "success")
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
             raise grammar_.GrammarError("Parser decoding stack broken.")
         frame.end = self._index
+        frame.value = value
         self._depth -= 1
 
     def decode_failure(self, element):
@@ -249,11 +263,12 @@ class State(object):
 class Node(object):
 
     __slots__ = ("parent", "children", "actor",
-                    "data", "begin", "end", "depth")
+                 "data", "begin", "end", "depth", "success_value")
 
-    def __init__(self, parent, actor, data, begin, end, depth):
+    def __init__(self, parent, actor, data, begin, end, depth, value):
         self.parent = parent; self.actor = actor; self.data = data
         self.begin = begin; self.end = end; self.depth = depth
+        self.success_value = value
         self.children = []
 
     def __str__(self):
@@ -266,7 +281,35 @@ class Node(object):
         return self.data[self.begin : self.end]
 
     def value(self):
-        return self.actor.value(self)
+        if self.success_value is not None:
+            return self.success_value
+        else:
+            return self.actor.value(self)
+
+    def get_children(self, name=None, actor_type=None, shallow=True):
+        found = []
+        for child in self.children:
+            if (    (not name or child.actor.name == name)
+                and (not actor_type or isinstance(child.actor, actor_type))):
+                found.append(child)
+            if shallow and child.actor.name:
+                continue
+            found.extend(child.get_children(name=name, actor_type=actor_type,
+                                            shallow=shallow))
+        return found
+
+    def get_child(self, name=None, actor_type=None, shallow=True):
+        for child in self.children:
+            if (    (not name or child.actor.name == name)
+                and (not actor_type or isinstance(child.actor, actor_type))):
+                return child
+            if shallow and child.actor.name:
+                continue
+            result = child.get_child(name=name, actor_type=actor_type,
+                                     shallow=shallow)
+            if result:
+                return result
+        return None
 
     def pretty_string(self, indent = ""):
         if not self.children:
@@ -675,10 +718,10 @@ class Alphanumerics(CharacterSeries):
 
 def print_matches(node, indent = ""):
     if not indent: print "Nodes:"
-    print indent, "%s: %r %s" % (node.parser.__class__.__name__, node.match(), id(node.parent))
+    print indent, "%s: %r %s" % (node.actor.__class__.__name__, node.match(), id(node.parent))
     [print_matches(c, indent + "   ") for c in node.children]
 def print_values(node, indent = ""):
     if not indent: print "Values:"
-    print indent, "%s: %r %s" % (node.parser.__class__.__name__, node.value(), id(node.parent))
+    print indent, "%s: %r %s" % (node.actor.__class__.__name__, node.value(), id(node.parent))
     [print_values(c, indent + "   ") for c in node.children]
 
