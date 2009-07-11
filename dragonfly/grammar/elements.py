@@ -56,6 +56,7 @@ DictList        = basic_.DictListRef    # For backwards compatibility.
 Empty           = basic_.Empty
 Dictation       = basic_.Dictation
 Impossible      = basic_.Impossible
+RuleWrap        = basic_.RuleWrap
 
 
 #---------------------------------------------------------------------------

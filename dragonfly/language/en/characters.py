@@ -88,9 +88,9 @@ digit_names = {
 # Symbol names.
 
 symbol_names = {
-                "Enter":                                  "\n",
-                "Tab":                                    "\t",
-                "Space":                                  " ",
+#                "Enter":                                  "\n",
+#                "Tab":                                    "\t",
+#                "Space":                                  " ",
                 "Exclamation [Mark]":                     "!",
                 "At [Sign]":                              "@",
                 "(Hash | Pound) [Sign]":                  "#",

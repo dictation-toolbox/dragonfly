@@ -24,43 +24,9 @@ elements.
 
 """
 
-
-from dragonfly.grammar.elements import (Alternative, Sequence, Optional,
-                                        Compound, ListRef)
-from dragonfly.grammar.list     import  List
-
-
-#---------------------------------------------------------------------------
-# Base class for integer element classes.
-
-class IntegerBase(Alternative):
-
-    _builders = ()
-
-    def __init__(self, name=None, min=None, max=None):
-        self._min = min; self._max = max
-        children = self._build_children(min, max)
-        Alternative.__init__(self, children, name=name)
-
-    #-----------------------------------------------------------------------
-    # Methods for runtime introspection.
-
-    def __str__(self):
-        arguments = []
-        if self.name is not None:
-            arguments = ["%r" % self.name]
-        if self._min is not None or self._max is not None:
-            arguments.append("%s" % self._min)
-            arguments.append("%s" % self._max)
-        return "%s(%s)" % (self.__class__.__name__, ",".join(arguments))
-
-    #-----------------------------------------------------------------------
-    # Methods for load-time setup.
-
-    def _build_children(self, min, max):
-        children = [c.build_element(min, max)
-                    for c in self._builders]
-        return [c for c in children if c]
+from ...grammar.elements  import (Alternative, Sequence, Optional,
+                                  Compound, ListRef)
+from ...grammar.list      import List
 
 
 #---------------------------------------------------------------------------
@@ -256,3 +222,10 @@ class Magnitude(Compound):
         else:         remainder  = self._rem_default
 
         return multiplier * self._factor + remainder
+
+
+#---------------------------------------------------------------------------
+# Integer content class.
+
+class IntegerContentBase(object):
+    builders = None

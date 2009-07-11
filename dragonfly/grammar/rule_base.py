@@ -129,14 +129,15 @@ class Rule(object):
     def _get_grammar(self):
         return self._grammar
     def _set_grammar(self, grammar):
-        if self._grammar is None:
+#        if self._grammar is None:
             self._grammar = grammar
-        elif grammar is None:
-            self._grammar = None
-        elif grammar != self._grammar:
-            raise TypeError("The grammar object a Dragonfly rule"
-                " cannot be changed after it has been set (%s != %s)."
-                % (grammar, self._grammar))
+#        elif grammar is None:
+#            self._grammar = None
+#        elif grammar != self._grammar:
+#            self._log.error("rule: %s" % self)
+#            raise TypeError("The grammar object a Dragonfly rule"
+#                " cannot be changed after it has been set (%s != %s)."
+#                % (grammar, self._grammar))
     grammar = property(_get_grammar, _set_grammar,
                        doc="This rule's grammar object.  (Set once)")
 

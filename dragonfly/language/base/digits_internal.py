@@ -18,4 +18,17 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from .number import IntegerContent, DigitsContent
+"""
+This file implements base classes for structured number grammar
+elements.
+
+"""
+
+from ...grammar.elements  import Alternative, Repetition, Compound
+
+
+#---------------------------------------------------------------------------
+# Digits content class.
+
+class DigitsContentBase(object):
+    digits = None

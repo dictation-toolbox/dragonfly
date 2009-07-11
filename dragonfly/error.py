@@ -18,4 +18,7 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from .number import IntegerContent, DigitsContent
+#---------------------------------------------------------------------------
+
+class DragonflyError(Exception):
+    pass

@@ -72,11 +72,11 @@ class ListBase(object):
     def _get_grammar(self):
         return self._grammar
     def _set_grammar(self, grammar):
-        if self._grammar is None:
+#        if self._grammar is None:
             self._grammar = grammar
-        else:
-            raise TypeError("The grammar object a Dragonfly list"
-                " is bound to cannot be changed after it has been set.")
+#        else:
+#            raise TypeError("The grammar object a Dragonfly list"
+#                " is bound to cannot be changed after it has been set.")
     grammar = property(_get_grammar, _set_grammar,
         doc = "Set-once access to a list's grammar object.")
 

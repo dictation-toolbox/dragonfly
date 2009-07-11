@@ -21,6 +21,7 @@
 #---------------------------------------------------------------------------
 from .log               import get_log
 from .config            import Config, Section, Item
+from .error             import DragonflyError
 
 #---------------------------------------------------------------------------
 from .engines.engine    import get_engine
@@ -41,8 +42,8 @@ from .grammar.wordinfo  import Word, FormatState
 from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
                                 PlaybackHistory)
 
-from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
-                                Number, NumberRef)
+#from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
+#                                Number, NumberRef)
 
 #---------------------------------------------------------------------------
 from .actions           import (ActionBase, DynStrActionBase, ActionError,
@@ -60,3 +61,8 @@ from .windows.rectangle import Rectangle, unit
 from .windows.window    import Window
 from .windows.monitor   import Monitor, monitors
 from .windows.clipboard import Clipboard
+
+#---------------------------------------------------------------------------
+from .language          import (Integer, IntegerRef,
+                                Digits, DigitsRef,
+                                Number, NumberRef)

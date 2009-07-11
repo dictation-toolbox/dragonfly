@@ -24,19 +24,23 @@ elements.
 
 """
 
-
-from dragonfly.grammar.elements import (Alternative, Repetition, Compound)
+from ..loader             import language
+from ...grammar.elements  import Alternative, Repetition, Compound, RuleWrap
 
 
 #---------------------------------------------------------------------------
 # Base class for digit-series element classes.
 
-class DigitsBase(Repetition):
+class Digits(Repetition):
 
-    _digits = None
+    _content = None
     _digit_name = "_digit"
 
     def __init__(self, name=None, min=1, max=12, as_int=False, default=None):
+        if not self._content:
+            self.__class__._content = language.DigitsContent
+        self._digits = self._content.digits
+
         self._as_int = as_int
         if self._as_int: self._base = len(self._digits) - 1
 
@@ -78,3 +82,13 @@ class DigitsBase(Repetition):
             return d
         else:
             return digits
+
+
+#---------------------------------------------------------------------------
+# Digits reference class.
+
+class DigitsRef(RuleWrap):
+
+    def __init__(self, name=None, min=1, max=12, as_int=True, default=None):
+        element = Digits(name=None, min=min, max=max, as_int=as_int)
+        RuleWrap.__init__(self, name, element, default=default)

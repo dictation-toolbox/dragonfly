@@ -17,3 +17,7 @@
 #   License along with Dragonfly.  If not, see 
 #   <http://www.gnu.org/licenses/>.
 #
+
+from .base.integer  import Integer,  IntegerRef
+from .base.digits   import Digits,   DigitsRef
+from .base.number   import Number,   NumberRef

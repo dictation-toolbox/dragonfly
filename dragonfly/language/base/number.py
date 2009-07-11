@@ -19,20 +19,20 @@
 #
 
 """
-This file implements the Number class.
+Number language element class
+============================================================================
 
 """
 
-
-from ...grammar.elements import (Alternative, Repetition, Sequence)
+from ...grammar.elements  import Alternative, Repetition, Sequence, RuleWrap
+from ..loader             import language
+from .integer             import Integer
 
 
 #---------------------------------------------------------------------------
 # Number class.
 
 class Number(Alternative):
-
-    _element_type = None
 
     _int_max = 1000000
     _ser_len = 8
@@ -42,14 +42,14 @@ class Number(Alternative):
         int_name = "_Number_int_" + name
         if zero:  int_min = 0
         else:     int_min = 1
-        single = self._element_type(None, int_min, self._int_max)
+        single = Integer(None, int_min, self._int_max)
 
         ser_name = "_Number_ser_" + name
-        item = self._element_type(None, 0, 100)
+        item = Integer(None, 0, 100)
         if zero:
             series = Repetition(item, 1, self._ser_len)
         else:
-            first = self._element_type(None, 1, 100)
+            first = Integer(None, 1, 100)
             repetition = Repetition(item, 0, self._ser_len - 1)
             series = Sequence([first, repetition])
 
@@ -74,3 +74,13 @@ class Number(Alternative):
                 value += item
 
         return value
+
+
+#---------------------------------------------------------------------------
+# Number reference class.
+
+class NumberRef(RuleWrap):
+
+    def __init__(self, name=None, zero=False, default=None):
+        element = Number(None, zero=zero)
+        RuleWrap.__init__(self, name, element, default=default)
