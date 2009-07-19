@@ -46,6 +46,7 @@ log_names = {
     "grammar.decode":       (logging.WARNING, logging.INFO),
     "grammar.eval":         (logging.WARNING, logging.WARNING),
     "grammar.process":      (logging.WARNING, logging.WARNING),
+    "lang":                 (logging.WARNING, logging.INFO),
     "compound.parse":       (logging.WARNING, logging.INFO),
     "dictation.formatter":  (logging.WARNING, logging.WARNING),
     "action":               (logging.WARNING, logging.WARNING),
@@ -71,32 +72,23 @@ log_file_count = 9
 
 _log_cache = {}
 def get_log(name):
-    global _log_cache
+    global _log_cache, log_names, log_handlers
     if name in _log_cache:
         return _log_cache[name]
 
-    global log_names
     if name in log_names:
         log_levels = log_names[name]
-
-        if not log_levels or \
-                    not [True for l in log_levels if l is not None]:
-            _log_cache[name] = None
-            return None
-        else:
-            log = logging.getLogger(name)
-            minimum_level = min([l for l in log_levels if l is not None])
-            log.setLevel(minimum_level)
-            log.propagate = False
-            for handler, level in zip(log_handlers, log_levels):
-                if level is not None:
-                    handler.addFilter(NameLevelFilter(name, level))
-                    log.addHandler(handler)
-            _log_cache[name] = log
-            return log
+        log = logging.getLogger(name)
+        minimum_level = min([l for l in log_levels if l is not None])
+        log.setLevel(minimum_level)
+        log.propagate = False
+        for handler, level in zip(log_handlers, log_levels):
+            if level is not None:
+                handler.addFilter(NameLevelFilter(name, level))
+                log.addHandler(handler)
+        _log_cache[name] = log
+        return log
     else:
-        global root_logger
-        root_logger.error("Request for unknown log name: '%s'" % name)
         _log_cache[name] = logging.getLogger(name)
         return _log_cache[name]
 
