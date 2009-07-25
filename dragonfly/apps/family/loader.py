@@ -1,17 +1,110 @@
+#
+# This file is part of Dragonfly.
+# (c) Copyright 2007, 2008 by Christo Butcher
+# Licensed under the LGPL.
+#
+#   Dragonfly is free software: you can redistribute it and/or modify it 
+#   under the terms of the GNU Lesser General Public License as published 
+#   by the Free Software Foundation, either version 3 of the License, or 
+#   (at your option) any later version.
+#
+#   Dragonfly is distributed in the hope that it will be useful, but 
+#   WITHOUT ANY WARRANTY; without even the implied warranty of 
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Lesser General Public License for more details.
+#
+#   You should have received a copy of the GNU Lesser General Public 
+#   License along with Dragonfly.  If not, see 
+#   <http://www.gnu.org/licenses/>.
+#
+
+"""
+Loader
+============================================================================
+
+"""
 
 import os.path
 import glob
 import time
 import ConfigParser
 import dragonfly
+from ...error                    import DragonflyError
 from ...grammar.rule_base        import Rule
 from ...grammar.context          import AppContext
 from ...actions                  import ActionBase
+from ...parser                   import Parser
 from .dirmon                     import DirectoryMonitor
 from .family                     import CommandFamily
 from .state                      import StateBase as State
 from .state                      import Transition
 from .command                    import CompoundCommand
+from .loader_parser              import CallElement
+
+
+#===========================================================================
+# Exception classes.
+
+class LoaderError(DragonflyError):
+    pass
+
+class SyntaxError(LoaderError):
+    pass
+
+
+#===========================================================================
+# Container base class similar to C's struct.
+
+class ContainerBase(object):
+
+    _attributes = ()
+
+    def __init__(self, **kwargs):
+        for name, default in self._attributes:
+            if name in kwargs:       value = kwargs.pop(name)
+            elif callable(default):  value = default()
+            else:                    value = default
+            setattr(self, name, value)
+        if kwargs:
+            names = sorted(kwargs.keys())
+            raise ValueError("Unknown keyword args: %s" % names)
+
+
+#===========================================================================
+# Input information storage classes.
+
+class InfoPhase1(ContainerBase):
+
+    class InfoPhase1Section(ContainerBase):
+        _attributes = (
+                       ("tag",           None),
+                       ("items",         dict),
+                      )
+
+    _attributes = (
+                   ("sections", lambda: defaultdict(InfoPhase1Section)),
+                  )
+
+
+class InfoPhase2(ContainerBase):
+
+    class InfoPhase2Family(ContainerBase):
+        _attributes = (
+                       ("tag",           None),
+                       ("name",          None),
+                       ("description",   None),
+                       ("states",        dict),
+                       ("extras",        list),
+                      )
+    class InfoPhase2Choice(ContainerBase):
+        _attributes = (
+                       ("pairs",         None),
+                      )
+
+    _attributes = (
+                   ("families", lambda: defaultdict(InfoPhase2Family)),
+                   ("choices",  lambda: defaultdict(InfoPhase2Choice)),
+                  )
 
 
 #===========================================================================
@@ -42,10 +135,10 @@ class ConfigSection(object):
         self._parse_name(self._section_name)
         self._parse_items(self._section_items)
 
-    def _parse_items(self, items):
+    def _parse_name(self, name):
         pass
 
-    def _parse_name(self, name):
+    def _parse_items(self, items):
         pass
 
     def _split_name_type_tag(self, name):
@@ -119,7 +212,7 @@ class FamilySection(ConfigSection):
 
         if items_dict:
             raise Exception("Family section contains invalid items:"
-                            " %r" % (items_dict.keys(),))
+                            " %s" % (sorted(items_dict.keys()),))
 
 
 class StateSection(ConfigSection):
@@ -131,6 +224,12 @@ class StateSection(ConfigSection):
 
     def _parse_items(self, items):
         items_dict = self._build_items_dict(items)
+
+        # Parse "name" item, if present.
+        if "name" in items_dict:
+            self.name = items_dict.pop("name")
+        else:
+            self.name = self.tag
 
         # Parse "include" item, if present.
         if "include" in items_dict:
@@ -191,9 +290,25 @@ class InputSpec(object):
         pass
 
 
+class InputInfo(ContainerBase):
+
+    _attributes = (
+                   ("family_sections",  None),
+                   ("family_states",    None),
+                   ("family_extras",    None),
+                   ("choice_sections",  None),
+                  )
+
+
 #===========================================================================
 
 class Loader(object):
+
+    _extras_factories = {}
+
+    @classmethod
+    def register_extras_factory(cls, extra_type, factory):
+        cls._extras_factories[extra_type] = factory
 
     def __init__(self):
         self._dirmon = DirectoryMonitor()
@@ -221,14 +336,11 @@ class Loader(object):
         directories = self._dirmon.directories
         command_files = self._find_command_files(directories)
         library_files = self._find_library_files(directories)
-        print "command files", command_files
-        print "library files", library_files
+#        print "command files", command_files
+#        print "library files", library_files
 
         # Read and parse command files.
         input_spec = self._parse_command_files(command_files)
-
-        # Build family objects.
-        families = self._build_families(input_spec)
 
         # Load family objects into engine.
         for family in self._families:
@@ -287,6 +399,8 @@ class Loader(object):
                        "choice:":   ChoiceSection,
                       }
 
+        # Iterate over all input sections and process each according
+        #  to the section name's prefix.
         sections = []
         for section_name in config.sections():
             items = config.items(section_name)
@@ -300,6 +414,8 @@ class Loader(object):
                 raise Exception("Invalid section: %r" % section_name)
             sections.append(section_instance)
 
+        # Iterate over all processed section objects and handle each
+        #  according to its type.
         family_sections = {}
         family_states   = {}
         family_extras   = {}
@@ -316,49 +432,66 @@ class Loader(object):
                 choice_sections[section.tag] = section
             else:
                 raise Exception("Invalid section type: %r" % section_name)
+        input_info = InputInfo(
+                               family_sections  = family_sections,
+                               family_states    = family_states,
+                               family_extras    = family_extras,
+                               choice_sections  = choice_sections,
+                              )
 
+        # Iterate over all family sections and construct each family.
+        families = []
         for family_section in family_sections.values():
             print "constructing family", family_section.tag
+            family = CommandFamily(name=family_section.name)
+
             extras_section = family_extras[family_section.tag]
             print "  constructing extras", extras_section.tag, extras_section._section_name
+            self._build_family_extras(family, extras_section, input_info)
+
+            states_by_tag = self._init_family_states(family, family_section, input_info)
             for state_section in family_states[family_section.tag].values():
-                print "  constructing states", state_section.tag
-
-        input_spec = InputSpec()
-        input_spec.family_sections = family_sections
-        input_spec.family_states = family_states
-        input_spec.family_extras = family_extras
-        input_spec.choice_sections = choice_sections
-
-        return input_spec
-
-    def _build_families(self, input_spec):
-        families = []
-        for family_section in input_spec.family_sections.values():
-            print "constructing family", family_section.tag
-
-            family = CommandFamily(family_section.name)
-
-            extras_section = input_spec.family_extras[family_section.tag]
-            self._build_family_extras(family, extras_section)
-
-            states_by_tag = input_spec.family_states[family_section.tag]
-            for state_section in states_by_tag.values():
-                print "  constructing states", state_section.tag
-                self._build_family_state(family, state_section,
-                                         states_by_tag)
-
-            pass
+                print "  constructing state", state_section.tag
+#                self._build_family_state(family, state_section, states_by_tag, input_info)
 
             families.append(family)
         return families
 
-    def _build_family_extras(self, family, extras_section):
+    def _build_family_extras(self, family, extras_section, input_info):
+        element = CallElement()
+        parser = Parser(element)
         for key, spec in extras_section.extras:
             print "building extra", key, spec
 
-    def _build_family_state(self, family, state_section, states_by_tag):
-        state = State(state_section.tag)
+            # Parse the input spec.
+            output = parser.parse(spec)
+            output.name = key
+            print "output:", output
+            if not output:
+                raise SyntaxError("Invalid extra %r: %r" % (key, spec))
+
+            # Look for an appropriate extras factory and let it
+            #  build the extra element.
+            if output.function not in self._extras_factories:
+                raise SyntaxError("Unknown extra type %r in %r" % (output.function, spec))
+            factory = self._extras_factories[output.function]
+            extra = factory.build(output)
+
+            family.add_extras(extra)
+
+    def _init_family_states(self, family, family_section, input_info):
+        sections = input_info.family_states[family_section.tag].values()
+        states = []
+        states_by_tag = {}
+        for section in sections:
+            state = State(section.name)
+            states.append(state)
+            states_by_tag[section.tag] = state
+        family.add_states(*states)
+        return states_by_tag
+
+    def _build_family_state_phase2(self, family, state_section, states_by_tag, input_info):
+        state = family.states[state_section.tag]
 
         context = self._build_state_context(state_section.context)
 #        state.set_context(context)
@@ -399,3 +532,46 @@ class Loader(object):
         # Wrapup action in extras in a compound command.
         result = (CompoundCommand(spoken_form, action, extras=extras), None)
         return result
+
+
+#===========================================================================
+
+class ExtrasFactoryBase(object):
+
+    def __init__(self):
+        pass
+
+    def build(self, call_info):
+        pass
+
+
+#---------------------------------------------------------------------------
+
+class DictationExtrasFactory(ExtrasFactoryBase):
+
+    def build(self, call_info):
+        name = call_info.name
+        if call_info.arguments:
+            raise SyntaxError("Invalid arguments for dictation extra: %r"
+                              % (call_info.arguments,))
+        print "just build", dragonfly.Dictation(name)
+        return dragonfly.Dictation(name)
+
+Loader.register_extras_factory("dictation", DictationExtrasFactory())
+
+
+#---------------------------------------------------------------------------
+
+class IntegerExtrasFactory(ExtrasFactoryBase):
+
+    def build(self, call_info):
+        name = call_info.name
+        min = call_info.arguments.pop().value
+        max = call_info.arguments.pop().value
+        if call_info.arguments:
+            raise SyntaxError("Invalid arguments for integer extra: %r"
+                              % (call_info.arguments,))
+        print "just build", dragonfly.Integer(name=name, min=min, max=max)
+        return dragonfly.Integer(name=name, min=min, max=max)
+
+Loader.register_extras_factory("integer", IntegerExtrasFactory())

@@ -19,16 +19,26 @@
 #
 
 """
-    This file implements a simple input stream parser.
-"""
+Input stream parsing framework
+============================================================================
 
+Dragonfly's generic input stream parser is built around the concept of
+parser elements, each of which can consume a certain form of input.  These
+parser elements can be constructed into a hierarchy describing the expected
+type of input they are meant to process.
+
+"""
 
 import string
 
 
+#---------------------------------------------------------------------------
+
 class ParserError(Exception):
     pass
 
+
+#---------------------------------------------------------------------------
 
 class Parser(object):
 
@@ -685,6 +695,42 @@ class CharacterSeries(ParserElementBase):
 
 #---------------------------------------------------------------------------
 
+class Choice(Alternative):
+
+    def __init__(self, choices, name=None):
+        choice_pairs = []
+        choice_elements = []
+        for key, value in choices.items():
+            if isinstance(key, basestring):
+                element = String(key)
+            elif isinstance(key, ParserElementBase):
+                element = key
+            else:
+                raise TypeError("Invalid choice key: %r" % key)
+            choice_pairs.append((element, value))
+            choice_elements.append(element)
+        self._choice_pairs = choice_pairs
+        Alternative.__init__(self, choice_elements, name)
+
+    #-----------------------------------------------------------------------
+    # Methods for runtime introspection.
+
+    def __str__(self):
+        return self._str("%d choices" % len(self._choice_pairs))
+
+    #-----------------------------------------------------------------------
+    # Methods for runtime recognition processing.
+
+    def value(self, node):
+        actor = node.children[0].actor
+        for element, value in self._choice_pairs:
+            if actor == element:
+                return value
+        raise ParserError("Invalid child element: %s" % actor)
+
+
+#---------------------------------------------------------------------------
+
 class Whitespace(CharacterSeries):
 
     def __init__(self, optional=False, name=None):
@@ -715,6 +761,246 @@ class Alphanumerics(CharacterSeries):
         return self._str("")
 
 
+#---------------------------------------------------------------------------
+
+class QuotedStringContent(ParserElementBase):
+
+    escape_char    = "\\"
+    valid_chars    = string.printable
+    escaped_chars  = {
+                      "n":  "\n",
+                      "t":  "\t",
+                     }
+
+    def __init__(self, delimiter_string, name=None):
+        self.delimiter_string = delimiter_string
+        ParserElementBase.__init__(self, name)
+
+    def parse(self, state):
+        state.decode_attempt(self)
+
+        # Gobble as many valid characters as possible.
+        characters = []
+        while not state.finished():
+            next_char = state.peek(1)
+
+            # If next_char escapes, look forward past it and
+            #  handle the escaped character.
+            if next_char == self.escape_char:
+                # If there's nothing after the escaped char, then
+                #  we can't gobble the escape character itself.
+                #  So we're done.
+                if state.remaining() < 2:
+                    break
+                escaped_char = state.peek(2)[1]
+                if escaped_char in self.escaped_chars:
+                    # The escaped character has a special transformation.
+                    next_char = self.escaped_chars[escaped_char]
+                else:
+                    # The escaped character is not special,
+                    #  so simply unescape it.
+                    next_char = escaped_char
+                    if next_char not in self.valid_chars:
+                        break
+                state.next(1)  # Gobble self.escape_char.
+
+            # If self.delimiter_string is next, then we're done.
+            elif state.peek(len(self.delimiter_string)) == self.delimiter_string:
+                break
+
+            # If next_char is not acceptable, don't gobble it.
+            elif next_char not in self.valid_chars:
+                break
+
+            state.next(1)  # Gobble next_char.
+            characters.append(next_char)
+
+        value = "".join(characters)
+        state.decode_success(self, value)
+        yield state
+        state.decode_retry(self)
+        state.decode_failure(self)
+        return
+
+
+#---------------------------------------------------------------------------
+
+class QuotedString(Alternative):
+    """
+        Parser element for quoted strings.
+
+        Simple usage showing default delimiters:
+        >>> parser = Parser(QuotedString())
+        >>> parser.parse("''")
+        ''
+        >>> parser.parse("'Hello world!'")
+        'Hello world!'
+        >>> parser.parse('"Hello world!"')
+        'Hello world!'
+
+        Special characters within the quoted string can be escaped.
+        >>> parser.parse(r'"Hello \"world\"!"')  #doctest: +SKIP
+        Note back to get these escaping examples to run using doctest
+        they must include double escapes, which are obviously not required
+        in actual code.
+        >>> parser.parse(r'"Hello \\"world\\"!"')
+        'Hello "world"!'
+        >>> print parser.parse(r'"Hello \\\\ \\"world\\"!\\nGoodbye \\'universe\\'..."')
+        Hello \ "world"!
+        Goodbye 'universe'...
+
+        This element supports asymmetric open-close delimiters:
+        >>> parser = Parser(QuotedString([("[[", "]]")]))
+        >>> parser.parse("[[Hello world!]]")
+        'Hello world!'
+        >>> parser.parse("[[Hello world!]] Goodbye.", must_finish=False)
+        'Hello world!'
+
+    """
+
+    # Open-close delimiter pairs.
+    default_delimiters = (
+                          ('"', '"'),
+                          ("'", "'"),
+                         )
+
+    def __init__(self, delimiters=default_delimiters, name=None):
+        self.delimiters = delimiters
+        children = []
+        for open_delimiter, close_delimiter in self.delimiters:
+            delimiter_children = (
+                                  String(open_delimiter),
+                                  QuotedStringContent(close_delimiter),
+                                  String(close_delimiter),
+                                 )
+            child = Sequence(delimiter_children)
+            children.append(child)
+        Alternative.__init__(self, children, name=name)
+
+    def value(self, node):
+        return node.children[0].children[1].value()
+
+
+#---------------------------------------------------------------------------
+
+class UnsignedInteger(CharacterSeries):
+    """
+        Parser element for unsigned integer literals.
+
+        Simple usage examples:
+        >>> from dragonfly.parser import Parser
+        >>> parser = Parser(UnsignedInteger())
+        >>> parser.parse("0")
+        0
+        >>> parser.parse("1234")
+        1234
+        >>> parser.parse("0001234")
+        1234
+
+    """
+
+    digits_set = string.digits
+
+    def __init__(self, name=None):
+        CharacterSeries.__init__(self, self.digits_set, name)
+
+    def value(self, node):
+        return int(CharacterSeries.value(self, node))
+
+
+#---------------------------------------------------------------------------
+
+class Integer(Sequence):
+    """
+        Parser element for quoted strings.
+
+        Simple usage examples:
+        >>> from dragonfly.parser import Parser
+        >>> parser = Parser(Integer())
+        >>> parser.parse("0")
+        0
+        >>> parser.parse("+0")
+        0
+        >>> parser.parse("-000")
+        0
+        >>> parser.parse("1234")
+        1234
+        >>> parser.parse("+001234")
+        1234
+        >>> parser.parse("-001234")
+        -1234
+
+    """
+
+    sign_strings = {
+                    "+":  1,
+                    "-": -1,
+                   }
+    digits_set = UnsignedInteger.digits_set
+
+    def __init__(self, name=None):
+        children = (
+                    Optional(Choice(self.sign_strings)),
+                    UnsignedInteger(),
+                   )
+        Sequence.__init__(self, children, name)
+
+    def value(self, node):
+        sign = node.children[0].value() or 1
+        magnitude = node.children[1].value()
+        return sign * magnitude
+
+
+#---------------------------------------------------------------------------
+
+class Float(Sequence):
+    """
+        Parser element for decimal fraction literals.
+
+        Usage examples:
+        >>> from dragonfly.parser import Parser
+        >>> parser = Parser(Float())
+        >>> parser.parse("0.0")
+        0.0
+        >>> parser.parse(".000")
+        0.0
+        >>> parser.parse("-.0")
+        0.0
+        >>> parser.parse("1.0")
+        1.0
+        >>> parser.parse("-1.0")
+        -1.0
+        >>> parser.parse("-1.75")
+        -1.75
+
+    """
+
+    separator_string = "."
+
+    def __init__(self, name=None):
+        digits = CharacterSeries(set=string.digits)
+        children = (
+                    Optional(Alternative([
+                                         Integer(),
+                                         Choice(Integer.sign_strings, name="sign_only"),
+                                        ])),
+                    String(self.separator_string),
+                    UnsignedInteger(),
+                   )
+        Sequence.__init__(self, children=children, name=name)
+
+    def value(self, node):
+        sign_only_node = node.get_child(name="sign_only")
+        if sign_only_node:
+            if sign_only_node > 0:  integer_part = ""
+            else:                   integer_part = "-"
+        else:
+            integer_part = node.children[0].value() or 0
+        fractional_part = node.children[2].value()
+        return float("%s.%d" % (integer_part, fractional_part))
+
+
+#---------------------------------------------------------------------------
 
 def print_matches(node, indent = ""):
     if not indent: print "Nodes:"

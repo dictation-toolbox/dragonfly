@@ -255,6 +255,8 @@ class Key(DynStrActionBase):
             keyname = spec[index:delimiter_index[0]]
             special = spec[delimiter_index[0]+1:delimiter_index[1]]
             outer_pause = spec[delimiter_index[1]+1:]
+        else:
+            raise ActionError("Invalid key spec: %s" % spec)
 
         try:
             code = typeables[keyname]
