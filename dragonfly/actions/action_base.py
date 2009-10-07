@@ -52,116 +52,48 @@ class ActionBase(object):
 
     def __init__(self):
         self._str = ""
-        self._following = []
-        self._data = None
-        self._bound = False
-        self._repeat_factors = []
 
     def __str__(self):
-        s = "%s(%s)" % (self.__class__.__name__, self._str)
-        if self._following:
-            actions = [s] + [str(a) for a in self._following]
-            s = " + ".join(actions)
-        if self._repeat_factors:
-            if self._following:
-                s = "(" + s + ")"
-            s = "%s * (%s)" % (s, self._repeat_factors)
-        if self._bound and self._data:
-            if self._following and not self._repeat_factors:
-                s = "(" + s + ")"
-            s = "%s %% %r" % (s, self._data)
-        return s
-
-    _shallow_attributes = ["_data"]
-
-    def copy(self):
-        return copy_.deepcopy(self)
-        clone = self.__class__()
-        clone._str = self._str
-        clone._following = list(self._following)
-        if isinstance(self._data, dict):  clone._data = dict(self._data)
-        else:                             clone._data = self._data
-        clone._bound = self._bound
-        clone._repeat_factors = list(self._repeat_factors)
-        return clone
-
-    def __deepcopy__(self, memo):
-        clone = copy_.copy(self)
-        for name, value in self.__dict__.items():
-            if name in self._shallow_attributes:
-                clone.__dict__[name] = copy_.copy(value)
-            else:
-                clone.__dict__[name] = copy_.deepcopy(value, memo)
-        return clone
-
-    def append(self, other):
-        assert isinstance(other, ActionBase)
-        self._following.append(other)
+        return "%s(%s)" % (self.__class__.__name__, self._str)
 
     def __add__(self, other):
-        copy = self.copy()
-        copy.append(other)
-        return copy
+        return ActionSeries(self, other)
 
     def __iadd__(self, other):
-        self.append(other)
-        return self
+        return ActionSeries(self, other)
 
-    def __mul__(self, other):
-        copy = self.copy()
-        copy *= other
-        return copy
+    def __mul__(self, factor):
+        return ActionRepetition(self, factor)
 
-    def __imul__(self, other):
-        if not isinstance(other, (int, Repeat)):
-            raise TypeError("Invalid multiplier type: %r"
-                            " (must be an int or a Repeat object)" % other)
-        self._repeat_factors.append(other)
-        return self
+    def __imul__(self, factor):
+        return ActionRepetition(self, factor)
 
     #-----------------------------------------------------------------------
     # Execution methods.
 
+    def bind(self, data=None):
+        return BoundAction(self, data)
+
     def copy_bind(self, data=None):
-        if self._bound:
-            return self
-        else:
-            action = self.copy()
-            action._data = data
-            action._bound = True
-            return action
+        return BoundAction(self, data)
 
     def execute(self, data=None):
-        if self._bound:
-            data = self._data
-        self._log_exec.debug("Executing action: %s" % self.copy_bind(data))
+        self._log_exec.debug("Executing action: %s (%s)" % (self, data))
         try:
-            repeat = 1
-            for factor in self._repeat_factors:
-                if isinstance(factor, int):
-                    repeat *= factor
-                elif isinstance(factor, Repeat):
-                    repeat *= factor.factor(data)
-            for index in range(repeat):
-                if self._execute(data) == False:
-                    raise ActionError(str(self))
-                for a in self._following:
-                    if a.execute(data) == False:
-                        raise ActionError(str(a))
+            if self._execute(data) == False:
+                raise ActionError(str(self))
         except ActionError, e:
             self._log_exec.error("Execution failed: %s" % e)
             return False
         return True
 
     def _execute(self, data=None):
-        pass
+        """ Virtual method. """
 
 
 #---------------------------------------------------------------------------
 
 class DynStrActionBase(ActionBase):
-
-    _shallow_attributes = ActionBase._shallow_attributes + ["_bound_data"]
 
     #-----------------------------------------------------------------------
     # Initialization methods.
@@ -174,8 +106,6 @@ class DynStrActionBase(ActionBase):
         self._spec = spec
         self._static = False
         self._events = None
-        self._bound = False
-        self._bound_data = None
         if spec is None: return
 
         if static or spec.find("%") == -1:
@@ -186,10 +116,11 @@ class DynStrActionBase(ActionBase):
             self._events = None
 
         self._str = "%r" % spec
-        if not self._static: self._str += ", dynamic"
+        if not self._static:
+            self._str += ", dynamic"
 
     def _parse_spec(self, spec):
-        pass
+        """ Virtual method. """
 
     #-----------------------------------------------------------------------
     # Execution methods.
@@ -204,41 +135,169 @@ class DynStrActionBase(ActionBase):
             # If not static, now is the time to build the dynamic spec,
             #  parse it, and execute the events.
 
-            if data is None:
-                data = {}
-            try:
-                spec = self._spec % data
-            except KeyError:
-                if self._log_exec: self._log_exec.error("%s:"
-                                    " Spec %r doesn't match data %r."
-                                    % (self, self._spec, data))
-                return False
+            if not data:
+                spec = self._spec
+            else:
+                try:
+                    spec = self._spec % data
+                except KeyError:
+                    self._log_exec.error("%s: Spec %r doesn't match data %r."
+                                         % (self, self._spec, data))
+                    return False
 
-            if self._log_exec: self._log_exec.debug("%s:"
-                                " Parsing dynamic spec: %r" % (self, spec))
+            self._log_exec.debug("%s: Parsing dynamic spec: %r"
+                                 % (self, spec))
             events = self._parse_spec(spec)
             self._execute_events(events)
 
     def _execute_events(self, events):
-        pass
+        """ Virtual method. """
+
+
+#---------------------------------------------------------------------------
+
+class BoundAction(ActionBase):
+
+    #-----------------------------------------------------------------------
+    # Initialization methods.
+
+    def __init__(self, action, data):
+        ActionBase.__init__(self)
+        self._action = action
+        self._data = data
+        self._str = "%s, %s" % (action, data)
+
+    #-----------------------------------------------------------------------
+    # Execution methods.
+
+    def execute(self, data=None):
+        if not data:
+            data = {}
+        if self._data:
+            data = dict(data)
+            data.update(self._data)
+
+        self._action.execute(data)
+
+
+#---------------------------------------------------------------------------
+
+class ActionSeries(ActionBase):
+
+    #-----------------------------------------------------------------------
+    # Initialization methods.
+
+    def __init__(self, *actions):
+        ActionBase.__init__(self)
+        self._actions = list(actions)
+        self._str = ", ".join(str(a) for a in actions)
+
+    def append(self, other):
+        assert isinstance(other, ActionBase)
+        self._actions.append(other)
+        self._str = ", ".join(str(a) for a in self._actions)
+
+    def __iadd__(self, other):
+        self.append(other)
+        return self
+
+    #-----------------------------------------------------------------------
+    # Execution methods.
+
+    def execute(self, data=None):
+        for action in self._actions:
+            action.execute(data)
+
+
+#---------------------------------------------------------------------------
+
+class ActionRepetition(ActionBase):
+
+    #-----------------------------------------------------------------------
+    # Initialization methods.
+
+    def __init__(self, action, factor):
+        ActionBase.__init__(self)
+        self._action = action
+        self._factor = factor
+        self._str = "%s, %s" % (action, factor)
+
+        if not isinstance(factor, (int, Repeat)):
+            raise TypeError("Invalid multiplier type: %r"
+                            " (must be an int or a Repeat object)" % factor)
+
+    #-----------------------------------------------------------------------
+    # Execution methods.
+
+    def execute(self, data=None):
+        if isinstance(self._factor, int):
+            repeat = self._factor
+        elif isinstance(self._factor, Repeat):
+            repeat = self._factor.factor(data)
+        else:
+            raise ActionError("Invalid repeat factor: %r" % (self._factor,))
+
+        for index in range(repeat):
+            if self._action.execute(data) == False:
+                raise ActionError(str(self))
 
 
 #---------------------------------------------------------------------------
 
 class Repeat(object):
+    """
+        Action repeat factor.
+
+        Integer Repeat factors ignore any supply data::
+
+            >>> integer = Repeat(3)
+            >>> integer.factor()
+            3
+            >>> integer.factor({"foo": 4})  # Non-related data is ignored.
+            3
+
+        Named Repeat factors retrieved their factor-value from the
+        supplied data::
+
+            >>> named = Repeat(extra="foo")
+            >>> named.factor()
+            Traceback (most recent call last):
+              ...
+            ActionError: No extra repeat factor found for name 'foo' ('NoneType' object is unsubscriptable)
+            >>> named.factor({"foo": 4})
+            4
+
+        Repeat factors with both integer count and named extra values set
+        combined (add) these together to determine their factor-value::
+
+            >>> combined = Repeat(count=3, extra="foo")
+            >>> combined.factor()
+            Traceback (most recent call last):
+              ...
+            ActionError: No extra repeat factor found for name 'foo' ('NoneType' object is unsubscriptable)
+            >>> combined.factor({"foo": 4}) # Combined factors 3 + 4 = 7.
+            7
+
+    """
 
     def __init__(self, count=None, extra=None):
         if count is not None:  self._count = count
         else:                  self._count = 0
         self._extra = extra
 
-    def factor(self, data):
+    def factor(self, data=None):
         count = self._count
         if self._extra:
             try:
-                additional = data[self._extra]
+                additional = int(data[self._extra])
+            except ValueError:
+                raise ActionError("Repeat factor %r has invalid value %r"
+                                  % (self._extra, data[self._extra]))
             except KeyError:
                 raise ActionError("No extra repeat factor found for name %r"
-                                  % self._extra)
+                                  % (self._extra,))
+            except Exception, e:
+                raise ActionError("No extra repeat factor found for name %r"
+                                  " (%s)" % (self._extra, e))
             count += additional
         return count

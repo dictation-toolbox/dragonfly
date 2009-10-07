@@ -183,8 +183,10 @@ class Config(object):
             s._set_mode(mode)
 
     def __getattr__(self, name):
-        if name in self._sections:  return self._sections[name]
-        else:                       raise AttributeError(name)
+        if name in self._sections:
+            return self._sections[name]
+        else:
+            raise AttributeError(name)
 
     def __setattr__(self, name, value):
         if self._mode == _init:

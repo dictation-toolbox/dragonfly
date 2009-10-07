@@ -25,9 +25,9 @@
 
 
 try:
-	import natlink
+    import natlink
 except ImportError:
-	natlink = None
+    natlink = None
 
 from ..log import get_log
 

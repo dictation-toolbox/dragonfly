@@ -132,13 +132,17 @@ class CommandFamily(Grammar):
         self._toplevel_rules = toplevel_rules
         for rule in toplevel_rules:
             self.add_rule(rule)
-        Grammar.load(self)
 
 #        for rule in self.rules:
 #            print "loading rule: %r (exported %s)" % (rule.name, rule.exported)
 #            print
 #            print "    ", rule.gstring()
 #            print
+#
+#        self._log.error("Loading %s" % self)
+#        print "loading"
+#        import time; time.sleep(2)
+        Grammar.load(self)
 
     def unload(self):
         Grammar.unload(self)

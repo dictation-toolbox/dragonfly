@@ -77,7 +77,7 @@ class LanguageSpecificLoader(object):
             return getattr(self._module, name)
         except AttributeError:
             raise DragonflyError("Language %r does not implement %r."
-                               % (self._language, name))
+                                 % (self._language, name))
 
     def _load_module(self):
         if not self._language:
@@ -99,7 +99,7 @@ class LanguageSpecificLoader(object):
             module_name = self.language_map[language]
         except KeyError:
             raise DragonflyError("Attempt to load unknown language: %r"
-                               % language)
+                                 % language)
 
         # Attempt to import the language-dependent module.
         try:

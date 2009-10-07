@@ -80,8 +80,11 @@ class Call(object):
         self.arguments = arguments
 
     def __str__(self):
-        argument_string = ", ".join(str(a) for a in self.arguments)
-        return "Call(%r, %s)" % (self.function, argument_string)
+        args = [str(a) for a in self.arguments]
+        return "Call(f=%r, args=(%s))" % (self.function, ", ".join(args))
+
+    def __repr__(self):
+        return self.__str__()
 
     def __ne__(self, other):
         return not (self == other)
@@ -166,8 +169,10 @@ class ValueElement(Alternative):
 
     def __init__(self, name=None):
         children = (
-                    IdentifierElement(),
+                    Integer(),
+                    Float(),
                     QuotedString(),
+                    IdentifierElement(),
                    )
         Alternative.__init__(self, children, name=name)
 
@@ -274,3 +279,282 @@ class CallElement(Sequence):
         function = node.get_child(name="function").value().name
         arguments = [n.value() for n in node.get_children(name="arg")]
         return Call(function, arguments)
+
+
+#---------------------------------------------------------------------------
+
+class _ActionGroup(object):
+    def __init__(self, items, factor=1):
+        self.items = items
+        self.factor = factor
+    def build_tree(self):
+        if len(self.items) == 1 and self.factor == 1:
+            if isinstance(self.items[0], self.__class__):
+                return self.items[0].build_tree()
+            else:
+                return self.items[0]
+        branches = []
+        for item in self.items:
+            if isinstance(item, self.__class__):
+                branch = item.build_tree()
+                if isinstance(branch, tuple) and branch[1] == 1:
+                    branches.extend(branch[0])
+                else:
+                    branches.append(branch)
+            else:
+                branches.append(item)
+        return (branches, self.factor)
+
+class ActionElement(Sequence):
+    """
+        Parser element for action expressions.
+
+        Usage examples:
+        >>> p = Parser(ActionElement())
+        >>> from pprint import PrettyPrinter
+        >>> pretty = lambda input: PrettyPrinter().pprint(p.parse(input))
+        >>> pretty("foo()")
+        Call(f='foo', args=())
+        >>> pretty("(\t (foo()\t)* 1  )")
+        Call(f='foo', args=())
+        >>> pretty("foo() bar()")
+        ([Call(f='foo', args=()), Call(f='bar', args=())], 1)
+        >>> pretty("(foo()( bar())) baz()")
+        ([Call(f='foo', args=()), Call(f='bar', args=()), Call(f='baz', args=())], 1)
+        >>> pretty("foo() * 9 bar()")
+        ([([Call(f='foo', args=())], 9), Call(f='bar', args=())], 1)
+        >>> pretty("foo() * 'integer' bar()")
+        ([([Call(f='foo', args=())], 'integer'), Call(f='bar', args=())], 1)
+        >>> pretty("(foo() bar())*3 baz()")
+        ([([Call(f='foo', args=()), Call(f='bar', args=())], 3),
+          Call(f='baz', args=())],
+         1)
+        >>> pretty("((foo() bar())*3 (foo() bar())*'count')*7")
+        ([([Call(f='foo', args=()), Call(f='bar', args=())], 3),
+          ([Call(f='foo', args=()), Call(f='bar', args=())], 'count')],
+         7)
+        >>> pretty("(Key("") Key("")) * 7 Key("") * 3")
+        ([([Call(f='Key', args=()), Call(f='Key', args=())], 7),
+          ([Call(f='Key', args=())], 3)],
+         1)
+
+    """
+
+    #-----------------------------------------------------------------------
+
+    class MulExpression(Sequence):
+        def __init__(self, unit_mul, ws):
+            mul_factor = Alternative((
+                                      UnsignedInteger(),
+                                      QuotedString(),
+                                    ))
+            Sequence.__init__(self,
+                              (
+                               unit_mul,
+                               Repetition(
+                                          Sequence((
+                                                    ws, String("*"),
+                                                    ws, mul_factor,
+                                                  )),
+                                          min=1,
+                                          #max=8,
+                                         )
+                             ))
+        def value(self, node):
+            unit_mul_value = node.children[0].value()
+            factors = []
+            for repetition in node.children[1].value():
+                factors.append(repetition[3])
+            result = unit_mul_value
+            for f in factors:
+                result = _ActionGroup([result], f)
+            return result
+
+    class AddExpression(Sequence):
+        def __init__(self, unit_add, ws):
+            Sequence.__init__(self,
+                              (
+                               unit_add,
+                               Repetition(
+                                          Sequence((
+                                                    ws, unit_add,
+                                                  )),
+                                          min=0,
+                                          #max=8,
+                                         )
+                             ))
+        def value(self, node):
+            unit_add_values = [node.children[0].value()]
+            for repetition in node.children[1].value():
+                unit_add_values.append(repetition[1])
+            return _ActionGroup(unit_add_values)
+
+    class GrpExpression(Sequence):
+        def __init__(self, expr_add, ws):
+            Sequence.__init__(self,
+                              (
+                               String("("),
+                               ws, expr_add,
+                               ws, String(")"),
+                             ))
+        def value(self, node):
+            expr_add_value = node.children[2].value()
+            return _ActionGroup([expr_add_value])
+
+    single_call = CallElement()
+    ws = Optional(Whitespace())
+    unit_add = Alternative()
+    unit_mul = Alternative()
+    expr_mul = MulExpression(unit_mul, ws)
+    expr_add = AddExpression(unit_add, ws)
+    expr_grp = GrpExpression(expr_add, ws)
+    unit_add.child_list.extend((single_call, expr_grp, expr_mul))
+    unit_mul.child_list.extend((single_call, expr_grp))
+
+    #-----------------------------------------------------------------------
+
+    def __init__(self, name=None):
+        children = (
+                    self.expr_add,
+                   )
+        Sequence.__init__(self, children, name)
+
+    def value(self, node):
+        group = node.children[0].value()
+        tree = group.build_tree()
+        return tree
+
+
+#---------------------------------------------------------------------------
+
+class _ContextGroup(object):
+    def __init__(self, operator, before, after=None):
+        self.operator  = operator
+        self.before    = before
+        self.after     = after
+    def build_tree(self):
+        if isinstance(self.before, self.__class__):
+            before = self.before.build_tree()
+        else:
+            before = self.before
+        if self.after:
+            if isinstance(self.after, self.__class__):
+                after = self.after.build_tree()
+            else:
+                after = self.after
+            return (self.operator, after, before)
+        else:
+            return (self.operator, before)
+
+class ContextElement(Sequence):
+    """
+        Parser element for context expressions.
+
+        Usage examples:
+        >>> p = Parser(ContextElement())
+        >>> from pprint import PrettyPrinter
+        >>> pretty = lambda input: PrettyPrinter().pprint(p.parse(input))
+        >>> pretty("foo()")
+        Call(f='foo', args=())
+        >>> pretty("foo() & bar()")
+        ('&', Call(f='foo', args=()), Call(f='bar', args=()))
+        >>> pretty("foo() & bar() | baz()")
+        ('|',
+         ('&', Call(f='foo', args=()), Call(f='bar', args=())),
+         Call(f='baz', args=()))
+        >>> pretty("foo() & (bar() | baz())")
+        ('&',
+         Call(f='foo', args=()),
+         ('|', Call(f='bar', args=()), Call(f='baz', args=())))
+        >>> pretty("!foo()")
+        ('!', Call(f='foo', args=()))
+        >>> pretty("foo() | !bar()")
+        ('|', Call(f='foo', args=()), ('!', Call(f='bar', args=())))
+        >>> pretty("!foo() & !(bar() | baz())")
+        ('&',
+         ('!', Call(f='foo', args=())),
+         ('!', ('|', Call(f='bar', args=()), Call(f='baz', args=()))))
+
+    """
+
+    #-----------------------------------------------------------------------
+
+    class SeriesExpression(Sequence):
+        def __init__(self, unit, operator, ws):
+            Sequence.__init__(self,
+                              (
+                               unit,
+                               Repetition(
+                                          Sequence((
+                                                    ws, operator,
+                                                    ws, unit,
+                                                  )),
+                                          min=0,
+                                         )
+                             ))
+        def value(self, node):
+            values = [node.children[0].value()]
+            for repetition in node.children[1].value():
+                operator_value  = repetition[1]
+                unit_value      = repetition[3]
+                values.extend((operator_value, unit_value))
+            if len(values) == 1:
+                return values[0]
+            values.reverse()
+            after     = values.pop()
+            operator  = values.pop()
+            before    = values.pop()
+            group = _ContextGroup(operator, before, after)
+            while values:
+                operator  = values.pop()
+                before    = values.pop()
+                group     = _ContextGroup(operator, before, group)
+            return group
+
+    class NotExpression(Sequence):
+        def __init__(self, unit_not, ws):
+            Sequence.__init__(self, (String("!"), ws, unit_not))
+        def value(self, node):
+            operator  = node.children[0].value()
+            value     = node.children[2].value()
+            group     = _ContextGroup(operator, value)
+            return group
+
+    class GrpExpression(Sequence):
+        def __init__(self, expr_series, ws):
+            Sequence.__init__(self,
+                              (
+                               String("("),
+                               ws, expr_series,
+                               ws, String(")"),
+                             ))
+        def value(self, node):
+            series_value = node.children[2].value()
+            return series_value
+
+    single_call  = CallElement()
+    ws           = Optional(Whitespace())
+    operator     = Alternative((String("&"), String("|")))
+    unit_series  = Alternative()
+    unit_not     = Alternative()
+    expr_series  = SeriesExpression(unit_series, operator, ws)
+    expr_grp     = GrpExpression(expr_series, ws)
+    expr_not     = NotExpression(unit_not, ws)
+    unit_not.child_list.extend((single_call, expr_grp))
+    unit_series.child_list.extend((single_call, expr_not, expr_grp))
+
+    #-----------------------------------------------------------------------
+
+    def __init__(self, name=None):
+        children = (
+                    self.expr_series,
+                   )
+        Sequence.__init__(self, children, name)
+
+    def value(self, node):
+        root = node.children[0].value()
+        if isinstance(root, _ContextGroup):
+            tree = root.build_tree()
+        else:
+            tree = root
+        return tree

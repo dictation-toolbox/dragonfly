@@ -33,9 +33,9 @@ dictation formatting for the Natlink and Dragon NaturallySpeaking engine.
 #  cannot be used.  However, we don't raise an exception because
 #  this file should still be importable for documentation purposes.
 try:
-	import natlink
+    import natlink
 except ImportError:
-	natlink = None
+    natlink = None
 
 from ..log import get_log
 from .dictation_base import DictationContainerBase

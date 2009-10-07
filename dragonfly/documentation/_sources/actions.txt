@@ -56,6 +56,15 @@ can be created, combined, executed, etc.
    Key("w-b, right/25:5").execute()    # Define and execute together.
 
 
+More examples
+----------------------------------------------------------------------------
+
+For more examples on how to use and manipulate Dragonfly action objects,
+please see the doctests for the
+:class:`dragonfly.actions.action_base.ActionBase` here:
+:ref:`RefActionsDocTests`.
+
+
 Combining voice commands and actions
 ----------------------------------------------------------------------------
 

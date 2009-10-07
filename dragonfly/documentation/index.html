@@ -55,8 +55,11 @@ Speech Recognition (WSR) as backend engines.</p>
 <p>Contents:</p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="introduction.html">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference external" href="features.html">Features</a></li>
-<li class="toctree-l2"><a class="reference external" href="features.html#target-audience">Target audience</a></li>
+<li class="toctree-l2"><a class="reference external" href="features.html">Features and target audience</a><ul>
+<li class="toctree-l3"><a class="reference external" href="features.html#features">Features</a></li>
+<li class="toctree-l3"><a class="reference external" href="features.html#target-audience">Target audience</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference external" href="installation.html">Installation</a><ul>
 <li class="toctree-l3"><a class="reference external" href="installation.html#prerequisites">Prerequisites</a></li>
 <li class="toctree-l3"><a class="reference external" href="installation.html#installation-of-dragonfly">Installation of Dragonfly</a></li>
@@ -110,18 +113,22 @@ Speech Recognition (WSR) as backend engines.</p>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="engines.html">EngineBase class</a><ul>
-<li class="toctree-l2"><a class="reference external" href="engines.html#natlink-and-dns-engine-class">Natlink and DNS engine class</a></li>
-<li class="toctree-l2"><a class="reference external" href="engines.html#sapi-5-engine-class">SAPI 5 engine class</a></li>
+<li class="toctree-l1"><a class="reference external" href="engines.html">Engines sub-package</a><ul>
+<li class="toctree-l2"><a class="reference external" href="engines.html#module-dragonfly.engines.engine_sapi5">EngineBase class</a><ul>
+<li class="toctree-l3"><a class="reference external" href="engines.html#natlink-and-dns-engine-class">Natlink and DNS engine class</a></li>
+<li class="toctree-l3"><a class="reference external" href="engines.html#sapi-5-engine-class">SAPI 5 engine class</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="engines.html#module-dragonfly.engines.dictation_natlink">Dictation container classes</a><ul>
-<li class="toctree-l2"><a class="reference external" href="engines.html#dictation-container-base-class">Dictation container base class</a></li>
-<li class="toctree-l2"><a class="reference external" href="engines.html#dictation-container-class-for-natlink">Dictation container class for Natlink</a></li>
+<li class="toctree-l2"><a class="reference external" href="engines.html#module-dragonfly.engines.dictation_natlink">Dictation container classes</a><ul>
+<li class="toctree-l3"><a class="reference external" href="engines.html#dictation-container-base-class">Dictation container base class</a></li>
+<li class="toctree-l3"><a class="reference external" href="engines.html#dictation-container-class-for-natlink">Dictation container class for Natlink</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="actions.html">Actions sub-package</a><ul>
 <li class="toctree-l2"><a class="reference external" href="actions.html#basic-examples">Basic examples</a></li>
+<li class="toctree-l2"><a class="reference external" href="actions.html#more-examples">More examples</a></li>
 <li class="toctree-l2"><a class="reference external" href="actions.html#combining-voice-commands-and-actions">Combining voice commands and actions</a></li>
 <li class="toctree-l2"><a class="reference external" href="actions.html#module-dragonfly.actions.action_pause">Action class reference</a><ul>
 <li class="toctree-l3"><a class="reference external" href="actions.html#actionbase-base-class">ActionBase base class</a></li>
@@ -161,9 +168,12 @@ Speech Recognition (WSR) as backend engines.</p>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="clipboard.html">Clipboard toolkit</a><ul>
-<li class="toctree-l2"><a class="reference external" href="clipboard.html#usage-examples">Usage examples</a></li>
-<li class="toctree-l2"><a class="reference external" href="clipboard.html#clipboard-class">Clipboard class</a></li>
+<li class="toctree-l1"><a class="reference external" href="windows.html">Windows sub-package</a><ul>
+<li class="toctree-l2"><a class="reference external" href="clipboard.html">Clipboard toolkit</a><ul>
+<li class="toctree-l3"><a class="reference external" href="clipboard.html#usage-examples">Usage examples</a></li>
+<li class="toctree-l3"><a class="reference external" href="clipboard.html#clipboard-class">Clipboard class</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="context.html">Context classes</a><ul>
@@ -247,8 +257,8 @@ Speech Recognition (WSR) as backend engines.</p>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on May 22, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+      Last updated on Oct 06, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
     </div>
   </body>
 </html>

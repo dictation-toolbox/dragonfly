@@ -36,8 +36,11 @@ Simple usage::
     >>> action = Function(func)
     >>> action.execute({"count": 2})
     count: 2
+    True
+    >>> # Additional keyword arguments are ignored:
     >>> action.execute({"count": 2, "flavor": "vanilla"})
-    count: 2          # Additional keyword arguments are ignored.
+    count: 2
+    True
 
 Usage with default arguments::
 
@@ -45,13 +48,17 @@ Usage with default arguments::
     ...     print "count:", count
     ...     print "flavor:", flavor
     ...
+    >>> # The Function object can be given default argument values:
     >>> action = Function(func, flavor="spearmint")
     >>> action.execute({"count": 2})
     count: 2
     flavor: spearmint
+    True
+    >>> # Arguments given at the execution-time to override default values:
     >>> action.execute({"count": 2, "flavor": "vanilla"})
     count: 2
     flavor: vanilla
+    True
 
 
 Class reference

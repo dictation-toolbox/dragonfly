@@ -138,7 +138,7 @@ class MappingRule(Rule):
         self._name     = name
         self._mapping  = mapping
         self._extras   = dict([(element.name, element)
-                     	       for element in extras])
+                               for element in extras])
         self._defaults = defaults
 
         children = []

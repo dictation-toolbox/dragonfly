@@ -387,6 +387,10 @@ class Sequence(ParserElementBase):
     def _get_children(self):
         return self._children
 
+    @property
+    def child_list(self):
+        return self._children
+
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
@@ -507,7 +511,7 @@ class Alternative(ParserElementBase):
 
     def __init__(self, children=(), name=None):
         ParserElementBase.__init__(self, name)
-        self._children = children
+        self._children = list(children)
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
@@ -516,6 +520,10 @@ class Alternative(ParserElementBase):
         return self._str("%d children" % len(self._children))
 
     def _get_children(self):
+        return tuple(self._children)
+
+    @property
+    def child_list(self):
         return self._children
 
     #-----------------------------------------------------------------------
@@ -619,11 +627,28 @@ class Optional(ParserElementBase):
             return None
 
 
-#---------------------------------------------------------------------------
-#---------------------------------------------------------------------------
-#---------------------------------------------------------------------------
+#===========================================================================
 
 class String(ParserElementBase):
+    r"""
+        Parser element for static strings.
+
+        Usage examples:
+        >>> def parse_multiple(element, input):
+        ...     parser = Parser(element)
+        ...     return parser.parse_multiple(input, must_finish=False)
+        >>> parse_multiple(String("foo"), "foo")
+        ['foo']
+        >>> parse_multiple(String("foo"), "foobar")
+        ['foo']
+        >>> parse_multiple(String("\n\t "), "\n\t foo")
+        ['\n\t ']
+        >>> parse_multiple(String("foo"), "bar")
+        []
+        >>> parse_multiple(String("foo"), " foo")
+        []
+
+    """
 
     def __init__(self, string, name=None):
         ParserElementBase.__init__(self, name)

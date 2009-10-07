@@ -20,7 +20,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Dragonfly v0.6.6b1 documentation" href="index.html" />
-    <link rel="prev" title="EngineBase class" href="engines.html" /> 
+    <link rel="next" title="Windows sub-package" href="windows.html" />
+    <link rel="prev" title="Engines sub-package" href="engines.html" /> 
   </head>
   <body>
     <div class="related">
@@ -33,7 +34,10 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="engines.html" title="EngineBase class"
+          <a href="windows.html" title="Windows sub-package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="engines.html" title="Engines sub-package"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
@@ -92,6 +96,13 @@ can be created, combined, executed, etc.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="more-examples">
+<h2>More examples<a class="headerlink" href="#more-examples" title="Permalink to this headline">¶</a></h2>
+<p>For more examples on how to use and manipulate Dragonfly action objects,
+please see the doctests for the
+<a title="dragonfly.actions.action_base.ActionBase" class="reference internal" href="#dragonfly.actions.action_base.ActionBase"><tt class="xref docutils literal"><span class="pre">dragonfly.actions.action_base.ActionBase</span></tt></a> here:
+<a class="reference external" href="actions_doctests.html#refactionsdoctests"><em>Action doctests</em></a>.</p>
+</div>
 <div class="section" id="combining-voice-commands-and-actions">
 <h2>Combining voice commands and actions<a class="headerlink" href="#combining-voice-commands-and-actions" title="Permalink to this headline">¶</a></h2>
 <p>A common use of Dragonfly is to control other applications by
@@ -122,8 +133,7 @@ what the dynamic element <em>&#8220;text&#8221;</em> is.</p>
 <h3>ActionBase base class<a class="headerlink" href="#actionbase-base-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_base.ActionBase">
-<em class="property">
-class </em><tt class="descname">ActionBase</tt><a class="headerlink" href="#dragonfly.actions.action_base.ActionBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">ActionBase</tt><a class="headerlink" href="#dragonfly.actions.action_base.ActionBase" title="Permalink to this definition">¶</a></dt>
 <dd>Base class for Dragonfly&#8217;s action classes.</dd></dl>
 
 </div>
@@ -256,8 +266,7 @@ with the <em>l</em>:</p>
 <h4>Key class reference<a class="headerlink" href="#key-class-reference" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_key.Key">
-<em class="property">
-class </em><tt class="descname">Key</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_key.Key" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Key</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_key.Key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keystroke emulation action.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -290,8 +299,7 @@ arrow-keys are not part of a text and so cannot be typed using the
 <a title="dragonfly.actions.action_key.Key" class="reference internal" href="#dragonfly.actions.action_key.Key"><tt class="xref docutils literal"><span class="pre">dragonfly.actions.action_key.Key</span></tt></a> action.</p>
 <dl class="class">
 <dt id="dragonfly.actions.action_text.Text">
-<em class="property">
-class </em><tt class="descname">Text</tt><big>(</big><em>spec=None</em>, <em>static=False</em>, <em>pause=0.02</em>, <em>autofmt=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_text.Text" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Text</tt><big>(</big><em>spec=None</em>, <em>static=False</em>, <em>pause=0.02</em>, <em>autofmt=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_text.Text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Action that sends keyboard events to type text.</p>
 <dl class="docutils">
 <dt>Arguments:</dt>
@@ -318,8 +326,7 @@ capitalization and applying the same formatting to the text.</li>
 <h3>Paste action<a class="headerlink" href="#paste-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_paste.Paste">
-<em class="property">
-class </em><tt class="descname">Paste</tt><big>(</big><em>contents</em>, <em>format=None</em>, <em>paste=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_paste.Paste" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Paste</tt><big>(</big><em>contents</em>, <em>format=None</em>, <em>paste=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_paste.Paste" title="Permalink to this definition">¶</a></dt>
 <dd><p>Paste-from-clipboard action.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -479,8 +486,7 @@ Specifies how long to pause <em>after</em> clicking the button; same as above.</
 <h4>Mouse class reference<a class="headerlink" href="#mouse-class-reference" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_mouse.Mouse">
-<em class="property">
-class </em><tt class="descname">Mouse</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mouse.Mouse" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Mouse</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mouse.Mouse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Action that sends mouse events.</p>
 <dl class="docutils">
 <dt>Arguments:</dt>
@@ -508,10 +514,13 @@ the callable will be called.</p>
 <span class="gp">... </span>    <span class="k">print</span> <span class="s">&quot;count:&quot;</span><span class="p">,</span> <span class="n">count</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">action</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mf">2</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
 <span class="go">count: 2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mf">2</span><span class="p">,</span> <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;vanilla&quot;</span><span class="p">})</span>
-<span class="go">count: 2          # Additional keyword arguments are ignored.</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Additional keyword arguments are ignored:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;vanilla&quot;</span><span class="p">})</span>
+<span class="go">count: 2</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 <p>Usage with default arguments:</p>
@@ -519,21 +528,24 @@ the callable will be called.</p>
 <span class="gp">... </span>    <span class="k">print</span> <span class="s">&quot;count:&quot;</span><span class="p">,</span> <span class="n">count</span>
 <span class="gp">... </span>    <span class="k">print</span> <span class="s">&quot;flavor:&quot;</span><span class="p">,</span> <span class="n">flavor</span>
 <span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># The Function object can be given default argument values:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">action</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">flavor</span><span class="o">=</span><span class="s">&quot;spearmint&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mf">2</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
 <span class="go">count: 2</span>
 <span class="go">flavor: spearmint</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mf">2</span><span class="p">,</span> <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;vanilla&quot;</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Arguments given at the execution-time to override default values:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;vanilla&quot;</span><span class="p">})</span>
 <span class="go">count: 2</span>
 <span class="go">flavor: vanilla</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 <div class="section" id="class-reference">
 <h4>Class reference<a class="headerlink" href="#class-reference" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_function.Function">
-<em class="property">
-class </em><tt class="descname">Function</tt><big>(</big><em>function</em>, <em>**defaults</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_function.Function" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Function</tt><big>(</big><em>function</em>, <em>**defaults</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_function.Function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call a function with extra keyword arguments.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -554,8 +566,7 @@ the function will be called</li>
 <h3>Mimic action<a class="headerlink" href="#mimic-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_mimic.Mimic">
-<em class="property">
-class </em><tt class="descname">Mimic</tt><big>(</big><em>*words</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mimic.Mimic" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Mimic</tt><big>(</big><em>*words</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_mimic.Mimic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mimic recognition action.</p>
 <p>The constructor arguments are the words which will be mimicked. 
 These should be passed as a variable argument list.  For example:</p>
@@ -582,11 +593,11 @@ implement dynamic mimicking:</p>
                     <span class="n">Mimic</span><span class="p">(</span><span class="n">extra</span><span class="o">=</span><span class="s">&quot;text&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">Repeat</span><span class="p">(</span><span class="n">extra</span><span class="o">=</span><span class="s">&quot;n&quot;</span><span class="p">),</span>
                <span class="p">}</span>
     <span class="n">extras</span>   <span class="o">=</span> <span class="p">[</span>
-                <span class="n">IntegerRef</span><span class="p">(</span><span class="s">&quot;n&quot;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">10</span><span class="p">),</span>
+                <span class="n">IntegerRef</span><span class="p">(</span><span class="s">&quot;n&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
                 <span class="n">Dictation</span><span class="p">(</span><span class="s">&quot;text&quot;</span><span class="p">),</span>
                <span class="p">]</span>
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s">&quot;n&quot;</span><span class="p">:</span> <span class="mf">1</span><span class="p">,</span>
+                <span class="s">&quot;n&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                <span class="p">}</span>
 </pre></div>
 </div>
@@ -615,8 +626,7 @@ voice-commands.</p>
 <h4>Class reference<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_playback.Playback">
-<em class="property">
-class </em><tt class="descname">Playback</tt><big>(</big><em>series</em>, <em>speed=1</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_playback.Playback" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Playback</tt><big>(</big><em>series</em>, <em>speed=1</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_playback.Playback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Playback a series of recognitions.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -645,8 +655,7 @@ after each mimic are divided by this number.</li>
 <h3>WaitWindow action<a class="headerlink" href="#waitwindow-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_waitwindow.WaitWindow">
-<em class="property">
-class </em><tt class="descname">WaitWindow</tt><big>(</big><em>title=None</em>, <em>executable=None</em>, <em>timeout=15</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_waitwindow.WaitWindow" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">WaitWindow</tt><big>(</big><em>title=None</em>, <em>executable=None</em>, <em>timeout=15</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_waitwindow.WaitWindow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wait for a specific window context action.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -678,8 +687,7 @@ indicate the timeout.</p>
 <h3>FocusWindow action<a class="headerlink" href="#focuswindow-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_focuswindow.FocusWindow">
-<em class="property">
-class </em><tt class="descname">FocusWindow</tt><big>(</big><em>executable=None</em>, <em>title=None</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_focuswindow.FocusWindow" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">FocusWindow</tt><big>(</big><em>executable=None</em>, <em>title=None</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_focuswindow.FocusWindow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bring a window to the foreground action.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -727,8 +735,7 @@ computer the following command successfully starts Notepad:</p>
 <h4>Class reference<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.actions.action_startapp.BringApp">
-<em class="property">
-class </em><tt class="descname">BringApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.BringApp" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">BringApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.BringApp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bring an application to the foreground, starting it if it is not 
 yet running.</p>
 <p>When this action is executed, it looks for an existing window of 
@@ -754,8 +761,7 @@ directory</li>
 
 <dl class="class">
 <dt id="dragonfly.actions.action_startapp.StartApp">
-<em class="property">
-class </em><tt class="descname">StartApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.StartApp" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">StartApp</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_startapp.StartApp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start an application.</p>
 <p>When this action is executed, it runs a file (executable), 
 optionally with commandline arguments.</p>
@@ -779,8 +785,7 @@ directory</li>
 <h3>Pause action<a class="headerlink" href="#pause-action" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.actions.action_pause.Pause">
-<em class="property">
-class </em><tt class="descname">Pause</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_pause.Pause" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Pause</tt><big>(</big><em>spec=None</em>, <em>static=False</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_pause.Pause" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pause for the given amount of time.</p>
 <p>The <em>spec</em> constructor argument should be a <em>string</em> giving the 
 time to wait.  It should be given in hundredths of a second.  For 
@@ -793,7 +798,7 @@ seconds:</p>
 can then be used in dynamic value evaluation.  For example, the 
 following code determines the time to pause at execution time:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">action</span> <span class="o">=</span> <span class="n">Pause</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(time)d</span><span class="s">&quot;</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;time&quot;</span><span class="p">:</span> <span class="mf">37</span><span class="p">}</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;time&quot;</span><span class="p">:</span> <span class="mi">37</span><span class="p">}</span>
 <span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -813,6 +818,7 @@ following code determines the time to pause at execution time:</p>
             <ul>
 <li><a class="reference external" href="">Actions sub-package</a><ul>
 <li><a class="reference external" href="#basic-examples">Basic examples</a></li>
+<li><a class="reference external" href="#more-examples">More examples</a></li>
 <li><a class="reference external" href="#combining-voice-commands-and-actions">Combining voice commands and actions</a></li>
 <li><a class="reference external" href="#module-dragonfly.actions.action_pause">Action class reference</a><ul>
 <li><a class="reference external" href="#actionbase-base-class">ActionBase base class</a></li>
@@ -856,7 +862,10 @@ following code determines the time to pause at execution time:</p>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="engines.html"
-                                  title="previous chapter">EngineBase class</a></p>
+                                  title="previous chapter">Engines sub-package</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="windows.html"
+                                  title="next chapter">Windows sub-package</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/actions.txt"
@@ -889,15 +898,18 @@ following code determines the time to pause at execution time:</p>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="engines.html" title="EngineBase class"
+          <a href="windows.html" title="Windows sub-package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="engines.html" title="Engines sub-package"
              >previous</a> |</li>
         <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on May 22, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+      Last updated on Oct 06, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
     </div>
   </body>
 </html>

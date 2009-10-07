@@ -20,7 +20,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Dragonfly v0.6.6b1 documentation" href="index.html" />
-    <link rel="next" title="EngineBase class" href="engines.html" />
+    <link rel="next" title="Engines sub-package" href="engines.html" />
     <link rel="prev" title="Object model" href="objectmodel.html" /> 
   </head>
   <body>
@@ -34,7 +34,7 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="engines.html" title="EngineBase class"
+          <a href="engines.html" title="Engines sub-package"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="objectmodel.html" title="Object model"
@@ -48,10 +48,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <p>﻿
-.. _RefGrammar:</p>
-<div class="section" id="grammar-sub-package">
-<h1>Grammar sub-package<a class="headerlink" href="#grammar-sub-package" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="grammar-sub-package">
+<span id="refgrammar"></span><h1>Grammar sub-package<a class="headerlink" href="#grammar-sub-package" title="Permalink to this headline">¶</a></h1>
 <p>Dragonfly&#8217;s core is a language object model containing the following
 objects:</p>
 <blockquote>
@@ -125,8 +123,7 @@ This element is the root-element of the first command rule</li>
 <h3>Grammar class<a class="headerlink" href="#grammar-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.grammar_base.Grammar">
-<em class="property">
-class </em><tt class="descname">Grammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Grammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_base.Grammar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Grammar class for managing a set of rules.</p>
 <p>This base grammar class takes care of the communication 
 between Dragonfly&#8217;s object model and the backend speech 
@@ -266,8 +263,7 @@ match positively anymore.</p>
 <h3>ConnectionGrammar class<a class="headerlink" href="#connectiongrammar-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.grammar_connection.ConnectionGrammar">
-<em class="property">
-class </em><tt class="descname">ConnectionGrammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em>, <em>app_name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">ConnectionGrammar</tt><big>(</big><em>name</em>, <em>description=None</em>, <em>context=None</em>, <em>app_name=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.grammar_connection.ConnectionGrammar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Grammar class for maintaining a COM connection well 
 within a given context.  This is useful for controlling 
 applications through COM while they are in the 
@@ -334,8 +330,7 @@ creating multiple spoken-form -&gt; semantic value voice-commands.</li>
 <h3>Rule class<a class="headerlink" href="#rule-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.rule_base.Rule">
-<em class="property">
-class </em><tt class="descname">Rule</tt><big>(</big><em>name=None</em>, <em>element=None</em>, <em>context=None</em>, <em>imported=False</em>, <em>exported=False</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Rule</tt><big>(</big><em>name=None</em>, <em>element=None</em>, <em>context=None</em>, <em>imported=False</em>, <em>exported=False</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_base.Rule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rule class for implementing complete or partial voice-commands.</p>
 <p>This rule class represents a voice-command or part of a voice-
 command.  It contains a root element, which defines the language 
@@ -515,8 +510,7 @@ constructor, or defined as a class attribute in a derived class.</p>
 <h4>Class reference<a class="headerlink" href="#class-reference" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.grammar.rule_compound.CompoundRule">
-<em class="property">
-class </em><tt class="descname">CompoundRule</tt><big>(</big><em>name=None</em>, <em>spec=None</em>, <em>extras=None</em>, <em>defaults=None</em>, <em>exported=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_compound.CompoundRule" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">CompoundRule</tt><big>(</big><em>name=None</em>, <em>spec=None</em>, <em>extras=None</em>, <em>defaults=None</em>, <em>exported=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_compound.CompoundRule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rule class based on the compound element.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -585,11 +579,11 @@ constructor, or defined as a class attribute in a derived class.</p>
                 <span class="s">&quot;search [for] &lt;text&gt;&quot;</span><span class="p">:</span>                 <span class="n">Key</span><span class="p">(</span><span class="s">&quot;a-s&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Text</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(text)s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">),</span>
                <span class="p">}</span>
     <span class="n">extras</span>   <span class="o">=</span> <span class="p">[</span>
-                <span class="n">Integer</span><span class="p">(</span><span class="s">&quot;n&quot;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">20</span><span class="p">),</span>
+                <span class="n">Integer</span><span class="p">(</span><span class="s">&quot;n&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
                 <span class="n">Dictation</span><span class="p">(</span><span class="s">&quot;text&quot;</span><span class="p">),</span>
                <span class="p">]</span>
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s">&quot;n&quot;</span><span class="p">:</span> <span class="mf">1</span><span class="p">,</span>
+                <span class="s">&quot;n&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                <span class="p">}</span>
 
     <span class="n">rule</span> <span class="o">=</span> <span class="n">ExampleRule</span><span class="p">()</span>
@@ -601,8 +595,7 @@ constructor, or defined as a class attribute in a derived class.</p>
 <h4>Class reference<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="dragonfly.grammar.rule_mapping.MappingRule">
-<em class="property">
-class </em><tt class="descname">MappingRule</tt><big>(</big><em>name=None</em>, <em>mapping=None</em>, <em>extras=None</em>, <em>defaults=None</em>, <em>exported=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_mapping.MappingRule" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">MappingRule</tt><big>(</big><em>name=None</em>, <em>mapping=None</em>, <em>extras=None</em>, <em>defaults=None</em>, <em>exported=None</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.rule_mapping.MappingRule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rule class based on a mapping of spoken-forms to semantic values.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -684,8 +677,7 @@ spoken words themselves</li>
 <h3>ElementBase class<a class="headerlink" href="#elementbase-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.ElementBase">
-<em class="property">
-class </em><tt class="descname">ElementBase</tt><big>(</big><em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ElementBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">ElementBase</tt><big>(</big><em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ElementBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for all other element classes.</p>
 <dl class="docutils">
 <dt>Constructor argument:</dt>
@@ -774,8 +766,7 @@ and checks that each item is of a given type.</dd></dl>
 <h3>Sequence class<a class="headerlink" href="#sequence-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.Sequence">
-<em class="property">
-class </em><tt class="descname">Sequence</tt><big>(</big><em>children=()</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Sequence" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Sequence</tt><big>(</big><em>children=()</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Sequence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element class representing a sequence of child elements
 which must all match a recognition in the correct order.</p>
 <dl class="docutils">
@@ -814,8 +805,7 @@ the values of each of its children.</dd></dl>
 <h3>Alternative class<a class="headerlink" href="#alternative-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.Alternative">
-<em class="property">
-class </em><tt class="descname">Alternative</tt><big>(</big><em>children=()</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Alternative" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Alternative</tt><big>(</big><em>children=()</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Alternative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element class representing several child elements of which only
 one will match.</p>
 <dl class="docutils">
@@ -855,8 +845,7 @@ child that matched the recognition.</dd></dl>
 <h3>Optional class<a class="headerlink" href="#optional-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.Optional">
-<em class="property">
-class </em><tt class="descname">Optional</tt><big>(</big><em>child</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Optional" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Optional</tt><big>(</big><em>child</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Optional" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element class representing an optional child element.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -896,8 +885,7 @@ if the child did match the recognition.  Otherwise the
 <h3>Repetition class<a class="headerlink" href="#repetition-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.Repetition">
-<em class="property">
-class </em><tt class="descname">Repetition</tt><big>(</big><em>child</em>, <em>min=1</em>, <em>max=None</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Repetition" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Repetition</tt><big>(</big><em>child</em>, <em>min=1</em>, <em>max=None</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Repetition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element class representing a repetition of one child element.</p>
 <dl class="docutils">
 <dt>Constructor arguments:</dt>
@@ -958,8 +946,7 @@ tree</li>
 <h3>Literal class<a class="headerlink" href="#literal-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.Literal">
-<em class="property">
-class </em><tt class="descname">Literal</tt><big>(</big><em>text</em>, <em>name=None</em>, <em>value=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Literal" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Literal</tt><big>(</big><em>text</em>, <em>name=None</em>, <em>value=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Literal" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="dragonfly.grammar.elements_basic.Literal.dependencies">
 <tt class="descname">dependencies</tt><big>(</big><em>memo</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Literal.dependencies" title="Permalink to this definition">¶</a></dt>
@@ -981,8 +968,7 @@ for this element.  These include lists and other rules.</p>
 <h3>RuleRef class<a class="headerlink" href="#ruleref-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.RuleRef">
-<em class="property">
-class </em><tt class="descname">RuleRef</tt><big>(</big><em>rule</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.RuleRef" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">RuleRef</tt><big>(</big><em>rule</em>, <em>name=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.RuleRef" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="dragonfly.grammar.elements_basic.RuleRef.children">
 <tt class="descname">children</tt><a class="headerlink" href="#dragonfly.grammar.elements_basic.RuleRef.children" title="Permalink to this definition">¶</a></dt>
@@ -995,8 +981,7 @@ class </em><tt class="descname">RuleRef</tt><big>(</big><em>rule</em>, <em>name=
 <h3>ListRef class<a class="headerlink" href="#listref-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.ListRef">
-<em class="property">
-class </em><tt class="descname">ListRef</tt><big>(</big><em>name</em>, <em>list</em>, <em>key=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ListRef" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">ListRef</tt><big>(</big><em>name</em>, <em>list</em>, <em>key=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.ListRef" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="dragonfly.grammar.elements_basic.ListRef.children">
 <tt class="descname">children</tt><a class="headerlink" href="#dragonfly.grammar.elements_basic.ListRef.children" title="Permalink to this definition">¶</a></dt>
@@ -1009,8 +994,7 @@ class </em><tt class="descname">ListRef</tt><big>(</big><em>name</em>, <em>list<
 <h3>DictListRef class<a class="headerlink" href="#dictlistref-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.DictListRef">
-<em class="property">
-class </em><tt class="descname">DictListRef</tt><big>(</big><em>name</em>, <em>dict</em>, <em>key=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.DictListRef" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">DictListRef</tt><big>(</big><em>name</em>, <em>dict</em>, <em>key=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.DictListRef" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="dragonfly.grammar.elements_basic.DictListRef.children">
 <tt class="descname">children</tt><a class="headerlink" href="#dragonfly.grammar.elements_basic.DictListRef.children" title="Permalink to this definition">¶</a></dt>
@@ -1023,8 +1007,7 @@ class </em><tt class="descname">DictListRef</tt><big>(</big><em>name</em>, <em>d
 <h3>Dictation class<a class="headerlink" href="#dictation-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_basic.Dictation">
-<em class="property">
-class </em><tt class="descname">Dictation</tt><big>(</big><em>name=None</em>, <em>format=True</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Dictation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Dictation</tt><big>(</big><em>name=None</em>, <em>format=True</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Dictation" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="dragonfly.grammar.elements_basic.Dictation.dependencies">
 <tt class="descname">dependencies</tt><big>(</big><em>memo</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Dictation.dependencies" title="Permalink to this definition">¶</a></dt>
@@ -1046,8 +1029,7 @@ for this element.  These include lists and other rules.</p>
 <h3>Compound class<a class="headerlink" href="#compound-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_compound.Compound">
-<em class="property">
-class </em><tt class="descname">Compound</tt><big>(</big><em>spec</em>, <em>extras=None</em>, <em>actions=None</em>, <em>name=None</em>, <em>value=None</em>, <em>value_func=None</em>, <em>elements=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_compound.Compound" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Compound</tt><big>(</big><em>spec</em>, <em>extras=None</em>, <em>actions=None</em>, <em>name=None</em>, <em>value=None</em>, <em>value_func=None</em>, <em>elements=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_compound.Compound" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -1055,8 +1037,7 @@ class </em><tt class="descname">Compound</tt><big>(</big><em>spec</em>, <em>extr
 <h3>Choice class<a class="headerlink" href="#choice-class" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="dragonfly.grammar.elements_compound.Choice">
-<em class="property">
-class </em><tt class="descname">Choice</tt><big>(</big><em>name</em>, <em>choices</em>, <em>extras=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_compound.Choice" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Choice</tt><big>(</big><em>name</em>, <em>choices</em>, <em>extras=None</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_compound.Choice" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -1116,7 +1097,7 @@ class </em><tt class="descname">Choice</tt><big>(</big><em>name</em>, <em>choice
                                   title="previous chapter">Object model</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="engines.html"
-                                  title="next chapter">EngineBase class</a></p>
+                                  title="next chapter">Engines sub-package</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/grammar.txt"
@@ -1149,7 +1130,7 @@ class </em><tt class="descname">Choice</tt><big>(</big><em>name</em>, <em>choice
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="engines.html" title="EngineBase class"
+          <a href="engines.html" title="Engines sub-package"
              >next</a> |</li>
         <li class="right" >
           <a href="objectmodel.html" title="Object model"
@@ -1159,8 +1140,8 @@ class </em><tt class="descname">Choice</tt><big>(</big><em>name</em>, <em>choice
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on May 22, 2009.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+      Last updated on Oct 06, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
     </div>
   </body>
 </html>

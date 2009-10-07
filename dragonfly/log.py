@@ -60,8 +60,8 @@ log_names = {
     }
 
 # Lookup path the user's personal folder in which to log Dragonfly messages.
-mydocs_pidl = shell.SHGetFolderLocation (0, shellcon.CSIDL_PERSONAL, 0, 0)
-mydocs_path = shell.SHGetPathFromIDList (mydocs_pidl)
+mydocs_pidl = shell.SHGetFolderLocation(0, shellcon.CSIDL_PERSONAL, 0, 0)
+mydocs_path = shell.SHGetPathFromIDList(mydocs_pidl)
 log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
 log_file_size = 128*1024
 log_file_count = 9

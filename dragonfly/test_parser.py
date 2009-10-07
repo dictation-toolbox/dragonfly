@@ -31,38 +31,20 @@ class TestParsers(unittest.TestCase):
 	def setUp(self):
 		pass
 
-	def test_character_set(self):
-		"""Test CharacterSet parser class."""
+	def test_character_series(self):
+		""" Test CharacterSeries parser class. """
 
 		self._test_multiple(
-			parser.CharacterSet(string.letters),
+			parser.CharacterSeries(string.letters),
 			[
-				("abc", ["abc", "ab", "a"]),
-			],
-			must_finish = False)
-		self._test_multiple(
-			parser.CharacterSet(string.letters, minimum = 0),
-			[
-				("abc", ["abc", "ab", "a", ""]),
-			],
-			must_finish = False)
-		self._test_multiple(
-			parser.CharacterSet(string.letters, greedy = False),
-			[
-				("abc", ["a", "ab", "abc"]),
-			],
-			must_finish = False)
-		self._test_multiple(
-			parser.CharacterSet(string.letters, minimum = 2, maximum = 5),
-			[
-				("abcdefg", ["abcd", "abc", "ab"]),
+				("abc", ["abc"]),
 			],
 			must_finish = False)
 
 	def test_repetition(self):
-		"""Test repetition parser class."""
-		word = parser.CharacterSet(string.letters)
-		whitespace = parser.CharacterSet(string.whitespace)
+		""" Test repetition parser class. """
+		word = parser.CharacterSeries(string.letters)
+		whitespace = parser.CharacterSeries(string.whitespace)
 		p = parser.Repetition(parser.Alternative((word, whitespace)))
 		input_output = (
 			("abc", ["abc"] ),
@@ -72,7 +54,7 @@ class TestParsers(unittest.TestCase):
 		self._test_single(p, input_output)
 
 	def test_optional_greedy(self):
-		"""Test greedy setting of optional parser class."""
+		""" Test greedy setting of optional parser class. """
 		input = "abc"
 		p = parser.Sequence([
 			parser.Sequence([
