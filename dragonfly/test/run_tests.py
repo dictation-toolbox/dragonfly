@@ -55,7 +55,7 @@ def run_nose():
     from pkg_resources import resource_filename
 
     # Determine directory in which to save coverage report.
-    setup_path = os.path.abspath(resource_filename(__name__, "setup.py"))
+    setup_path = os.path.abspath(resource_filename("dragonfly", "setup.py"))
     directory = os.path.dirname(setup_path)
     cover_dir = os.path.join(directory, "coverage")
 
@@ -65,8 +65,10 @@ def run_nose():
             "--failure-detail",
             "--with-doctest",
             "--doctest-extension=doctest",
+            directory,
            ]
 
+    print argv
     # Clear coverage history and start new coverage measurement.
     coverage = coverage.control.coverage()
     coverage.erase()

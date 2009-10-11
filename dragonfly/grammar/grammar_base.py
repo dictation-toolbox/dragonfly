@@ -327,6 +327,10 @@ class Grammar(object):
         self._loaded = False
         self._in_context = False
 
+    def set_exclusiveness(self, exclusiveness):
+        """ Set the exclusiveness of this grammar. """
+        self._engine.set_exclusiveness(self, exclusiveness)
+
     def get_complexity_string(self):
         """
             Build and return a human-readable text giving insight into the 

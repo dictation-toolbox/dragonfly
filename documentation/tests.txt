@@ -1,0 +1,29 @@
+﻿
+..  _RefTests:
+
+Test suite
+****************************************************************************
+
+The Dragonfly library contains tests to verify its functioning and
+assure its quality.
+
+Contents:
+
+.. toctree::
+
+   actions_doctests
+
+
+Test script
+============================================================================
+
+.. automodule:: dragonfly.test.run_tests
+   :members:
+
+
+Test cases
+============================================================================
+
+.. automodule:: dragonfly.language.en.test_number
+   :members:
+

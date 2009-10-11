@@ -59,6 +59,9 @@ class EngineBase(object):
     def update_list(self, lst, grammar):
         raise NotImplementedError("Engine %s not implemented." % self)
 
+    def set_exclusiveness(self, grammar, exclusive):
+        raise NotImplementedError("Engine %s not implemented." % self)
+
 
     #-----------------------------------------------------------------------
     # Recognition observer methods.

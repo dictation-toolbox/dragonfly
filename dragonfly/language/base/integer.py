@@ -37,9 +37,27 @@ class Integer(Alternative):
 
     _content = None
 
-    def __init__(self, name=None, min=None, max=None, default=None):
-        if not self._content:
-            self.__class__._content = language.IntegerContent
+    @classmethod
+    def _set_content(cls, content):
+        """
+            Set the Integer class' language-specific contents.
+
+            This is an internal class method.  However, it is also useful
+            for testing the Integer framework, as tests for different
+            languages can each use this method to force a particular
+            Integer language implementation.
+
+        """
+        cls._content = content
+
+    def __init__(self, name=None, min=None, max=None, default=None,
+                 content=None):
+        if content:
+            self._content = content
+        elif not self._content:
+            # Language-specific integer content has not been set yet, so
+            #  we set it by retrieving the current speaker language content.
+            self._set_content(language.IntegerContent)
         self._builders = self._content.builders
 
         self._min = min; self._max = max
