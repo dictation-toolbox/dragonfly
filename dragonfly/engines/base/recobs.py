@@ -24,7 +24,7 @@ Recognition observer base class
 
 """
 
-from ..log import get_log
+from ...log import get_log
 
 
 #---------------------------------------------------------------------------
@@ -72,15 +72,16 @@ class RecObsManagerBase(object):
             if hasattr(observer, "on_begin"):
                 observer.on_begin()
 
-    def notify_recognition(self, result, words):
+    def notify_recognition(self, words):
         for observer in self._observers:
+#            self._log.error("notifying observer %s %r"% (observer, observer))
             if hasattr(observer, "on_recognition"):
-                observer.on_recognition(result, words)
+                observer.on_recognition(words)
 
-    def notify_failure(self, result):
+    def notify_failure(self):
         for observer in self._observers:
             if hasattr(observer, "on_failure"):
-                observer.on_failure(result)
+                observer.on_failure()
 
     def _activate(self):
         raise NotImplementedError(str(self))

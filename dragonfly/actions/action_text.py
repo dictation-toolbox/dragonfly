@@ -35,12 +35,12 @@ arrow-keys are not part of a text and so cannot be typed using the
 """
 
 
-from dragonfly.actions.action_base  import DynStrActionBase, ActionError
-from dragonfly.actions.typeables    import typeables
-from dragonfly.actions.keyboard     import Keyboard
-from dragonfly.actions.action_key   import Key
-from dragonfly.windows.clipboard    import Clipboard
-from dragonfly.engines.engine       import get_engine
+from .action_base           import DynStrActionBase, ActionError
+from .typeables             import typeables
+from .keyboard              import Keyboard
+from .action_key            import Key
+from ..windows.clipboard    import Clipboard
+from ..engines              import get_engine
 
 
 #---------------------------------------------------------------------------

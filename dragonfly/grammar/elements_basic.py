@@ -250,6 +250,15 @@ class Sequence(ElementBase):
         the recognition in the order that they were given in the
         *children* constructor argument.
 
+        Example usage:
+        >>> from dragonfly.test import ElementTester
+        >>> seq = Sequence([Literal("hello"), Literal("world")])
+        >>> test_seq = ElementTester(seq)
+        >>> test_seq.recognize("hello world")
+        ['hello', 'world']
+        >>> test_seq.recognize("hello universe")
+        RecognitionFailure
+
     """
 
     def __init__(self, children=(), name=None, default=None):

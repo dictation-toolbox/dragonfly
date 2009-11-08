@@ -27,7 +27,7 @@ Recognition observer base class
 import time
 from ..log              import get_log
 from ..actions.actions  import Playback
-from ..engines.engine   import get_engine
+from ..engines          import get_engine
 
 
 #---------------------------------------------------------------------------
@@ -56,16 +56,26 @@ class RecognitionObserver(object):
 #    def on_begin(self):
 #        pass
 #
-#    def on_recognition(self, result, words):
+#    def on_recognition(self, words):
 #        pass
 #
-#    def on_failure(self, result):
+#    def on_failure(self):
 #        pass
 
 
 #---------------------------------------------------------------------------
 
 class RecognitionHistory(list, RecognitionObserver):
+    """
+        Storage class for recent recognitions.
+
+        Instances of this class monitor recognitions and store them
+        internally.  This class derives from the built in *list* type
+        and can be accessed as if it were a normal *list* containing
+        recent recognitions.  Note that an instance's contents are
+        updated automatically as recognitions are received.
+
+    """
 
     def __init__(self, length=10):
         list.__init__(self)
@@ -86,14 +96,14 @@ class RecognitionHistory(list, RecognitionObserver):
     def on_begin(self):
         self._complete = False
 
-    def on_recognition(self, result, words):
+    def on_recognition(self, words):
         self._complete = True
-        self.append(self._recognition_to_item(result, words))
+        self.append(self._recognition_to_item(words))
         if self._length:
             while len(self) > self._length:
                 self.pop(0)
 
-    def _recognition_to_item(self, result, words):
+    def _recognition_to_item(self, words):
         return words
 
 
@@ -104,7 +114,7 @@ class PlaybackHistory(RecognitionHistory):
     def __init__(self, length=10):
         RecognitionHistory.__init__(self, length)
 
-    def _recognition_to_item(self, result, words):
+    def _recognition_to_item(self, words):
         return (words, time.time())
 
     def __getitem__(self, key):

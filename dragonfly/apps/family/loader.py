@@ -575,3 +575,21 @@ class IntegerExtrasFactory(ExtrasFactoryBase):
         return dragonfly.Integer(name=name, min=min, max=max)
 
 Loader.register_extras_factory("integer", IntegerExtrasFactory())
+
+
+#===========================================================================
+
+class ExtrasFactoryError(Exception):
+    pass
+
+class ContextFactoryError(Exception):
+    pass
+
+class ActionFactoryError(Exception):
+    pass
+
+class ContextFactoryBase(object):
+    pass
+
+class ActionFactoryBase(object):
+    pass

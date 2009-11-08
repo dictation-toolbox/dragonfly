@@ -19,17 +19,18 @@
 #
 
 """
-Natlink and DNS engine class
+SR back-end for DNS and Natlink
 ============================================================================
 
 """
 
-natlink = None
-import win32com.client
-
-from .engine_base        import EngineBase
-from .dictation_natlink  import NatlinkDictationContainer
-from .recobs_natlink     import NatlinkRecObsManager
+from ..base        import EngineBase, EngineError, MimicFailure
+from .dictation    import NatlinkDictationContainer
+from .recobs       import NatlinkRecObsManager
+from .timer        import NatlinkTimerManager
+from .compiler     import NatlinkCompiler
+import dragonfly.grammar.state as state_
+import dragonfly.grammar.wordinfo as wordinfo
 
 
 #---------------------------------------------------------------------------
@@ -40,58 +41,42 @@ class NatlinkEngine(EngineBase):
     _name = "natlink"
     DictationContainer = NatlinkDictationContainer
 
-    @classmethod
-    def is_available(cls):
-        """ Check whether Natlink is available. """
-        try:
-            import natlink
-        except ImportError:
-            return False
-
-        if natlink.isNatSpeakRunning():
-            return True
-        else:
-            return False
-
-
     #-----------------------------------------------------------------------
 
     def __init__(self):
-        global natlink
-
         EngineBase.__init__(self)
 
-        self._natlink = None
-        if natlink:
-            self._natlink = natlink
-        else:
-            try:
-                import natlink as natlink_
-            except ImportError:
-                self._log.error("%s: failed to import natlink module." % self)
-                raise EngineError("Failed to import the Natlink module.")
-            natlink = natlink_
-            self._natlink = natlink_
+        self.natlink = None
+        try:
+            import natlink
+        except ImportError:
+            self._log.error("%s: failed to import natlink module." % self)
+            raise EngineError("Failed to import the Natlink module.")
+        self.natlink = natlink
 
+        self._grammar_count = 0
         self._recognition_observer_manager = NatlinkRecObsManager(self)
+        self._timer_manager = NatlinkTimerManager(0.02, self)
+
+    def connect(self):
+        """ Connect to natlink. """
+        self.natlink.natConnect()
+
+    def disconnect(self):
+        """ Disconnect from natlink. """
+        self.natlink.natDisconnect()
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.
 
-    def load_grammar(self, grammar):
-        """ Load the given *grammar* into natlink. """
-        self.load_natlink_grammar(grammar)
-
-    def load_natlink_grammar(self, grammar, all_results=False,
-                             hypothesis=False):
+    def _load_grammar(self, grammar):
         """ Load the given *grammar* into natlink. """
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
 
         grammar.engine = self
-        grammar_object = self._natlink.GramObj()
+        grammar_object = self.natlink.GramObj()
         wrapper = GrammarWrapper(grammar, grammar_object, self)
-
         grammar_object.setBeginCallback(wrapper.begin_callback)
         grammar_object.setResultsCallback(wrapper.results_callback)
         grammar_object.setHypothesisCallback(None)
@@ -106,35 +91,58 @@ class NatlinkEngine(EngineBase):
         (compiled_grammar, rule_names) = c.compile_grammar(grammar)
         grammar._rule_names = rule_names
 
+        if (hasattr(grammar, "process_recognition_other")
+            or hasattr(grammar, "process_recognition_failure")):
+            all_results = True
+        else:
+            all_results = False
+        hypothesis = False
+
+        attempt_connect = False
         try:
             grammar_object.load(compiled_grammar, all_results, hypothesis)
-        except self._natlink.NatError, e:
-            self._log.warning("%s: failed to load grammar %r: %s."
-                              % (self, grammar.name, e))
-            self._set_grammar_wrapper(grammar, None)
-            return
+        except self.natlink.NatError, e:
+            # If loading failed because we're not connected yet,
+            #  attempt to connect to natlink and reload the grammar.
+            if (str(e) == "Calling GramObj.load is not allowed before"
+                          " calling natConnect"):
+                attempt_connect = True
+            else:
+                self._log.exception("Failed to load grammar %s: %s."
+                                    % (grammar, e))
+                raise EngineError("Failed to load grammar %s: %s."
+                                  % (grammar, e))
+        if attempt_connect:
+            self.connect()
+            try:
+                grammar_object.load(compiled_grammar, all_results, hypothesis)
+            except self.natlink.NatError, e:
+                self._log.exception("Failed to load grammar %s: %s."
+                                    % (grammar, e))
+                raise EngineError("Failed to load grammar %s: %s."
+                                  % (grammar, e))
 
-        self._set_grammar_wrapper(grammar, wrapper)
+        return wrapper
 
-    def unload_grammar(self, grammar):
+    def _unload_grammar(self, grammar, wrapper):
         """ Unload the given *grammar* from natlink. """
         try:
-            grammar_object = self._get_grammar_wrapper(grammar).grammar_object
+            grammar_object = wrapper.grammar_object
+            grammar_object.unload()
             grammar_object.setBeginCallback(None)
             grammar_object.setResultsCallback(None)
             grammar_object.setHypothesisCallback(None)
-            grammar_object.unload()
-        except self._natlink.NatError, e:
-            self._log.warning("Engine %s: failed to unload: %s."
-                              % (self, e))
+        except self.natlink.NatError, e:
+            self._log.exception("Failed to unload grammar %s: %s."
+                                % (grammar, e))
 
     def set_exclusiveness(self, grammar, exclusive):
         try:
             grammar_object = self._get_grammar_wrapper(grammar).grammar_object
             grammar_object.setExclusive(exclusive)
-        except self._natlink.NatError, e:
-            self._log.warning("Engine %s: failed set exclusiveness: %s."
-                              % (self, e))
+        except self.natlink.NatError, e:
+            self._log.exception("Engine %s: failed set exclusiveness: %s."
+                                % (self, e))
 
     def activate_grammar(self, grammar):
         self._log.debug("Activating grammar %s." % grammar.name)
@@ -173,25 +181,24 @@ class NatlinkEngine(EngineBase):
         grammar_object.emptyList(n)
         [f(n, word) for word in lst.get_list_items()]
 
-    def _set_grammar_wrapper(self, grammar, grammar_wrapper):
-        grammar._grammar_wrapper = grammar_wrapper
-
-    def _get_grammar_wrapper(self, grammar):
-        return grammar._grammar_wrapper
-
 
     #-----------------------------------------------------------------------
     # Miscellaneous methods.
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        self._natlink.recognitionMimic(list(words))
+        try:
+            self.natlink.recognitionMimic(list(words))
+        except self.natlink.MimicFailed:
+            raise MimicFailure("No matching rule found for words %r."
+                               % (words,))
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
-        self._natlink.execScript('TTSPlayString "%s"' % text)
+        self.natlink.execScript('TTSPlayString "%s"' % text)
 
     def _get_language(self):
+        import win32com.client
         app = win32com.client.Dispatch("Dragon.DgnEngineControl")
         language = app.SpeakerLanguage("")
         try:
@@ -234,14 +241,25 @@ class GrammarWrapper(object):
         self.grammar.process_begin(executable, title, handle)
 
     def results_callback(self, words, results):
-        if words == "other":    words_rules = results.getResults(0)
-        elif words == "reject": words_rules = []
-        else:                   words_rules = words
         NatlinkEngine._log.debug("Grammar %s: received recognition %r."
                                  % (self.grammar._name, words))
 
-        if hasattr(self.grammar, "process_results"):
-            if not self.grammar.process_results(words, results):
+        if words == "other":
+            func = getattr(self.grammar, "process_recognition_other", None)
+            if func:
+                words = results.getWords(0)
+                func(words)
+            return
+        elif words == "reject":
+            func = getattr(self.grammar, "process_recognition_failure", None)
+            if func:
+                func()
+            return
+
+        words_rules = words
+        func = getattr(self.grammar, "process_recognition", None)
+        if func:
+            if not func(words):
                 return
 
         # Iterates through this grammar's rules, attempting
@@ -260,10 +278,3 @@ class GrammarWrapper(object):
         NatlinkEngine._log.warning("Grammar %s: failed to decode"
                                    " recognition %r."
                                    % (self.grammar._name, words))
-
-
-#---------------------------------------------------------------------------
-
-from dragonfly.engines.compiler_natlink  import NatlinkCompiler
-import dragonfly.grammar.state as state_
-import dragonfly.grammar.wordinfo as wordinfo

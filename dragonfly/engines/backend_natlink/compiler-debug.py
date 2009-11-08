@@ -45,7 +45,14 @@ class NatlinkCompiler(CompilerBase):
 
         compiled_grammar = compiler.compile()
         rule_names = compiler.rule_names
-#        print compiler.debug_state_string()
+        for line in compiler.debug_state_string().splitlines():
+            self._log.warning(line)
+        self._log.warning("Binary grammar %s" % grammar.name)
+        index = 0; length = 32
+        while index*length <len(compiled_grammar):
+            line = compiled_grammar[index*length:index*length + length].encode("hex")
+            self._log.warning(line)
+            index += 1
         return (compiled_grammar, rule_names)
 
     def _compile_rule(self, rule, compiler):

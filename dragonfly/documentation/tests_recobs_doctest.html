@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Doctests for recognition observer classes &mdash; Dragonfly v0.6.6b1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.6.6b1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Dragonfly v0.6.6b1 documentation" href="index.html" />
+    <link rel="up" title="Test suite" href="tests.html" />
+    <link rel="next" title="Action doctests" href="tests_actions_doctest.html" />
+    <link rel="prev" title="Doctests for the fundamental element classes" href="tests_elements_basic_doctest.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="tests_actions_doctest.html" title="Action doctests"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tests_elements_basic_doctest.html" title="Doctests for the fundamental element classes"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li>
+          <li><a href="tests.html" accesskey="U">Test suite</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-dragonfly.grammar.recobs_doctest">
+<span id="refrecobsdoctests"></span><h1>Doctests for recognition observer classes<a class="headerlink" href="#module-dragonfly.grammar.recobs_doctest" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="recognition-observer-base-class">
+<h2>Recognition observer base class<a class="headerlink" href="#recognition-observer-base-class" title="Permalink to this headline">¶</a></h2>
+<p>Test fixture initialization:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dragonfly</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dragonfly.test</span> <span class="kn">import</span> <span class="n">ElementTester</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span> <span class="o">=</span> <span class="n">get_engine</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="tests-for-recognitionobserver-class">
+<h3>Tests for RecognitionObserver class<a class="headerlink" href="#tests-for-recognitionobserver-class" title="Permalink to this headline">¶</a></h3>
+<p>A class derived from RecognitionObserver used for testing it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">RecognitionObserverTester</span><span class="p">(</span><span class="n">RecognitionObserver</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">RecognitionObserver</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">waiting</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">words</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">on_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">waiting</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">on_recognition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">words</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">waiting</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">words</span> <span class="o">=</span> <span class="n">words</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">on_failure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">waiting</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">words</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_recobs</span> <span class="o">=</span> <span class="n">RecognitionObserverTester</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_recobs</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_recobs</span><span class="o">.</span><span class="n">waiting</span><span class="p">,</span> <span class="n">test_recobs</span><span class="o">.</span><span class="n">words</span>
+<span class="go">(False, None)</span>
+</pre></div>
+</div>
+<p>Simple literal element recognitions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">test_lit</span> <span class="o">=</span> <span class="n">ElementTester</span><span class="p">(</span><span class="n">Literal</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_lit</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">)</span>
+<span class="go">&#39;hello world&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_recobs</span><span class="o">.</span><span class="n">waiting</span><span class="p">,</span> <span class="n">test_recobs</span><span class="o">.</span><span class="n">words</span>
+<span class="go">(False, [&#39;hello&#39;, &#39;world&#39;])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_lit</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;hello universe&quot;</span><span class="p">)</span>
+<span class="go">RecognitionFailure</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_recobs</span><span class="o">.</span><span class="n">waiting</span><span class="p">,</span> <span class="n">test_recobs</span><span class="o">.</span><span class="n">words</span>
+<span class="go">(False, False)</span>
+</pre></div>
+</div>
+<p>Integer element recognitions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">test_int</span> <span class="o">=</span> <span class="n">ElementTester</span><span class="p">(</span><span class="n">Integer</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">100</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_int</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;seven&quot;</span><span class="p">)</span>
+<span class="go">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_recobs</span><span class="o">.</span><span class="n">waiting</span><span class="p">,</span> <span class="n">test_recobs</span><span class="o">.</span><span class="n">words</span>
+<span class="go">(False, [&#39;seven&#39;])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_int</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;forty seven&quot;</span><span class="p">)</span>
+<span class="go">47</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_recobs</span><span class="o">.</span><span class="n">waiting</span><span class="p">,</span> <span class="n">test_recobs</span><span class="o">.</span><span class="n">words</span>
+<span class="go">(False, [&#39;forty&#39;, &#39;seven&#39;])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_int</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;one hundred&quot;</span><span class="p">)</span>
+<span class="go">RecognitionFailure</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_recobs</span><span class="o">.</span><span class="n">waiting</span><span class="p">,</span> <span class="n">test_recobs</span><span class="o">.</span><span class="n">words</span>
+<span class="go">(False, False)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_lit</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">)</span>
+<span class="go">&#39;hello world&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="tests-for-recognitionhistory-class">
+<h3>Tests for RecognitionHistory class<a class="headerlink" href="#tests-for-recognitionhistory-class" title="Permalink to this headline">¶</a></h3>
+<p>Basic usage of the RecognitionHistory class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">history</span> <span class="o">=</span> <span class="n">RecognitionHistory</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_lit</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">)</span>
+<span class="go">&#39;hello world&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Not yet registered, so didn&#39;t receive previous recognition.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span>
+<span class="go">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_lit</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">)</span>
+<span class="go">&#39;hello world&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Now registered, so should have received previous recognition.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span>
+<span class="go">[[&#39;hello&#39;, &#39;world&#39;]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_lit</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;hello universe&quot;</span><span class="p">)</span>
+<span class="go">RecognitionFailure</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Failed recognitions are ignored, so history is unchanged.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span>
+<span class="go">[[&#39;hello&#39;, &#39;world&#39;]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_int</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;eighty six&quot;</span><span class="p">)</span>
+<span class="go">86</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span>
+<span class="go">[[&#39;hello&#39;, &#39;world&#39;], [&#39;eighty&#39;, &#39;six&#39;]]</span>
+</pre></div>
+</div>
+<p>The RecognitionHistory class allows its maximum length to be set:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">history</span> <span class="o">=</span> <span class="n">RecognitionHistory</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span>
+<span class="go">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s">&quot;one&quot;</span><span class="p">,</span> <span class="s">&quot;two&quot;</span><span class="p">,</span> <span class="s">&quot;three&quot;</span><span class="p">,</span> <span class="s">&quot;four&quot;</span><span class="p">,</span> <span class="s">&quot;five&quot;</span><span class="p">]):</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">test_int</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="o">==</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span>
+<span class="go">[[&#39;three&#39;], [&#39;four&#39;], [&#39;five&#39;]]</span>
+</pre></div>
+</div>
+<p>The length must be a positive integer.  A length of 0 is not allowed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">history</span> <span class="o">=</span> <span class="n">RecognitionHistory</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="nc">ValueError</span>: <span class="n-Identifier">length must be a positive int or None, received 0.</span>
+</pre></div>
+</div>
+<p>Minimum length is 1:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">history</span> <span class="o">=</span> <span class="n">RecognitionHistory</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span>
+<span class="go">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s">&quot;one&quot;</span><span class="p">,</span> <span class="s">&quot;two&quot;</span><span class="p">,</span> <span class="s">&quot;three&quot;</span><span class="p">,</span> <span class="s">&quot;four&quot;</span><span class="p">,</span> <span class="s">&quot;five&quot;</span><span class="p">]):</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">test_int</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="o">==</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span>
+<span class="go">[[&#39;five&#39;]]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="test-fixture-cleanup">
+<h3>Test fixture cleanup<a class="headerlink" href="#test-fixture-cleanup" title="Permalink to this headline">¶</a></h3>
+<p>Test fixture cleanup:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">test_recobs</span><span class="o">.</span><span class="n">unregister</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Doctests for recognition observer classes</a><ul>
+<li><a class="reference external" href="#recognition-observer-base-class">Recognition observer base class</a><ul>
+<li><a class="reference external" href="#tests-for-recognitionobserver-class">Tests for RecognitionObserver class</a></li>
+<li><a class="reference external" href="#tests-for-recognitionhistory-class">Tests for RecognitionHistory class</a></li>
+<li><a class="reference external" href="#test-fixture-cleanup">Test fixture cleanup</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="tests_elements_basic_doctest.html"
+                                  title="previous chapter">Doctests for the fundamental element classes</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="tests_actions_doctest.html"
+                                  title="next chapter">Action doctests</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/tests_recobs_doctest.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tests_actions_doctest.html" title="Action doctests"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tests_elements_basic_doctest.html" title="Doctests for the fundamental element classes"
+             >previous</a> |</li>
+        <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li>
+          <li><a href="tests.html" >Test suite</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008, Christo Butcher.
+      Last updated on Nov 04, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

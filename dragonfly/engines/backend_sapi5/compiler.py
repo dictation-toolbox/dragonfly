@@ -30,9 +30,9 @@
 import sys
 from win32com.client import constants
 
-from .compiler_base            import CompilerBase, CompilerError
-from ..grammar.rule_base       import Rule
-from ..grammar.elements_basic  import Impossible, Literal
+from ..base                     import CompilerBase, CompilerError
+from ...grammar.rule_base       import Rule
+from ...grammar.elements_basic  import Impossible, Literal
 
 
 #---------------------------------------------------------------------------
@@ -215,4 +215,5 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_impossible(self, element, src_state, dst_state, grammar, grammar_handle):
+        src_state.AddWordTransition(dst_state, "no can do")
         return

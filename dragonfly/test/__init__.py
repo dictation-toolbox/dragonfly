@@ -19,5 +19,7 @@
 #
 
 #---------------------------------------------------------------------------
-from .error              import TestError
-from .element_test_case  import ElementTestCase, RecognitionFailure
+
+from .infrastructure     import TestError, RecognitionFailure
+from .element_test_case  import ElementTestCase
+from .element_tester     import ElementTester

@@ -19,12 +19,13 @@
 #
 
 """
-    This file implements the Grammar class.
+Grammar class
+============================================================================
 
 """
 
 from ..log             import get_log
-from ..engines.engine  import get_engine
+from ..engines         import get_engine
 from .rule_base        import Rule
 from .list             import ListBase
 from .context          import Context
@@ -68,11 +69,16 @@ class Grammar(object):
     #-----------------------------------------------------------------------
     # Methods for initialization and cleanup.
 
-    def __init__(self, name, description=None, context=None):
+    def __init__(self, name, description=None, context=None, engine=None):
         self._name = name
         self._description = description
         assert isinstance(context, Context) or context is None
         self._context = context
+
+        if engine:
+            self._engine = engine
+        else:
+            self._engine = get_engine()
 
         self._rules = []
         self._lists = []
@@ -80,13 +86,16 @@ class Grammar(object):
         self._loaded = False
         self._enabled = True
         self._in_context = False
-        self._engine = get_engine()
 
     def __del__(self):
         try:
             self.unload()
         except Exception, e:
-            pass
+            try:
+                self._log.exception("Exception during grammar unloading:"
+                                    " %s" % (e,))
+            except Exception, e:
+                pass
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
@@ -309,7 +318,7 @@ class Grammar(object):
         # Update all lists loaded in this grammar.
         for rule in self._rules:
             if rule.active != False:
-                rule.activate()
+                rule.activate(force=True)
         # Update all lists loaded in this grammar.
         for lst in self._lists:
             lst._update()

@@ -1,0 +1,9 @@
+﻿
+.. _RefRecobsDocTests:
+
+Doctests for recognition observer classes
+****************************************************************************
+
+.. automodule:: dragonfly.grammar.recobs_doctest
+   :members:
+

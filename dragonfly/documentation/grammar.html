@@ -782,6 +782,14 @@ the name of this element</li>
 <p>For a recognition to match, all child elements must match
 the recognition in the order that they were given in the
 <em>children</em> constructor argument.</p>
+<p>Example usage:
+&gt;&gt;&gt; from dragonfly.test import ElementTester
+&gt;&gt;&gt; seq = Sequence([Literal(&#8220;hello&#8221;), Literal(&#8220;world&#8221;)])
+&gt;&gt;&gt; test_seq = ElementTester(seq)
+&gt;&gt;&gt; test_seq.recognize(&#8220;hello world&#8221;)
+[&#8216;hello&#8217;, &#8216;world&#8217;]
+&gt;&gt;&gt; test_seq.recognize(&#8220;hello universe&#8221;)
+RecognitionFailure</p>
 <dl class="method">
 <dt id="dragonfly.grammar.elements_basic.Sequence.value">
 <tt class="descname">value</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#dragonfly.grammar.elements_basic.Sequence.value" title="Permalink to this definition">¶</a></dt>
@@ -1140,7 +1148,7 @@ for this element.  These include lists and other rules.</p>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Oct 06, 2009.
+      Last updated on Nov 04, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
     </div>
   </body>

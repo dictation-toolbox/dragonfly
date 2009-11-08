@@ -101,7 +101,7 @@ action objects.</p>
 </div>
 <div class="section" id="repeating-actions">
 <h3>Repeating actions<a class="headerlink" href="#repeating-actions" title="Permalink to this headline">¶</a></h3>
-<p>Repetition actions:</p>
+<p>Actions can be repeated by multiplying them with a factor:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 <span class="go">executing &#39;a&#39;</span>
 <span class="go">executing &#39;a&#39;</span>
@@ -127,6 +127,29 @@ action objects.</p>
 <span class="gt">Traceback (most recent call last):</span>
   <span class="c">...</span>
 <span class="nc">ActionError</span>: <span class="n-Identifier">No extra repeat factor found for name &#39;foo&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">a</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="go">executing &#39;a&#39; {&#39;foo&#39;: 2}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">*=</span> <span class="n">Repeat</span><span class="p">(</span><span class="n">extra</span><span class="o">=</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="go">executing &#39;a&#39; {&#39;foo&#39;: 2}</span>
+<span class="go">executing &#39;a&#39; {&#39;foo&#39;: 2}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">+=</span> <span class="n">b</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">*=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="go">executing &#39;a&#39; {&#39;foo&#39;: 1}</span>
+<span class="go">executing &#39;b&#39; {&#39;foo&#39;: 1}</span>
+<span class="go">executing &#39;a&#39; {&#39;foo&#39;: 1}</span>
+<span class="go">executing &#39;b&#39; {&#39;foo&#39;: 1}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">*=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+<span class="go">executing &#39;b&#39; {&#39;foo&#39;: 0}</span>
+<span class="go">executing &#39;b&#39; {&#39;foo&#39;: 0}</span>
+<span class="go">executing &#39;b&#39; {&#39;foo&#39;: 0}</span>
+<span class="go">executing &#39;b&#39; {&#39;foo&#39;: 0}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">*=</span> <span class="mi">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">({</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
 </pre></div>
 </div>
 </div>
@@ -214,7 +237,7 @@ action objects.</p>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Oct 06, 2009.
+      Last updated on Oct 21, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
     </div>
   </body>

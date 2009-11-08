@@ -10,8 +10,11 @@ assure its quality.
 Contents:
 
 .. toctree::
+   :maxdepth: 2
 
-   actions_doctests
+   tests_elements_basic_doctest
+   tests_recobs_doctest
+   tests_actions_doctest
 
 
 Test script
@@ -26,4 +29,3 @@ Test cases
 
 .. automodule:: dragonfly.language.en.test_number
    :members:
-

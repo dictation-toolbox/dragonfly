@@ -19,20 +19,20 @@
 #
 
 """
-Recognition observer class for the Natlink engine
+Recognition observer class for the SAPI 5 engine
 ============================================================================
 
 """
 
-from .recobs_base         import RecObsManagerBase
-from ..grammar.grammar    import Grammar
-from ..grammar.rule_base  import Rule
-from ..grammar.elements   import Impossible
+from ..base                import RecObsManagerBase
+from ...grammar.grammar    import Grammar
+from ...grammar.rule_base  import Rule
+from ...grammar.elements   import Impossible
 
 
 #---------------------------------------------------------------------------
 
-class NatlinkRecObsManager(RecObsManagerBase):
+class Sapi5RecObsManager(RecObsManagerBase):
 
     def __init__(self, engine):
         RecObsManagerBase.__init__(self, engine)
@@ -40,7 +40,7 @@ class NatlinkRecObsManager(RecObsManagerBase):
 
     def _activate(self):
         if not self._grammar:
-            self._grammar = NatlinkRecObsGrammar(self)
+            self._grammar = Sapi5RecObsGrammar(self)
         self._grammar.load()
 
     def _deactivate(self):
@@ -51,7 +51,7 @@ class NatlinkRecObsManager(RecObsManagerBase):
 
 #---------------------------------------------------------------------------
 
-class NatlinkRecObsGrammar(Grammar):
+class Sapi5RecObsGrammar(Grammar):
 
     def __init__(self, manager):
         self._manager = manager
@@ -62,37 +62,17 @@ class NatlinkRecObsGrammar(Grammar):
         self.add_rule(rule)
 
     #-----------------------------------------------------------------------
-    # Methods for registering a grammar object instance in natlink.
-
-    def load(self):
-        """ Load this grammar into its SR engine. """
-
-        # Prevent loading the same grammar multiple times.
-        if self._loaded: return
-        self._log_load.debug("Grammar %s: loading." % self._name)
-
-        self._engine.load_natlink_grammar(self, all_results=True)
-        self._loaded = True
-        self._in_context = False
-
-        # Update all lists loaded in this grammar.
-        for rule in self._rules:
-            if rule.active != False:
-                rule.activate()
-        # Update all lists loaded in this grammar.
-        for lst in self._lists:
-            lst._update()
-
-    #-----------------------------------------------------------------------
     # Callback methods for handling utterances and recognitions.
 
     def process_begin(self, executable, title, handle):
         self._manager.notify_begin()
 
-    def process_results(self, words, result):
-        if words == "other":
-            words = result.getWords(0)
-            self._manager.notify_recognition(result, words)
-        else:
-            self._manager.notify_failure(result)
-        return False
+    def process_recognition(self, words):
+        raise RuntimeError("Recognition observer received an unexpected"
+                           " recognition: %s" % (words,))
+
+    def process_recognition_other(self, words):
+        self._manager.notify_recognition(words)
+
+    def process_recognition_failure(self):
+        self._manager.notify_failure()

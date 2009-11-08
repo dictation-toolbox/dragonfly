@@ -183,7 +183,7 @@ class Rule(object):
                 self.activate()
             self._process_begin()
 
-    def activate(self):
+    def activate(self, force=False):
         if not self._grammar:
             raise TypeError("A Dragonfly rule cannot be activated"
                             " before it is bound to a grammar.")
@@ -191,7 +191,7 @@ class Rule(object):
             if self._active:
                 self.deactivate()
             return
-        if not self._active:
+        if not self._active or force:
             self._grammar.activate_rule(self)
             self._active = True
 

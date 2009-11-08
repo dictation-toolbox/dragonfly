@@ -43,7 +43,7 @@ Class reference
 
 from time              import sleep
 from .action_base      import ActionBase, ActionError
-from ..engines.engine  import get_engine
+from ..engines         import get_engine
 
 
 #---------------------------------------------------------------------------

@@ -22,95 +22,10 @@
 """
 
 import sys
-import time
 import unittest
-import natlink
-from dragonfly  import *
-from ..test     import TestError
-
-
-#===========================================================================
-
-class _Unique(object): 
-    """ Token class representing a unique identity. """
-
-    def __init__(self, name):
-        self._name = name
-
-    def __str__(self):
-        return self._name
-
-    __repr__ = __str__
-
-
-RecognitionFailure = _Unique("RecognitionFailure")
-
-
-#===========================================================================
-
-class ElementTestGrammar(Grammar):
-
-    _log = get_log("ElementTestGrammar")
-
-    _NotSet = _Unique("NoRecognition")
-
-    def __init__(self, element):
-        Grammar.__init__(self, "ElementTestGrammar")
-#        prefix = Literal("Dragonfly Test")
-#        root = Sequence([prefix, element])
-#        root = element
-#        test_rule = ElementTestRule("rule", root)
-        self.add_rule(ElementTestRule("rule", element))
-
-    def test(self, input_output):
-        self.load()
-        self.set_exclusiveness(True)
-        try:
-            for words, expected_result in input_output:
-                if isinstance(words, basestring):
-                    words = words.split()
-                self._test_recognition(words, expected_result)
-        finally:
-            self.unload()
-
-    def _test_recognition(self, words, expected_result):
-        self._recognized_result = self._NotSet
-#        words = ["Dragonfly", "Test"] + words
-        try:
-            self.engine.mimic(words)
-        except natlink.MimicFailed:
-            if expected_result == RecognitionFailure:
-                self._log.debug("correct recognition failure")
-                return
-            else:
-                self._log.exception("Mimic failed. (Words: %s)" % (words,))
-                raise TestError("Mimic failed (Words: %s)" % (words,))
-        recognized_result = self._recognized_result
-
-        if recognized_result == self._NotSet:
-            self._log.error("Recognition failure. (Words: %s)" % (words,))
-            raise TestError("Recognition failure. (Words: %s)" % (words,))
-        elif recognized_result != expected_result:
-            self._log.error("Recognition failure: expected %s, recognized %s."
-                            % (expected_result, recognized_result))
-            raise TestError("Recognition failure: expected %s, recognized %s."
-                            % (expected_result, recognized_result))
-        else:
-            self._log.debug("correct result: %s" % (recognized_result,))
-
-    def process_recognition(self, node):
-#        test_node = node.children[0].children[1]
-        test_node = node.children[0]
-        result = test_node.value()
-        self._recognized_result = result
-
-
-class ElementTestRule(Rule):
-
-    exported = True
-
-    def process_recognition(self, node):
-        self.grammar.process_recognition(node)
+from dragonfly        import *
+from ..test           import TestError, RecognitionFailure
+from .element_tester  import ElementTester
 
 
 #===========================================================================
@@ -136,21 +51,21 @@ class ElementTestCase(unittest.TestCase):
 
     #-----------------------------------------------------------------------
 
-    def __init__(self):
-        unittest.TestCase.__init__(self)
-
-    #-----------------------------------------------------------------------
-
     def test_element(self):
+        element = self.element
+        if not element:
+            return
 
-        natlink.natConnect()
+        tester = ElementTester(element)
+
         try:
-            element = self.element
-            if not element:
-                return
-            grammar = ElementTestGrammar(element)
-            grammar.test(self.input_output)
+            for words, expected_value in self.input_output:
+                print "test:", words, expected_value
+                recognized_value = tester.recognize(words)
+                print "result:", recognized_value
+                if recognized_value != expected_value:
+                    raise TestError("Recognition mismatch: expected %s,"
+                                    " recognized %s"
+                                    % (expected_value, recognized_value))
         except TestError, e:
             self.fail(str(e))
-        finally:
-            natlink.natDisconnect()

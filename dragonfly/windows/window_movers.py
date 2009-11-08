@@ -29,7 +29,7 @@ import random
 from math          import sqrt
 from .point        import Point
 from .rectangle    import Rectangle, unit
-from ..timer       import timer
+from ..engines     import get_engine
 
 
 #===========================================================================
@@ -108,7 +108,8 @@ class PathBase(object):
 
     _interval = 0.025
 
-    def __init__(self, window, origin, destination, fraction_generator, position_generator, size_generator, speed=1.0):
+    def __init__(self, window, origin, destination, fraction_generator,
+                 position_generator, size_generator, speed=1.0):
         self._window = window
         self._origin = origin
         self._destination = destination
@@ -123,11 +124,15 @@ class PathBase(object):
             count = 10
         self._rectangles = self._rectangle_generator(origin, destination, count)
 
+        self._timer = None
+
     def start(self):
-        timer.add_callback(self.timer_callback, self._interval)
+        engine = get_engine()
+        self._timer = engine.create_timer(self.timer_callback, self._interval)
 
     def stop(self):
-        timer.remove_callback(self.timer_callback)
+        self._timer.stop()
+        self._timer = None
         self._rectangles = None
 
     def timer_callback(self):

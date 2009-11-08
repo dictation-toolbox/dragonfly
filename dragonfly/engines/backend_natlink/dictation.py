@@ -37,8 +37,8 @@ try:
 except ImportError:
     natlink = None
 
-from ..log import get_log
-from .dictation_base import DictationContainerBase
+from ...log import get_log
+from ..base import DictationContainerBase
 
 
 #---------------------------------------------------------------------------

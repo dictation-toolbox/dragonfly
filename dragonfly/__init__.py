@@ -24,7 +24,7 @@ from .config            import Config, Section, Item
 from .error             import DragonflyError
 
 #---------------------------------------------------------------------------
-from .engines.engine    import get_engine
+from .engines           import get_engine, EngineError, MimicFailure
 
 #---------------------------------------------------------------------------
 from .grammar.grammar_base       import Grammar

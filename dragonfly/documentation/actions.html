@@ -101,7 +101,7 @@ can be created, combined, executed, etc.</p>
 <p>For more examples on how to use and manipulate Dragonfly action objects,
 please see the doctests for the
 <a title="dragonfly.actions.action_base.ActionBase" class="reference internal" href="#dragonfly.actions.action_base.ActionBase"><tt class="xref docutils literal"><span class="pre">dragonfly.actions.action_base.ActionBase</span></tt></a> here:
-<a class="reference external" href="actions_doctests.html#refactionsdoctests"><em>Action doctests</em></a>.</p>
+<a class="reference external" href="tests_actions_doctest.html#refactionsdoctests"><em>Action doctests</em></a>.</p>
 </div>
 <div class="section" id="combining-voice-commands-and-actions">
 <h2>Combining voice commands and actions<a class="headerlink" href="#combining-voice-commands-and-actions" title="Permalink to this headline">¶</a></h2>
@@ -135,6 +135,42 @@ what the dynamic element <em>&#8220;text&#8221;</em> is.</p>
 <dt id="dragonfly.actions.action_base.ActionBase">
 <em class="property">class </em><tt class="descname">ActionBase</tt><a class="headerlink" href="#dragonfly.actions.action_base.ActionBase" title="Permalink to this definition">¶</a></dt>
 <dd>Base class for Dragonfly&#8217;s action classes.</dd></dl>
+
+<dl class="class">
+<dt id="dragonfly.actions.action_base.Repeat">
+<em class="property">class </em><tt class="descname">Repeat</tt><big>(</big><em>count=None</em>, <em>extra=None</em><big>)</big><a class="headerlink" href="#dragonfly.actions.action_base.Repeat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Action repeat factor.</p>
+<p>Integer Repeat factors ignore any supply data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">integer</span> <span class="o">=</span> <span class="n">Repeat</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">integer</span><span class="o">.</span><span class="n">factor</span><span class="p">()</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">integer</span><span class="o">.</span><span class="n">factor</span><span class="p">({</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">})</span>  <span class="c"># Non-related data is ignored.</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<p>Named Repeat factors retrieved their factor-value from the
+supplied data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">named</span> <span class="o">=</span> <span class="n">Repeat</span><span class="p">(</span><span class="n">extra</span><span class="o">=</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">named</span><span class="o">.</span><span class="n">factor</span><span class="p">()</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="nc">ActionError</span>: <span class="n-Identifier">No extra repeat factor found for name &#39;foo&#39; (&#39;NoneType&#39; object is unsubscriptable)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">named</span><span class="o">.</span><span class="n">factor</span><span class="p">({</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">})</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+<p>Repeat factors with both integer count and named extra values set
+combined (add) these together to determine their factor-value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">combined</span> <span class="o">=</span> <span class="n">Repeat</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">combined</span><span class="o">.</span><span class="n">factor</span><span class="p">()</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="nc">ActionError</span>: <span class="n-Identifier">No extra repeat factor found for name &#39;foo&#39; (&#39;NoneType&#39; object is unsubscriptable)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">combined</span><span class="o">.</span><span class="n">factor</span><span class="p">({</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">})</span> <span class="c"># Combined factors 3 + 4 = 7.</span>
+<span class="go">7</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </div>
 <div class="section" id="key-action">
@@ -908,7 +944,7 @@ following code determines the time to pause at execution time:</p>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Oct 06, 2009.
+      Last updated on Nov 04, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
     </div>
   </body>

@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Doctests for the fundamental element classes &mdash; Dragonfly v0.6.6b1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.6.6b1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Dragonfly v0.6.6b1 documentation" href="index.html" />
+    <link rel="up" title="Test suite" href="tests.html" />
+    <link rel="next" title="Doctests for recognition observer classes" href="tests_recobs_doctest.html" />
+    <link rel="prev" title="Test suite" href="tests.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="tests_recobs_doctest.html" title="Doctests for recognition observer classes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="Test suite"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li>
+          <li><a href="tests.html" accesskey="U">Test suite</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-dragonfly.grammar.elements_basic_doctest">
+<span id="refelementbasicdoctests"></span><h1>Doctests for the fundamental element classes<a class="headerlink" href="#module-dragonfly.grammar.elements_basic_doctest" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="sequence-element-class">
+<h2>Sequence element class<a class="headerlink" href="#sequence-element-class" title="Permalink to this headline">¶</a></h2>
+<p>Test fixture initialization:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dragonfly</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dragonfly.test</span> <span class="kn">import</span> <span class="n">ElementTester</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span> <span class="o">=</span> <span class="n">get_engine</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="sequence">
+<h3>Sequence<a class="headerlink" href="#sequence" title="Permalink to this headline">¶</a></h3>
+<p>Basic usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">([</span><span class="n">Literal</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">),</span> <span class="n">Literal</span><span class="p">(</span><span class="s">&quot;world&quot;</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_seq</span> <span class="o">=</span> <span class="n">ElementTester</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_seq</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id1">
+<h3>Sequence<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Basic usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">([</span><span class="n">Literal</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">),</span> <span class="n">Literal</span><span class="p">(</span><span class="s">&quot;world&quot;</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_seq</span> <span class="o">=</span> <span class="n">ElementTester</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_seq</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">)</span>
+<span class="go">[&#39;hello&#39;, &#39;world&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_seq</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s">&quot;hello universe&quot;</span><span class="p">)</span>
+<span class="go">RecognitionFailure</span>
+</pre></div>
+</div>
+<p>Constructor arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">),</span> <span class="n">Literal</span><span class="p">(</span><span class="s">&quot;world&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">Sequence</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">])</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sequence</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;sequence_test&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;sequence_test&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sequence</span><span class="p">([</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">],</span> <span class="s">&quot;sequence_test&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;sequence_test&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sequence</span><span class="p">(</span><span class="s">&quot;invalid_children_type&quot;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="nc">TypeError</span>: <span class="n-Identifier">children object must contain only &lt;class &#39;dragonfly.grammar.elements_basic.ElementBase&#39;&gt; types.  (Received (&#39;i&#39;, &#39;n&#39;, &#39;v&#39;, &#39;a&#39;, &#39;l&#39;, &#39;i&#39;, &#39;d&#39;, &#39;_&#39;, &#39;c&#39;, &#39;h&#39;, &#39;i&#39;, &#39;l&#39;, &#39;d&#39;, &#39;r&#39;, &#39;e&#39;, &#39;n&#39;, &#39;_&#39;, &#39;t&#39;, &#39;y&#39;, &#39;p&#39;, &#39;e&#39;))</span>
+</pre></div>
+</div>
+<p>Test fixture cleanup:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Doctests for the fundamental element classes</a><ul>
+<li><a class="reference external" href="#sequence-element-class">Sequence element class</a><ul>
+<li><a class="reference external" href="#sequence">Sequence</a></li>
+<li><a class="reference external" href="#id1">Sequence</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="tests.html"
+                                  title="previous chapter">Test suite</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="tests_recobs_doctest.html"
+                                  title="next chapter">Doctests for recognition observer classes</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/tests_elements_basic_doctest.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tests_recobs_doctest.html" title="Doctests for recognition observer classes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="Test suite"
+             >previous</a> |</li>
+        <li><a href="index.html">Dragonfly v0.6.6b1 documentation</a> &raquo;</li>
+          <li><a href="tests.html" >Test suite</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008, Christo Butcher.
+      Last updated on Nov 04, 2009.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

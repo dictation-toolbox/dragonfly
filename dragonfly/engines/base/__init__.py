@@ -1,4 +1,4 @@
-﻿#
+#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -18,23 +18,9 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-Dictation container for the SAPI5 engine.
 
-"""
-
-from ..log import get_log
-from .dictation_base import DictationContainerBase
-
-
-#---------------------------------------------------------------------------
-# SAPI5 dictation class -- container for a series of dictated words.
-
-class Sapi5DictationContainer(DictationContainerBase):
-
-    def __init__(self, words):
-        DictationContainerBase.__init__(self, words=words)
-
-    def format(self):
-        """ Format and return this dictation. """
-        return " ".join(self._words)
+from .engine       import EngineBase, EngineError, MimicFailure
+from .compiler     import CompilerBase, CompilerError
+from .dictation    import DictationContainerBase
+from .recobs       import RecObsManagerBase
+from .timer        import TimerManagerBase

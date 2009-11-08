@@ -1,5 +1,5 @@
 #
-# This file is part of Dragonfly.
+# This file  Is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
@@ -86,7 +86,7 @@ class LanguageSpecificLoader(object):
 
     def _get_engine_language(self):
         try:
-            from dragonfly.engines.engine import get_engine
+            from ..engines import get_engine
             language = get_engine().language
         except Exception, e:
             self._log.exception("Failed to retrieve speaker language: %s" % e)

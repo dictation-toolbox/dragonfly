@@ -63,6 +63,21 @@ Dragonfly to be able to interact with a speech recognition engine.</p>
 <dt id="dragonfly.engines.engine_base.EngineBase">
 <em class="property">class </em><tt class="descname">EngineBase</tt><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for engine-specific back-ends.</p>
+<dl class="method">
+<dt id="dragonfly.engines.engine_base.EngineBase.connect">
+<tt class="descname">connect</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.connect" title="Permalink to this definition">¶</a></dt>
+<dd>Connect to back-end SR engine.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.engines.engine_base.EngineBase.connection">
+<tt class="descname">connection</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.connection" title="Permalink to this definition">¶</a></dt>
+<dd>Context manager for a connection to the back-end SR engine.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.engines.engine_base.EngineBase.disconnect">
+<tt class="descname">disconnect</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd>Disconnect from back-end SR engine.</dd></dl>
+
 <dl class="classmethod">
 <dt id="dragonfly.engines.engine_base.EngineBase.is_available">
 <em class="property">classmethod </em><tt class="descname">is_available</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_base.EngineBase.is_available" title="Permalink to this definition">¶</a></dt>
@@ -101,20 +116,20 @@ Dragonfly to be able to interact with a speech recognition engine.</p>
 <tt class="descname">DictationContainer</tt><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.DictationContainer" title="Permalink to this definition">¶</a></dt>
 <dd>alias of <tt class="xref docutils literal"><span class="pre">NatlinkDictationContainer</span></tt></dd></dl>
 
+<dl class="method">
+<dt id="dragonfly.engines.engine_natlink.NatlinkEngine.connect">
+<tt class="descname">connect</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.connect" title="Permalink to this definition">¶</a></dt>
+<dd>Connect to natlink.</dd></dl>
+
+<dl class="method">
+<dt id="dragonfly.engines.engine_natlink.NatlinkEngine.disconnect">
+<tt class="descname">disconnect</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd>Disconnect from natlink.</dd></dl>
+
 <dl class="classmethod">
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine.is_available">
 <em class="property">classmethod </em><tt class="descname">is_available</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.is_available" title="Permalink to this definition">¶</a></dt>
 <dd>Check whether Natlink is available.</dd></dl>
-
-<dl class="method">
-<dt id="dragonfly.engines.engine_natlink.NatlinkEngine.load_grammar">
-<tt class="descname">load_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.load_grammar" title="Permalink to this definition">¶</a></dt>
-<dd>Load the given <em>grammar</em> into natlink.</dd></dl>
-
-<dl class="method">
-<dt id="dragonfly.engines.engine_natlink.NatlinkEngine.load_natlink_grammar">
-<tt class="descname">load_natlink_grammar</tt><big>(</big><em>grammar</em>, <em>all_results=False</em>, <em>hypothesis=False</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.load_natlink_grammar" title="Permalink to this definition">¶</a></dt>
-<dd>Load the given <em>grammar</em> into natlink.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine.mimic">
@@ -125,11 +140,6 @@ Dragonfly to be able to interact with a speech recognition engine.</p>
 <dt id="dragonfly.engines.engine_natlink.NatlinkEngine.speak">
 <tt class="descname">speak</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.speak" title="Permalink to this definition">¶</a></dt>
 <dd>Speak the given <em>text</em> using text-to-speech.</dd></dl>
-
-<dl class="method">
-<dt id="dragonfly.engines.engine_natlink.NatlinkEngine.unload_grammar">
-<tt class="descname">unload_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_natlink.NatlinkEngine.unload_grammar" title="Permalink to this definition">¶</a></dt>
-<dd>Unload the given <em>grammar</em> from natlink.</dd></dl>
 
 </dd></dl>
 
@@ -151,6 +161,11 @@ Dragonfly to be able to interact with a speech recognition engine.</p>
 <dd>Activate the given <em>rule</em>.</dd></dl>
 
 <dl class="method">
+<dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.connect">
+<tt class="descname">connect</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.connect" title="Permalink to this definition">¶</a></dt>
+<dd>Connect to back-end SR engine.</dd></dl>
+
+<dl class="method">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_grammar">
 <tt class="descname">deactivate_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_grammar" title="Permalink to this definition">¶</a></dt>
 <dd>Deactivate the given <em>grammar</em>.</dd></dl>
@@ -160,15 +175,15 @@ Dragonfly to be able to interact with a speech recognition engine.</p>
 <tt class="descname">deactivate_rule</tt><big>(</big><em>rule</em>, <em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.deactivate_rule" title="Permalink to this definition">¶</a></dt>
 <dd>Deactivate the given <em>rule</em>.</dd></dl>
 
+<dl class="method">
+<dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.disconnect">
+<tt class="descname">disconnect</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd>Disconnect from back-end SR engine.</dd></dl>
+
 <dl class="classmethod">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.is_available">
 <em class="property">classmethod </em><tt class="descname">is_available</tt><big>(</big><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.is_available" title="Permalink to this definition">¶</a></dt>
 <dd>Check whether this engine is available.</dd></dl>
-
-<dl class="method">
-<dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.load_grammar">
-<tt class="descname">load_grammar</tt><big>(</big><em>grammar</em><big>)</big><a class="headerlink" href="#dragonfly.engines.engine_sapi5.Sapi5Engine.load_grammar" title="Permalink to this definition">¶</a></dt>
-<dd>Load the given <em>grammar</em>.</dd></dl>
 
 <dl class="method">
 <dt id="dragonfly.engines.engine_sapi5.Sapi5Engine.mimic">
@@ -307,7 +322,7 @@ dictation formatting for the Natlink and Dragon NaturallySpeaking engine.</p>
     </div>
     <div class="footer">
       &copy; Copyright 2008, Christo Butcher.
-      Last updated on Oct 06, 2009.
+      Last updated on Nov 04, 2009.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
     </div>
   </body>
