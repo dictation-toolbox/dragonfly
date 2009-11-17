@@ -144,6 +144,37 @@ Minimum length is 1::
     [['five']]
 
 
+Handling of exceptions during notifications
+----------------------------------------------------------------------------
+
+The following class is derived from RecognitionObserver and raises
+an exception during each type of notification event::
+
+    >>> class RecognitionObserverExceptionTester(RecognitionObserver):
+    ...     def __init__(self):
+    ...         RecognitionObserver.__init__(self)
+    ...     def on_recognition(self, words):
+    ...         raise Exception("on_recognition()")
+    ...     def on_failure(self):
+    ...         raise Exception("on_failure()")
+    ...
+    >>> test_recobs = RecognitionObserverExceptionTester()
+    >>> test_recobs.register()
+    >>> test_lit = ElementTester(Literal("hello world"))
+    >>> test_lit.recognize("hello world")  #doctest: +ELLIPSIS
+    engine: Exception during on_recognition() method of recognition observer <...>: on_recognition()
+    Traceback (most recent call last):
+      ...
+    Exception: on_recognition()
+    'hello world'
+    >>> test_lit.recognize("hello universe")  #doctest: +ELLIPSIS
+    engine: Exception during on_failure() method of recognition observer <...>: on_failure()
+    Traceback (most recent call last):
+      ...
+    Exception: on_failure()
+    RecognitionFailure
+
+
 Test fixture cleanup
 ----------------------------------------------------------------------------
 

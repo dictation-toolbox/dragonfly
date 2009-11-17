@@ -69,19 +69,33 @@ class RecObsManagerBase(object):
 
     def notify_begin(self):
         for observer in self._observers:
-            if hasattr(observer, "on_begin"):
-                observer.on_begin()
+            try:
+                if hasattr(observer, "on_begin"):
+                    observer.on_begin()
+            except Exception, e:
+                self._log.exception("Exception during on_begin()"
+                                    " method of recognition observer %s: %s"
+                                    % (observer, e))
 
     def notify_recognition(self, words):
         for observer in self._observers:
-#            self._log.error("notifying observer %s %r"% (observer, observer))
-            if hasattr(observer, "on_recognition"):
-                observer.on_recognition(words)
+            try:
+                if hasattr(observer, "on_recognition"):
+                    observer.on_recognition(words)
+            except Exception, e:
+                self._log.exception("Exception during on_recognition()"
+                                    " method of recognition observer %s: %s"
+                                    % (observer, e))
 
     def notify_failure(self):
         for observer in self._observers:
-            if hasattr(observer, "on_failure"):
-                observer.on_failure()
+            try:
+                if hasattr(observer, "on_failure"):
+                    observer.on_failure()
+            except Exception, e:
+                self._log.exception("Exception during on_failure()"
+                                    " method of recognition observer %s: %s"
+                                    % (observer, e))
 
     def _activate(self):
         raise NotImplementedError(str(self))
