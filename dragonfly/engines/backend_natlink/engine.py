@@ -188,10 +188,19 @@ class NatlinkEngine(EngineBase):
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
         try:
-            self.natlink.recognitionMimic(list(words))
+            prepared_words = []
+            for word in words:
+                if isinstance(word, unicode):
+                    word = word.encode("latin_1")
+                prepared_words.append(word)
+        except Exception, e:
+            raise MimicFailure("Invalid mimic input %r: %s."
+                               % (words, e))
+        try:
+            self.natlink.recognitionMimic(prepared_words)
         except self.natlink.MimicFailed:
             raise MimicFailure("No matching rule found for words %r."
-                               % (words,))
+                               % (prepared_words,))
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """

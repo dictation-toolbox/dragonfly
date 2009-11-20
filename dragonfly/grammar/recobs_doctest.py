@@ -152,27 +152,46 @@ an exception during each type of notification event::
 
     >>> class RecognitionObserverExceptionTester(RecognitionObserver):
     ...     def __init__(self):
+    ...         self.exception_on_begin = False
     ...         RecognitionObserver.__init__(self)
+    ...     def on_begin(self):
+    ...         if self.exception_on_begin:
+    ...             raise Exception("on_begin()")
+    ...         else:
+    ...             pass
     ...     def on_recognition(self, words):
     ...         raise Exception("on_recognition()")
     ...     def on_failure(self):
     ...         raise Exception("on_failure()")
     ...
-    >>> test_recobs = RecognitionObserverExceptionTester()
-    >>> test_recobs.register()
+    >>> test_recobs_exc = RecognitionObserverExceptionTester()
+    >>> test_recobs_exc.register()
     >>> test_lit = ElementTester(Literal("hello world"))
     >>> test_lit.recognize("hello world")  #doctest: +ELLIPSIS
-    engine: Exception during on_recognition() method of recognition observer <...>: on_recognition()
+    recobs: Exception during on_recognition() method of recognition observer <...>: on_recognition()
     Traceback (most recent call last):
       ...
     Exception: on_recognition()
     'hello world'
     >>> test_lit.recognize("hello universe")  #doctest: +ELLIPSIS
-    engine: Exception during on_failure() method of recognition observer <...>: on_failure()
+    recobs: Exception during on_failure() method of recognition observer <...>: on_failure()
     Traceback (most recent call last):
       ...
     Exception: on_failure()
     RecognitionFailure
+    >>> test_recobs_exc.exception_on_begin = True
+    >>> test_lit.recognize("hello world")  #doctest: +ELLIPSIS
+    recobs: Exception during on_begin() method of recognition observer <...>: on_begin()
+    Traceback (most recent call last):
+      ...
+    Exception: on_begin()
+    recobs: Exception during on_recognition() method of recognition observer <...>: on_recognition()
+    Traceback (most recent call last):
+      ...
+    Exception: on_recognition()
+    'hello world'
+    >>> test_recobs_exc.unregister()
+    >>> del test_recobs_exc
 
 
 Test fixture cleanup
@@ -182,6 +201,7 @@ Test fixture cleanup
 Test fixture cleanup::
 
     >>> test_recobs.unregister()
+    >>> del test_recobs
     >>> engine.disconnect()
 
 """

@@ -56,7 +56,12 @@ class DictationContainerBase(object):
     def __str__(self):
         if self._formatted is None:
             self._formatted = self.format()
-        return self._formatted
+        return str(self._formatted)
+
+    def __unicode__(self):
+        if self._formatted is None:
+            self._formatted = self.format()
+        return unicode(self._formatted)
 
     def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, ", ".join(self._words))

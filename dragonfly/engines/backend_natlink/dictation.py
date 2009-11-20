@@ -57,7 +57,8 @@ class NatlinkDictationContainer(DictationContainerBase):
     def format(self):
         """ Format and return this dictation. """
         state = FormatState()
-        return state.format_words(self._words)
+        formatted = state.format_words(self._words)
+        return unicode(formatted, encoding="latin_1")
 
 
 #---------------------------------------------------------------------------
