@@ -21,7 +21,7 @@
 #---------------------------------------------------------------------------
 
 from .infrastructure     import TestError, RecognitionFailure
-from .element_test_case  import ElementTestCase
+from .element_testcase   import ElementTestCase
 from .element_tester     import ElementTester
 from .rule_test_grammar  import RuleTestGrammar
 from .rule_testcase      import RuleTestCase
