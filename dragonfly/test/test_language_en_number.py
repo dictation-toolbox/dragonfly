@@ -24,10 +24,10 @@ Test suite for English language Integer and Digits classes
 
 """
 
-
-from ...test         import ElementTestCase, RecognitionFailure
-from ..base.integer  import Integer
-from .number         import IntegerContent
+from dragonfly.test.infrastructure      import RecognitionFailure
+from dragonfly.test.element_testcase    import ElementTestCase
+from dragonfly.language.base.integer    import Integer
+from dragonfly.language.en.number       import IntegerContent
 
 
 #---------------------------------------------------------------------------

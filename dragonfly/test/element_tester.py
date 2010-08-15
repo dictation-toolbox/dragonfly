@@ -72,7 +72,6 @@ class ElementTester(Grammar):
                 mimic_method = self._mimic_methods[self.engine.name]
                 mimic_method(self, words)
             except MimicFailure, e:
-#                self._log.exception("Exception within mimic: %s" % (e,))
                 self._recognized_value = RecognitionFailure
             except Exception, e:
                 self._log.exception("Exception within recognition: %s" % (e,))

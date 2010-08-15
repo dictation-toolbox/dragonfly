@@ -18,9 +18,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-"""
-
 import sys
 import unittest
 from dragonfly        import *
@@ -69,9 +66,7 @@ class ElementTestCase(unittest.TestCase):
 
         try:
             for words, expected_value in self.input_output:
-                print "test:", words, expected_value
                 recognized_value = tester.recognize(words)
-                print "result:", recognized_value
                 if recognized_value != expected_value:
                     raise TestError("Recognition mismatch: expected %s,"
                                     " recognized %s"

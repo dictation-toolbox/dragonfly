@@ -1,4 +1,4 @@
-#
+﻿#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -19,25 +19,19 @@
 #
 
 import unittest
-from .infrastructure     import TestError, RecognitionFailure
-from .element_testcase   import ElementTestCase
-from .element_tester     import ElementTester
-from .rule_test_grammar  import RuleTestGrammar
-from .rule_testcase      import RuleTestCase
+from dragonfly.engines import get_engine, EngineBase, EngineError
 
 
-#===========================================================================
+#---------------------------------------------------------------------------
 
-names = [
-         "dragonfly.test.test_language_en_number",
-         "dragonfly.test.test_language_de_number",
-         "dragonfly.test.test_language_nl_number",
-         "dragonfly.test.test_engine",
-        ]
+class TestEngineNonexistent(unittest.TestCase):
 
-def suite():
-    suite = unittest.TestSuite()
-    loader = unittest.defaultTestLoader
-    for name in names:
-        suite.addTests(loader.loadsTestsFromName(name))
-    return suite
+    def test_get_engine_nonexistent(self):
+        """ Verify that getting a nonexistent engine raises an error. """
+        try:
+            engine = get_engine("nonexistent")
+        except EngineError:
+            pass  # Expected exception, so ignore.
+        else:
+            assert False, ("Getting a nonexistent engine should have"
+                           " raised an exception, but it didn't!")
