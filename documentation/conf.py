@@ -30,7 +30,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = u'Dragonfly'
-copyright = u'2008, Christo Butcher'
+copyright = u'2008-2010, Christo Butcher'
 
 today_fmt = '%B %d, %Y'
 exclude_trees = []
@@ -42,8 +42,7 @@ autoclass_content = "both"
 #---------------------------------------------------------------------------
 # Options for HTML output
 
-html_style = 'default.css'
-html_static_path = ['static']
+html_theme = 'sphinxdoc'
 html_last_updated_fmt = '%b %d, %Y'
 html_copy_source = True
 htmlhelp_basename = 'Dragonflydoc'

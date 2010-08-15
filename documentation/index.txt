@@ -1,19 +1,25 @@
-
-Dragonfly documentation
+Dragonfly
 ============================================================================
 
-Dragonfly is a speech recognition framework.  It is a Python 
+Dragonfly is a speech recognition framework. It is a Python 
 package which offers a high-level object model and allows its 
 users to easily write scripts, macros, and programs which use 
 speech recognition.
 
-It currently supports Dragon NaturallySpeaking (DNS) and Window 
-Speech Recognition (WSR) as backend engines.
+It currently supports the following speech recognition engines:
 
-Contents:
+ - *Dragon NaturallySpeaking* (DNS), a product of *Nuance*
+ - *Windows Speech Recognition* (WSR), included with Microsoft 
+   Windows Vista, Windows 7, and freely available for Windows XP
+
+
+Documentation
+----------------------------------------------------------------------------
+
+Besides this page, the following documentation is also available:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    introduction
    grammar
@@ -23,6 +29,75 @@ Contents:
    context
    tests
    misc
+
+Direct links within this documentation to help you get started:
+
+ - :ref:`features_and_target_audience`
+ - :ref:`installation`
+
+
+Existing command modules
+----------------------------------------------------------------------------
+
+A sister project is the Dragonfly
+`command-modules repository
+<http://dragonfly-modules.googlecode.com/svn/trunk/command-modules/documentation/index.html>`_.
+This is a steadily growing collection of command-modules for 
+controlling common programs and automating frequent desktop 
+activities. This is the place to look if you want to use speech 
+recognition to increase your productivity and efficiency. It 
+also contains many examples, from simple to complex, of how to 
+use the Dragonfly library.
+
+
+Usage example
+----------------------------------------------------------------------------
+
+A very simple example of Dragonfly usage is to create a static 
+voice command with a callback that will be called when the 
+command is spoken.  This is done as follows: ::
+
+   from dragonfly.all import Grammar, CompoundRule
+
+   # Voice command rule combining spoken form and recognition processing.
+   class ExampleRule(CompoundRule):
+       spec = "do something computer"                  # Spoken form of command.
+       def _process_recognition(self, node, extras):   # Callback when command is spoken.
+           print "Voice command spoken."
+
+   # Create a grammar which contains and loads the command rule.
+   grammar = Grammar("example grammar")                # Create a grammar to contain the command rule.
+   grammar.add_rule(ExampleRule())                     # Add the command rule to the grammar.
+   grammar.load()                                      # Load the grammar.
+
+The example above is very basic and doesn't show any of 
+Dragonfly's exciting features, such as dynamic speech elements. 
+To learn more about these, please take a look at the project's 
+documentation `here
+<http://dragonfly.googlecode.com/svn/trunk/dragonfly/documentation/index.html>`_.
+
+
+Rationale behind Dragonfly
+----------------------------------------------------------------------------
+
+Dragonfly offers a powerful and unified interface to developers 
+who want to use speech recognition in their software. It is used 
+for both speech-enabling applications and for automating 
+computer activities.
+
+In the field of scripting and automation, there are other 
+alternatives available that add speech-commands to increase 
+efficiency. Dragonfly differs from them in that it is a powerful 
+development platform. The open source alternatives currently 
+available for use with DNS are compared to Dragonfly as follows:
+
+ - Vocola uses its own easy-to-use scripting language, 
+   whereas Dragonfly uses Python and gives the macro-writer all 
+   the power available.
+
+ - Unimacro offers a set of macros for common activities, 
+   whereas Dragonfly is a platform on which macro-writers can 
+   easily build new commands. 
 
 
 Indices and tables

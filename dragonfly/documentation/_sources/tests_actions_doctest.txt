@@ -1,9 +1,0 @@
-﻿
-..  _RefActionsDocTests:
-
-Action doctests
-****************************************************************************
-
-.. automodule:: dragonfly.actions.action_base_doctest
-   :members:
-

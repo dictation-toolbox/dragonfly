@@ -1,9 +1,0 @@
-﻿
-..  _RefElementBasicDocTests:
-
-Doctests for the fundamental element classes
-****************************************************************************
-
-.. automodule:: dragonfly.grammar.elements_basic_doctest
-   :members:
-

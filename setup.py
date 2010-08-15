@@ -18,52 +18,12 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-Dragonfly -- a speech recognition extension library
-============================================================================
-
-Dragonfly offers a powerful Python interface to speech 
-recognition and a high-level language object model to easily 
-create and use voice commands.  Dragonfly supports following 
-speech recognition engines:
-
- - Dragon NaturallySpeaking (DNS), a product of *Nuance*
- - Windows Speech Recognition (WSR), included with Microsoft 
-   Windows Vista and freely available for Windows XP
-
-
-Basic example
-----------------------------------------------------------------------------
-
-A very simple example of Dragonfly usage is to create a static 
-voice command with a callback that will be called when the 
-command is spoken.  This is done as follows: ::
-
-   from dragonfly.all import Grammar, CompoundRule
-
-   # Voice command rule combining spoken form and recognition processing.
-   class ExampleRule(CompoundRule):
-       spec = "do something computer"                  # Spoken form of command.
-       def _process_recognition(self, node, extras):   # Callback when command is spoken.
-           print "Voice command spoken."
-
-   # Create a grammar which contains and loads the command rule.
-   grammar = Grammar("example grammar")                # Create a grammar to contain the command rule.
-   grammar.add_rule(ExampleRule())                     # Add the command rule to the grammar.
-   grammar.load()                                      # Load the grammar.
-
-The example above is very basic and doesn't show any of 
-Dragonfly's exciting features, such as dynamic speech elements. 
-To learn more about these, please take a look at the project's 
-documentation `here <http://dragonfly.googlecode.com/svn/trunk/dragonfly/documentation/index.html>`_.
-
-"""
-
-
 from ez_setup import use_setuptools
 use_setuptools()
 
-import os.path, re, sys
+import os.path
+import re
+import sys
 from setuptools import setup, find_packages
 
 
@@ -99,6 +59,9 @@ except ImportError:
 #---------------------------------------------------------------------------
 # Set up package.
 
+def read(*names):
+    return open(os.path.join(os.path.dirname(__file__), *names)).read()
+
 setup(
       name          = "dragonfly",
       version       = release,
@@ -108,7 +71,7 @@ setup(
       license       = "LGPL",
       url           = "http://code.google.com/p/dragonfly/",
       zip_safe      = False,  # To unzip documentation files.
-      long_description = __doc__,
+      long_description = read("README.txt"),
 
       install_requires = "setuptools >= 0.6c7",
 
