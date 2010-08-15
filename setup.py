@@ -122,5 +122,7 @@ setup(
 
       packages=find_packages(),
 
+      test_suite="dragonfly.test.suite_natlink",
+
       cmdclass={'upload_gcode': upload_gcode},
      )
