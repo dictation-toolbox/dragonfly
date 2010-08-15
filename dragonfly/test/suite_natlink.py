@@ -28,8 +28,16 @@ from .rule_testcase      import RuleTestCase
 
 #===========================================================================
 
+names = [
+         "dragonfly.test.test_language_en_number",
+         "dragonfly.test.test_language_de_number",
+         "dragonfly.test.test_language_nl_number",
+         "dragonfly.test.test_engine",
+        ]
+
 def suite():
     suite = unittest.TestSuite()
     loader = unittest.defaultTestLoader
-    suite.addTests(loader.loadsTestsFromName("dragonfly.test.test_language_en_number"))
+    for name in names:
+        suite.addTests(loader.loadsTestsFromName(name))
     return suite
