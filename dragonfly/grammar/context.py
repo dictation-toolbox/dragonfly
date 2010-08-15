@@ -63,7 +63,7 @@ Class reference
 """
 
 import copy
-from dragonfly import get_log
+import logging
 
 
 #---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ class Context(object):
 
     """
 
-    _log = get_log("context.match")
+    _log = logging.getLogger("context.match")
     _log_match = _log
 
     #-----------------------------------------------------------------------

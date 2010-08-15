@@ -24,7 +24,7 @@ Rule class
 
 """
 
-from ..log import get_log
+import logging
 from .context import Context
 
 
@@ -57,11 +57,11 @@ class Rule(object):
 
     """
 
-    _log_load   = get_log("grammar.load")
-    _log_eval   = get_log("grammar.eval")
-    _log_proc   = get_log("grammar.process")
-    _log        = get_log("rule")
-    _log_begin  = get_log("rule")
+    _log_load   = logging.getLogger("grammar.load")
+    _log_eval   = logging.getLogger("grammar.eval")
+    _log_proc   = logging.getLogger("grammar.process")
+    _log        = logging.getLogger("rule")
+    _log_begin  = logging.getLogger("rule")
 
     # Counter ID used for anonymous rules to give them a unique name.
     _next_anonymous_id = 0

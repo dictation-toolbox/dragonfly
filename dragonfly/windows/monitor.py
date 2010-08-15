@@ -27,7 +27,7 @@
 import win32gui
 import ctypes
 
-from ..log       import get_log
+import logging
 from .rectangle  import Rectangle
 
 
@@ -42,7 +42,7 @@ monitors = []
 
 class Monitor(object):
 
-    _log = get_log("monitor.init")
+    _log = logging.getLogger("monitor.init")
 
     #-----------------------------------------------------------------------
     # Methods for initialization and introspection.

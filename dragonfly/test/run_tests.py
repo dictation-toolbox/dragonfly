@@ -22,7 +22,7 @@
 Main test runner script
 ============================================================================
 
-This file is Dragonfly's main test scripts.  Running it will execute all
+This file is Dragonfly's main test script.  Running it will execute all
 tests within the Dragonfly library.
 
 
@@ -39,7 +39,6 @@ the Dragonfly tests.  It requires the following external dependencies:
 
 """
 
-
 import sys
 import os.path
 import subprocess
@@ -51,36 +50,35 @@ import subprocess
 def run_nose():
     """ Use Nose to collect and execute test cases within Dragonfly. """
     import nose.core
-    import coverage.control
+#    import coverage.control
     from pkg_resources import resource_filename
 
     # Determine directory in which to save coverage report.
-    setup_path = os.path.abspath(resource_filename("dragonfly", "setup.py"))
-    directory = os.path.dirname(setup_path)
+    setup_path = os.path.abspath(resource_filename("dragonfly", "license.txt"))
+    directory = os.path.dirname(os.path.dirname(setup_path))
     cover_dir = os.path.join(directory, "coverage")
 
     # Virtual commandline arguments to be given to nose.
     argv = [
             sys.argv[0],
             "--failure-detail",
-            "--with-doctest",
-            "--doctest-extension=doctest",
+#            "--with-doctest",
+#            "--doctest-extension=doctest",
             directory,
            ]
 
-    print argv
     # Clear coverage history and start new coverage measurement.
-    coverage = coverage.control.coverage()
-    coverage.erase()
-    coverage.start()
+#    coverage = coverage.control.coverage()
+#    coverage.erase()
+#    coverage.start()
 
     # Let nose run tests.
     nose.core.TestProgram(argv=argv, exit=False)
 
     # Save coverage data and generate HTML report.
-    coverage.stop()
-    coverage.save()
-    coverage.html_report(directory=cover_dir)
+#    coverage.stop()
+#    coverage.save()
+#    coverage.html_report(directory=cover_dir)
 
 
 def run_pylint():
@@ -110,9 +108,12 @@ def run_pep8():
 # This script's main control logic.
 
 def main():
+    from dragonfly.log import setup_tracing
+    setup_tracing(sys.stdout, limit=30)
 #    run_pep8()
 #    run_pylint()
     run_nose()
+
 
 if __name__ == "__main__":
     main()

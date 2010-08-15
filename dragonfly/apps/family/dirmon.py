@@ -3,7 +3,7 @@ import time
 import win32file, win32event
 import win32con
 
-from ...log import get_log
+import logging
 
 
 #===========================================================================
@@ -59,7 +59,7 @@ class _Dir(object):
 
 class DirectoryMonitor(object):
 
-    _log = get_log("dirmon")
+    _log = logging.getLogger("dirmon")
 
     def __init__(self):
         self._buffer = win32file.AllocateReadBuffer(8192)

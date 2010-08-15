@@ -19,89 +19,87 @@
 #
 
 """
-    This file implements Dragonfly's internal logging system.
-"""
+Logging framework
+============================================================================
 
+"""
 
 import sys
 import os.path
 import logging
-import logging.handlers
+import logging
 import win32gui
 from win32com.shell import shell, shellcon
 
+def out(m):
+#    logging.getLogger("test").error(m)
+    print >>sys.stderr, m
 
 #---------------------------------------------------------------------------
 # Configuration of log facilities.
 
-log_handlers = ["stdout", "file"]
-log_names = {
-    "":                     (logging.WARNING, logging.WARNING),
-    "engine":               (logging.WARNING, logging.INFO), 
-    "engine.compiler":      (logging.WARNING, logging.INFO), 
-    "grammar":              (logging.WARNING, logging.INFO), 
-    "grammar.load":         (logging.WARNING, logging.INFO), 
-    "grammar.begin":        (logging.WARNING, logging.INFO),
-    "grammar.results":      (logging.WARNING, logging.WARNING),
-    "grammar.decode":       (logging.WARNING, logging.INFO),
-    "grammar.eval":         (logging.WARNING, logging.WARNING),
-    "grammar.process":      (logging.WARNING, logging.WARNING),
-    "lang":                 (logging.WARNING, logging.INFO),
-    "compound.parse":       (logging.WARNING, logging.INFO),
-    "dictation.formatter":  (logging.WARNING, logging.WARNING),
-    "action":               (logging.WARNING, logging.WARNING),
-    "action.init":          (logging.WARNING, logging.WARNING),
-    "action.exec":          (logging.WARNING, logging.WARNING),
-    "context":              (logging.WARNING, logging.INFO),
-    "context.match":        (logging.WARNING, logging.INFO),
-    "rule":                 (logging.WARNING, logging.INFO),
-    "config":               (logging.WARNING, logging.INFO),
-    "monitor.init":         (logging.WARNING, logging.INFO),
-    }
+library_prefix = "dfly"
 
-# Lookup path the user's personal folder in which to log Dragonfly messages.
-mydocs_pidl = shell.SHGetFolderLocation(0, shellcon.CSIDL_PERSONAL, 0, 0)
-mydocs_path = shell.SHGetPathFromIDList(mydocs_pidl)
-log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
-log_file_size = 128*1024
-log_file_count = 9
+
+#---------------------------------------------------------------------------
+# Sane defaults for logger names and associated levels.
+
+_debug     = logging.DEBUG
+_info      = logging.INFO
+_warning   = logging.WARNING
+_error     = logging.ERROR
+_critical  = logging.CRITICAL
+default_levels = {
+                  "":                     (_warning, _warning),
+                  "engine":               (_warning, _info), 
+                  "engine.compiler":      (_warning, _info), 
+                  "grammar":              (_warning, _critical), 
+#                  "grammar.load":         (_debug, _debug), # (_warning, _info), 
+                  "grammar.load":         (_warning, _info), 
+                  "grammar.begin":        (_info, _info),
+                  "grammar.results":      (_warning, _warning),
+                  "grammar.decode":       (_warning, _info),
+                  "grammar.eval":         (_warning, _warning),
+                  "grammar.process":      (_warning, _warning),
+                  "lang":                 (_warning, _info),
+                  "compound.parse":       (_warning, _info),
+                  "dictation.formatter":  (_warning, _warning),
+                  "action":               (_warning, _warning),
+                  "action.init":          (_warning, _warning),
+                  "action.exec":          (_warning, _warning),
+                  "context":              (_warning, _info),
+                  "context.match":        (_warning, _info),
+                  "rule":                 (_warning, _info),
+                  "config":               (_warning, _info),
+                  "monitor.init":         (_warning, _info),
+                 }
 
 
 #---------------------------------------------------------------------------
 # Main factory function for users of the log facilities.
 
-_log_cache = {}
 def get_log(name):
-    global _log_cache, log_names, log_handlers
-    if name in _log_cache:
-        return _log_cache[name]
+    global library_prefix
+    absolute_name = library_prefix + "." + name
+    logger = logging.getLogger(absolute_name)
+    return logger
 
-    if name in log_names:
-        log_levels = log_names[name]
-        log = logging.getLogger(name)
-        minimum_level = min([l for l in log_levels if l is not None])
-        log.setLevel(minimum_level)
-        log.propagate = False
-        for handler, level in zip(log_handlers, log_levels):
-            if level is not None:
-                handler.addFilter(NameLevelFilter(name, level))
-                log.addHandler(handler)
-        _log_cache[name] = log
-        return log
-    else:
-        _log_cache[name] = logging.getLogger(name)
-        return _log_cache[name]
 
+#---------------------------------------------------------------------------
+# Logging filter class which filters out messages of a given name below
+#  a given level.
 
 class NameLevelFilter(logging.Filter):
 
     def __init__(self, name, level):
-        self._name = name
-        self._level = level
+        self.name = name
+        self.level = level
 
     def filter(self, record):
-        if record.name == self._name:
-            if record.levelno >= self._level:
+#        print "filtering", self._name, self._level, record
+        out("%s == %s, %s >= %s" % (record.name, self.name, record.levelno, self.level))
+        if record.name == self.name:
+            if record.levelno >= self.level:
                 return True
             else:
                 return False
@@ -110,32 +108,190 @@ class NameLevelFilter(logging.Filter):
 
 
 #---------------------------------------------------------------------------
-# Setup root logger.
 
-root_logger = logging.getLogger("")
-root_logger.setLevel(logging.DEBUG)
+class DispatchingHandler(logging.Handler):
+
+    def __init__(self, level=logging.NOTSET):
+        logging.Handler.__init__(self, level)
+        self.handler_filter_pairs = []
+
+    def filter(self, record):
+        out("filt %s, %s" % (record.name, record.levelno))
+        return True
+
+    def add_handler_filter_pair(self, handler, filter):
+        self.handler_filter_pairs.append((handler, filter))
+
+    def emit(self, record):
+#        print "dispatching", self, self.handler_filter_pairs, record
+#        import traceback; print traceback.extract_stack()
+#        import traceback; traceback.print_stack()
+        for handler, filter in self.handler_filter_pairs:
+            out("emitting: %s %s %s" % (self, handler, filter))
+            if filter.filter(record):
+                out("yes")
+                handler.handle(record)
 
 
 #---------------------------------------------------------------------------
-# Setup stdout output handler.
 
-class _OutputStream(object):
-    def __init__(self, write): self.write = write
-    def flush(self): pass
+def _setup_stdout_handler():
+    class _OutputStream(object):
+        def __init__(self, write):
+            self.write = write
+        def flush(self):
+            pass
 
-handler = logging.StreamHandler(_OutputStream(sys.stdout.write))
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(name)s: %(message)s")
-handler.setFormatter(formatter)
-log_handlers[log_handlers.index("stdout")] = handler
-root_logger.addHandler(handler)
+    stdout_handler = logging.StreamHandler(_OutputStream(sys.stdout.write))
+    stdout_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(name)s: %(message)s")
+    stdout_handler.setFormatter(formatter)
+    return stdout_handler
 
-handler = logging.FileHandler(log_file_path)
-#handler = logging.handlers.RotatingFileHandler(log_file_path, "a",
-#                                       log_file_size, log_file_count)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
-                                " %(message)s")
-handler.setFormatter(formatter)
-log_handlers[log_handlers.index("file")] = handler
-root_logger.addHandler(handler)
+_file_handler = None
+def _setup_file_handler():
+    global _file_handler
+#    import traceback; traceback.print_stack()
+    if not _file_handler:
+        # Lookup path the user's personal folder in which
+        #  to log Dragonfly messages.
+        mydocs_pidl = shell.SHGetFolderLocation(0, shellcon.CSIDL_PERSONAL, 0, 0)
+        mydocs_path = shell.SHGetPathFromIDList(mydocs_pidl)
+        log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
+        _file_handler = logging.FileHandler(log_file_path)
+        formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
+                                  " %(message)s" + repr(_file_handler))
+        _file_handler.setFormatter(formatter)
+    return _file_handler
+
+
+#---------------------------------------------------------------------------
+
+_stdout_handler = None
+_file_handler = None
+_dispatching_handlers = {}
+_stdout_filters = {}
+_file_filters = {}
+def setup_log(use_stdout=True, use_file=True):
+    """
+        Setup Dragonfly's logging infrastructure with sane defaults.
+
+    """
+    global _stdout_handler, _file_handler
+    global _stdout_filters, _file_filters
+
+    # Setup default handlers.
+    if use_stdout:
+        _stdout_handler = _setup_stdout_handler()
+    if use_file:
+        _file_handler = _setup_file_handler()
+
+    # Create and register default filters.
+    for name, levels in default_levels.items():
+        stdout_level, file_level = levels
+        if name:
+            name = library_prefix + "." + name
+        else:
+            name = library_prefix
+        handler = DispatchingHandler()
+        _dispatching_handlers[name] = handler
+#        print 'new', handler, name, levels
+        if use_stdout:
+            stdout_filter = NameLevelFilter(name, stdout_level)
+            handler.add_handler_filter_pair(_stdout_handler, stdout_filter)
+            _stdout_filters[name] = stdout_filter
+        if use_file:
+            file_filter = NameLevelFilter(name, file_level)
+            handler.add_handler_filter_pair(_file_handler, file_filter)
+            _file_filters[name] = file_filter
+        logger = logging.getLogger(name)
+        logger.addHandler(handler)
+        logger.setLevel(min(stdout_level, file_level))
+        logger.propagate = False
+
+
+#---------------------------------------------------------------------------
+
+def set_log_level(name, level, use_stdout=True, use_file=True):
+    """
+        ...
+
+    """
+    global _stdout_handler, _file_handler
+    global _dispatching_handlers, _stdout_filters, _file_filters
+
+    if name:
+        name = library_prefix + "." + name
+    else:
+        name = library_prefix
+
+    logger = logging.getLogger(name)
+    handler = _dispatching_handlers.get(name, None)
+    if not handler:
+        handler = DispatchingHandler()
+        _dispatching_handlers[name] = handler
+        logger.addHandler(handler)
+        logger.setLevel(level)
+        logger.propagate = False
+    else:
+        logger.setLevel(min(logger.getEffectiveLevel(), level))
+    out("lev %s %s" % (name, logger.getEffectiveLevel()))
+    if use_stdout:
+        filter = _stdout_filters.get(name, None)
+        if filter:
+            filter.level = level
+        else:
+            filter = NameLevelFilter(name, level)
+            handler.add_handler_filter_pair(_stdout_handler, filter)
+            _stdout_filters[name] = filter
+
+    if use_file:
+        filter = _file_filters.get(name, None)
+        if filter:
+            filter.level = level
+        else:
+            filter = NameLevelFilter(name, level)
+            handler.add_handler_filter_pair(_file_handler, filter)
+            _file_filters[name] = filter
+
+
+#---------------------------------------------------------------------------
+# Function for setting up call tracing for low-level debugging.
+
+def setup_tracing(output, limit=None):
+    from pkg_resources import resource_filename
+    library_prefix = os.path.dirname(resource_filename(__name__, "setup.py"))
+    print "prefix:", library_prefix
+    exclude_filenames = ("parser.py",)
+
+    def _tracing_callback(frame, event, arg):
+        # Retrieve current function name, line number, etc.
+        code_object = frame.f_code
+        function_name = code_object.co_name
+        line_number = frame.f_lineno
+        filename = code_object.co_filename
+        if not filename.startswith(library_prefix):
+            return
+        else:
+            filename = filename[len(library_prefix)+1:]
+        if os.path.basename(filename) in exclude_filenames:
+            return
+
+        if limit is not None:
+            # Determine call depth of current frame.
+            depth = 0
+            parent_frame = frame
+            while parent_frame:
+                parent_frame = parent_frame.f_back
+                depth += 1
+            del parent_frame
+            if depth > limit:
+                return
+
+        # Write message to output.
+        indented_function_name = ("  " * depth) + function_name
+        output.write("%2d %-40s %5s %-40s\n" % (depth, indented_function_name,
+                                                 line_number, filename))
+        output.flush()
+
+    sys.settrace(_tracing_callback)

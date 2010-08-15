@@ -24,7 +24,7 @@ EngineBase class
 
 """
 
-from ...log import get_log
+import logging
 from .timer import Timer
 
 
@@ -56,7 +56,7 @@ class EngineContext(object):
 class EngineBase(object):
     """ Base class for engine-specific back-ends. """
 
-    _log = get_log("engine")
+    _log = logging.getLogger("engine")
     _name = "base"
     _timer_manager = None
 

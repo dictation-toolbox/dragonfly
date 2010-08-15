@@ -24,14 +24,14 @@
 """
 
 
-from ..log          import get_log
+import logging
 from .grammar_base  import Grammar, GrammarError
 from .rule_base     import Rule
 
 
 class State(object):
 
-    _log_decode = get_log("grammar.decode")
+    _log_decode = logging.getLogger("grammar.decode")
 
     #-----------------------------------------------------------------------
     # Methods for initialization.

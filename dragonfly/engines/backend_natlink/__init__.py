@@ -24,20 +24,20 @@ SR back-end package for DNS and Natlink
 
 """
 
-from ...log import get_log
-_log = get_log("engine.natlink")
+import logging
+_log = logging.getLogger("engine.natlink")
 
 
 #---------------------------------------------------------------------------
 
 # Module level singleton instance of this engine implementation.
-engine = None
+_engine = None
 
 
 def is_engine_available():
     """ Check whether Natlink is available. """
-    global engine
-    if engine:
+    global _engine
+    if _engine:
         return True
 
     # Attempt to import natlink.
@@ -54,7 +54,8 @@ def is_engine_available():
         if natlink.isNatSpeakRunning():
             return True
         else:
-        # LOG.
+            _log.info("Natlink is available but NaturallySpeaking is not"
+                      " running.")
             return False
     except Exception, e:
         _log.exception("Exception during natlink.isNatSpeakRunning(): %s" % (e,))
@@ -63,8 +64,8 @@ def is_engine_available():
 
 def get_engine():
     """ Retrieve the Natlink back-end engine object. """
-    global engine
-    if not engine:
+    global _engine
+    if not _engine:
         from .engine import NatlinkEngine
-        engine = NatlinkEngine()
-    return engine
+        _engine = NatlinkEngine()
+    return _engine

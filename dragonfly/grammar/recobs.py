@@ -25,7 +25,7 @@ Recognition observer base class
 """
 
 import time
-from ..log              import get_log
+import logging
 from ..actions.actions  import Playback
 from ..engines          import get_engine
 
@@ -34,7 +34,7 @@ from ..engines          import get_engine
 
 class RecognitionObserver(object):
 
-    _log = get_log("grammar")
+    _log = logging.getLogger("grammar")
 
     def __init__(self):
         pass

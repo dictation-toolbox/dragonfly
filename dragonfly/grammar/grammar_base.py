@@ -24,7 +24,7 @@ Grammar class
 
 """
 
-from ..log             import get_log
+import logging
 from ..engines         import get_engine
 from .rule_base        import Rule
 from .list             import ListBase
@@ -60,10 +60,10 @@ class Grammar(object):
 
     """
 
-    _log_load     = get_log("grammar.load")
-    _log_begin    = get_log("grammar.begin")
-    _log_results  = get_log("grammar.results")
-    _log          = get_log("grammar")
+    _log_load     = logging.getLogger("grammar.load")
+    _log_begin    = logging.getLogger("grammar.begin")
+    _log_results  = logging.getLogger("grammar.results")
+    _log          = logging.getLogger("grammar")
 
 
     #-----------------------------------------------------------------------
@@ -307,9 +307,12 @@ class Grammar(object):
     def load(self):
         """ Load this grammar into its SR engine. """
 
+        self._log_load.debug("Grammar %s: loading into engine %s."
+                             % (self._name, self._engine))
+
         # Prevent loading the same grammar multiple times.
-        if self._loaded: return
-        self._log_load.debug("Grammar %s: loading." % self._name)
+        if self._loaded:
+            return
 
         self._engine.load_grammar(self)
         self._loaded = True

@@ -2,7 +2,7 @@
 import time
 from collections          import defaultdict
 from ...grammar.elements  import Compound
-from ...log               import get_log
+import logging
 
 
 #===========================================================================
@@ -48,7 +48,7 @@ class CommandSet(object):
 
 class CommandBase(object):
 
-    _log = get_log("Command")
+    _log = logging.getLogger("Command")
 
     def __init__(self):
         pass

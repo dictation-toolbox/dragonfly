@@ -24,6 +24,7 @@ Tools for testing element classes
 
 """
 
+import logging
 from dragonfly              import *
 from ..test                 import TestError, RecognitionFailure
 from ..test.infrastructure  import Unique
@@ -33,6 +34,7 @@ from ..test.infrastructure  import Unique
 
 class ElementTester(Grammar):
 
+    _log = logging.getLogger("test.element")
     _NotSet = Unique("NoRecognition")
 
     class _ElementTestRule(Rule):
@@ -52,6 +54,7 @@ class ElementTester(Grammar):
             words = words.split()
 
         if not self.loaded:
+            self._log.debug("Loading ElementTester instance.")
             self.load()
             unload_after_recognition = True
         else:
@@ -128,14 +131,18 @@ class ElementTester(Grammar):
                         ('pt', POINT)]
 
         class Obs(RecognitionObserver):
+            _log = logging.getLogger("SAPI5 RecObs")
             status = "none"
             def on_recognition(self, words):
+                self._log.debug("SAPI5 RecObs on_recognition(): %r" % (words,))
                 self.status = "recognition: %r" % (words,)
             def on_failure(self):
+                self._log.debug("SAPI5 RecObs on_failure()")
                 self.status = "failure"
         observer = Obs()
         observer.register()
 
+        self._log.debug("SAPI5 mimic: %r" % (words,))
         self.engine.mimic(words)
 
         timeout =  3
@@ -149,22 +156,31 @@ class ElementTester(Grammar):
         message_pointer = pointer(message)
 
         while (not timeout) or (time.time() - begin_time < timeout):
+            if timeout:
+                self._log.debug("SAPI5 message loop: %s sec left" % (timeout + begin_time - time.time()))
+            else:
+                self._log.debug("SAPI5 message loop: no timeout")
+
             if windll.user32.GetMessageW(message_pointer, NULL, 0, 0) == 0:
                 msg = str(WinError())
                 self._log.error("GetMessageW() failed: %s" % msg)
                 raise EngineError("GetMessageW() failed: %s" % msg)
 
+            self._log.debug("SAPI5 message: %r" % (message.message,))
             if message.message == win32con.WM_TIMER:
                 # A timer message means this loop has timed out.
+                self._log.debug("SAPI5 message loop timed out: %s sec left" % (timeout + begin_time - time.time()))
                 timed_out = True
                 break
             else:
                 # Process other messages as normal.
+                self._log.debug("SAPI5 message translating and dispatching.")
                 windll.user32.TranslateMessage(message_pointer)
                 windll.user32.DispatchMessageW(message_pointer)
 
             if self._recognized_value != self._NotSet:
                 # The previous message was a recognition which matched.
+                self._log.debug("SAPI5 message caused recognition.")
                 break
 
         observer.unregister()

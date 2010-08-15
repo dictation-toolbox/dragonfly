@@ -25,7 +25,7 @@ Multiplexing interface to a timer
 """
 
 import time
-from ...log import get_log
+import logging
 
 
 #---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class Timer(object):
         try:
             self.function()
         except Exception, e:
-            get_log("timer").exception("Exception during timer callback: e"
+            logging.getLogger("timer").exception("Exception during timer callback: e"
                                        % (e,))
 
 
@@ -67,7 +67,7 @@ class TimerManagerBase(object):
     """
     """
 
-    _log = get_log("timer")
+    _log = logging.getLogger("timer")
 
     def __init__(self, interval, engine):
         """

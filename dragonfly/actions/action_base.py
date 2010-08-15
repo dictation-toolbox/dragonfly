@@ -26,7 +26,7 @@ ActionBase base class
 
 
 import copy as copy_
-from ..log import get_log
+import logging
 
 
 #---------------------------------------------------------------------------
@@ -43,9 +43,9 @@ class ActionBase(object):
 
     """
 
-    _log_init = get_log("action.init")
-    _log_exec = get_log("action.exec")
-    _log = get_log("action")
+    _log_init = logging.getLogger("action.init")
+    _log_exec = logging.getLogger("action.exec")
+    _log = logging.getLogger("action")
 
     #-----------------------------------------------------------------------
     # Initialization and aggregation methods.

@@ -21,6 +21,7 @@
 """
 """
 
+import logging
 from dragonfly              import *
 from .error                 import TestError
 from ..test                 import infrastructure
@@ -30,7 +31,7 @@ from ..test                 import infrastructure
 
 class RuleTestGrammar(Grammar):
 
-    _log = get_log("test")
+    _log = logging.getLogger("test")
     _NoRecognition = infrastructure.Unique("NoRecognition")
 
     #-----------------------------------------------------------------------

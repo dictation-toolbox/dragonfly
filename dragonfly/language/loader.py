@@ -33,7 +33,7 @@ Digits, and Number classes.
 """
 
 import sys
-from ..log                     import get_log
+import logging
 from ..grammar.rule_base       import Rule
 from ..grammar.elements_basic  import RuleRef
 from ..error                   import DragonflyError
@@ -44,7 +44,7 @@ from ..error                   import DragonflyError
 
 class LanguageSpecificLoader(object):
 
-    _log = get_log("lang")
+    _log = logging.getLogger("lang")
 
 
     #-----------------------------------------------------------------------

@@ -23,7 +23,7 @@
 """
 
 
-import dragonfly.log as log_
+import logging
 import dragonfly.grammar.elements as elements_
 
 
@@ -37,7 +37,7 @@ class CompilerError(Exception):
 
 class CompilerBase(object):
 
-    _log = log_.get_log("engine.compiler")
+    _log = logging.getLogger("engine.compiler")
 
     element_compilers = [
         (elements_.Sequence,    lambda s,e,*a,**k: s._compile_sequence(e,*a,**k)),

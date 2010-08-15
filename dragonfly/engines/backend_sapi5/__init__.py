@@ -24,8 +24,8 @@ SR back-end package for SAPI 5
 
 """
 
-from ...log import get_log
-_log = get_log("engine.sapi5")
+import logging
+_log = logging.getLogger("engine.sapi5")
 
 
 #---------------------------------------------------------------------------

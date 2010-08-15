@@ -23,7 +23,7 @@ Dictation container for the SAPI5 engine.
 
 """
 
-from ...log import get_log
+import logging
 from ..base import DictationContainerBase
 
 

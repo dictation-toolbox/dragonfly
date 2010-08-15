@@ -29,7 +29,7 @@ try:
 except ImportError:
     natlink = None
 
-from ..log import get_log
+import logging
 
 class Word(object):
 
@@ -82,7 +82,7 @@ class Word(object):
 
 class FormatState(object):
 
-    _log = get_log("dictation.formatter")
+    _log = logging.getLogger("dictation.formatter")
 
     (normal, capitalize, upper, lower, force) = range(5)
     (normal, no, double) = range(3)

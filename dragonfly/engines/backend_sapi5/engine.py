@@ -99,6 +99,8 @@ class Sapi5Engine(EngineBase):
     def _load_grammar(self, grammar):
         """ Load the given *grammar*. """
         self._log.debug("Loading grammar %s." % grammar.name)
+        if not self._recognizer:
+            self.connect()
 
         grammar.engine = self
 

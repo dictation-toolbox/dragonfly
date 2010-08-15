@@ -24,14 +24,14 @@ Recognition observer base class
 
 """
 
-from ...log import get_log
+import logging
 
 
 #---------------------------------------------------------------------------
 
 class RecObsManagerBase(object):
 
-    _log = get_log("recobs")
+    _log = logging.getLogger("recobs")
 
     def __init__(self, engine):
         self._engine = engine

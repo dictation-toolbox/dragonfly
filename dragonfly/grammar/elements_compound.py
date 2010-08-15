@@ -31,7 +31,7 @@ creating grammar element structures based on a simple text format.
 import string
 import dragonfly.grammar.elements_basic as elements_
 import dragonfly.parser as parser_
-import dragonfly.log as log_
+import logging
 
 
 class _Stuff(parser_.Sequence):
@@ -223,7 +223,7 @@ stuff.initialize()
 
 class Compound(elements_.Alternative):
 
-    _log = log_.get_log("compound.parse")
+    _log = logging.getLogger("compound.parse")
     _parser = parser_.Parser(stuff, _log)
 
     def __init__(self, spec, extras=None, actions=None, name=None,

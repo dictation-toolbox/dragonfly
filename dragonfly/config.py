@@ -113,7 +113,7 @@ import inspect
 import textwrap
 import traceback
 
-import dragonfly.log as log_
+import logging
 
 
 #---------------------------------------------------------------------------
@@ -145,7 +145,7 @@ class Config(object):
   """
 
     _configs_by_name = {}
-    _log = log_.get_log("config")
+    _log = logging.getLogger("config")
 
 
     #-----------------------------------------------------------------------

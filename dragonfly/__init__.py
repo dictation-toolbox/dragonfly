@@ -19,7 +19,6 @@
 #
 
 #---------------------------------------------------------------------------
-from .log               import get_log
 from .config            import Config, Section, Item
 from .error             import DragonflyError
 

@@ -19,7 +19,7 @@ import time
 import os.path
 import pythoncom
 
-import dragonfly.log as log_
+import logging
 from dragonfly.engines.engine import get_sapi5_engine
 engine = get_sapi5_engine()
 
@@ -29,7 +29,7 @@ engine = get_sapi5_engine()
 
 class CommandModule(object):
 
-    _log = log_.get_log("module")
+    _log = logging.getLogger("module")
 
     def __init__(self, path):
         self._path = os.path.abspath(path)
@@ -70,7 +70,7 @@ class CommandModule(object):
 
 class CommandModuleDirectory(object):
 
-    _log = log_.get_log("directory")
+    _log = logging.getLogger("directory")
 
     def __init__(self, path, excludes=None):
         self._path = os.path.abspath(path)

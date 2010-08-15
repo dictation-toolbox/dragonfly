@@ -24,7 +24,7 @@ Main SR engine back-end interface
 
 """
 
-from ..log import get_log
+import logging
 from .base import EngineBase, EngineError, MimicFailure
 
 
@@ -35,8 +35,7 @@ _engines_by_name = {}
 
 def get_engine(name=None):
     global _default_engine, _engines_by_name
-
-    log = get_log("engine")
+    log = logging.getLogger("engine")
 
     if name and name in _engines_by_name:
         # If the requested engine has already been loaded, return it.
@@ -49,9 +48,10 @@ def get_engine(name=None):
     if not name or name == "natlink":
         # Attempt to retrieve the natlink back-end.
         try:
-            from .backend_natlink import is_engine_available, get_engine
+            from .backend_natlink import is_engine_available
+            from .backend_natlink import get_engine as get_specific_engine
             if is_engine_available():
-                _default_engine = get_engine()
+                _default_engine = get_specific_engine()
                 _engines_by_name["natlink"] = _default_engine
                 return _default_engine
         except Exception, e:
@@ -64,9 +64,10 @@ def get_engine(name=None):
     if not name or name == "sapi5":
         # Attempt to retrieve the sapi5 back-end.
         try:
-            from .backend_sapi5 import is_engine_available, get_engine
+            from .backend_sapi5 import is_engine_available
+            from .backend_sapi5 import get_engine as get_specific_engine
             if is_engine_available():
-                _default_engine = get_engine()
+                _default_engine = get_specific_engine()
                 _engines_by_name["sapi5"] = _default_engine
                 return _default_engine
         except Exception, e:

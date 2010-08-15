@@ -61,7 +61,7 @@ classes listed above:
 
 
 import types
-from ..log       import get_log
+import logging
 from .rule_base  import Rule
 from .list       import ListBase, DictList
 
@@ -74,8 +74,8 @@ class ElementBase(object):
 
     name = "uninitialized"
 
-    _log_decode = get_log("grammar.decode")
-    _log_eval = get_log("grammar.eval")
+    _log_decode = logging.getLogger("grammar.decode")
+    _log_eval = logging.getLogger("grammar.eval")
 
     def __init__(self, name=None, default=None):
         """

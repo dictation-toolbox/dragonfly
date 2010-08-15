@@ -25,7 +25,7 @@
 
 import time
 import natlink
-from .log import get_log
+import logging
 
 
 class _Timer(object):
@@ -40,7 +40,7 @@ class _Timer(object):
             try:
                 self.function()
             except Exception, e:
-                get_log("timer").exception("Exception during timer callback")
+                logging.getLogger("timer").exception("Exception during timer callback")
                 print "Exception during timer callback: %s (%r)" % (e, e)
 
     def __init__(self, interval):
