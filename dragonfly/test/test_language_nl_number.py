@@ -49,8 +49,9 @@ class DutchIntegerTestCase(ElementTestCase):
                     ("negen",      9),
                     ("tien",      10),
                     ("elf",       11),
-                    ("hondred drie en twintig",                   123),
-                    ("hondred en vier en twintig",                124),
-                    ("zeven hondred negen en tachtig",            789),
-                    ("vier en dertig hondred zes en vijftig",    3456),
+                    ("twee en twintig",                            22),
+                    ("honderd drie en twintig",                   123),
+                    ("honderd en vier en twintig",                124),
+                    ("zeven honderd negen en tachtig",            789),
+                    ("vier en dertig honderd zes en vijftig",    3456),
                    ]    

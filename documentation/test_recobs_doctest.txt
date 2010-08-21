@@ -1,24 +1,4 @@
-﻿#
-# This file is part of Dragonfly.
-# (c) Copyright 2007, 2008 by Christo Butcher
-# Licensed under the LGPL.
-#
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
-#   (at your option) any later version.
-#
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-#   Lesser General Public License for more details.
-#
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
-#   <http://www.gnu.org/licenses/>.
-#
-
-"""
+﻿
 RecognitionObserver base class
 ==========================================================================
 
@@ -26,8 +6,34 @@ Test fixture initialization::
 
     >>> from dragonfly import *
     >>> from dragonfly.test import ElementTester
-    >>> engine = get_engine()
-    >>> engine.connect()
+
+
+Trivial demonstration of RecognitionObserver class
+----------------------------------------------------------------------------
+
+The following class is derived from RecognitionObserver and prints
+when its callback methods are called::
+
+    >>> class RecognitionObserverDemo(RecognitionObserver):
+    ...     def on_begin(self):
+    ...         print "on_begin()"
+    ...     def on_recognition(self, words):
+    ...         print "on_recognition(): %s" % (words,)
+    ...     def on_failure(self):
+    ...         print "on_failure()"
+    ...
+    >>> recobs_demo = RecognitionObserverDemo()
+    >>> recobs_demo.register()
+    >>> test_lit = ElementTester(Literal("hello world"))
+    >>> test_lit.recognize("hello world")
+    on_begin()
+    on_recognition(): ['hello', 'world']
+    'hello world'
+    >>> test_lit.recognize("hello universe")
+    on_begin()
+    on_failure()
+    RecognitionFailure
+    >>> recobs_demo.unregister()
 
 
 Tests for RecognitionObserver class
@@ -142,70 +148,3 @@ Minimum length is 1::
     ...     assert test_int.recognize(word) == i + 1
     >>> history
     [['five']]
-
-
-Handling of exceptions during notifications
-----------------------------------------------------------------------------
-
-The following class is derived from RecognitionObserver and raises
-an exception during each type of notification event::
-
-    >>> class RecognitionObserverExceptionTester(RecognitionObserver):
-    ...     def __init__(self):
-    ...         self.exception_on_begin = False
-    ...         RecognitionObserver.__init__(self)
-    ...     def on_begin(self):
-    ...         if self.exception_on_begin:
-    ...             raise Exception("on_begin()")
-    ...         else:
-    ...             pass
-    ...     def on_recognition(self, words):
-    ...         raise Exception("on_recognition()")
-    ...     def on_failure(self):
-    ...         raise Exception("on_failure()")
-    ...
-    >>> test_recobs_exc = RecognitionObserverExceptionTester()
-    >>> test_recobs_exc.register()
-    >>> test_lit = ElementTester(Literal("hello world"))
-    >>> test_lit.recognize("hello world")  #doctest: +ELLIPSIS
-    recobs: Exception during on_recognition() method of recognition observer <...>: on_recognition()
-    Traceback (most recent call last):
-      ...
-    Exception: on_recognition()
-    'hello world'
-    >>> test_lit.recognize("hello universe")  #doctest: +ELLIPSIS
-    recobs: Exception during on_failure() method of recognition observer <...>: on_failure()
-    Traceback (most recent call last):
-      ...
-    Exception: on_failure()
-    RecognitionFailure
-    >>> test_recobs_exc.exception_on_begin = True
-    >>> test_lit.recognize("hello world")  #doctest: +ELLIPSIS
-    recobs: Exception during on_begin() method of recognition observer <...>: on_begin()
-    Traceback (most recent call last):
-      ...
-    Exception: on_begin()
-    recobs: Exception during on_recognition() method of recognition observer <...>: on_recognition()
-    Traceback (most recent call last):
-      ...
-    Exception: on_recognition()
-    'hello world'
-    >>> test_recobs_exc.unregister()
-    >>> del test_recobs_exc
-
-
-Test fixture cleanup
-----------------------------------------------------------------------------
-
-
-Test fixture cleanup::
-
-    >>> test_recobs.unregister()
-    >>> del test_recobs
-    >>> engine.disconnect()
-
-"""
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod(report=True)

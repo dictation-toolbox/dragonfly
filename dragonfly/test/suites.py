@@ -19,6 +19,9 @@
 #
 
 import unittest
+import doctest
+import pkg_resources
+import os.path
 from dragonfly.test.engine_suite import EngineTestSuite
 
 
@@ -29,6 +32,7 @@ common_names   = [
                   ".test_language_de_number",
                   ".test_language_nl_number",
                   ".test_engine_nonexistent",
+                  "doc:documentation/recobs_doctest.txt",
                  ]
 
 natlink_names  = [
@@ -42,11 +46,24 @@ sapi5_names    = [
 #===========================================================================
 
 def build_suite(suite, names):
+    # Determine the root directory of the source code files.  This is
+    #  used for finding doctest files specified relative to that root.
+    project_root = os.path.join(os.path.dirname(__file__), "..", "..")
+    project_root = os.path.abspath(project_root)
+
+    # Load test cases from specified names.
     loader = unittest.defaultTestLoader
     for name in names:
         if name.startswith("."):
             name = "dragonfly.test" + name
-        suite.addTests(loader.loadTestsFromName(name))
+            suite.addTests(loader.loadTestsFromName(name))
+        elif name.startswith("doc:"):
+            path = name[4:]
+            path = os.path.join(project_root, *path.split("/"))
+            path = os.path.abspath(path)
+            suite.addTests(doctest.DocFileSuite(path))
+        else:
+            raise Exception("Invalid test name: %r." % (name,))
     return suite
 
 

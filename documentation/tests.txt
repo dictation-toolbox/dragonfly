@@ -7,25 +7,17 @@ Test suite
 The Dragonfly library contains tests to verify its functioning and
 assure its quality.
 
-Contents:
+Tests in doctests format:
 
 .. toctree::
    :maxdepth: 2
 
-   tests_elements_basic_doctest
-   tests_recobs_doctest
-   tests_actions_doctest
+   test_grammar_elements_basic_doctest
+   test_recobs_doctest
+   test_action_base_doctest
 
 
-Test script
-============================================================================
+Tests based on the unittest framework:
 
-.. automodule:: dragonfly.test.run_tests
-   :members:
-
-
-Test cases
-============================================================================
-
-.. automodule:: dragonfly.language.en.test_number
-   :members:
+.. toctree::
+   :maxdepth: 2
