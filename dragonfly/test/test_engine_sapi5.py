@@ -21,23 +21,20 @@
 import unittest
 from dragonfly.engines import get_engine, EngineBase, EngineError
 
-
 #---------------------------------------------------------------------------
 
 class TestEngineSapi5(unittest.TestCase):
 
     def test_get_engine_sapi5_is_usable(self):
         """ Verify that the sapi5 engine is usable. """
-        engine = get_engine("sapi5")
-        assert isinstance(engine, EngineBase)
-        assert engine.name == "sapi5"
-        engine.connect()
-        try:
-            engine.speak("testing WSR")
-            from dragonfly import Literal
-            from dragonfly.test import ElementTester
-            tester = ElementTester(Literal("hello world"), engine=engine)
-            results = tester.recognize("hello world")
-            assert results == "hello world", "%r != %r" % (results, "hello world")
-        finally:
-            engine.disconnect()
+        engine = get_engine()
+        self.assert_(isinstance(engine, EngineBase))
+        self.assertEqual("sapi5", engine.name)
+
+        engine.speak("testing WSR")
+        from dragonfly import Literal, Sequence
+        from dragonfly.test import ElementTester
+        seq = Sequence([Literal("hello"), Literal("world")])
+        tester = ElementTester(seq, engine=engine)
+        results = tester.recognize("hello world")
+        self.assertEqual([u"hello", u"world"], results)

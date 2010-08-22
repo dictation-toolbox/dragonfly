@@ -32,13 +32,13 @@ common_names   = [
                   ".test_language_de_number",
                   ".test_language_nl_number",
                   ".test_engine_nonexistent",
-                  "doc:documentation/test_recobs_doctest.txt",
                   "doc:documentation/test_action_base_doctest.txt",
                   "doc:documentation/test_grammar_elements_basic_doctest.txt",
                  ]
 
 natlink_names  = [
                   ".test_engine_natlink",
+                  "doc:documentation/test_recobs_doctest.txt",
                  ]
 
 sapi5_names    = [
@@ -70,6 +70,6 @@ def build_suite(suite, names):
 
 
 natlink_suite  = build_suite(EngineTestSuite("natlink"),
-                             common_names + natlink_names)
+                             natlink_names + common_names)
 sapi5_suite    = build_suite(EngineTestSuite("sapi5"),
-                             common_names + sapi5_names)
+                             sapi5_names + common_names)

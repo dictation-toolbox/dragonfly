@@ -5,7 +5,13 @@ Test suite
 ****************************************************************************
 
 The Dragonfly library contains tests to verify its functioning and
-assure its quality.
+assure its quality.  These tests come in two distinct types:
+
+ * Tests based on `unittest <http://docs.python.org/library/unittest.html>`_.
+ * Tests based on `doctest <http://docs.python.org/library/doctest.html>`_;
+   these also serve as documentation by providing usage examples.
+
+See the links below for tests of both types.
 
 Tests in doctests format:
 
@@ -17,7 +23,40 @@ Tests in doctests format:
    test_action_base_doctest
 
 
-Tests based on the unittest framework:
+Tests based on the unittest framework reside in the :mod:`dragonfly.test`
+package.
 
 .. toctree::
    :maxdepth: 2
+
+
+Running the test suite
+============================================================================
+
+Using DNS
+----------------------------------------------------------------------------
+
+Follow the following steps to run the test suite for the DNS backend Aland
+
+ #. Start DNS.  (And ensure that NatLink is also automatically started.)
+ #. Extract the Dragonfly source code in a directory ``<dir>``.
+ #. Run the tests with the following commands:
+
+    * ``cd <dir>``
+    * ``C:\Python26\python.exe <dir>\setup.py test``
+
+Using WSR
+----------------------------------------------------------------------------
+
+Follow the following steps to run the test suite for the DNS backend Aland
+
+ #. Start WSR.
+ #. Wake WSR up, so that it is *not* in sleeping state, and then turn the
+    microphone *off*.  (It is important to wake the microphone up first,
+    because otherwise it'll be off and sleeping at the same time.  This
+    causes all recognitions to fail.  Weird, huh?)
+ #. Extract the Dragonfly source code in a directory ``<dir>``.
+ #. Run the tests with the following commands:
+
+    * ``cd <dir>``
+    * ``C:\Python26\python.exe <dir>\setup.py test --test-suite=dragonfly.test.suites.sapi5_suite``

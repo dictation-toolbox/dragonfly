@@ -49,13 +49,7 @@ class ElementTestCase(unittest.TestCase):
     #-----------------------------------------------------------------------
 
     def run(self, result=None):
-        self.engine = get_engine()
-        self.engine.connect()
-        self.grammar = ElementTester(self.element)
-        try:
-            return unittest.TestCase.run(self, result)
-        finally:
-            self.engine.disconnect()
+        return unittest.TestCase.run(self, result)
 
     def test_element(self):
         element = self.element

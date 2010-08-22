@@ -2,6 +2,12 @@
 RecognitionObserver base class
 ==========================================================================
 
+.. note:: :class:`RecognitionObserver` instances can be used for both
+   the DNS and the WSR backend engines.  However, WSR does not offer
+   access to the words recognized by a different context, and therefore
+   the :meth:`RecognitionObservers.on_recognition` will always
+   be called with ``words = False``.
+
 Test fixture initialization::
 
     >>> from dragonfly import *

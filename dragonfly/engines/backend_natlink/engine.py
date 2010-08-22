@@ -22,6 +22,11 @@
 SR back-end for DNS and Natlink
 ============================================================================
 
+Detecting sleep mode
+----------------------------------------------------------------------------
+
+ - http://blogs.msdn.com/b/tsfaware/archive/2010/03/22/detecting-sleep-mode-in-sapi.aspx
+
 """
 
 from ..base        import EngineBase, EngineError, MimicFailure

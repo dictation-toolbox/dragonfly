@@ -145,7 +145,7 @@ class ElementTester(Grammar):
         self._log.debug("SAPI5 mimic: %r" % (words,))
         self.engine.mimic(words)
 
-        timeout =  3
+        timeout = 10
         NULL = c_int(win32con.NULL)
         if timeout != None:
             begin_time = time.time()
@@ -184,9 +184,11 @@ class ElementTester(Grammar):
                 break
 
         observer.unregister()
-        if observer.status == "failure":
-            raise MimicFailure("Mimic failed.")
-#        elif observer.status == "none":
-#            raise MimicFailure("Mimic failed, nothing happened.")
+
+        if self._recognized_value == self._NotSet:
+            if observer.status == "failure":
+                raise MimicFailure("Mimic failed.")
+            elif observer.status == "none":
+                raise MimicFailure("Mimic failed, nothing happened.")
 
     _mimic_methods["sapi5"] = _mimic_sapi5
