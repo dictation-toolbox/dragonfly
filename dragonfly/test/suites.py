@@ -32,7 +32,9 @@ common_names   = [
                   ".test_language_de_number",
                   ".test_language_nl_number",
                   ".test_engine_nonexistent",
-                  "doc:documentation/recobs_doctest.txt",
+                  "doc:documentation/test_recobs_doctest.txt",
+                  "doc:documentation/test_action_base_doctest.txt",
+                  "doc:documentation/test_grammar_elements_basic_doctest.txt",
                  ]
 
 natlink_names  = [
