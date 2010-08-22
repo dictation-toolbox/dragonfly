@@ -689,8 +689,10 @@ class Literal(ElementBase):
         return
 
     def value(self, node):
-        if self._value is None: return " ".join(node.words())
-        else: return self._value
+        if self._value is None:
+            return u" ".join(node.words())
+        else:
+            return self._value
 
 #---------------------------------------------------------------------------
 

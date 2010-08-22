@@ -52,13 +52,14 @@ class NatlinkDictationContainer(DictationContainerBase):
     """
 
     def __init__(self, words):
+        words = tuple(unicode(w) for w in words)
         DictationContainerBase.__init__(self, words=words)
 
     def format(self):
         """ Format and return this dictation. """
         state = FormatState()
         formatted = state.format_words(self._words)
-        return unicode(formatted, encoding="latin_1")
+        return formatted
 
 
 #---------------------------------------------------------------------------
@@ -189,10 +190,11 @@ class FormatState(object):
     def format_words(self, words):
         output = []
         for word in words:
-            if not isinstance(word, Word): word = Word(word)
-            if self._log: self._log.debug("Formatting word: '%s'" % word)
+            if not isinstance(word, Word):
+                word = Word(word)
+            self._log.debug("Formatting word: %r" % (word,))
             output.append(self.apply_formatting(word))
             self.update_state(word)
         output = "".join(output)
-        if self._log: self._log.debug("Formatted output: '%s'" % output)
+        self._log.debug("Formatted output: %r" % (output,))
         return output

@@ -102,6 +102,7 @@ class ElementTester(Grammar):
         element_node = node.children[0]
         self._recognized_value = element_node.value()
 
+
     #-----------------------------------------------------------------------
     # Engine-specific logic.
 

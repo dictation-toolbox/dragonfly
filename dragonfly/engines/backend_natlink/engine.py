@@ -256,7 +256,7 @@ class GrammarWrapper(object):
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
             if func:
-                words = results.getWords(0)
+                words = tuple(unicode(w) for w in results.getWords(0))
                 func(words)
             return
         elif words == "reject":
@@ -265,14 +265,20 @@ class GrammarWrapper(object):
                 func()
             return
 
-        words_rules = words
+        # If the words argument was not "other" or "reject", then
+        #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
+        #  into a tuple of unicode objects.
+        words_rules = tuple((unicode(w), r) for w, r in words)
+        words = tuple(w for w, r in words_rules)
+
+        # Call the grammar's general process_recognition method, if present.
         func = getattr(self.grammar, "process_recognition", None)
         if func:
             if not func(words):
                 return
 
         # Iterates through this grammar's rules, attempting
-        #  to decode each.  If successful, called that rule's
+        #  to decode each.  If successful, call that rule's
         #  method for processing the recognition and return.
         s = state_.State(words_rules, self.grammar._rule_names, self.engine)
         for r in self.grammar._rules:

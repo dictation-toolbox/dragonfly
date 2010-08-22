@@ -27,8 +27,8 @@ when its callback methods are called::
     >>> test_lit = ElementTester(Literal("hello world"))
     >>> test_lit.recognize("hello world")
     on_begin()
-    on_recognition(): ['hello', 'world']
-    'hello world'
+    on_recognition(): (u'hello', u'world')
+    u'hello world'
     >>> test_lit.recognize("hello universe")
     on_begin()
     on_failure()
@@ -65,9 +65,9 @@ Simple literal element recognitions::
 
     >>> test_lit = ElementTester(Literal("hello world"))
     >>> test_lit.recognize("hello world")
-    'hello world'
+    u'hello world'
     >>> test_recobs.waiting, test_recobs.words
-    (False, ['hello', 'world'])
+    (False, (u'hello', u'world'))
     >>> test_lit.recognize("hello universe")
     RecognitionFailure
     >>> test_recobs.waiting, test_recobs.words
@@ -80,17 +80,17 @@ Integer element recognitions::
     >>> test_int.recognize("seven")
     7
     >>> test_recobs.waiting, test_recobs.words
-    (False, ['seven'])
+    (False, (u'seven',))
     >>> test_int.recognize("forty seven")
     47
     >>> test_recobs.waiting, test_recobs.words
-    (False, ['forty', 'seven'])
+    (False, (u'forty', u'seven'))
     >>> test_int.recognize("one hundred")
     RecognitionFailure
     >>> test_recobs.waiting, test_recobs.words
     (False, False)
     >>> test_lit.recognize("hello world")
-    'hello world'
+    u'hello world'
 
 
 RecognitionHistory class
@@ -100,25 +100,25 @@ Basic usage of the RecognitionHistory class::
 
     >>> history = RecognitionHistory()
     >>> test_lit.recognize("hello world")
-    'hello world'
+    u'hello world'
     >>> # Not yet registered, so didn't receive previous recognition.
     >>> history
     []
     >>> history.register()
     >>> test_lit.recognize("hello world")
-    'hello world'
+    u'hello world'
     >>> # Now registered, so should have received previous recognition.
     >>> history
-    [['hello', 'world']]
+    [(u'hello', u'world')]
     >>> test_lit.recognize("hello universe")
     RecognitionFailure
     >>> # Failed recognitions are ignored, so history is unchanged.
     >>> history
-    [['hello', 'world']]
+    [(u'hello', u'world')]
     >>> test_int.recognize("eighty six")
     86
     >>> history
-    [['hello', 'world'], ['eighty', 'six']]
+    [(u'hello', u'world'), (u'eighty', u'six')]
 
 The RecognitionHistory class allows its maximum length to be set::
 
@@ -129,7 +129,7 @@ The RecognitionHistory class allows its maximum length to be set::
     >>> for i, word in enumerate(["one", "two", "three", "four", "five"]):
     ...     assert test_int.recognize(word) == i + 1
     >>> history
-    [['three'], ['four'], ['five']]
+    [(u'three',), (u'four',), (u'five',)]
 
 The length must be a positive integer.  A length of 0 is not allowed::
 
@@ -147,4 +147,4 @@ Minimum length is 1::
     >>> for i, word in enumerate(["one", "two", "three", "four", "five"]):
     ...     assert test_int.recognize(word) == i + 1
     >>> history
-    [['five']]
+    [(u'five',)]

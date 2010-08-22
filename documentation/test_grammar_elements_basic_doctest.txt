@@ -21,7 +21,7 @@ Basic usage::
     >>> seq = Sequence([Literal("hello"), Literal("world")])
     >>> test_seq = ElementTester(seq)
     >>> test_seq.recognize("hello world")
-    ['hello', 'world']
+    [u'hello', u'world']
 
 
 Sequence
@@ -32,7 +32,7 @@ Basic usage::
     >>> seq = Sequence([Literal("hello"), Literal("world")])
     >>> test_seq = ElementTester(seq)
     >>> test_seq.recognize("hello world")
-    ['hello', 'world']
+    [u'hello', u'world']
     >>> test_seq.recognize("hello universe")
     RecognitionFailure
 
