@@ -53,6 +53,7 @@ typeables = {
     "win":          Typeable(code=win32con.VK_LWIN,      name="win"),
     "apps":         Typeable(code=win32con.VK_APPS,      name="apps"),
     "popup":        Typeable(code=win32con.VK_APPS,      name="popup"),
+    "pause":        Typeable(code=win32con.VK_PAUSE,     name="pause"),
     "escape":       Typeable(code=win32con.VK_ESCAPE,    name="escape"),
     "npmul":        Typeable(code=win32con.VK_MULTIPLY,  name="npmul"),
     "npadd":        Typeable(code=win32con.VK_ADD,       name="npadd"),
