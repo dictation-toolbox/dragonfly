@@ -82,7 +82,7 @@ class Year(Alternative):
             Compound(
                      spec="<century> <year>",
                      extras=[Integer("century", 20, 21),
-                             IntegerRef("year",    10, 100)],
+                             IntegerRef("year", 10, 100)],
                      value_func=lambda n, e: e["century"] * 100 + e["year"]
                     ),
             Compound(
@@ -112,8 +112,17 @@ class AbsoluteDate(Compound):
         month      = node.get_child_by_name("month").value()
         day        = node.get_child_by_name("day").value()
         year_node  = node.get_child_by_name("year")
-        if year_node is None:  year = date.today().year
-        else:                  year = year_node.value()
+        if year_node is None:
+            today = date.today()
+            year = today.year
+            if month - today.month > 6:
+                # More than six months in the future, use last year.
+                year -= 1
+            elif month - today.month < -6:
+                # More than six months in the past, use next year.
+                year += 1
+        else:
+            year = year_node.value()
         return date(year, month, day)
 
 
