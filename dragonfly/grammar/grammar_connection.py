@@ -55,6 +55,12 @@ class ConnectionGrammar(Grammar):
         Grammar.__init__(self, name=name, description=description,
                          context=context)
 
+    def __del__(self):
+        try:
+            self.disconnect()
+        except Exception, error:
+            pass
+
     #-----------------------------------------------------------------------
     # Methods for context management.
 
