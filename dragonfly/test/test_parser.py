@@ -72,41 +72,29 @@ class TestParsers(unittest.TestCase):
         expected_output_2 = [["a", "b"], [None, "c"]]
 
         state = parser.State(input)
-        print "Parser:", p
-        print "State:", state
         generator = p.parse(state)
         generator.next()
         root = state.build_parse_tree()
         self.assertEqual(root.value(), expected_output_1)
-        print "Output 1:", expected_output_1
     
         generator.next()
         root = state.build_parse_tree()
         self.assertEqual(root.value(), expected_output_2)
-        print "Output 2:", expected_output_2
 
     def _test_single(self, parser_element, input_output):
         p = parser.Parser(parser_element)
-        print "Parser:", parser_element
         for input, output in input_output:
-            print "Input:", input
             result = p.parse(input)
-            print "Expected: %r" % output
-            print "Result: %r" % result
             self.assertEqual(result, output)
 
     def _test_multiple(self, parser_element, input_outputs, must_finish = True):
         p = parser.Parser(parser_element)
-        print "Parser:", parser_element
         for input, outputs in input_outputs:
-            print "Input:", input
             results = p.parse_multiple(input, must_finish)
             self.assertEqual(len(results), len(outputs))
             for index, result, output in zip(xrange(len(results)), results, outputs):
                 if isinstance(result, list): result = tuple(result)
                 if isinstance(output, list): output = tuple(output)
-                print "Expected: %r" % output
-                print "Result %d: %r" % (index, result)
                 self.assertEqual(result, output)
 
 
