@@ -21,18 +21,15 @@ print "Version:", version, "-- Release:", release
 #---------------------------------------------------------------------------
 # General configuration
 
-#sys.path.append(os.getcwd())
-#extensions = ['sphinx.ext.autodoc', 'include_privates']
 extensions = ['sphinx.ext.autodoc']
 templates_path = ['templates']
 source_suffix = '.txt'
 master_doc = 'index'
 
-# General substitutions.
 project = u'Dragonfly'
-copyright = u'2008-2010, Christo Butcher'
+copyright = u'2014, Christo Butcher'
 
-today_fmt = '%B %d, %Y'
+today_fmt = '%Y-%m-%d'
 exclude_trees = []
 add_module_names = False
 pygments_style = 'sphinx'
@@ -42,8 +39,8 @@ autoclass_content = "both"
 #---------------------------------------------------------------------------
 # Options for HTML output
 
-html_theme = 'sphinxdoc'
-html_last_updated_fmt = '%b %d, %Y'
+html_theme = 'default'
+html_last_updated_fmt = '%Y-%m-%d'
 html_copy_source = True
 htmlhelp_basename = 'Dragonflydoc'
 
