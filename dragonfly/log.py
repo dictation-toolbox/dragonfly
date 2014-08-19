@@ -36,12 +36,6 @@ def out(m):
     print >>sys.stderr, m
 
 #---------------------------------------------------------------------------
-# Configuration of log facilities.
-
-library_prefix = "dfly"
-
-
-#---------------------------------------------------------------------------
 # Sane defaults for logger names and associated levels.
 
 _debug     = logging.DEBUG
@@ -54,7 +48,6 @@ default_levels = {
                   "engine":               (_warning, _info), 
                   "engine.compiler":      (_warning, _info), 
                   "grammar":              (_warning, _critical), 
-#                  "grammar.load":         (_debug, _debug), # (_warning, _info), 
                   "grammar.load":         (_warning, _info), 
                   "grammar.begin":        (_info, _info),
                   "grammar.results":      (_warning, _warning),
@@ -72,17 +65,8 @@ default_levels = {
                   "rule":                 (_warning, _info),
                   "config":               (_warning, _info),
                   "monitor.init":         (_warning, _info),
+                  "dfly.test":            (_debug, _debug),
                  }
-
-
-#---------------------------------------------------------------------------
-# Main factory function for users of the log facilities.
-
-def get_log(name):
-    global library_prefix
-    absolute_name = library_prefix + "." + name
-    logger = logging.getLogger(absolute_name)
-    return logger
 
 
 #---------------------------------------------------------------------------
@@ -96,8 +80,6 @@ class NameLevelFilter(logging.Filter):
         self.level = level
 
     def filter(self, record):
-#        print "filtering", self._name, self._level, record
-        out("%s == %s, %s >= %s" % (record.name, self.name, record.levelno, self.level))
         if record.name == self.name:
             if record.levelno >= self.level:
                 return True
@@ -116,7 +98,6 @@ class DispatchingHandler(logging.Handler):
         self.handler_filter_pairs = []
 
     def filter(self, record):
-        out("filt %s, %s" % (record.name, record.levelno))
         return True
 
     def add_handler_filter_pair(self, handler, filter):
@@ -127,9 +108,7 @@ class DispatchingHandler(logging.Handler):
 #        import traceback; print traceback.extract_stack()
 #        import traceback; traceback.print_stack()
         for handler, filter in self.handler_filter_pairs:
-            out("emitting: %s %s %s" % (self, handler, filter))
             if filter.filter(record):
-                out("yes")
                 handler.handle(record)
 
 
@@ -177,8 +156,14 @@ def setup_log(use_stdout=True, use_file=True):
         Setup Dragonfly's logging infrastructure with sane defaults.
 
     """
+    global _dispatching_handlers
     global _stdout_handler, _file_handler
     global _stdout_filters, _file_filters
+
+    # Remove any previously created dispatching handlers.
+    for name, handler in _dispatching_handlers.items():
+        logger = logging.getLogger(name)
+        logger.removeHandler(handler)
 
     # Setup default handlers.
     if use_stdout:
@@ -189,13 +174,8 @@ def setup_log(use_stdout=True, use_file=True):
     # Create and register default filters.
     for name, levels in default_levels.items():
         stdout_level, file_level = levels
-        if name:
-            name = library_prefix + "." + name
-        else:
-            name = library_prefix
         handler = DispatchingHandler()
         _dispatching_handlers[name] = handler
-#        print 'new', handler, name, levels
         if use_stdout:
             stdout_filter = NameLevelFilter(name, stdout_level)
             handler.add_handler_filter_pair(_stdout_handler, stdout_filter)
@@ -208,51 +188,6 @@ def setup_log(use_stdout=True, use_file=True):
         logger.addHandler(handler)
         logger.setLevel(min(stdout_level, file_level))
         logger.propagate = False
-
-
-#---------------------------------------------------------------------------
-
-def set_log_level(name, level, use_stdout=True, use_file=True):
-    """
-        ...
-
-    """
-    global _stdout_handler, _file_handler
-    global _dispatching_handlers, _stdout_filters, _file_filters
-
-    if name:
-        name = library_prefix + "." + name
-    else:
-        name = library_prefix
-
-    logger = logging.getLogger(name)
-    handler = _dispatching_handlers.get(name, None)
-    if not handler:
-        handler = DispatchingHandler()
-        _dispatching_handlers[name] = handler
-        logger.addHandler(handler)
-        logger.setLevel(level)
-        logger.propagate = False
-    else:
-        logger.setLevel(min(logger.getEffectiveLevel(), level))
-    out("lev %s %s" % (name, logger.getEffectiveLevel()))
-    if use_stdout:
-        filter = _stdout_filters.get(name, None)
-        if filter:
-            filter.level = level
-        else:
-            filter = NameLevelFilter(name, level)
-            handler.add_handler_filter_pair(_stdout_handler, filter)
-            _stdout_filters[name] = filter
-
-    if use_file:
-        filter = _file_filters.get(name, None)
-        if filter:
-            filter.level = level
-        else:
-            filter = NameLevelFilter(name, level)
-            handler.add_handler_filter_pair(_file_handler, filter)
-            _file_filters[name] = filter
 
 
 #---------------------------------------------------------------------------

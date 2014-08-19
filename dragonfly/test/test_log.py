@@ -61,8 +61,7 @@ class OutputCapturer(object):
 #---------------------------------------------------------------------------
 
 class LogTestCase(unittest.TestCase):
-    """
-    """
+    """ Test behavior of logging system. """
 
     def setUp(self):
         self._original_stdout = sys.stdout
@@ -75,90 +74,51 @@ class LogTestCase(unittest.TestCase):
     def tearDown(self):
         sys.stdout = self._original_stdout
         sys.stderr = self._original_stderr
-        if self._output.blocks:
-            prefix = "Output:  "
-            output = "".join(self._output.blocks).splitlines()
-            output = prefix + ("\n" + prefix).join(output)
-            print output
-        if self._error.blocks:
-            prefix = "Error:   "
-            text = "".join(self._error.blocks).splitlines()
-            text = prefix + ("\n" + prefix).join(text)
-            print text
+#        if self._output.blocks:
+#            prefix = "Output:  "
+#            output = "".join(self._output.blocks).splitlines()
+#            output = prefix + ("\n" + prefix).join(output)
+#            print output
+#        if self._error.blocks:
+#            prefix = "Error:   "
+#            text = "".join(self._error.blocks).splitlines()
+#            text = prefix + ("\n" + prefix).join(text)
+#            print text
         self._output = None
         self._error = None
 
-    def test_absence_of_no_handlers_error(self):
-        """ Verify that the "No handlers could be found" error is not given. """
-        log.setup_log()
-        logger = get_log("test.log")
-        logger.error("test_absence_of_no_handlers_error")
-        for line in self._error.lines:
-            if line.startswith("No handlers could be found for logger"):
-                self.fail("Unexpected error message: %r" % line)
-
-    def test_library_prefix(self):
-        """ Verify that loggers have the correct prefix. """
-        expected_prefix = "%s.test.log: " % log.library_prefix
-        log.setup_log()
-        logger = get_log("test.log")
-        logger.error("test_library_prefix")
-        for line in self._output.lines:
-            if line.startswith(expected_prefix):
-                return
-        self.fail("Logger prefix is incorrect.")
-
     def test_filtering(self):
-        """ Verify that ... """
-        log.setup_log()#use_file=False)
-        logger = get_log("grammar")
+        """ Verify that log messages are filtered according to level. """
+        log.setup_log()
+        logger = logging.getLogger("grammar")
         logger.debug("test_filtering - debug")
         logger.info("test_filtering - info")
         logger.warning("test_filtering - warning")
         logger.error("test_filtering - error")
-        logger = get_log("grammar.begin")
+        expected = ["grammar: test_filtering - warning",
+                    "grammar: test_filtering - error"]
+        self.assertEqual(self._output.lines, expected)
+
+        self._output.clear()
+        logger = logging.getLogger("grammar.begin")
         logger.debug("test_filtering - debug")
         logger.info("test_filtering - info")
         logger.warning("test_filtering - warning")
         logger.error("test_filtering - error")
-        logger = get_log("grammar.load")
+        expected = ["grammar.begin: test_filtering - info",
+                    "grammar.begin: test_filtering - warning",
+                    "grammar.begin: test_filtering - error"]
+        self.assertEqual(self._output.lines, expected)
+
+        self._output.clear()
+        logger = logging.getLogger("grammar.load")
         logger.debug("test_filtering - debug")
         logger.info("test_filtering - info")
         logger.warning("test_filtering - warning")
         logger.error("test_filtering - error")
-
-    def test_set_log_level(self):
-        """ Verify that ... """
-        log.setup_log()#use_file=False)
-        logger = get_log("test.log")
-
-        self._output.clear()
-        set_log_level("test.log", logging.WARNING)
-        logger.debug("test_set_log_level - debug")
-        logger.info("test_set_log_level - info")
-        logger.warning("test_set_log_level - warning")
-        assert len(self._output.lines) == 1
-
-        self._output.clear()
-        set_log_level("test.log", logging.INFO)
-        logger.debug("test_set_log_level - debug")
-        logger.info("test_set_log_level - info")
-        logger.warning("test_set_log_level - warning")
-        assert len(self._output.lines) == 2
-
-        self._output.clear()
-        set_log_level("test.log", logging.DEBUG)
-        logger.debug("test_set_log_level - debug")
-        logger.info("test_set_log_level - info")
-        logger.warning("test_set_log_level - warning")
-        assert len(self._output.lines) == 3
-
-        self._output.clear()
-        set_log_level("test.log", logging.ERROR)
-        logger.debug("test_set_log_level - debug")
-        logger.info("test_set_log_level - info")
-        logger.warning("test_set_log_level - warning")
-        assert not self._output.lines
+        expected = ["grammar.load: test_filtering - warning",
+                    "grammar.load: test_filtering - error"]
+        self.assertEqual(self._output.lines, expected)
 
     def _new_lines(self):
         filename = None
@@ -168,18 +128,6 @@ class LogTestCase(unittest.TestCase):
         new_lines = lines[self._previous_line_count:]
         self._previous_line_count = len(lines)
         return new_lines
-
-    def test_file_output(self):
-        """ Verify that ... """
-        log.setup_log()
-        logger = get_log("test.log")
-
-        self._output.clear()
-        set_log_level("test.log", logging.WARNING)
-        logger.debug("test_set_log_level - debug")
-        logger.info("test_set_log_level - info")
-        logger.warning("test_set_log_level - warning")
-        assert len(self._output.lines) == 1
 
 
 #===========================================================================
