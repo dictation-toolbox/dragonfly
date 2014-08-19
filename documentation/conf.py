@@ -21,34 +21,34 @@ print "Version:", version, "-- Release:", release
 #---------------------------------------------------------------------------
 # General configuration
 
-extensions = ['sphinx.ext.autodoc']
-templates_path = ['templates']
-source_suffix = '.txt'
-master_doc = 'index'
+extensions = ["sphinx.ext.autodoc"]
+templates_path = ["templates"]
+source_suffix = ".txt"
+master_doc = "index"
 
-project = u'Dragonfly'
-copyright = u'2014, Christo Butcher'
+project = u"Dragonfly"
+copyright = u"2014, Christo Butcher"
 
-today_fmt = '%Y-%m-%d'
+today_fmt = "%Y-%m-%d"
 exclude_trees = []
 add_module_names = False
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 autoclass_content = "both"
 
 
 #---------------------------------------------------------------------------
 # Options for HTML output
 
-html_theme = 'default'
-html_last_updated_fmt = '%Y-%m-%d'
+html_theme = "default"
+html_last_updated_fmt = "%Y-%m-%d"
 html_copy_source = True
-htmlhelp_basename = 'Dragonflydoc'
+htmlhelp_basename = "Dragonflydoc"
 
 
 #---------------------------------------------------------------------------
 # Options for LaTeX output
 
 latex_documents = [
-  ('index', 'Dragonfly.tex', u'Dragonfly Documentation',
-   u'Christo Butcher', 'manual'),
+  ("index", "Dragonfly.tex", u"Dragonfly Documentation",
+   u"Christo Butcher", "manual"),
 ]
