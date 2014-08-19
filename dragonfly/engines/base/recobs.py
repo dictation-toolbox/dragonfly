@@ -31,7 +31,7 @@ import logging
 
 class RecObsManagerBase(object):
 
-    _log = logging.getLogger("recobs")
+    _log = logging.getLogger("engine.recobs")
 
     def __init__(self, engine):
         self._engine = engine

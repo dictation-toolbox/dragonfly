@@ -67,7 +67,7 @@ class TimerManagerBase(object):
     """
     """
 
-    _log = logging.getLogger("timer")
+    _log = logging.getLogger("engine.timer")
 
     def __init__(self, interval, engine):
         """
