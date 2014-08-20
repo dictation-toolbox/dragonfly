@@ -15,20 +15,25 @@ class for this specific speech recognition engine classes.  It defines
 the stubs required and performs some of the logic necessary for
 Dragonfly to be able to interact with a speech recognition engine.
 
-.. autoclass:: dragonfly.engines.engine_base.EngineBase
+.. autoclass:: dragonfly.engines.base.EngineBase
    :members: 
 
 
-.. automodule:: dragonfly.engines.engine_natlink
+Engine backends
+----------------------------------------------------------------------------
+
+.. automodule:: dragonfly.engines.backend_natlink
    :members:
-.. automodule:: dragonfly.engines.engine_sapi5
+
+.. automodule:: dragonfly.engines.backend_sapi5
    :members:
 
 
 Dictation container classes
 ----------------------------------------------------------------------------
 
-.. automodule:: dragonfly.engines.dictation_base
+.. automodule:: dragonfly.engines.base.dictation
    :members:
-.. automodule:: dragonfly.engines.dictation_natlink
+
+.. automodule:: dragonfly.engines.backend_natlink.dictation
    :members:
