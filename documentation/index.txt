@@ -19,16 +19,16 @@ Documentation
 Besides this page, the following documentation is also available:
 
 .. toctree::
-   :maxdepth: 1
+    :titlesonly:
+    :maxdepth: 2
 
-   introduction
-   grammar
-   engines
-   actions
-   windows
-   context
-   tests
-   misc
+    introduction
+    object_model
+    engines
+    actions
+    miscellaneous
+    project
+    tests
 
 Direct links within this documentation to help you get started:
 

@@ -1,0 +1,19 @@
+
+.. _RefReleaseVersioning:
+
+Release versioning
+****************************************************************************
+
+The versions of Dragonfly releases are strongly inspired by the
+semantic versioning concept, as promoted by Tom Preston-Werner and
+documented at `http://semver.org/`.
+
+Each version string has the format "major.minor.patch", where each part
+has the following meaning:
+
+ - *Major* -- 
+ - *Minor* -- 
+ - *Patch* -- 
+
+Version incrementation
+============================================================================

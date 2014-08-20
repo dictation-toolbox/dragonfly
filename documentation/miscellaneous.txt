@@ -1,11 +1,10 @@
 
-Introduction
+Miscellaneous topics
 ============================================================================
 
 Contents:
 
 .. toctree::
 
-   features
-   installation
-   related_resources
+    windows
+    config

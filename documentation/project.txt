@@ -1,11 +1,12 @@
 
-Introduction
+Project
 ============================================================================
 
 Contents:
 
 .. toctree::
 
-   features
-   installation
-   related_resources
+    code_style
+    commit_messages
+    release_versioning
+    release_process

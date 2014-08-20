@@ -1,7 +1,7 @@
 
-.. _RefMisc:
+.. _RefConfig:
 
-Miscellaneous
+Configuration toolkit
 ****************************************************************************
 
 .. automodule:: dragonfly.config
