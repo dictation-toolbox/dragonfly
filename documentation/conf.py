@@ -33,6 +33,7 @@ if on_read_the_docs:
             return Mock()
     sys.modules["win32com"] = Mock()
     sys.modules["win32com.client"] = Mock()
+    sys.modules["pywintypes"] = Mock()
 
 
 #---------------------------------------------------------------------------
