@@ -7,7 +7,7 @@ import os.path
 import re
 
 directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.append(directory)
+sys.path.insert(0, directory)
 
 
 #---------------------------------------------------------------------------
@@ -33,7 +33,8 @@ if on_read_the_docs:
             return Mock()
     mock_modules = ["ctypes", "ctypes.wintypes", "pythoncom",
                     "pywintypes", "win32api", "win32clipboard",
-                    "win32com.client", "win32com.client.gencache",
+                    "win32com", "win32com.client",
+                    "win32com.client.gencache", "win32com.gen_py", 
                     "win32com.shell", "win32con", "win32event",
                     "win32file", "win32gui", "winsound", "winxpgui"]
     for module_name in mock_modules:

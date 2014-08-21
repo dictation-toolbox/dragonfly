@@ -24,7 +24,7 @@
 """
 
 
-from ctypes import *
+from ctypes import c_short, c_long, c_ushort, c_ulong, Structure, POINTER, Union
 import win32con
 import win32api
 
