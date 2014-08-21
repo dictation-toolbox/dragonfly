@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 #
 
-import sys, os, os.path, re
+import sys
+import os
+import os.path
+import re
 
 directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(directory)
@@ -16,6 +19,19 @@ match = re.match(r"\s*(?P<rel>(?P<ver>\d+\.\d+)(?:\.\S+)*)\s*", version_string)
 version = match.group("ver")
 release = match.group("rel")
 print "Version:", version, "-- Release:", release
+
+
+#---------------------------------------------------------------------------
+# Mock libraries that are not available on Read the Docs
+
+on_read_the_docs = (os.environ.get("READTHEDOCS", None) == "True")
+if on_read_the_docs:
+    from mock import MagicMock
+    class Mock(MagicMock):
+        @classmethod
+        def __getattr__(cls, name):
+            return Mock()
+    sys.modules["win32com"] = Mock()
 
 
 #---------------------------------------------------------------------------
