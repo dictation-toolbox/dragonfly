@@ -44,7 +44,7 @@ if on_read_the_docs:
 #---------------------------------------------------------------------------
 # General configuration
 
-extensions = ["sphinx.ext.autodoc"]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
 templates_path = ["templates"]
 source_suffix = ".txt"
 master_doc = "index"
