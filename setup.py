@@ -68,8 +68,8 @@ setup(
       description   = "Speech recognition extension library",
       author        = "Christo Butcher",
       author_email  = "dist.dragonfly@twizzy.biz",
-      license       = "LGPL",
-      url           = "http://code.google.com/p/dragonfly/",
+      license       = "LICENSE.txt",
+      url           = "https://github.com/t4ngo/dragonfly",
       zip_safe      = False,  # To unzip documentation files.
       long_description = read("README.txt"),
 
@@ -78,7 +78,8 @@ setup(
       classifiers=[
                    "Environment :: Win32 (MS Windows)",
                    "Development Status :: 4 - Beta",
-                   "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+                   "License :: OSI Approved :: "
+                       "GNU Library or Lesser General Public License (LGPL)",
                    "Operating System :: Microsoft :: Windows",
                    "Programming Language :: Python",
                   ],
