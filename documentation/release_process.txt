@@ -20,27 +20,19 @@ Preparation
     #.  Update ticket status for this release, where relevant:
         https://github.com/t4ngo/dragonfly/issues
 
-#.  Change log
+#.  Release files
 
-    #.  Verify that :file:`CHANGES.txt` is up to date.
-
-#.  Authors
-
+    #.  Verify that :file:`CHANGES.txt` includes the change log for this
+        release.
     #.  Verify that :file:`AUTHORS.txt` is up to date with recent
         contributors.
-
-#.  Dependencies
-
     #.  Verify that :file:`setup.py` specifies all required
         dependencies, including their versions, e.g. with the
         ``install_requires`` and ``test_requires`` parameters.
-
-#.  Manifest
-
     #.  Verify that :file:`MANIFEST.in` includes all necessary
         data files.
 
-#.  Release notes and announcement
+#.  Draft announcement
 
     #.  Write a draft announcement text to send to the mailing list after
         the release process has been completed.
@@ -62,6 +54,7 @@ Build and test
 
 #.  Tag release
 
+    #.  Tag git revision
     #.  Push to GitHub
 
 Release
@@ -69,7 +62,14 @@ Release
 
 #.  Upload to GitHub
 
+    #.  Upload distributions to GitHub:
+        https://github.com/t4ngo/dragonfly/releases
+
 #.  Trigger building of documentation on Read the Docs
+
+    #.  Check whether documentation was built automatically, and if not
+        trigger it:
+        https://readthedocs.org/builds/dragonfly/
 
 #.  Upload to PyPI server
 
