@@ -3,3 +3,84 @@
 
 Release process
 ****************************************************************************
+
+Preparation
+============================================================================
+
+#.  Version number and release branch
+
+    #.  Determine the appropriate version number for this release,
+        according to :ref:`RefReleaseVersioning`.
+    #.  Create the new release branch, named ``release-X.Y.Z``
+    #.  Update the :file:`version.txt` file to contain the new version
+        number.
+
+#.  Tickets
+
+    #.  Update ticket status for this release, where relevant:
+        https://github.com/t4ngo/dragonfly/issues
+
+#.  Change log
+
+    #.  Verify that :file:`CHANGES.txt` is up to date.
+
+#.  Authors
+
+    #.  Verify that :file:`AUTHORS.txt` is up to date with recent
+        contributors.
+
+#.  Dependencies
+
+    #.  Verify that :file:`setup.py` specifies all required
+        dependencies, including their versions, e.g. with the
+        ``install_requires`` and ``test_requires`` parameters.
+
+#.  Manifest
+
+    #.  Verify that :file:`MANIFEST.in` includes all necessary
+        data files.
+
+#.  Release notes and announcement
+
+    #.  Write a draft announcement text to send to the mailing list after
+        the release process has been completed.
+
+Build and test
+============================================================================
+
+#.  Test building of documentation
+
+#.  Build distributions
+
+#.  Test installation of distributions
+
+#.  Test on PyPI test server
+
+    #.  Upload distributions to PyPI test server
+    #.  Test installation from PyPI test server
+    #.  Verify package is displayed correctly on PyPI test server
+
+#.  Tag release
+
+    #.  Push to GitHub
+
+Release
+============================================================================
+
+#.  Upload to GitHub
+
+#.  Trigger building of documentation on Read the Docs
+
+#.  Upload to PyPI server
+
+    #.  Upload distributions to PyPI server
+    #.  Test installation from PyPI server
+    #.  Verify package is displayed correctly on PyPI server
+
+Post-release
+============================================================================
+
+#.  Announce release
+
+    #.  Website
+    #.  Mailing list
