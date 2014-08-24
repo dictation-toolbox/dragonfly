@@ -26,9 +26,10 @@ This class is used to store the recognized results of dictation elements
 within voice-commands.  It offers access to both the raw spoken-form words 
 and be formatted written-form text.
 
-The formatted text can be retrieved using :meth:`.format` or simply by 
-calling ``str(...)`` on a dictation container object. A tuple of the raw 
-spoken words can be retrieved using :meth:`.words`.
+The formatted text can be retrieved using
+:meth:`~DictationContainerBase.format` or simply by  calling ``str(...)``
+on a dictation container object. A tuple of the raw  spoken words can be
+retrieved using :attr:`~DictationContainerBase.words`.
 
 """
 
