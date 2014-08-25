@@ -39,24 +39,6 @@ release = match.group("rel")
 
 
 #---------------------------------------------------------------------------
-# Prepare Google code uploader.
-
-try:
-    from googlecode_distutils_upload import upload as upload_gcode
-except ImportError:
-    import distutils.core
-    class upload_gcode(distutils.core.Command):
-        user_options = []
-        def __init__(self, *args, **kwargs):
-            sys.stderr.write("error: Install this module in"
-                             " site-packages to upload:"
-                             " http://support.googlecode.com/svn/"
-                             "trunk/scripts/googlecode_distutils"
-                             "_uload.py")
-            sys.exit(3)
-
-
-#---------------------------------------------------------------------------
 # Set up package.
 
 def read(*names):
@@ -87,6 +69,4 @@ setup(
       packages=find_packages(),
 
       test_suite="dragonfly.test.suites.natlink_suite",
-
-      cmdclass={'upload_gcode': upload_gcode},
      )
