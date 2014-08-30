@@ -28,7 +28,7 @@ speech recognition:
    --- A demonstration video showing the use of continuous command
    recognition
 
-Demonstrations
+Community
 ============================================================================
 
 The following resources are used by the Dragonfly community and speech
