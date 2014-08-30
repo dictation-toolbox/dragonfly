@@ -3,3 +3,117 @@
 
 Related resources
 ****************************************************************************
+
+Demonstrations
+============================================================================
+
+The following demonstrations show how various people use Dragonfly and
+speech recognition:
+
+ * 2013-03-20, Tavis Rudd: `Using Python to Code by Voice
+   <https://www.youtube.com/watch?v=8SkdfdXWYaI#t=8m34s>`_
+   --- A demonstration video showing off his use of Dragonfly at PyCon 2013
+
+ * 2010-02-02, Tim Harper: `Dragonfly Tutorial <http://vimeo.com/9156942>`_
+   --- Instruction video showing how to install Dragonfly and how to
+   develop command modules for it
+
+ * 2009-11-08, John Graves: `Python No Hands with Dragonfly
+   <https://www.youtube.com/watch?v=xeyqSzXluAo>`_
+   --- Demonstration video presented at Kiwi PyCon 2009 showing how to
+   program without touching a keyboard or mouse
+
+ * 2009-04-09: `Dragonfly Mini-Demo of Continuous Command Recognition
+   <http://www.youtube.com/watch?v=g3c5H7sAbBQ>`_
+   --- A demonstration video showing the use of continuous command
+   recognition
+
+Demonstrations
+============================================================================
+
+The following resources are used by the Dragonfly community and speech
+recognition users/developers:
+
+ * `Dragonfly Speech Google Group
+   <https://groups.google.com/forum/#!forum/dragonflyspeech>`_
+
+ * `Speech Computing Forum on Dragonfly
+   <http://web.archive.org/web/20131207063014/http://speechcomputing.com/forum/93>`_
+   --- Archive.org snapshot from 2013-12-07, before this forum was
+   taken down
+
+Applications
+============================================================================
+
+The following applications integrate Dragonfly for speech recognition:
+
+ * `Damselfly <https://github.com/TristenHayfield/damselfly>`_
+   --- Tristen Hayfield's system for using Dragonfly voice commands to
+   control Linux apps
+
+ * `Dictation Toolbox <https://github.com/dictation-toolbox>`_
+   --- A collection of tools for speech recognition, including:
+
+   * `Aenea <https://github.com/dictation-toolbox/aenea>`_
+     --- A client-server library for using voice commands from a
+     Windows system running Dragonfly to one or more other systems,
+     e.g. running Linux
+
+ * `Pyrson <https://github.com/kevlened/pyrson>`_
+   --- Len Boyette's Digital Life Assistant (DLA) linking several Python
+   libraries, including Dragonfly for speech recognition
+
+ * `SublimeSpeech <https://github.com/Mozillion/SublimeSpeech>`_
+   --- A Dragonfly-based speech recognition plug-in for Sublime Text 2
+
+Command modules
+============================================================================
+
+The following sources offer a wide variety of command modules for use with
+Dragonfly:
+
+ * `Barry Sims's Voice Coding Grammars
+   <https://github.com/barrysims/dragonfly>`_
+
+ * `Cesar Crusius' command modules
+   <https://github.com/ccrusius/dragonfly-modules>`_
+
+ * `Davitenio's command modules
+   <https://github.com/davitenio/dragonfly-macros>`_
+
+ * `Dictation Toolbox' Dragonfly Scripts
+   <https://github.com/dictation-toolbox/dragonfly-scripts>`_
+
+ * `Dragonfly::Sorcery <https://github.com/synkarius/dragonfly-sorcery>`_
+   --- David Conway's Dragonfly resources
+
+ * `Simian Hacker's Code-by-Voice
+   <https://github.com/simianhacker/code-by-voice>`_
+   --- Support files for Chris Cowan's "code by voice" setup using
+   Dragon NaturallySpeaking and Dragonfly
+
+ * `WhIzz2000's command modules
+   <https://github.com/whIzz2000/natlink-py-scripts>`_
+
+Applications
+============================================================================
+
+The following repositories contain forks of the Dragonfly source code,
+made by various people for them to improve it or experiment with it:
+
+ * `Hawkeye Parker's repo <https://github.com/haughki/MyDragonfly>`_
+
+ * `Tylercal's repo <https://github.com/tylercal/dragonfly-voice>`_
+
+Unrelated
+============================================================================
+
+The following speech recognition resources are unrelated to Dragonfly, but
+may be interesting to its users nevertheless:
+
+ * `PySpeech <https://code.google.com/p/pyspeech/>`_
+   --- A small Python module for interfacing with WSR
+
+ * `Unimacro <http://qh.antenna.nl/unimacro/index.html>`_
+
+ * `Vocola <http://vocola.net/>`_
