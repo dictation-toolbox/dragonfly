@@ -95,7 +95,7 @@ Dragonfly:
  * `WhIzz2000's command modules
    <https://github.com/whIzz2000/natlink-py-scripts>`_
 
-Applications
+Forks
 ============================================================================
 
 The following repositories contain forks of the Dragonfly source code,
