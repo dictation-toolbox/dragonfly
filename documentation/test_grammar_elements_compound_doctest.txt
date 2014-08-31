@@ -1,0 +1,50 @@
+
+..  _RefElementCompoundDocTests:
+
+Doctests for the Compound element class
+****************************************************************************
+
+Basic usage
+==========================================================================
+
+Test fixture initialization::
+
+    >>> from dragonfly import *
+    >>> from dragonfly.test import ElementTester
+
+
+"Hello world"
+----------------------------------------------------------------------------
+
+The spec of the compound element below is parsed into a single literal
+"hello world". The semantic value of the compound element will
+therefore be the same as for that literal element, namely "hello world". ::
+
+    >>> element = Compound("hello world")
+    >>> tester = ElementTester(element)
+
+    >>> tester.recognize("hello world")
+    u'hello world'
+    >>> tester.recognize("hello universe")
+    RecognitionFailure
+
+
+"Hello [there] (world | universe)"
+----------------------------------------------------------------------------
+
+The spec of the compound element below is parsed into a sequence with three
+elements: the word "hello", an optional "there", and an alternative of
+"world" or "universe". The semantic value of the compound element will
+therefore have three elements, even when "there" is not spoken. ::
+
+    >>> element = Compound("hello [there] (world | universe)")
+    >>> tester = ElementTester(element)
+
+    >>> tester.recognize("hello world")
+    [u'hello', None, u'world']
+    >>> tester.recognize("hello there world")
+    [u'hello', u'there', u'world']
+    >>> tester.recognize("hello universe")
+    [u'hello', None, u'universe']
+    >>> tester.recognize("hello galaxy")
+    RecognitionFailure

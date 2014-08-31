@@ -19,6 +19,7 @@ Tests in doctests format:
    :maxdepth: 2
 
    test_grammar_elements_basic_doctest
+   test_grammar_elements_compound_doctest
    test_recobs_doctest
    test_action_base_doctest
 

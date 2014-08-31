@@ -299,7 +299,7 @@ class Compound(elements_.Alternative):
         elif self._value is not None:
             return self._value
         else:
-            elements_.Alternative.value(self, node)
+            return elements_.Alternative.value(self, node)
 
 
 #---------------------------------------------------------------------------
