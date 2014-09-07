@@ -12,6 +12,9 @@ It currently supports the following speech recognition engines:
  - *Windows Speech Recognition* (WSR), included with Microsoft 
    Windows Vista, Windows 7, and freely available for Windows XP
 
+Dragonfly's documentation is available online at
+[Read the Docs](http://dragonfly.readthedocs.org/en/latest/).
+
 
 Features
 ----------------------------------------------------------------------------
