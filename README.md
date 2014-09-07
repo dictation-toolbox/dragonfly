@@ -23,40 +23,35 @@ to be treated as first-class Python objects.  This allows easy
 and intuitive definition of complex command grammars and greatly 
 simplifies processing recognition results.
 
-*Language object model*
-   The core of Dragonfly is based on a flexible object model for 
-   handling speech elements and command grammars.  This makes it 
-   easy to define complex language constructs, but also greatly 
-   simplifies retrieving the semantic values associated with a 
-   speech recognition.
+*Language object model*  
+The core of Dragonfly is based on a flexible object model for 
+handling speech elements and command grammars.  This makes it 
+easy to define complex language constructs, but also greatly 
+simplifies retrieving the semantic values associated with a 
+speech recognition.
 
-*Support for multiple speech recognition engines*
-   Dragonfly's modular nature lets it use different speech 
-   recognition engines at the back end, while still providing a 
-   single front end interface to its users.  This means that a 
-   program that uses Dragonfly can be run on any of the 
-   supported back end engines without any modification. 
-   Currently Dragonfly supports Dragon NaturallySpeaking and 
-   Windows Speech Recognition (included with Windows Vista).
+*Support for multiple speech recognition engines*  
+Dragonfly's modular nature lets it use different speech 
+recognition engines at the back end, while still providing a 
+single front end interface to its users.  This means that a 
+program that uses Dragonfly can be run on any of the 
+supported back end engines without any modification. 
+Currently Dragonfly supports Dragon NaturallySpeaking and 
+Windows Speech Recognition (included with Windows Vista).
 
-*Built-in action framework*
-   Dragonfly contains its own powerful framework for defining 
-   and executing actions.  It includes actions for text input 
-   and key-stroke simulation.
+*Built-in action framework*  
+Dragonfly contains its own powerful framework for defining 
+and executing actions.  It includes actions for text input 
+and key-stroke simulation.
 
 
 Existing command modules
 ----------------------------------------------------------------------------
 
-A sister project is the Dragonfly
-`command-modules repository
-<http://dragonfly-modules.googlecode.com/svn/trunk/command-modules/documentation/index.html>`_.
-This is a steadily growing collection of command-modules for 
-controlling common programs and automating frequent desktop 
-activities. This is the place to look if you want to use speech 
-recognition to increase your productivity and efficiency. It 
-also contains many examples, from simple to complex, of how to 
-use the Dragonfly library.
+The related resources page of Dragonfly's documentation has a
+section on
+[command modules](http://dragonfly.readthedocs.org/en/latest/related_resources.html#command-modules)
+which lists various sources.
 
 
 Usage example
@@ -64,26 +59,27 @@ Usage example
 
 A very simple example of Dragonfly usage is to create a static 
 voice command with a callback that will be called when the 
-command is spoken.  This is done as follows: ::
+command is spoken.  This is done as follows:
 
-   from dragonfly.all import Grammar, CompoundRule
+```
+from dragonfly.all import Grammar, CompoundRule
 
-   # Voice command rule combining spoken form and recognition processing.
-   class ExampleRule(CompoundRule):
-       spec = "do something computer"                  # Spoken form of command.
-       def _process_recognition(self, node, extras):   # Callback when command is spoken.
-           print "Voice command spoken."
+# Voice command rule combining spoken form and recognition processing.
+class ExampleRule(CompoundRule):
+    spec = "do something computer"                  # Spoken form of command.
+    def _process_recognition(self, node, extras):   # Callback when command is spoken.
+        print "Voice command spoken."
 
-   # Create a grammar which contains and loads the command rule.
-   grammar = Grammar("example grammar")                # Create a grammar to contain the command rule.
-   grammar.add_rule(ExampleRule())                     # Add the command rule to the grammar.
-   grammar.load()                                      # Load the grammar.
+# Create a grammar which contains and loads the command rule.
+grammar = Grammar("example grammar")                # Create a grammar to contain the command rule.
+grammar.add_rule(ExampleRule())                     # Add the command rule to the grammar.
+grammar.load()                                      # Load the grammar.
+```
 
 The example above is very basic and doesn't show any of 
 Dragonfly's exciting features, such as dynamic speech elements. 
-To learn more about these, please take a look at the project's 
-documentation `here
-<http://dragonfly.googlecode.com/svn/trunk/dragonfly/documentation/index.html>`_.
+To learn more about these, please take a look at
+[Dragonfly's online docs](http://dragonfly.readthedocs.org/en/latest/).
 
 
 Rationale behind Dragonfly
