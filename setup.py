@@ -53,7 +53,7 @@ setup(
       license       = "LICENSE.txt",
       url           = "https://github.com/t4ngo/dragonfly",
       zip_safe      = False,  # To unzip documentation files.
-      long_description = read("README.txt"),
+      long_description = read("README.md"),
 
       install_requires = "setuptools >= 0.6c7",
 
