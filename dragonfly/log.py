@@ -27,13 +27,8 @@ Logging framework
 import sys
 import os.path
 import logging
-import logging
-import win32gui
 from win32com.shell import shell, shellcon
 
-def out(m):
-#    logging.getLogger("test").error(m)
-    print >>sys.stderr, m
 
 #---------------------------------------------------------------------------
 # Sane defaults for logger names and associated levels.
