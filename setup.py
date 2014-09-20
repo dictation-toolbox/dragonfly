@@ -55,7 +55,10 @@ setup(
       zip_safe      = False,  # To unzip documentation files.
       long_description = read("README.md"),
 
-      install_requires = "setuptools >= 0.6c7",
+      install_requires=[
+                        "setuptools >= 0.6c7",
+                        "pywin32",
+                       ],
 
       classifiers=[
                    "Environment :: Win32 (MS Windows)",
