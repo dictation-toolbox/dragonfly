@@ -3,3 +3,80 @@
 
 Commit message format
 ****************************************************************************
+
+Commit messages should be written according to the guidelines described
+here. These guidelines are meant to ensure high-quality and easily readable
+content of commit messages. They also result in a pleasant viewing
+experience using standard Git tools.
+
+Purpose of a commit message
+============================================================================
+
+Every commit message should provide the reader with the following
+information:
+
+* Why this change is necessary
+* How this change addresses the issue
+* What other effects this change has
+
+Structure of a commit message
+============================================================================
+
+First line
+----------------------------------------------------------------------------
+
+The first line of a commit message represents the title or summary of the
+change. Standard Git tools often display it differently than the rest of the
+message, for example in bold font, or show only this line, for example when
+summarizing multiple commits.
+
+A commit message's first line should be formatted as follows:
+
+* The first line should be no longer than 50 characters
+* The first line should start with a capital letter
+* The first line should not end with a full-stop
+* The first line should be followed by a blank line, if and only if the
+  commit message contains more text below
+* The first line should use the imperative present tense, e.g. "Add cool new
+  feature" or "Fix some little bug"
+
+Issue references
+----------------------------------------------------------------------------
+
+Issues can be referenced anywhere within a commit message via their
+numbered tag, e.g. "#7".
+
+Commits that change the status of an issue, for example fixing a bug or
+implementing a feature, should make the relationship and change explicit on
+the last line of the commit message using the following format:
+``Resolve #X``. GitHub will automatically update the issue accordingly.
+
+Please see GitHub's help on
+`commit message keywords <https://help.github.com/articles/closing-issues-via-commit-messages>`_
+for more information.
+
+Example
+----------------------------------------------------------------------------
+
+.. code-block:: none
+
+   Commit title summarizing the change (50 characters or less)
+
+   Subsequent text providing further information about the change, if
+   necessary. Lines are wrapped at 72 characters.
+
+   - May contain bullet points, prefixed by "- " at the beginning of the
+     first line for a bullet point and "  " for subsequent lines
+   - Non-breakable text, such as long URLs, may extend past 72 characters;
+     doesn't look nice, but at least they still work
+
+Background and inspiration
+============================================================================
+
+The commit message format described here is based on common views, such as
+those expressed here:
+
+* http://git-scm.com/book/ch5-2.html
+* http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+* http://who-t.blogspot.nl/2009/12/on-commit-messages.html
+* http://dieter.plaetinck.be/why-rewriting-git-history-and-why-commits-imperative-present-tense.html
