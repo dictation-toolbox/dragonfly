@@ -33,6 +33,7 @@ common_names   = [
 #                  ".test_engine",
                   ".test_engine_nonexistent",
                   ".test_window",
+                  ".test_timer",
                   ".test_language_en_number",
                   ".test_language_de_number",
                   ".test_language_nl_number",
