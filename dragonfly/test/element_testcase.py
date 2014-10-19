@@ -62,8 +62,8 @@ class ElementTestCase(unittest.TestCase):
             for words, expected_value in self.input_output:
                 recognized_value = tester.recognize(words)
                 if recognized_value != expected_value:
-                    raise TestError("Recognition mismatch: expected %s,"
-                                    " recognized %s"
+                    raise TestError(u"Recognition mismatch: expected %r,"
+                                    u" recognized %r"
                                     % (expected_value, recognized_value))
         except TestError, e:
-            self.fail(str(e))
+            self.fail(unicode(e))

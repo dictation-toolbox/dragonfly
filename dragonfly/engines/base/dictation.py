@@ -64,17 +64,17 @@ class DictationContainerBase(object):
         self._formatted = None
 
     def __str__(self):
-        if self._formatted is None:
-            self._formatted = self.format()
-        return str(self._formatted)
+        return unicode(self).encode("windows-1252")
 
     def __unicode__(self):
         if self._formatted is None:
             self._formatted = self.format()
-        return unicode(self._formatted)
+        return self._formatted
 
     def __repr__(self):
-        return "%s(%s)" % (self.__class__.__name__, ", ".join(self._words))
+        message = u"%s(%s)" % (self.__class__.__name__,
+                               u", ".join(self._words))
+        return message.encode("windows-1252")
 
     @property
     def words(self):
@@ -82,5 +82,5 @@ class DictationContainerBase(object):
         return self._words
 
     def format(self):
-        """ Format and return this dictation. """
+        """ Format and return this dictation as a Unicode object. """
         return u" ".join(self._words)

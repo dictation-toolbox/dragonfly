@@ -196,7 +196,7 @@ class NatlinkEngine(EngineBase):
             prepared_words = []
             for word in words:
                 if isinstance(word, unicode):
-                    word = word.encode("latin_1")
+                    word = word.encode("windows-1252")
                 prepared_words.append(word)
         except Exception, e:
             raise MimicFailure("Invalid mimic input %r: %s."
@@ -261,7 +261,7 @@ class GrammarWrapper(object):
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
             if func:
-                words = tuple(unicode(w) for w in results.getWords(0))
+                words = tuple(unicode(w, "windows-1252") for w in results.getWords(0))
                 func(words)
             return
         elif words == "reject":
@@ -273,7 +273,7 @@ class GrammarWrapper(object):
         # If the words argument was not "other" or "reject", then
         #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
         #  into a tuple of unicode objects.
-        words_rules = tuple((unicode(w), r) for w, r in words)
+        words_rules = tuple((unicode(w, "windows-1252"), r) for w, r in words)
         words = tuple(w for w, r in words_rules)
 
         # Call the grammar's general process_recognition method, if present.
