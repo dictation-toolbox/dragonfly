@@ -20,8 +20,7 @@ import os.path
 import pythoncom
 
 import logging
-from dragonfly.engines.engine import get_sapi5_engine
-engine = get_sapi5_engine()
+import dragonfly.engines.backend_sapi5
 
 
 #---------------------------------------------------------------------------
@@ -41,7 +40,7 @@ class CommandModule(object):
                            os.path.basename(self._path))
 
     def load(self):
-        self._log.error("%s: Loading module: %r" % (self, self._path))
+        self._log.info("%s: Loading module: '%s'" % (self, self._path))
 
         # Prepare namespace in which to execute the 
         namespace = {}
@@ -59,7 +58,7 @@ class CommandModule(object):
         self._namespace = namespace
 
     def unload(self):
-        pass
+        self._log.info("%s: Unloading module: '%s'" % (self, self._path))
 
     def check_freshness(self):
         pass
@@ -97,6 +96,7 @@ class CommandModuleDirectory(object):
                 module.check_freshness()
 
     def _get_valid_paths(self):
+        self._log.info("Looking for command modules here: %s" % (self._path,))
         valid_paths = []
         for filename in os.listdir(self._path):
             path = os.path.abspath(os.path.join(self._path, filename))
@@ -107,26 +107,35 @@ class CommandModuleDirectory(object):
             if path in self._excludes:
                 continue
             valid_paths.append(path)
-        self._log.error("valid paths: %r" % valid_paths)
+        self._log.info("Valid paths: %s" % (", ".join(valid_paths),))
         return valid_paths
 
 
 #---------------------------------------------------------------------------
 # Main event driving loop.
 
-try:
-    path = os.path.dirname(__file__)
-except NameError:
-    # The "__file__" name is not always available, for example
-    #  when this module is run from PythonWin.  In this case we
-    #  simply use the current working directory.
-    path = os.path.dirname(os.getcwd())
-    __file__ = os.path.join(path, "dragonfly-main.py")
+def main():
+    logging.basicConfig(level=logging.INFO)
 
-directory = CommandModuleDirectory(path, excludes=[__file__])
-directory.load()
+    try:
+        path = os.path.dirname(__file__)
+    except NameError:
+        # The "__file__" name is not always available, for example
+        #  when this module is run from PythonWin.  In this case we
+        #  simply use the current working directory.
+        path = os.getcwd()
+        __file__ = os.path.join(path, "dfly-loader-wsr.py")
 
-engine.speak('beginning loop!')
-while 1:
-    pythoncom.PumpWaitingMessages()
-    time.sleep(.1)
+    engine = dragonfly.engines.backend_sapi5.get_engine()
+    engine.connect()
+
+    directory = CommandModuleDirectory(path, excludes=[__file__])
+    directory.load()
+
+    engine.speak('beginning loop!')
+    while 1:
+        pythoncom.PumpWaitingMessages()
+        time.sleep(.1)
+
+if __name__ == "__main__":
+    main()
