@@ -29,6 +29,7 @@ from dragonfly.test.engine_suite import EngineTestSuite
 
 common_names   = [
                   ".test_log",
+                  ".test_actions",
                   ".test_parser",
 #                  ".test_engine",
                   ".test_engine_nonexistent",
