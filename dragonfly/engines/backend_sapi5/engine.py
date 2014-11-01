@@ -19,7 +19,7 @@
 #
 
 """
-SAPI 5 engine class
+SAPI 5 engine classes
 ============================================================================
 
 """
@@ -61,10 +61,11 @@ class MSG(Structure):
 
 #===========================================================================
 
-class Sapi5Engine(EngineBase):
-    """ Speech recognition engine back-end for SAPI 5. """
+class Sapi5SharedEngine(EngineBase):
+    """ Speech recognition engine back-end for SAPI 5 shared recognizer. """
 
-    _name = "sapi5"
+    _name = "sapi5shared"
+    _recognizer_dispatch_name = "SAPI.SpSharedRecognizer"
     DictationContainer = Sapi5DictationContainer
 
     #-----------------------------------------------------------------------
@@ -72,7 +73,7 @@ class Sapi5Engine(EngineBase):
     def __init__(self):
         EngineBase.__init__(self)
 
-        EnsureDispatch("SAPI.SpSharedRecognizer")
+        EnsureDispatch(self._recognizer_dispatch_name)
         EnsureDispatch("SAPI.SpVoice")
         self._recognizer  = None
         self._speaker     = None
@@ -83,7 +84,7 @@ class Sapi5Engine(EngineBase):
 
     def connect(self):
         """ Connect to back-end SR engine. """
-        self._recognizer  = Dispatch("SAPI.SpSharedRecognizer")
+        self._recognizer  = Dispatch(self._recognizer_dispatch_name)
         self._speaker     = Dispatch("SAPI.SpVoice")
         self._compiler    = Sapi5Compiler()
 
@@ -228,6 +229,101 @@ class Sapi5Engine(EngineBase):
                 windll.user32.DispatchMessageW(message_pointer)
 
         return not timed_out
+
+
+#---------------------------------------------------------------------------
+# Make the shared engine available as Sapi5Engine, for backwards
+#  compatibility.
+
+Sapi5Engine = Sapi5SharedEngine
+
+
+#===========================================================================
+
+class Sapi5InProcEngine(Sapi5SharedEngine):
+    """
+        Speech recognition engine back-end for SAPI 5 in process
+        recognizer.
+
+    """
+
+    _name = "sapi5inproc"
+    _recognizer_dispatch_name = "SAPI.SpInProcRecognizer"
+
+    def connect(self, audio_source=0):
+        """
+            Connect to the speech recognition backend.
+
+            The audio source to use for speech recognition can be
+            specified using the *audio_source* argument. If it is not
+            given, it defaults to the first audio source found.
+
+        """
+
+        Sapi5SharedEngine.connect(self)
+        self.select_audio_source(audio_source)
+
+    def get_audio_sources(self):
+        """
+            Get the available audio sources.
+
+            This method returns a list of audio sources, each represented
+            by a 3-element tuple: the index, the description, and the COM
+            handle for the audio source.
+
+        """
+
+        available_sources = self._recognizer.GetAudioInputs()
+        audio_sources_list = []
+        for index, item in enumerate(collection_iter(available_sources)):
+            audio_sources_list.append((index, item.GetDescription(), item))
+        return audio_sources_list
+
+    def select_audio_source(self, audio_source):
+        """
+            Configure the speech recognition engine to use the given
+            audio source.
+
+            The audio source may be specified as follows:
+             - As an *int* specifying the index of the audio source to use
+             - As a *str* containing the description of the audio source
+               to use, or a substring thereof
+
+            This class' method *get_audio_sources()* can be used to
+            retrieve the available sources together with their indices
+            and descriptions.
+
+        """
+
+        available_sources = self._recognizer.GetAudioInputs()
+
+        if isinstance(audio_source, (int, long)):
+            # Parameter is the index of the source to use.
+            if 0 <= audio_source < available_sources.Count:
+                selected_source = available_sources.Item(audio_source)
+            else:
+                raise EngineError("Invalid audio source index: %r"
+                                  " (%s sources available, so index must be"
+                                  " in range 0 to %s)"
+                                  % (audio_source, available_sources.Count,
+                                     available_sources.Count - 1))
+
+        elif isinstance(audio_source, basestring):
+            for item in collection_iter(available_sources):
+                if audio_source in item.GetDescription():
+                    selected_source = item
+                    break
+            else:
+                raise EngineError("Audio source not found: %r"
+                                  % (audio_source))
+
+        else:
+            raise EngineError("Invalid audio source qualifier: %r"
+                              % (audio_source))
+
+        self._log.info("Selecting audio source: %r"
+                       % (selected_source.GetDescription(),))
+        self._recognizer.AudioInput = selected_source
 
 
 #---------------------------------------------------------------------------
