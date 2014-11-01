@@ -35,13 +35,13 @@ class Word(object):
 
     _flag_names = (
         "custom", "undefined", "undefined", "undeletable",
-        "cap next", "force cap next", "upper next", "lower next",
-        "no space after", "double space after", "no space between", "cap mode",
-        "upper mode", "lower mode", "no space mode", "normal space mode",
-        "None", "not after period", "no formatting", "keep space",
-        "keep cap", "no space before", "normal cap mode", "newline after",
-        "double newline after", "no cap in title", "None", "space after",
-        "None", "None", "vocab builder", "None"
+        "cap_next", "force_cap_next", "upper_next", "lower_next",
+        "no_space_after", "double_space_after", "no_space_between", "cap_mode",
+        "upper_mode", "lower_mode", "no_space_mode", "normal_space_mode",
+        "None", "not_after_period", "no_formatting", "keep_space",
+        "keep_cap", "no_space_before", "normal_cap_mode", "newline_after",
+        "double_newline_after", "no_cap_in_title", "None", "space_after",
+        "None", "None", "vocab_builder", "None"
         )
     _flag_bits = dict(zip(_flag_names, [1 << index for index in xrange(32)]))
 
@@ -70,15 +70,20 @@ class Word(object):
         else:
             self.written = word[:index]
             self.spoken = word[index+1:]
+        if not self._info:
+            self._info = 0
         for name, bit in Word._flag_bits.items():
-            self.__dict__[name.replace(" ", "_")] = ((self._info & bit) != 0)
+            self.__dict__[name] = ((self._info & bit) != 0)
 
     def __str__(self):
+        return unicode(self).encode("utf-8")
+
+    def __unicode__(self):
         flags = [flag for flag in self._flag_names
-            if (self._info & self._flag_bits[flag])]
+                 if (self._info & self._flag_bits[flag])]
         flags.insert(0, "")
-        return "%s(%r%s)" % (self.__class__.__name__, self._word,
-            ", ".join(flags))
+        return u"%s(%r%s)" % (self.__class__.__name__, self._word,
+                              ", ".join(flags))
 
 class FormatState(object):
 

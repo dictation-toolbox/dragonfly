@@ -1,0 +1,40 @@
+﻿
+..  _RefWordFormattingDocTests:
+
+Word formatting doctests
+****************************************************************************
+
+Word test suite
+============================================================================
+
+The :class:`dragonfly.grammar.wordinfo.Word` class is a container for the
+storing a word together with information about its formatting.
+
+
+Word formatting information
+----------------------------------------------------------------------------
+
+When an instance of the :class:`dragonfly.grammar.wordinfo.Word` class is
+created, it retrieves formatting information from the speech recognition
+engine. That formatting info is available in the form of instance
+attributes and included in the instance's representation when converted
+to a string::
+
+    >>> from dragonfly.grammar.wordinfo import Word
+    >>> hello = Word("hello")
+    >>> print hello
+    Word('hello', undeletable)
+    >>> assert hello.undeletable == True
+    >>> assert hello.cap_next == False
+
+    >>> full_stop = Word(".\\full-stop")
+    >>> print full_stop
+    Word('.\\full-stop', undeletable, cap_next, double_space_after, not_after_period, no_space_before)
+    >>> assert full_stop.cap_next == True
+
+Nonexistent words can be created, but don't have any formatting info::
+
+    >>> hello_world = Word("hello world")
+    >>> print hello_world
+    Word('hello world')
+    >>> assert hello_world.cap_next == False
