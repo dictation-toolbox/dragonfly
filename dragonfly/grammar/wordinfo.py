@@ -61,6 +61,8 @@ class Word(object):
         if word in self._replacements:
             word, self._info = self._replacements[word]
         else:
+            if isinstance(word, unicode):
+                word = word.encode("windows-1252")
             self._info = natlink.getWordInfo(word)
         self._word = word
         index = word.rfind("\\")
