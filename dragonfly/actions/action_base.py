@@ -54,7 +54,10 @@ class ActionBase(object):
         self._str = ""
 
     def __str__(self):
-        return "%s(%s)" % (self.__class__.__name__, self._str)
+        return unicode(self).encode("utf-8")
+
+    def __unicode__(self):
+        return u"%s(%s)" % (self.__class__.__name__, self._str)
 
     def __add__(self, other):
         return ActionSeries(self, other)
