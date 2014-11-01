@@ -17,10 +17,17 @@ directory it's in and loads any ``*.py`` it finds.
 
 import time
 import os.path
+import logging
 import pythoncom
 
-import logging
-import dragonfly.engines.backend_sapi5
+from dragonfly.engines.backend_sapi5.engine import Sapi5InProcEngine
+
+
+#---------------------------------------------------------------------------
+# Set up basic logging.
+
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("compound.parse").setLevel(logging.INFO)
 
 
 #---------------------------------------------------------------------------
@@ -126,7 +133,7 @@ def main():
         path = os.getcwd()
         __file__ = os.path.join(path, "dfly-loader-wsr.py")
 
-    engine = dragonfly.engines.backend_sapi5.get_engine()
+    engine = Sapi5InProcEngine()
     engine.connect()
 
     directory = CommandModuleDirectory(path, excludes=[__file__])
