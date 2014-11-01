@@ -90,7 +90,7 @@ class Paste(DynStrActionBase):
                               " %s" % e)
 
         if self.format == win32con.CF_UNICODETEXT:
-            events = unicode(events)
+            events = unicode(events, "windows-1252")
         elif self.format == win32con.CF_TEXT:
             events = str(events)
 
