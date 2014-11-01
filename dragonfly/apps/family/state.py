@@ -4,6 +4,7 @@ from collections  import defaultdict
 from ...grammar.rule_base import Rule
 from ...grammar.context import AppContext
 from ...windows.window import Window
+from ...actions.action_base import ActionError
 
 
 #===========================================================================
