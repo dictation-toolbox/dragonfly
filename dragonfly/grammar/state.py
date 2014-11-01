@@ -162,11 +162,11 @@ class State(object):
         if not self._log_decode: return
         indent = u"   " * self._depth
         output = u"%s%s: %s" % (indent, message, parser)
-        self._log_decode.debug(output)
+        self._log_decode.debug(output.encode("utf-8"))
         if self._index != self._previous_index:
             self._previous_index = self._index
             output = u"%s -- Decoding State: '%s'" % (indent, unicode(self))
-            self._log_decode.debug(output)
+            self._log_decode.debug(output.encode("utf-8"))
 
     #-----------------------------------------------------------------------
     # Methods for evaluation.
