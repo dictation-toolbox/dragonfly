@@ -117,3 +117,7 @@ may be interesting to its users nevertheless:
  * `Unimacro <http://qh.antenna.nl/unimacro/index.html>`_
 
  * `Vocola <http://vocola.net/>`_
+
+ * `DragonControl <https://github.com/nriley/DragonControl>`_
+   --- Nicholas Riley's scripts for using Dragon Medical under Windows 7
+   in VMware Fusion as a dictation buffer for OS X
