@@ -27,6 +27,8 @@ EngineBase class
 import logging
 from .timer import Timer
 
+import dragonfly.engines
+
 
 #---------------------------------------------------------------------------
 
@@ -63,6 +65,9 @@ class EngineBase(object):
     #-----------------------------------------------------------------------
 
     def __init__(self):
+        # Register initialization of this engine.
+        dragonfly.engines.register_engine_init(self)
+
         self._grammar_wrappers = {}
 
 #    def __del__(self):
