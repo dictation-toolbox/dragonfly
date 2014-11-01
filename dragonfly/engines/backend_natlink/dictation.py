@@ -92,10 +92,14 @@ class Word(object):
                     }
 
     def __init__(self, word):
+        if isinstance(word, str):
+            word = unicode(word, "windows-1252")
+
         if word in self._replacements:
             word, self._info = self._replacements[word]
         else:
-            self._info = natlink.getWordInfo(word)
+            self._info = natlink.getWordInfo(word.encode("windows-1252"))
+
         self._word = word
         index = word.rfind("\\")
         if index == -1:

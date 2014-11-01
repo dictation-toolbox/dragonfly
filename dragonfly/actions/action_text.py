@@ -85,7 +85,12 @@ class Text(DynStrActionBase):
             if character in self._specials:
                 typeable = self._specials[character]
             else:
-                typeable = Keyboard.get_typeable(character)
+                try:
+                    typeable = Keyboard.get_typeable(character)
+                except ValueError, e:
+                    raise ActionError("Keyboard interface cannot type this"
+                                      " character: %r (in %r)"
+                                      % (character, spec))
             events.extend(typeable.events(self._pause))
         return events
 

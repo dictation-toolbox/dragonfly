@@ -47,10 +47,13 @@ class State(object):
         self.initialize_decoding()
 
     def __str__(self):
+        return unicode(self).encode("windows-1252")
+
+    def __unicode__(self):
         words = self.words()
         before = words[:self._index]
         after = words[self._index:]
-        return " ".join(before) + " >> " + " ".join(after)
+        return u" ".join(before) + u" >> " + u" ".join(after)
 
     #-----------------------------------------------------------------------
     # Methods for accessing recognition content.
@@ -157,13 +160,13 @@ class State(object):
 
     def _log_step(self, parser, message):
         if not self._log_decode: return
-        indent = "   " * self._depth
-        output = "%s%s: %s" % (indent, message, parser)
-        self._log_decode.debug(output)
+        indent = u"   " * self._depth
+        output = u"%s%s: %s" % (indent, message, parser)
+        self._log_decode.debug(output.encode("utf-8"))
         if self._index != self._previous_index:
             self._previous_index = self._index
-            output = "%s -- Decoding State: '%s'" % (indent, str(self))
-            self._log_decode.debug(output)
+            output = u"%s -- Decoding State: '%s'" % (indent, unicode(self))
+            self._log_decode.debug(output.encode("utf-8"))
 
     #-----------------------------------------------------------------------
     # Methods for evaluation.

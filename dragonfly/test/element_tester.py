@@ -92,8 +92,8 @@ class ElementTester(Grammar):
         #  grammar hijacked it; raise a TestError to signal this
         #  undesired situation.
         if self._recognized_value == self._NotSet:
-            self._log.error("Recognition hijacked. (Words: %s)" % (words,))
-            raise TestError("Recognition hijacked. (Words: %s)" % (words,))
+            self._log.error(u"Recognition hijacked. (Words: %s)" % (words,))
+            raise TestError(u"Recognition hijacked. (Words: %s)" % (words,))
 
         # Return the value of the element after recognition.
         return self._recognized_value
