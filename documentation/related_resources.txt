@@ -114,6 +114,9 @@ may be interesting to its users nevertheless:
  * `PySpeech <https://code.google.com/p/pyspeech/>`_
    --- A small Python module for interfacing with WSR
 
+ * `Pastebin document <http://pastebin.com/BGG1adb0>`_ containing
+   explanations of the Natlink API
+
  * `Unimacro <http://qh.antenna.nl/unimacro/index.html>`_
 
  * `Vocola <http://vocola.net/>`_
