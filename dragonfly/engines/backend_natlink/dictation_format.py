@@ -263,7 +263,7 @@ class WordParserDns10(WordParserBase):
 
         # The written and spoken forms of a word are separated by a "\"
         # character.
-        index = input.find("\\")
+        index = input.rfind("\\")
         if index == -1:
             # Input doesn't contain a backslash, so written and spoken forms
             # are the same as the input.
@@ -271,7 +271,7 @@ class WordParserDns10(WordParserBase):
             spoken = input
         else:
             # Input contains one or more backslashes, so written and spoken
-            # forms are separated by the first backslash.
+            # forms are separated by the last backslash.
             written = input[:index]
             spoken = input[index+1:]
 

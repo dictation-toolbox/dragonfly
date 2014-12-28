@@ -7,6 +7,13 @@ Word formatting doctests
 Word formatting for DNS v10 and earlier
 ============================================================================
 
+The
+:class:`dragonfly.engines.backend_natlink.dictation_format.WordParserDns10`
+class converts DNS v10 (and earlier) recognition results to
+:class:`dragonfly.engines.backend_natlink.dictation_format.Word`
+objects which contain written and spoken forms together with formatting
+information. For example::
+
     >>> from dragonfly.engines.backend_natlink.dictation_format import *
     >>> parser = WordParserDns10()
     >>> print parser.parse_input("hello")
@@ -14,8 +21,12 @@ Word formatting for DNS v10 and earlier
     >>> print parser.parse_input(".\\full-stop")
     Word(u'.', u'full-stop', no_space_before, two_spaces_after, cap_next, not_after_period)
 
-We will use this helper function for a compact notation of input string
-tests::
+Nonexistent words can be parsed, but don't have any formatting info::
+
+    >>> print parser.parse_input("nonexistent-word")
+    Word(u'nonexistent-word')
+
+This helper function allows for a compact notation of input string tests::
 
     >>> def format_dictation(input):
     ...     if isinstance(input, basestring):
@@ -62,6 +73,8 @@ spacing and capitalization of surrounding words::
     u'hello (world'
     >>> format_dictation("hello )\\right-paren world")
     u'hello) world'
+    >>> format_dictation("hello \\\\backslash world")
+    u'hello\\world'
 
 The "." character at the end of certain words is "swallowed" by following
 words that start with that same character::
