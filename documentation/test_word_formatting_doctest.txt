@@ -4,41 +4,6 @@
 Word formatting doctests
 ****************************************************************************
 
-Word test suite
-============================================================================
-
-The :class:`dragonfly.grammar.wordinfo.Word` class is a container for the
-storing a word together with information about its formatting.
-
-
-Word formatting information
-----------------------------------------------------------------------------
-
-When an instance of the :class:`dragonfly.grammar.wordinfo.Word` class is
-created, it retrieves formatting information from the speech recognition
-engine. That formatting info is available in the form of instance
-attributes and included in the instance's representation when converted
-to a string::
-
-    >>> from dragonfly.grammar.wordinfo import Word
-    >>> hello = Word("hello")
-    >>> print hello
-    Word('hello', undeletable)
-    >>> assert hello.undeletable == True
-    >>> assert hello.cap_next == False
-
-    >>> full_stop = Word(".\\full-stop")
-    >>> print full_stop
-    Word('.\\full-stop', undeletable, cap_next, double_space_after, not_after_period, no_space_before)
-    >>> assert full_stop.cap_next == True
-
-Nonexistent words can be created, but don't have any formatting info::
-
-    >>> hello_world = Word("hello world")
-    >>> print hello_world
-    Word('hello world')
-    >>> assert hello_world.cap_next == False
-
 Word formatting for DNS v10 and earlier
 ============================================================================
 
@@ -52,70 +17,70 @@ Word formatting for DNS v10 and earlier
 We will use this helper function for a compact notation of input string
 tests::
 
-    >>> def format_input(input):
+    >>> def format_dictation(input):
     ...     if isinstance(input, basestring):
     ...         input = input.split()
-    ...     return WordFormatter().format_input(input)
-    >>> format_input("hello world")
+    ...     return WordFormatter().format_dictation(input)
+    >>> format_dictation("hello world")
     u'hello world'
 
 The following tests cover in-line capitalization::
 
-    >>> format_input("\\All-Caps hello world")
+    >>> format_dictation("\\All-Caps hello world")
     u'HELLO world'
-    >>> format_input("\\Caps-On hello world")
+    >>> format_dictation("\\Caps-On hello world")
     u'Hello World'
-    >>> format_input("\\Caps-On hello of the world")
+    >>> format_dictation("\\Caps-On hello of the world")
     u'Hello of the World'
-    >>> format_input("hello \\Caps-On of the world")
+    >>> format_dictation("hello \\Caps-On of the world")
     u'hello Of the World'
-    >>> format_input("\\Caps-On hello world \\Caps-Off goodbye universe")
+    >>> format_dictation("\\Caps-On hello world \\Caps-Off goodbye universe")
     u'Hello World goodbye universe'
-    >>> format_input("hello \\All-Caps-On world goodbye \\All-Caps-Off universe")
+    >>> format_dictation("hello \\All-Caps-On world goodbye \\All-Caps-Off universe")
     u'hello WORLD GOODBYE universe'
-    >>> format_input("hello \\All-Caps-On world \\Caps-On goodbye universe")
+    >>> format_dictation("hello \\All-Caps-On world \\Caps-On goodbye universe")
     u'hello WORLD Goodbye Universe'
-    >>> format_input("hello \\All-Caps-On world goodbye \\Caps-Off universe")
+    >>> format_dictation("hello \\All-Caps-On world goodbye \\Caps-Off universe")
     u'hello WORLD GOODBYE universe'
 
 The following tests cover punctuation and other symbols that influence
 spacing and capitalization of surrounding words::
 
-    >>> format_input("hello \\New-Line world")
+    >>> format_dictation("hello \\New-Line world")
     u'hello\nworld'
-    >>> format_input("hello \\New-Paragraph world")
+    >>> format_dictation("hello \\New-Paragraph world")
     u'hello\n\nWorld'
-    >>> format_input("hello .\\full-stop world")
+    >>> format_dictation("hello .\\full-stop world")
     u'hello. World'
-    >>> format_input("hello ,\\comma world")
+    >>> format_dictation("hello ,\\comma world")
     u'hello, world'
-    >>> format_input("hello .\\full-stop \\New-Line world")
+    >>> format_dictation("hello .\\full-stop \\New-Line world")
     u'hello.\nWorld'
-    >>> format_input("hello -\\hyphen world")
+    >>> format_dictation("hello -\\hyphen world")
     u'hello-world'
-    >>> format_input("hello (\\left-paren world")
+    >>> format_dictation("hello (\\left-paren world")
     u'hello (world'
-    >>> format_input("hello )\\right-paren world")
+    >>> format_dictation("hello )\\right-paren world")
     u'hello) world'
 
 The "." character at the end of certain words is "swallowed" by following
 words that start with that same character::
 
-    >>> format_input(["hello", "etc.\\et cetera", "world"])
+    >>> format_dictation(["hello", "etc.\\et cetera", "world"])
     u'hello etc. world'
-    >>> format_input(["hello", "etc.\\et cetera", ".\\full-stop", "world"])
+    >>> format_dictation(["hello", "etc.\\et cetera", ".\\full-stop", "world"])
     u'hello etc. World'
-    >>> format_input(["hello", "etc.\\et cetera", "...\\ellipsis", "world"])
+    >>> format_dictation(["hello", "etc.\\et cetera", "...\\ellipsis", "world"])
     u'hello etc... world'
     >>> # The following are different from some DNS installations!
-    >>> format_input("hello .\\full-stop ...\\ellipsis world")
+    >>> format_dictation("hello .\\full-stop ...\\ellipsis world")
     u'hello... world'
-    >>> format_input("hello ...\\ellipsis .\\full-stop world")
+    >>> format_dictation("hello ...\\ellipsis .\\full-stop world")
     u'hello... World'
 
 Certain words, such as numbers, are not formatted according to the
 same rules as "normal" words, i.e. those which specified written and spoken
 forms and formatting info.
 
-#    >>> format_input("one two three")
+#    >>> format_dictation("one two three")
 #    u'123'

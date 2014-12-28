@@ -37,7 +37,6 @@ from .grammar.elements  import (ElementBase, Sequence, Alternative,
                                 RuleRef, Empty, Compound, Choice)
 from .grammar.context   import Context, AppContext
 from .grammar.list      import ListBase, List, DictList
-from .grammar.wordinfo  import Word, FormatState
 from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
                                 PlaybackHistory)
 

@@ -192,7 +192,7 @@ class WordParserBase(object):
 
     _log = logging.getLogger("dictation.word_parser")
 
-    def parse_word(self, input):
+    def parse_input(self, input):
         raise NotImplementedError
 
 
@@ -374,7 +374,7 @@ class WordFormatter(object):
         self.two_spaces_after_period = two_spaces_after_period
         self.parser = WordParserDns10()
 
-    def format_input(self, input_words):
+    def format_dictation(self, input_words):
         formatted_words = []
         for input_word in input_words:
             word = self.parser.parse_input(input_word)

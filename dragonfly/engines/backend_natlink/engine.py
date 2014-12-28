@@ -35,7 +35,6 @@ from .recobs       import NatlinkRecObsManager
 from .timer        import NatlinkTimerManager
 from .compiler     import NatlinkCompiler
 import dragonfly.grammar.state as state_
-import dragonfly.grammar.wordinfo as wordinfo
 
 
 #---------------------------------------------------------------------------
