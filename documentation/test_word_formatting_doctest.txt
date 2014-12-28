@@ -38,3 +38,84 @@ Nonexistent words can be created, but don't have any formatting info::
     >>> print hello_world
     Word('hello world')
     >>> assert hello_world.cap_next == False
+
+Word formatting for DNS v10 and earlier
+============================================================================
+
+    >>> from dragonfly.engines.backend_natlink.dictation_format import *
+    >>> parser = WordParserDns10()
+    >>> print parser.parse_input("hello")
+    Word(u'hello')
+    >>> print parser.parse_input(".\\full-stop")
+    Word(u'.', u'full-stop', no_space_before, two_spaces_after, cap_next, not_after_period)
+
+We will use this helper function for a compact notation of input string
+tests::
+
+    >>> def format_input(input):
+    ...     if isinstance(input, basestring):
+    ...         input = input.split()
+    ...     return WordFormatter().format_input(input)
+    >>> format_input("hello world")
+    u'hello world'
+
+The following tests cover in-line capitalization::
+
+    >>> format_input("\\All-Caps hello world")
+    u'HELLO world'
+    >>> format_input("\\Caps-On hello world")
+    u'Hello World'
+    >>> format_input("\\Caps-On hello of the world")
+    u'Hello of the World'
+    >>> format_input("hello \\Caps-On of the world")
+    u'hello Of the World'
+    >>> format_input("\\Caps-On hello world \\Caps-Off goodbye universe")
+    u'Hello World goodbye universe'
+    >>> format_input("hello \\All-Caps-On world goodbye \\All-Caps-Off universe")
+    u'hello WORLD GOODBYE universe'
+    >>> format_input("hello \\All-Caps-On world \\Caps-On goodbye universe")
+    u'hello WORLD Goodbye Universe'
+    >>> format_input("hello \\All-Caps-On world goodbye \\Caps-Off universe")
+    u'hello WORLD GOODBYE universe'
+
+The following tests cover punctuation and other symbols that influence
+spacing and capitalization of surrounding words::
+
+    >>> format_input("hello \\New-Line world")
+    u'hello\nworld'
+    >>> format_input("hello \\New-Paragraph world")
+    u'hello\n\nWorld'
+    >>> format_input("hello .\\full-stop world")
+    u'hello. World'
+    >>> format_input("hello ,\\comma world")
+    u'hello, world'
+    >>> format_input("hello .\\full-stop \\New-Line world")
+    u'hello.\nWorld'
+    >>> format_input("hello -\\hyphen world")
+    u'hello-world'
+    >>> format_input("hello (\\left-paren world")
+    u'hello (world'
+    >>> format_input("hello )\\right-paren world")
+    u'hello) world'
+
+The "." character at the end of certain words is "swallowed" by following
+words that start with that same character::
+
+    >>> format_input(["hello", "etc.\\et cetera", "world"])
+    u'hello etc. world'
+    >>> format_input(["hello", "etc.\\et cetera", ".\\full-stop", "world"])
+    u'hello etc. World'
+    >>> format_input(["hello", "etc.\\et cetera", "...\\ellipsis", "world"])
+    u'hello etc... world'
+    >>> # The following are different from some DNS installations!
+    >>> format_input("hello .\\full-stop ...\\ellipsis world")
+    u'hello... world'
+    >>> format_input("hello ...\\ellipsis .\\full-stop world")
+    u'hello... World'
+
+Certain words, such as numbers, are not formatted according to the
+same rules as "normal" words, i.e. those which specified written and spoken
+forms and formatting info.
+
+#    >>> format_input("one two three")
+#    u'123'
