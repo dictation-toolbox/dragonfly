@@ -145,8 +145,8 @@ class StateFlags(FlagContainer):
         # Flags related to spacing
         "no_space_before",       # No space before next word
         "two_spaces_before",     # Two spaces before next word
-        "no_space_mode",         # No-spacing mode is active
         "no_space_between",      # No space before next word if it has no_space_between flag
+        "no_space_mode",         # No-spacing mode is active
 
         # Flags related to capitalization
         "cap_next",              # Normally capitalize next word
@@ -389,9 +389,9 @@ class WordFormatter(object):
         if   word.flags.no_format:         prefix = ""
         elif word.flags.no_space_before:   prefix = ""
         elif state.no_space_before:        prefix = ""
-        elif state.no_space_mode:          prefix = ""
         elif state.no_space_between and word.flags.no_space_between: prefix = ""
         elif state.two_spaces_before:      prefix = "  " if self.two_spaces_after_period else " "
+        elif state.no_space_mode:          prefix = ""
         else:                              prefix = " "
 
         # Determine formatted written form.
@@ -435,6 +435,7 @@ class WordFormatter(object):
         state.no_space_before   = word.no_space_after   or (prev.no_space_before and word.no_space_reset and word.no_format)
         state.two_spaces_before = word.two_spaces_after or (prev.two_spaces_before and word.no_space_reset and word.no_format)
         state.no_space_between  = word.no_space_between
+        state.no_space_mode     = word.no_space_mode    or (prev.no_space_mode and not word.reset_no_space)
 
         # Record whether this word ended in a period.
         state.prev_ended_in_period = word_object.written.endswith(".")

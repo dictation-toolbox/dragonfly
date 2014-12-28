@@ -54,6 +54,27 @@ The following tests cover in-line capitalization::
     >>> format_dictation("hello \\All-Caps-On world goodbye \\Caps-Off universe")
     u'hello WORLD GOODBYE universe'
 
+The following tests cover in-line spacing::
+
+    >>> format_dictation("\\No-Space hello world")
+    u'hello world'
+    >>> format_dictation("hello \\No-Space world")
+    u'helloworld'
+    >>> format_dictation("\\No-Space-On hello world")
+    u'helloworld'
+    >>> format_dictation("\\No-Space-On hello world goodbye \\No-Space-Off universe")
+    u'helloworldgoodbye universe'
+    >>> format_dictation("\\No-Space-On hello world \\No-Space-Off goodbye universe")
+    u'helloworld goodbye universe'
+    >>> format_dictation("\\No-Space-On hello world \\space-bar goodbye universe")
+    u'helloworld goodbyeuniverse'
+
+    >>> # The following are different from some DNS installations!
+    >>> format_dictation("hello \\No-Space-On world goodbye universe")
+    u'helloworldgoodbyeuniverse'
+    >>> format_dictation("hello \\No-Space-On world \\space-bar goodbye universe")
+    u'helloworld goodbyeuniverse'
+
 The following tests cover punctuation and other symbols that influence
 spacing and capitalization of surrounding words::
 
