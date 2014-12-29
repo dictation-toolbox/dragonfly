@@ -31,13 +31,37 @@ command two) [test]"**.
           - *Optional element*: second child element of the sequence
              - *Literal element*: element for the literal words **"test"**
 
-All of these different objects below and in subsections.
+All of these different objects are described below and in subsections.
 
 
 .. _RefGrammarClasses:
 
 Grammar classes
 ============================================================================
+
+Recognition callbacks
+----------------------------------------------------------------------------
+
+The speech recognition engine processes the audio it receives and calls
+the following methods of grammar classes to notify them of the results:
+
+ - ``Grammar.process_begin()``: Called when the engine detects the start
+   of a phrase, e.g. when the user starts to speak. This method checks
+   the grammar's context and activates or deactivates its rules depending
+   on whether the context matches.
+ - ``Grammar._process_begin()``: Called by ``Grammar.process_begin()``
+   allowing derived classes to easily implement custom functionality without
+   losing the context matching implemented in ``Grammar.process_begin()``.
+ - ``Grammar.process_recognition()``: Called when recognition has completed
+   successfully and results are meant for this grammar.
+ - ``Grammar.process_recognition_other()``: Called when recognition has
+   completed successfully, but the results are not meant for this grammar.
+ - ``Grammar.process_recognition_failure()``: Called when recognition was
+   not successful, e.g. the microphone picked up background noise.
+
+The last three methods are not defined for the base Grammar class. They
+are only called if they are defined for derived classes.
+
 
 Grammar class
 ----------------------------------------------------------------------------

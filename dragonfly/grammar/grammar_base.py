@@ -382,6 +382,10 @@ class Grammar(object):
         """
             Start of phrase callback.
 
+            *Usually derived grammar classes override
+            ``Grammar._process_begin`` instead of this method, because
+            this method merely wraps that method adding context matching.*
+
             This method is called when the speech recognition 
             engine detects that the user has begun to speak a 
             phrase.
@@ -451,14 +455,14 @@ class Grammar(object):
         """
             Start of phrase callback.
 
-            *This usually the method which should be overridden 
+            *This usually is the method which should be overridden 
             to give derived grammar classes custom behavior.*
 
             This method is called when the speech recognition 
             engine detects that the user has begun to speak a 
-            phrase.  This method is only called when this 
-            grammar's context does match positively.  It is 
-            called by the ``Grammar.process_begin`` method.
+            phrase. This method is called by the
+            ``Grammar.process_begin`` method only if this
+            grammar's context matches positively.
 
             Arguments:
              - *executable* -- the full path to the module whose 
