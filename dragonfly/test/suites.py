@@ -28,25 +28,25 @@ from dragonfly.test.engine_suite import EngineTestSuite
 #===========================================================================
 
 common_names   = [
-#                  ".test_log",
-#                  ".test_actions",
-#                  ".test_parser",
-##                  ".test_engine",
-#                  ".test_engine_nonexistent",
-#                  ".test_window",
-#                  ".test_timer",
-#                  ".test_dictation",
-#                  ".test_language_en_number",
-#                  ".test_language_de_number",
-#                  ".test_language_nl_number",
-#                  "doc:documentation/test_action_base_doctest.txt",
-#                  "doc:documentation/test_grammar_elements_basic_doctest.txt",
-#                  "doc:documentation/test_grammar_elements_compound_doctest.txt",
+                  ".test_log",
+                  ".test_actions",
+                  ".test_parser",
+#                  ".test_engine",
+                  ".test_engine_nonexistent",
+                  ".test_window",
+                  ".test_timer",
+                  ".test_dictation",
+                  ".test_language_en_number",
+                  ".test_language_de_number",
+                  ".test_language_nl_number",
+                  "doc:documentation/test_action_base_doctest.txt",
+                  "doc:documentation/test_grammar_elements_basic_doctest.txt",
+                  "doc:documentation/test_grammar_elements_compound_doctest.txt",
                  ]
 
 natlink_names  = [
-#                  ".test_engine_natlink",
-#                  "doc:documentation/test_recobs_doctest.txt",
+                  ".test_engine_natlink",
+                  "doc:documentation/test_recobs_doctest.txt",
                   "doc:documentation/test_word_formatting_doctest.txt",
                  ]
 
