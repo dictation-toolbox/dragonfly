@@ -4,118 +4,236 @@
 Word formatting doctests
 ****************************************************************************
 
-Word test suite
+Word formatting for DNS v11 and higher
 ============================================================================
 
-The :class:`dragonfly.grammar.wordinfo.Word` class is a container for the
-storing a word together with information about its formatting.
+The
+:class:`dragonfly.engines.backend_natlink.dictation_format.WordParserDns11`
+class converts DNS v11 (and higher) recognition results to
+:class:`dragonfly.engines.backend_natlink.dictation_format.Word`
+objects which contain written and spoken forms together with formatting
+information. For example::
 
-
-Word formatting information
-----------------------------------------------------------------------------
-
-When an instance of the :class:`dragonfly.grammar.wordinfo.Word` class is
-created, it retrieves formatting information from the speech recognition
-engine. That formatting info is available in the form of instance
-attributes and included in the instance's representation when converted
-to a string::
-
-    >>> from dragonfly.grammar.wordinfo import Word
-    >>> hello = Word("hello")
-    >>> print hello
-    Word('hello', undeletable)
-    >>> assert hello.undeletable == True
-    >>> assert hello.cap_next == False
-
-    >>> full_stop = Word(".\\full-stop")
-    >>> print full_stop
-    Word('.\\full-stop', undeletable, cap_next, double_space_after, not_after_period, no_space_before)
-    >>> assert full_stop.cap_next == True
-
-Nonexistent words can be created, but don't have any formatting info::
-
-    >>> hello_world = Word("hello world")
-    >>> print hello_world
-    Word('hello world')
-    >>> assert hello_world.cap_next == False
-
-Word formatting for DNS v10 and earlier
-============================================================================
-
-    >>> from dragonfly.engines.backend_natlink.dictation_format import *
-    >>> parser = WordParserDns10()
-    >>> print parser.parse_input("hello")
+    >>> from dragonfly.engines.backend_natlink.dictation_format import WordParserDns11
+    >>> parser_dns11 = WordParserDns11()
+    >>> print parser_dns11.parse_input("hello")
     Word(u'hello')
-    >>> print parser.parse_input(".\\full-stop")
+    >>> print parser_dns11.parse_input(".\\period\\full-stop")
     Word(u'.', u'full-stop', no_space_before, two_spaces_after, cap_next, not_after_period)
 
-We will use this helper function for a compact notation of input string
-tests::
+Nonexistent words can be parsed, but don't have any formatting info::
 
-    >>> def format_input(input):
+    >>> print parser_dns11.parse_input("nonexistent-word")
+    Word(u'nonexistent-word')
+
+This helper function allows for a compact notation of input string tests::
+
+    >>> from dragonfly.engines.backend_natlink.dictation_format import WordFormatter
+    >>> def format_dictation_dns11(input):
     ...     if isinstance(input, basestring):
     ...         input = input.split()
-    ...     return WordFormatter().format_input(input)
-    >>> format_input("hello world")
+    ...     return WordFormatter(parser=WordParserDns11()).format_dictation(input)
+    >>> format_dictation_dns11("hello world")
     u'hello world'
 
 The following tests cover in-line capitalization::
 
-    >>> format_input("\\All-Caps hello world")
+    >>> format_dictation_dns11("\\all-caps\\All-Caps hello world")
     u'HELLO world'
-    >>> format_input("\\Caps-On hello world")
+    >>> format_dictation_dns11("\\caps-on\\Caps-On hello world")
     u'Hello World'
-    >>> format_input("\\Caps-On hello of the world")
-    u'Hello of the World'
-    >>> format_input("hello \\Caps-On of the world")
-    u'hello Of the World'
-    >>> format_input("\\Caps-On hello world \\Caps-Off goodbye universe")
+    >>> format_dictation_dns11("\\caps-on\\Caps-On hello of the world")
+    u'Hello Of The World'
+    >>> # Note: output above should probably be u'Hello of the World'
+    >>> format_dictation_dns11("hello \\caps-on\\Caps-On of the world")
+    u'hello Of The World'
+    >>> # Note: output above should probably be u'hello Of the World'
+    >>> format_dictation_dns11("\\caps-on\\Caps-On hello world \\caps-off\\Caps-Off goodbye universe")
     u'Hello World goodbye universe'
-    >>> format_input("hello \\All-Caps-On world goodbye \\All-Caps-Off universe")
+    >>> format_dictation_dns11("hello \\all-caps-on\\All-Caps-On world goodbye \\all-caps-off\\All-Caps-Off universe")
     u'hello WORLD GOODBYE universe'
-    >>> format_input("hello \\All-Caps-On world \\Caps-On goodbye universe")
+    >>> format_dictation_dns11("hello \\all-caps-on\\All-Caps-On world \\caps-on\\Caps-On goodbye universe")
     u'hello WORLD Goodbye Universe'
-    >>> format_input("hello \\All-Caps-On world goodbye \\Caps-Off universe")
+    >>> format_dictation_dns11("hello \\all-caps-on\\All-Caps-On world goodbye \\caps-off\\Caps-Off universe")
     u'hello WORLD GOODBYE universe'
+
+The following tests cover in-line spacing::
+
+    >>> format_dictation_dns11("\\no-space\\No-Space hello world")
+    u'hello world'
+    >>> format_dictation_dns11("hello \\no-space\\No-Space world")
+    u'helloworld'
+    >>> format_dictation_dns11("\\no-space-on\\No-Space-On hello world")
+    u'helloworld'
+    >>> format_dictation_dns11("\\no-space-on\\No-Space-On hello world goodbye \\no-space-off\\No-Space-Off universe")
+    u'helloworldgoodbye universe'
+    >>> format_dictation_dns11("\\no-space-on\\No-Space-On hello world \\no-space-off\\No-Space-Off goodbye universe")
+    u'helloworld goodbye universe'
+    >>> format_dictation_dns11("\\no-space-on\\No-Space-On hello world \\space-bar\\space-bar goodbye universe")
+    u'helloworld goodbyeuniverse'
+
+    >>> # The following are different from some DNS installations!
+    >>> format_dictation_dns11("hello \\no-space-on\\No-Space-On world goodbye universe")
+    u'helloworldgoodbyeuniverse'
+    >>> format_dictation_dns11("hello \\no-space-on\\No-Space-On world \\space-bar\\space-bar goodbye universe")
+    u'helloworld goodbyeuniverse'
 
 The following tests cover punctuation and other symbols that influence
 spacing and capitalization of surrounding words::
 
-    >>> format_input("hello \\New-Line world")
+    >>> format_dictation_dns11("hello \\new-line\\New-Line world")
     u'hello\nworld'
-    >>> format_input("hello \\New-Paragraph world")
+    >>> format_dictation_dns11("hello \\new-paragraph\\New-Paragraph world")
     u'hello\n\nWorld'
-    >>> format_input("hello .\\full-stop world")
+    >>> format_dictation_dns11("hello .\\period\\full-stop world")
     u'hello. World'
-    >>> format_input("hello ,\\comma world")
+    >>> format_dictation_dns11("hello ,\\comma\\comma world")
     u'hello, world'
-    >>> format_input("hello .\\full-stop \\New-Line world")
+    >>> format_dictation_dns11("hello .\\period\\full-stop \\new-line\\New-Line world")
     u'hello.\nWorld'
-    >>> format_input("hello -\\hyphen world")
+    >>> format_dictation_dns11("hello -\\hyphen\\hyphen world")
     u'hello-world'
-    >>> format_input("hello (\\left-paren world")
+    >>> format_dictation_dns11("hello (\\left-paren\\left-paren world")
     u'hello (world'
-    >>> format_input("hello )\\right-paren world")
+    >>> format_dictation_dns11("hello )\\right-paren\\right-paren world")
     u'hello) world'
+    >>> format_dictation_dns11("hello \\\\hyphen\\backslash world")
+    u'hello\\world'
 
 The "." character at the end of certain words is "swallowed" by following
 words that start with that same character::
 
-    >>> format_input(["hello", "etc.\\et cetera", "world"])
+    >>> format_dictation_dns11(["hello", "etc.\\\\et cetera", "world"])
     u'hello etc. world'
-    >>> format_input(["hello", "etc.\\et cetera", ".\\full-stop", "world"])
+    >>> format_dictation_dns11(["hello", "etc.\\\\et cetera", ".\\period\\full-stop", "world"])
     u'hello etc. World'
-    >>> format_input(["hello", "etc.\\et cetera", "...\\ellipsis", "world"])
+    >>> format_dictation_dns11(["hello", "etc.\\\\et cetera", "...\\ellipsis\\ellipsis", "world"])
     u'hello etc... world'
     >>> # The following are different from some DNS installations!
-    >>> format_input("hello .\\full-stop ...\\ellipsis world")
+    >>> format_dictation_dns11("hello .\\period\\full-stop ...\\ellipsis\\ellipsis world")
     u'hello... world'
-    >>> format_input("hello ...\\ellipsis .\\full-stop world")
+    >>> format_dictation_dns11("hello ...\\ellipsis\\ellipsis .\\period\\full-stop world")
     u'hello... World'
 
 Certain words, such as numbers, are not formatted according to the
 same rules as "normal" words, i.e. those which specified written and spoken
 forms and formatting info.
 
-#    >>> format_input("one two three")
+#    >>> format_dictation_dns11("one two three")
+#    u'123'
+
+Word formatting for DNS v10 and lower
+============================================================================
+
+The
+:class:`dragonfly.engines.backend_natlink.dictation_format.WordParserDns10`
+class converts DNS v10 (and lower) recognition results to
+:class:`dragonfly.engines.backend_natlink.dictation_format.Word`
+objects which contain written and spoken forms together with formatting
+information. For example::
+
+    >>> from dragonfly.engines.backend_natlink.dictation_format import WordParserDns10
+    >>> parser_dns10 = WordParserDns10()
+    >>> print parser_dns10.parse_input("hello")
+    Word(u'hello')
+    >>> print parser_dns10.parse_input(".\\full-stop")
+    Word(u'.', u'full-stop', no_space_before, two_spaces_after, cap_next, not_after_period)
+
+Nonexistent words can be parsed, but don't have any formatting info::
+
+    >>> print parser_dns10.parse_input("nonexistent-word")
+    Word(u'nonexistent-word')
+
+This helper function allows for a compact notation of input string tests::
+
+    >>> from dragonfly.engines.backend_natlink.dictation_format import WordFormatter
+    >>> def format_dictation_dns10(input):
+    ...     if isinstance(input, basestring):
+    ...         input = input.split()
+    ...     return WordFormatter(parser=WordParserDns10()).format_dictation(input)
+    >>> format_dictation_dns10("hello world")
+    u'hello world'
+
+The following tests cover in-line capitalization::
+
+    >>> format_dictation_dns10("\\All-Caps hello world")
+    u'HELLO world'
+    >>> format_dictation_dns10("\\Caps-On hello world")
+    u'Hello World'
+    >>> format_dictation_dns10("\\Caps-On hello of the world")
+    u'Hello of the World'
+    >>> format_dictation_dns10("hello \\Caps-On of the world")
+    u'hello Of the World'
+    >>> format_dictation_dns10("\\Caps-On hello world \\Caps-Off goodbye universe")
+    u'Hello World goodbye universe'
+    >>> format_dictation_dns10("hello \\All-Caps-On world goodbye \\All-Caps-Off universe")
+    u'hello WORLD GOODBYE universe'
+    >>> format_dictation_dns10("hello \\All-Caps-On world \\Caps-On goodbye universe")
+    u'hello WORLD Goodbye Universe'
+    >>> format_dictation_dns10("hello \\All-Caps-On world goodbye \\Caps-Off universe")
+    u'hello WORLD GOODBYE universe'
+
+The following tests cover in-line spacing::
+
+    >>> format_dictation_dns10("\\No-Space hello world")
+    u'hello world'
+    >>> format_dictation_dns10("hello \\No-Space world")
+    u'helloworld'
+    >>> format_dictation_dns10("\\No-Space-On hello world")
+    u'helloworld'
+    >>> format_dictation_dns10("\\No-Space-On hello world goodbye \\No-Space-Off universe")
+    u'helloworldgoodbye universe'
+    >>> format_dictation_dns10("\\No-Space-On hello world \\No-Space-Off goodbye universe")
+    u'helloworld goodbye universe'
+    >>> format_dictation_dns10("\\No-Space-On hello world \\space-bar goodbye universe")
+    u'helloworld goodbyeuniverse'
+
+    >>> # The following are different from some DNS installations!
+    >>> format_dictation_dns10("hello \\No-Space-On world goodbye universe")
+    u'helloworldgoodbyeuniverse'
+    >>> format_dictation_dns10("hello \\No-Space-On world \\space-bar goodbye universe")
+    u'helloworld goodbyeuniverse'
+
+The following tests cover punctuation and other symbols that influence
+spacing and capitalization of surrounding words::
+
+    >>> format_dictation_dns10("hello \\New-Line world")
+    u'hello\nworld'
+    >>> format_dictation_dns10("hello \\New-Paragraph world")
+    u'hello\n\nWorld'
+    >>> format_dictation_dns10("hello .\\full-stop world")
+    u'hello. World'
+    >>> format_dictation_dns10("hello ,\\comma world")
+    u'hello, world'
+    >>> format_dictation_dns10("hello .\\full-stop \\New-Line world")
+    u'hello.\nWorld'
+    >>> format_dictation_dns10("hello -\\hyphen world")
+    u'hello-world'
+    >>> format_dictation_dns10("hello (\\left-paren world")
+    u'hello (world'
+    >>> format_dictation_dns10("hello )\\right-paren world")
+    u'hello) world'
+    >>> format_dictation_dns10("hello \\\\backslash world")
+    u'hello\\world'
+
+The "." character at the end of certain words is "swallowed" by following
+words that start with that same character::
+
+    >>> format_dictation_dns10(["hello", "etc.\\et cetera", "world"])
+    u'hello etc. world'
+    >>> format_dictation_dns10(["hello", "etc.\\et cetera", ".\\full-stop", "world"])
+    u'hello etc. World'
+    >>> format_dictation_dns10(["hello", "etc.\\et cetera", "...\\ellipsis", "world"])
+    u'hello etc... world'
+    >>> # The following are different from some DNS installations!
+    >>> format_dictation_dns10("hello .\\full-stop ...\\ellipsis world")
+    u'hello... world'
+    >>> format_dictation_dns10("hello ...\\ellipsis .\\full-stop world")
+    u'hello... World'
+
+Certain words, such as numbers, are not formatted according to the
+same rules as "normal" words, i.e. those which specified written and spoken
+forms and formatting info.
+
+#    >>> format_dictation_dns10("one two three")
 #    u'123'

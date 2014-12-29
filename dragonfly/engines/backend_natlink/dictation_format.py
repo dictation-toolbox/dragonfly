@@ -38,6 +38,7 @@ except ImportError:
     natlink = None
 
 import logging
+import dragonfly.engines
 
 
 #===========================================================================
@@ -145,8 +146,8 @@ class StateFlags(FlagContainer):
         # Flags related to spacing
         "no_space_before",       # No space before next word
         "two_spaces_before",     # Two spaces before next word
-        "no_space_mode",         # No-spacing mode is active
         "no_space_between",      # No space before next word if it has no_space_between flag
+        "no_space_mode",         # No-spacing mode is active
 
         # Flags related to capitalization
         "cap_next",              # Normally capitalize next word
@@ -192,7 +193,7 @@ class WordParserBase(object):
 
     _log = logging.getLogger("dictation.word_parser")
 
-    def parse_word(self, input):
+    def parse_input(self, input):
         raise NotImplementedError
 
 
@@ -263,7 +264,7 @@ class WordParserDns10(WordParserBase):
 
         # The written and spoken forms of a word are separated by a "\"
         # character.
-        index = input.find("\\")
+        index = input.rfind("\\")
         if index == -1:
             # Input doesn't contain a backslash, so written and spoken forms
             # are the same as the input.
@@ -271,7 +272,7 @@ class WordParserDns10(WordParserBase):
             spoken = input
         else:
             # Input contains one or more backslashes, so written and spoken
-            # forms are separated by the first backslash.
+            # forms are separated by the last backslash.
             written = input[:index]
             spoken = input[index+1:]
 
@@ -284,26 +285,44 @@ class WordParserDns10(WordParserBase):
         return word
 
 
-#===========================================================================
+#---------------------------------------------------------------------------
 
-class WordFlagFactory(object):
+class WordParserDns11(WordParserBase):
+    """
+        Dictation results parser for DNS v11 and higher.
 
-    _log = logging.getLogger("dictation.format")
+        DNS v11 and higher provide word formatting information ...
+
+    """
 
     property_map = {
-        "space-bar":        WordFlags("spacebar", "no_space_after",
-                                      "no_format", "no_cap_reset",
-                                      "no_space_before"),
-        "period":           WordFlags("two_spaces_after", "cap_next",
-                                      "no_space_before"),
-        "question-mark":    WordFlags("two_spaces_after", "cap_next",
-                                      "no_space_before"),
-        "exclamation-mark": WordFlags("two_spaces_after", "cap_next",
-                                      "no_space_before"),
-        "point":            WordFlags("no_space_after", "no_space_between",
-                                      "no_space_before"),
-        "dot":              WordFlags("no_space_after", "no_space_between",
-                                      "no_space_before"),
+        "new-line":         WordFlags("no_format", "no_space_after", "no_cap_reset", "newline_after"),
+        "new-paragraph":    WordFlags("no_format", "no_space_after", "cap_next", "two_newlines_after"),
+        "no-space":         WordFlags("no_format", "no_cap_reset", "no_space_after"),
+        "no-space-on":      WordFlags("no_format", "no_cap_reset", "no_space_mode"),
+        "no-space-off":     WordFlags("no_format", "no_cap_reset", "reset_no_space"),
+
+        "cap":              WordFlags("no_format", "no_space_reset", "cap_next_force"),
+        "caps-on":          WordFlags("no_format", "no_space_reset", "reset_cap", "cap_mode"),
+        "caps-off":         WordFlags("no_format", "no_space_reset", "reset_cap"),
+        "all-caps":         WordFlags("no_format", "no_space_reset", "upper_next"),
+        "all-caps-on":      WordFlags("no_format", "no_space_reset", "reset_cap", "upper_mode"),
+        "all-caps-off":     WordFlags("no_format", "no_space_reset", "reset_cap"),
+        "no-caps":          WordFlags("no_format", "no_space_reset", "lower_next"),
+        "no-caps-on":       WordFlags("no_format", "no_space_reset", "reset_cap", "lower_mode"),
+        "no-caps-off":      WordFlags("no_format", "no_space_reset", "reset_cap"),
+
+        "space-bar":        WordFlags("no_format", "spacebar", "no_space_after", "no_cap_reset", "no_space_before"),
+        "spelling-cap":     WordFlags("no_format", "no_space_reset", "cap_next_force"),
+        "letter":           WordFlags("no_space_after"),
+        "uppercase-letter": WordFlags("no_space_after"),
+
+        "period":           WordFlags("two_spaces_after", "cap_next", "no_space_before", "not_after_period"),
+        "question-mark":    WordFlags("two_spaces_after", "cap_next", "no_space_before"),
+        "exclamation-mark": WordFlags("two_spaces_after", "cap_next", "no_space_before"),
+        "point":            WordFlags("no_space_after", "no_space_between", "no_space_before"),
+        "dot":              WordFlags("no_space_after", "no_space_between", "no_space_before"),
+        "ellipsis":         WordFlags("no_space_before", "not_after_period"),
         "comma":            WordFlags("no_space_before"),
         "hyphen":           WordFlags("no_space_before", "no_space_after"),
         "at-sign":          WordFlags("no_space_before", "no_space_after"),
@@ -311,55 +330,105 @@ class WordFlagFactory(object):
         "semicolon":        WordFlags("no_space_before"),
         "apostrophe-ess":   WordFlags("no_space_before"),
         "left-*":           WordFlags("no_cap_reset", "no_space_after"),
-        "right-*":          WordFlags("no_cap_reset", "no_space_before",
-                                      "no_space_reset"),
-        "new-line":         WordFlags("no_format", "no_space_after",
-                                      "no_cap_reset", "newline_after"),
-        "new-paragraph":    WordFlags("no_format", "no_space_after",
-                                      "cap_next", "two_newlines_after"),
-        "spelling-cap":     WordFlags("no_format", "no_space_reset", "cap_next_force"),
-        "letter":           WordFlags("no_space_after"),
-        "uppercase-letter": WordFlags("no_space_after"),
-        "cap":              WordFlags("no_format", "no_space_reset",
-                                      "cap_next_force"),
-        "caps-on":          WordFlags("no_format", "no_space_reset",
-                                      "cap_mode"),
-        "caps-off":         WordFlags("no_format", "no_space_reset",
-                                      "reset_cap"),
-        "all-caps":         WordFlags("no_format", "no_space_reset",
-                                      "upper_next"),
-        "all-caps-on":      WordFlags("no_format", "no_space_reset",
-                                      "upper_mode"),
-        "all-caps-off":     WordFlags("no_format", "no_space_reset",
-                                      "reset_cap"),
-        "no-caps":          WordFlags("no_format", "no_space_reset",
-                                      "lower_next"),
-        "no-caps-on":       WordFlags("no_format", "no_space_reset",
-                                      "lower_mode"),
-        "no-caps-off":      WordFlags("no_format", "no_space_reset",
-                                      "reset_cap"),
-        "no-space":         WordFlags("no_format", "no_cap_reset",
-                                      "no_space_after"),
-        "no-space-on":      WordFlags("no_format", "no_cap_reset",
-                                      "no_space_mode"),
-        "no-space-off":     WordFlags("no_format", "no_cap_reset",
-                                      "reset_no_space"),
+        "right-*":          WordFlags("no_cap_reset", "no_space_before", "no_space_reset"),
     }
 
-    def get_word_flags(self, word):
-        parts = word.split("\\")
-        if len(parts) != 3:
-            # Word doesn't have "written\property\spoken" form, so
-            # return empty flags.
-            return WordFlags()
-
-        written, property, spoken = parts
-        if property in self.property_map:
-            flags = self.property_map[property].clone()
-        else:
-            self._log.warning("Unknown word property: %r" % (word,))
+    def create_word_flags(self, property):
+        if not property:
+            # None indicates the word is not in DNS' vocabulary.
             flags = WordFlags()
-        return (written, spoken, flags)
+        elif property in self.property_map:
+            flags = self.property_map[property].clone()
+        elif property.startswith("left-"):
+            flags = self.property_map["left-*"].clone()
+        elif property.startswith("right-"):
+            flags = self.property_map["right-*"].clone()
+        else:
+            self._log.warning("Unknown word property: %r" % (property,))
+            flags = WordFlags()
+        return flags
+
+    def parse_input(self, input):
+        if isinstance(input, str):
+            # DNS and Natlink provide recognized words as "Windows-1252"
+            # encoded strings. Here we convert them to Unicode for internal
+            # processing.
+            input = unicode(input, "windows-1252")
+
+        parts = input.split("\\")
+        if len(parts) == 3:
+            written, property, spoken = parts
+        elif len(parts) > 3:
+            written = "\\".join(parts[:-2])
+            property = parts[-2]
+            spoken = parts[-1]
+        else:
+            # Word doesn't have "written\property\spoken" form, so
+            # written and spoken forms are equal to input and there are
+            # no formatting flags.
+            written = input
+            spoken = input
+            property = None
+
+        word_flags = self.create_word_flags(property)
+
+        word = Word(written, spoken, word_flags)
+        self._log.debug("Parsed input {0!r} -> {1}".format(input, word))
+#        print ("Parsed input {0!r} -> {1}".format(input, word))
+        return word
+
+
+#===========================================================================
+
+class WordParserFactory(object):
+    """
+        Detects appropriate WordParser class and creates objects
+
+        This class calls natlink.getWordInfo() for special words and
+        interprets the result to determine whether words should be parsed
+        using natlink.getWordInfo(), e.g. for DNS v10 and lower, or using
+        "in-line word properties", e.g. for DNS v11 and higher.
+
+        This class performs detection only once per instance and caches
+        the detection result for reuse.
+
+    """
+
+    _log = logging.getLogger("dictation.word_parser_factory")
+
+    # The following dictionary determines which words are used for which
+    # language to detect whether natlink.getWordInfo() returns useful info.
+    words_with_info = {
+                       "en": ".\\dot",
+                       "nl": ".\\dot",
+                      }
+
+    def __init__(self):
+        self.parser_class = None
+
+    def detect_parser_class(self):
+        engine = dragonfly.engines.get_engine()
+        word = self.words_with_info.get(engine.language, ".\\dot")
+        info = natlink.getWordInfo(word.encode("windows-1252"))
+        if info == None:
+            parser_class = WordParserDns11
+        else:
+            parser_class = WordParserDns10
+
+        parser_class_string = parser_class.__name__
+        if info == None:  info_string = "None"
+        else:             info_string = "0x" + format(info, "08x")
+        self._log.info("Selected word parser class {0} because"
+                       " natlink.getWordInfo({1!r}) returned {2}"
+                       .format(parser_class_string, word, info_string))
+
+        return parser_class
+
+    def get_parser(self):
+        """ Create an instance of the detective parser class. """
+        if not self.parser_class:
+            self.parser_class = self.detect_parser_class()
+        return self.parser_class()
 
 
 #===========================================================================
@@ -368,13 +437,22 @@ class WordFormatter(object):
 
     _log = logging.getLogger("dictation.format")
 
-    def __init__(self, state=None, two_spaces_after_period=False):
-        if state:  self.state = state
-        else:      self.state = StateFlags("no_space_before")
-        self.two_spaces_after_period = two_spaces_after_period
-        self.parser = WordParserDns10()
+    parser_factory = WordParserFactory()
 
-    def format_input(self, input_words):
+    def __init__(self, state=None, parser=None,
+                 two_spaces_after_period=False):
+        if state:   self.state = state
+        else:       self.state = StateFlags("no_space_before")
+        if parser:  self.parser = parser
+        else:       self.parser = self.parser_factory.get_parser()
+        self.two_spaces_after_period = two_spaces_after_period
+
+    def format_dictation(self, input_words):
+        if isinstance(input_words, basestring):
+            raise ValueError("Argument input_words must be a sequence of"
+                             " words, but received a single string: {0!r}"
+                             .format(input_words))
+
         formatted_words = []
         for input_word in input_words:
             word = self.parser.parse_input(input_word)
@@ -386,13 +464,16 @@ class WordFormatter(object):
         state = self.state
 
         # Determine prefix.
-        if   word.flags.no_format:         prefix = ""
-        elif word.flags.no_space_before:   prefix = ""
-        elif state.no_space_before:        prefix = ""
-        elif state.no_space_mode:          prefix = ""
-        elif state.no_space_between and word.flags.no_space_between: prefix = ""
-        elif state.two_spaces_before:      prefix = "  " if self.two_spaces_after_period else " "
-        else:                              prefix = " "
+        if   word.flags.no_format:             prefix = ""
+        elif word.flags.no_space_before:       prefix = ""
+        elif state.no_space_before:            prefix = ""
+        elif state.no_space_between and word.flags.no_space_between:
+                                               prefix = ""
+        elif state.two_spaces_before:
+            if self.two_spaces_after_period:   prefix = "  "
+            else:                              prefix = " "
+        elif state.no_space_mode:              prefix = ""
+        else:                                  prefix = " "
 
         # Determine formatted written form.
         if   word.flags.no_format:         written = word.written
@@ -402,11 +483,14 @@ class WordFormatter(object):
         elif state.lower_mode:             written = word.written.lower()
         elif state.upper_next:             written = word.written.upper()
         elif state.lower_next:             written = word.written.lower()
-        elif state.cap_mode and not word.flags.no_title_cap: written = word.written.capitalize()
+        elif state.cap_mode and not word.flags.no_title_cap:
+                                           written = word.written.capitalize()
         else:                              written = word.written
 
         # Remove first period character if needed.
-        if state.prev_ended_in_period and word.flags.not_after_period and written.startswith("."):
+        if (state.prev_ended_in_period
+            and word.flags.not_after_period
+            and written.startswith(".")):
             written = written[1:]
 
         # Determine suffix.
@@ -435,6 +519,7 @@ class WordFormatter(object):
         state.no_space_before   = word.no_space_after   or (prev.no_space_before and word.no_space_reset and word.no_format)
         state.two_spaces_before = word.two_spaces_after or (prev.two_spaces_before and word.no_space_reset and word.no_format)
         state.no_space_between  = word.no_space_between
+        state.no_space_mode     = word.no_space_mode    or (prev.no_space_mode and not word.reset_no_space)
 
         # Record whether this word ended in a period.
         state.prev_ended_in_period = word_object.written.endswith(".")
