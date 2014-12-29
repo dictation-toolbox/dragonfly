@@ -38,6 +38,7 @@ except ImportError:
     natlink = None
 
 import logging
+import dragonfly.engines
 
 
 #===========================================================================
@@ -379,19 +380,79 @@ class WordParserDns11(WordParserBase):
 
 #===========================================================================
 
+class WordParserFactory(object):
+    """
+        Detects appropriate WordParser class and creates objects
+
+        This class calls natlink.getWordInfo() for special words and
+        interprets the result to determine whether words should be parsed
+        using natlink.getWordInfo(), e.g. for DNS v10 and lower, or using
+        "in-line word properties", e.g. for DNS v11 and higher.
+
+        This class performs detection only once per instance and caches
+        the detection result for reuse.
+
+    """
+
+    _log = logging.getLogger("dictation.word_parser_factory")
+
+    # The following dictionary determines which words are used for which
+    # language to detect whether natlink.getWordInfo() returns useful info.
+    words_with_info = {
+                       "en": ".\\dot",
+                       "nl": ".\\dot",
+                      }
+
+    def __init__(self):
+        self.parser_class = None
+
+    def detect_parser_class(self):
+        engine = dragonfly.engines.get_engine()
+        word = self.words_with_info.get(engine.language, ".\\dot")
+        info = natlink.getWordInfo(word.encode("windows-1252"))
+        if info == None:
+            parser_class = WordParserDns11
+        else:
+            parser_class = WordParserDns10
+
+        parser_class_string = parser_class.__name__
+        if info == None:  info_string = "None"
+        else:             info_string = "0x" + format(info, "08x")
+        self._log.info("Selected word parser class {0} because"
+                       " natlink.getWordInfo({1!r}) returned {2}"
+                       .format(parser_class_string, word, info_string))
+
+        return parser_class
+
+    def get_parser(self):
+        """ Create an instance of the detective parser class. """
+        if not self.parser_class:
+            self.parser_class = self.detect_parser_class()
+        return self.parser_class()
+
+
+#===========================================================================
+
 class WordFormatter(object):
 
     _log = logging.getLogger("dictation.format")
+
+    parser_factory = WordParserFactory()
 
     def __init__(self, state=None, parser=None,
                  two_spaces_after_period=False):
         if state:   self.state = state
         else:       self.state = StateFlags("no_space_before")
         if parser:  self.parser = parser
-        else:       self.parser = WordParserDns10()
+        else:       self.parser = self.parser_factory.get_parser()
         self.two_spaces_after_period = two_spaces_after_period
 
     def format_dictation(self, input_words):
+        if isinstance(input_words, basestring):
+            raise ValueError("Argument input_words must be a sequence of"
+                             " words, but received a single string: {0!r}"
+                             .format(input_words))
+
         formatted_words = []
         for input_word in input_words:
             word = self.parser.parse_input(input_word)
