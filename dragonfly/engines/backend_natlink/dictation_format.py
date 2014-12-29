@@ -403,13 +403,16 @@ class WordFormatter(object):
         state = self.state
 
         # Determine prefix.
-        if   word.flags.no_format:         prefix = ""
-        elif word.flags.no_space_before:   prefix = ""
-        elif state.no_space_before:        prefix = ""
-        elif state.no_space_between and word.flags.no_space_between: prefix = ""
-        elif state.two_spaces_before:      prefix = "  " if self.two_spaces_after_period else " "
-        elif state.no_space_mode:          prefix = ""
-        else:                              prefix = " "
+        if   word.flags.no_format:             prefix = ""
+        elif word.flags.no_space_before:       prefix = ""
+        elif state.no_space_before:            prefix = ""
+        elif state.no_space_between and word.flags.no_space_between:
+                                               prefix = ""
+        elif state.two_spaces_before:
+            if self.two_spaces_after_period:   prefix = "  "
+            else:                              prefix = " "
+        elif state.no_space_mode:              prefix = ""
+        else:                                  prefix = " "
 
         # Determine formatted written form.
         if   word.flags.no_format:         written = word.written
@@ -419,11 +422,14 @@ class WordFormatter(object):
         elif state.lower_mode:             written = word.written.lower()
         elif state.upper_next:             written = word.written.upper()
         elif state.lower_next:             written = word.written.lower()
-        elif state.cap_mode and not word.flags.no_title_cap: written = word.written.capitalize()
+        elif state.cap_mode and not word.flags.no_title_cap:
+                                           written = word.written.capitalize()
         else:                              written = word.written
 
         # Remove first period character if needed.
-        if state.prev_ended_in_period and word.flags.not_after_period and written.startswith("."):
+        if (state.prev_ended_in_period
+            and word.flags.not_after_period
+            and written.startswith(".")):
             written = written[1:]
 
         # Determine suffix.
