@@ -38,6 +38,7 @@ except ImportError:
     natlink = None
 
 import logging
+import re
 import dragonfly.engines
 
 
@@ -53,12 +54,15 @@ class FlagContainer(object):
         for name in names:
             setattr(self, name, True)
 
-    def __unicode__(self):
+    def flags_string(self):
         flags_true_names = []
         for flag in self.flag_names:
             if flag in self._flags_true:
                 flags_true_names.append(flag)
         return u", ".join(flags_true_names)
+
+    def __unicode__(self):
+        return u"%s(%s)" % (self.__class__.__name__, self.flags_string())
 
     def __str__(self):
         return unicode(self).encode("utf-8")
@@ -177,7 +181,7 @@ class Word(object):
         info = [repr(self.written)]
         if self.spoken and self.spoken != self.written:
             info.append(repr(self.spoken))
-        flags_string = unicode(self.flags)
+        flags_string = self.flags.flags_string()
         if flags_string:
             info.append(flags_string)
         return u"%s(%s)" % (self.__class__.__name__, ", ".join(info))
@@ -457,7 +461,12 @@ class WordFormatter(object):
         for input_word in input_words:
             word = self.parser.parse_input(input_word)
             formatted_words.append(self.apply_formatting(word))
-            self.update_state(word)
+            new_state = self.update_state(word)
+            self._log.debug("Processing {0}, formatted output: {1!r},"
+                            " {2} -> {3}"
+                            .format(word, formatted_words[-1],
+                                    self.state, new_state))
+            self.state = new_state
         return "".join(formatted_words)
 
     def apply_formatting(self, word):
@@ -465,6 +474,7 @@ class WordFormatter(object):
 
         # Determine prefix.
         if   word.flags.no_format:             prefix = ""
+        elif state.no_space_mode:              prefix = ""
         elif word.flags.no_space_before:       prefix = ""
         elif state.no_space_before:            prefix = ""
         elif state.no_space_between and word.flags.no_space_between:
@@ -472,19 +482,18 @@ class WordFormatter(object):
         elif state.two_spaces_before:
             if self.two_spaces_after_period:   prefix = "  "
             else:                              prefix = " "
-        elif state.no_space_mode:              prefix = ""
         else:                                  prefix = " "
 
         # Determine formatted written form.
         if   word.flags.no_format:         written = word.written
-        elif state.cap_next:               written = word.written.capitalize()
-        elif state.cap_next_force:         written = word.written.capitalize()
-        elif state.upper_mode:             written = word.written.upper()
-        elif state.lower_mode:             written = word.written.lower()
-        elif state.upper_next:             written = word.written.upper()
-        elif state.lower_next:             written = word.written.lower()
         elif state.cap_mode and not word.flags.no_title_cap:
-                                           written = word.written.capitalize()
+                                           written = self.capitalize_all(word.written)
+        elif state.upper_mode:             written = self.upper_all(word.written)
+        elif state.lower_mode:             written = self.lower_all(word.written)
+        elif state.cap_next:               written = self.capitalize_first(word.written)
+        elif state.cap_next_force:         written = self.capitalize_first(word.written)
+        elif state.upper_next:             written = self.upper_first(word.written)
+        elif state.lower_next:             written = self.lower_first(word.written)
         else:                              written = word.written
 
         # Remove first period character if needed.
@@ -524,5 +533,30 @@ class WordFormatter(object):
         # Record whether this word ended in a period.
         state.prev_ended_in_period = word_object.written.endswith(".")
 
-        # Replace own state with newly created state.
-        self.state = state
+        # Return newly created state.
+        return state
+
+    def capitalize_first(self, written):
+        return written.capitalize()
+
+    def _capitalize_all_function(self, match):
+        return match.group(1) + match.group(2).upper()
+
+    def capitalize_all(self, written):
+        return re.sub(r"(^|\s)(\S)", self._capitalize_all_function, written)
+
+    def upper_first(self, written):
+        parts = written.split(" ", 1)
+        parts[0] = parts[0].upper()
+        return " ".join(parts)
+
+    def lower_first(self, written):
+        parts = written.split(" ", 1)
+        parts[0] = parts[0].lower()
+        return " ".join(parts)
+
+    def upper_all(self, written):
+        return written.upper()
+
+    def lower_all(self, written):
+        return written.lower()
