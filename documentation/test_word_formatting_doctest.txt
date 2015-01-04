@@ -115,6 +115,27 @@ words that start with that same character::
     >>> format_dictation_dns11("hello ...\\ellipsis\\ellipsis .\\period\\full-stop world")
     u'hello... World'
 
+Words may contain spaces in their written and/or spoken forms. For example
+a custom word added by the user might have the following form with a space
+in both spoken and written forms::
+
+    >>> format_dictation_dns11(["custom written\\\\custom spoken"])
+    u'custom written'
+    >>> format_dictation_dns11(["custom written\\\\custom spoken",
+    ...                         "\\all-caps\\all caps",
+    ...                         "custom written\\\\custom spoken",
+    ...                         "\\cap\\cap",
+    ...                         "custom written\\\\custom spoken"])
+    u'custom written CUSTOM written Custom written'
+    >>> format_dictation_dns11(["custom written\\\\custom spoken",
+    ...                         "\\caps-on\\caps on",
+    ...                         "custom written\\\\custom spoken",
+    ...                         "\\all-caps-on\\all caps on",
+    ...                         "custom written\\\\custom spoken",
+    ...                         "\\all-caps-off\\all caps off",
+    ...                         "custom written\\\\custom spoken"])
+    u'custom written Custom Written CUSTOM WRITTEN custom written'
+
 Certain words, such as numbers, are not formatted according to the
 same rules as "normal" words, i.e. those which specified written and spoken
 forms and formatting info.
@@ -230,6 +251,27 @@ words that start with that same character::
     u'hello... world'
     >>> format_dictation_dns10("hello ...\\ellipsis .\\full-stop world")
     u'hello... World'
+
+Words may contain spaces in their written and/or spoken forms. For example
+a custom word added by the user might have the following form with a space
+in both spoken and written forms::
+
+    >>> format_dictation_dns10(["custom written\\custom spoken"])
+    u'custom written'
+    >>> format_dictation_dns10(["custom written\\custom spoken",
+    ...                         "\\All-Caps",
+    ...                         "custom written\\custom spoken",
+    ...                         "\\Cap",
+    ...                         "custom written\\custom spoken"])
+    u'custom written CUSTOM written Custom written'
+    >>> format_dictation_dns10(["custom written\\custom spoken",
+    ...                         "\\Caps-On",
+    ...                         "custom written\\custom spoken",
+    ...                         "\\All-Caps-On",
+    ...                         "custom written\\custom spoken",
+    ...                         "\\All-Caps-Off",
+    ...                         "custom written\\custom spoken"])
+    u'custom written Custom Written CUSTOM WRITTEN custom written'
 
 Certain words, such as numbers, are not formatted according to the
 same rules as "normal" words, i.e. those which specified written and spoken
