@@ -115,6 +115,24 @@ words that start with that same character::
     >>> format_dictation_dns11("hello ...\\ellipsis\\ellipsis .\\period\\full-stop world")
     u'hello... World'
 
+Letters and numbers spoken in line within dictation allow efficient spelling
+of for example words not present in the dictionary::
+
+    >>> format_dictation_dns11(["A\\letter\\alpha", "B\\letter\\bravo",
+    ...                         "C\\letter\\Charlie", "D\\letter\\delta",
+    ...                         "E\\letter\\echo", "F\\letter\\foxtrot",
+    ...                         "X\\letter\\X ray", "Z\\letter\\Zulu",
+    ...                         "Y\\letter\\Yankee"])
+    u'ABCDEFXZY'
+    >>> format_dictation_dns11("D\\letter E\\letter F\\letter")
+    u'DEF'
+    >>> format_dictation_dns11(["J\\uppercase-letter\\capital J",
+    ...                         "O\\letter", "H\\letter", "N\\letter"])
+    u'JOHN'
+    >>> format_dictation_dns11("J\\letter\\Juliett O\\letter\\Oscar"
+    ...                        " H\\letter\\hotel N\\letter\\November")
+    u'JOHN'
+
 Words may contain spaces in their written and/or spoken forms. For example
 a custom word added by the user might have the following form with a space
 in both spoken and written forms::
@@ -142,6 +160,11 @@ forms and formatting info.
 
 #    >>> format_dictation_dns11("one two three")
 #    u'123'
+#    >>> format_dictation_dns11("one\\number two three four")
+#    u'1234'
+#    >>> format_dictation_dns11("thirty four")
+#    u'34'
+
 
 Word formatting for DNS v10 and lower
 ============================================================================
@@ -251,6 +274,16 @@ words that start with that same character::
     u'hello... world'
     >>> format_dictation_dns10("hello ...\\ellipsis .\\full-stop world")
     u'hello... World'
+
+Letters and numbers spoken in line within dictation allow efficient spelling
+of for example words not present in the dictionary::
+
+    >>> format_dictation_dns10(["a\\alpha", "b\\bravo",
+    ...                         "c\\charlie", "d\\delta",
+    ...                         "e\\echo",
+    ...                         "x\\xray", "z\\zulu",
+    ...                         "y\\yankee"])
+    u'abcdexzy'
 
 Words may contain spaces in their written and/or spoken forms. For example
 a custom word added by the user might have the following form with a space

@@ -360,19 +360,30 @@ class WordParserDns11(WordParserBase):
             input = unicode(input, "windows-1252")
 
         parts = input.split("\\")
-        if len(parts) == 3:
-            written, property, spoken = parts
-        elif len(parts) > 3:
-            written = "\\".join(parts[:-2])
-            property = parts[-2]
-            spoken = parts[-1]
-        else:
+        if len(parts) == 1:
             # Word doesn't have "written\property\spoken" form, so
             # written and spoken forms are equal to input and there are
             # no formatting flags.
             written = input
             spoken = input
             property = None
+        elif len(parts) == 2:
+            if parts[1] == "letter":
+                # Format: "X \ letter"
+                written = spoken = parts[0]
+                property = "letter"
+            else:
+                # Format: "written \ spoken"
+                written, spoken = parts
+                property = None
+        elif len(parts) == 3:
+            # Format: "written \ property \ spoken"
+            written, property, spoken = parts
+        else:  # len(parts) > 3:
+            # Format: "wri\tt\en \ property \ spoken"
+            written = "\\".join(parts[:-2])
+            property = parts[-2]
+            spoken = parts[-1]
 
         word_flags = self.create_word_flags(property)
 
@@ -467,7 +478,7 @@ class WordFormatter(object):
                             .format(word, formatted_words[-1],
                                     self.state, new_state))
             self.state = new_state
-        return "".join(formatted_words)
+        return u"".join(formatted_words)
 
     def apply_formatting(self, word):
         state = self.state
