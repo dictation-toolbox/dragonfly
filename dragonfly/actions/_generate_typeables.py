@@ -228,7 +228,7 @@ for group_name, group_map in key_map:
             key_name_parts.append("``" + key_name + "``")
         parts.append(" or ".join(key_name_parts) + ",")
     parts[-1] = parts[-1][:-1]  # Remove trailing comma.
-    line = " - "
+    line = " -"
     for part in parts:
         concatenation = line + " " + part
         if len(concatenation) <= 72:

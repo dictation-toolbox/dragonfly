@@ -85,7 +85,7 @@ that only *keyname* is required; the other fields are optional.
 Key names
 ............................................................................
 
- -  Alphanumeric keys: ``a`` or ``alpha``, ``b`` or ``bravo``,
+ - Alphanumeric keys: ``a`` or ``alpha``, ``b`` or ``bravo``,
    ``c`` or ``charlie``, ``d`` or ``delta``, ``e`` or ``echo``,
    ``f`` or ``foxtrot``, ``g`` or ``golf``, ``h`` or ``hotel``,
    ``i`` or ``india``, ``j`` or ``juliet``, ``k`` or ``kilo``,
@@ -106,7 +106,7 @@ Key names
    ``1`` or ``one``, ``2`` or ``two``, ``3`` or ``three``,
    ``4`` or ``four``, ``5`` or ``five``, ``6`` or ``six``,
    ``7`` or ``seven``, ``8`` or ``eight``, ``9`` or ``nine``
- -  Symbol keys: ``bang`` or ``exclamation``, ``at``, ``hash``,
+ - Symbol keys: ``bang`` or ``exclamation``, ``at``, ``hash``,
    ``dollar``, ``percent``, ``caret``, ``and`` or ``ampersand``,
    ``star`` or ``asterisk``, ``leftparen`` or ``lparen``,
    ``rightparen`` or ``rparen``, ``minus`` or ``hyphen``,
@@ -119,24 +119,24 @@ Key names
    ``slash``, ``lessthan`` or ``leftangle`` or ``langle``,
    ``greaterthan`` or ``rightangle`` or ``rangle``, ``question``,
    ``equal`` or ``equals``
- -  Whitespace and editing keys: ``enter``, ``tab``, ``space``,
+ - Whitespace and editing keys: ``enter``, ``tab``, ``space``,
    ``backspace``, ``delete`` or ``del``
- -  Modifier keys: ``shift``, ``control`` or ``ctrl``, ``alt``
- -  Special keys: ``escape``, ``insert``, ``pause``, ``win``,
+ - Modifier keys: ``shift``, ``control`` or ``ctrl``, ``alt``
+ - Special keys: ``escape``, ``insert``, ``pause``, ``win``,
    ``apps`` or ``popup``
- -  Navigation keys: ``up``, ``down``, ``left``, ``right``,
+ - Navigation keys: ``up``, ``down``, ``left``, ``right``,
    ``pageup`` or ``pgup``, ``pagedown`` or ``pgdown``, ``home``, ``end``
- -  Number pad keys: ``npmul``, ``npadd``, ``npsep``, ``npsub``,
+ - Number pad keys: ``npmul``, ``npadd``, ``npsep``, ``npsub``,
    ``npdec``, ``npdiv``, ``numpad0`` or ``np0``, ``numpad1`` or ``np1``,
    ``numpad2`` or ``np2``, ``numpad3`` or ``np3``,
    ``numpad4`` or ``np4``, ``numpad5`` or ``np5``,
    ``numpad6`` or ``np6``, ``numpad7`` or ``np7``,
    ``numpad8`` or ``np8``, ``numpad9`` or ``np9``
- -  Function keys: ``f1``, ``f2``, ``f3``, ``f4``, ``f5``, ``f6``,
+ - Function keys: ``f1``, ``f2``, ``f3``, ``f4``, ``f5``, ``f6``,
    ``f7``, ``f8``, ``f9``, ``f10``, ``f11``, ``f12``, ``f13``, ``f14``,
    ``f15``, ``f16``, ``f17``, ``f18``, ``f19``, ``f20``, ``f21``,
    ``f22``, ``f23``, ``f24``
- -  Multimedia keys: ``volumeup`` or ``volup``,
+ - Multimedia keys: ``volumeup`` or ``volup``,
    ``volumedown`` or ``voldown``, ``volumemute`` or ``volmute``,
    ``tracknext``, ``trackprev``, ``playpause``, ``browserback``,
    ``browserforward``
