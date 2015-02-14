@@ -48,7 +48,7 @@ class Monitor(object):
     # Methods for initialization and introspection.
 
     def __init__(self, handle, rectangle):
-        assert isinstance(handle, int)
+        assert isinstance(handle, (int, long))
         self._handle = handle
         assert isinstance(rectangle, Rectangle)
         self._rectangle = rectangle
@@ -60,7 +60,7 @@ class Monitor(object):
     # Methods that control attribute access.
 
     def _set_handle(self, handle):
-        assert isinstance(handle, int)
+        assert isinstance(handle, (int, long))
         self._handle = handle
     handle = property(fget=lambda self: self._handle,
                       fset=_set_handle,
@@ -118,7 +118,7 @@ def _callback(
     res = ctypes.windll.user32.GetMonitorInfoA(hMonitor, ctypes.byref(info))
 
     # Store monitor info.
-    handle = int(hMonitor)
+    handle = long(hMonitor)
     r = info.rcWork
     rectangle = Rectangle(r.left, r.top, r.right - r.left, r.bottom - r.top)
     monitor = Monitor(handle, rectangle)
