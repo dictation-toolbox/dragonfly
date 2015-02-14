@@ -85,35 +85,61 @@ that only *keyname* is required; the other fields are optional.
 Key names
 ............................................................................
 
- - Lowercase alphabet: ``a``, ``b``, ``c``, ``d``, ``e``, ``f``, ``g``,
-   ``h``, ``i``, ``j``, ``k``, ``l``, ``m``, ``n``, ``o``, ``p``, ``q``,
-   ``r``, ``s``, ``t``, ``u``, ``v``, ``w``, ``x``, ``y``, ``z``
- - Uppercase alphabet: ``A``, ``B``, ``C``, ``D``, ``E``, ``F``, ``G``,
-   ``H``, ``I``, ``J``, ``K``, ``L``, ``M``, ``N``, ``O``, ``P``, ``Q``,
-   ``R``, ``S``, ``T``, ``U``, ``V``, ``W``, ``X``, ``Y``, ``Z``
- - Digits: ``0``, ``1``, ``2``, ``3``, ``4``, ``5``, ``6``, ``7``,
-   ``8``, ``9``
- - Navigation keys: ``left``, ``right``, ``up``, ``down``, ``pgup``,
-   ``pgdown``, ``home``, ``end``
- - Editing keys: ``space``, ``tab``, ``enter``, ``backspace``, ``del``,
-   ``insert``
- - Symbols: ``ampersand``, ``apostrophe``, ``asterisk``, ``at``,
-   ``backslash``, ``backtick``, ``bar``, ``caret``, ``colon``,
-   ``comma``, ``dollar``, ``dot``, ``dquote``, ``equal``, ``escape``,
-   ``exclamation``, ``hash``, ``hyphen``, ``minus``, ``percent``,
-   ``plus``, ``question``, ``semicolon``, ``slash``, ``squote``,
-   ``tilde``, ``underscore``
- - Function keys: ``f1``, ``f2``, ``f3``, ``f4``, ``f5``, ``f6``,
+ -  Alphanumeric keys: ``a`` or ``alpha``, ``b`` or ``bravo``,
+   ``c`` or ``charlie``, ``d`` or ``delta``, ``e`` or ``echo``,
+   ``f`` or ``foxtrot``, ``g`` or ``golf``, ``h`` or ``hotel``,
+   ``i`` or ``india``, ``j`` or ``juliet``, ``k`` or ``kilo``,
+   ``l`` or ``lima``, ``m`` or ``mike``, ``n`` or ``november``,
+   ``o`` or ``oscar``, ``p`` or ``papa``, ``q`` or ``quebec``,
+   ``r`` or ``romeo``, ``s`` or ``sierra``, ``t`` or ``tango``,
+   ``u`` or ``uniform``, ``v`` or ``victor``, ``w`` or ``whisky``,
+   ``x`` or ``xray``, ``y`` or ``yankee``, ``z`` or ``zulu``,
+   ``A`` or ``Alpha``, ``B`` or ``Bravo``, ``C`` or ``Charlie``,
+   ``D`` or ``Delta``, ``E`` or ``Echo``, ``F`` or ``Foxtrot``,
+   ``G`` or ``Golf``, ``H`` or ``Hotel``, ``I`` or ``India``,
+   ``J`` or ``Juliet``, ``K`` or ``Kilo``, ``L`` or ``Lima``,
+   ``M`` or ``Mike``, ``N`` or ``November``, ``O`` or ``Oscar``,
+   ``P`` or ``Papa``, ``Q`` or ``Quebec``, ``R`` or ``Romeo``,
+   ``S`` or ``Sierra``, ``T`` or ``Tango``, ``U`` or ``Uniform``,
+   ``V`` or ``Victor``, ``W`` or ``Whisky``, ``X`` or ``Xray``,
+   ``Y`` or ``Yankee``, ``Z`` or ``Zulu``, ``0`` or ``zero``,
+   ``1`` or ``one``, ``2`` or ``two``, ``3`` or ``three``,
+   ``4`` or ``four``, ``5`` or ``five``, ``6`` or ``six``,
+   ``7`` or ``seven``, ``8`` or ``eight``, ``9`` or ``nine``
+ -  Symbol keys: ``bang`` or ``exclamation``, ``at``, ``hash``,
+   ``dollar``, ``percent``, ``caret``, ``and`` or ``ampersand``,
+   ``star`` or ``asterisk``, ``leftparen`` or ``lparen``,
+   ``rightparen`` or ``rparen``, ``minus`` or ``hyphen``,
+   ``underscore``, ``plus``, ``backtick``, ``tilde``,
+   ``leftbracket`` or ``lbracket``, ``rightbracket`` or ``rbracket``,
+   ``leftbrace`` or ``lbrace``, ``rightbrace`` or ``rbrace``,
+   ``backslash``, ``bar``, ``colon``, ``semicolon``,
+   ``apostrophe`` or ``singlequote`` or ``squote``,
+   ``quote`` or ``doublequote`` or ``dquote``, ``comma``, ``dot``,
+   ``slash``, ``lessthan`` or ``leftangle`` or ``langle``,
+   ``greaterthan`` or ``rightangle`` or ``rangle``, ``question``,
+   ``equal`` or ``equals``
+ -  Whitespace and editing keys: ``enter``, ``tab``, ``space``,
+   ``backspace``, ``delete`` or ``del``
+ -  Modifier keys: ``shift``, ``control`` or ``ctrl``, ``alt``
+ -  Special keys: ``escape``, ``insert``, ``pause``, ``win``,
+   ``apps`` or ``popup``
+ -  Navigation keys: ``up``, ``down``, ``left``, ``right``,
+   ``pageup`` or ``pgup``, ``pagedown`` or ``pgdown``, ``home``, ``end``
+ -  Number pad keys: ``npmul``, ``npadd``, ``npsep``, ``npsub``,
+   ``npdec``, ``npdiv``, ``numpad0`` or ``np0``, ``numpad1`` or ``np1``,
+   ``numpad2`` or ``np2``, ``numpad3`` or ``np3``,
+   ``numpad4`` or ``np4``, ``numpad5`` or ``np5``,
+   ``numpad6`` or ``np6``, ``numpad7`` or ``np7``,
+   ``numpad8`` or ``np8``, ``numpad9`` or ``np9``
+ -  Function keys: ``f1``, ``f2``, ``f3``, ``f4``, ``f5``, ``f6``,
    ``f7``, ``f8``, ``f9``, ``f10``, ``f11``, ``f12``, ``f13``, ``f14``,
    ``f15``, ``f16``, ``f17``, ``f18``, ``f19``, ``f20``, ``f21``,
    ``f22``, ``f23``, ``f24``
- - Modifiers: ``alt``, ``ctrl``, ``shift``
- - Brackets: ``langle``, ``lbrace``, ``lbracket``, ``lparen``,
-   ``rangle``, ``rbrace``, ``rbracket``, ``rparen``
- - Special keys: ``apps``, ``win``
- - Numberpad keys: ``np0``, ``np1``, ``np2``, ``np3``, ``np4``, ``np5``,
-   ``np6``, ``np7``, ``np8``, ``np9``, ``npadd``, ``npdec``, ``npdiv``,
-   ``npmul``, ``npsep``, ``npsub``
+ -  Multimedia keys: ``volumeup`` or ``volup``,
+   ``volumedown`` or ``voldown``, ``volumemute`` or ``volmute``,
+   ``tracknext``, ``trackprev``, ``playpause``, ``browserback``,
+   ``browserforward``
 
 
 .. _RefKeySpecExamples:

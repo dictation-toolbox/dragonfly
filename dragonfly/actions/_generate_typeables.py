@@ -19,108 +19,221 @@
 #
 
 """
-    This file automates the creation of the typeables.py file.
+    This script generates code for in the typeables.py and action_key.py
+    files.
+
 """
 
 
-from ctypes import windll, c_char
-import win32con
+(vkey, lookup) = range(2)
 
+key_map = (
+    ("Alphanumeric keys", [
+        (lookup, "a",                              "a alpha"),
+        (lookup, "b",                              "b bravo"),
+        (lookup, "c",                              "c charlie"),
+        (lookup, "d",                              "d delta"),
+        (lookup, "e",                              "e echo"),
+        (lookup, "f",                              "f foxtrot"),
+        (lookup, "g",                              "g golf"),
+        (lookup, "h",                              "h hotel"),
+        (lookup, "i",                              "i india"),
+        (lookup, "j",                              "j juliet"),
+        (lookup, "k",                              "k kilo"),
+        (lookup, "l",                              "l lima"),
+        (lookup, "m",                              "m mike"),
+        (lookup, "n",                              "n november"),
+        (lookup, "o",                              "o oscar"),
+        (lookup, "p",                              "p papa"),
+        (lookup, "q",                              "q quebec"),
+        (lookup, "r",                              "r romeo"),
+        (lookup, "s",                              "s sierra"),
+        (lookup, "t",                              "t tango"),
+        (lookup, "u",                              "u uniform"),
+        (lookup, "v",                              "v victor"),
+        (lookup, "w",                              "w whisky"),
+        (lookup, "x",                              "x xray"),
+        (lookup, "y",                              "y yankee"),
+        (lookup, "z",                              "z zulu"),
+        (lookup, "A",                              "A Alpha"),
+        (lookup, "B",                              "B Bravo"),
+        (lookup, "C",                              "C Charlie"),
+        (lookup, "D",                              "D Delta"),
+        (lookup, "E",                              "E Echo"),
+        (lookup, "F",                              "F Foxtrot"),
+        (lookup, "G",                              "G Golf"),
+        (lookup, "H",                              "H Hotel"),
+        (lookup, "I",                              "I India"),
+        (lookup, "J",                              "J Juliet"),
+        (lookup, "K",                              "K Kilo"),
+        (lookup, "L",                              "L Lima"),
+        (lookup, "M",                              "M Mike"),
+        (lookup, "N",                              "N November"),
+        (lookup, "O",                              "O Oscar"),
+        (lookup, "P",                              "P Papa"),
+        (lookup, "Q",                              "Q Quebec"),
+        (lookup, "R",                              "R Romeo"),
+        (lookup, "S",                              "S Sierra"),
+        (lookup, "T",                              "T Tango"),
+        (lookup, "U",                              "U Uniform"),
+        (lookup, "V",                              "V Victor"),
+        (lookup, "W",                              "W Whisky"),
+        (lookup, "X",                              "X Xray"),
+        (lookup, "Y",                              "Y Yankee"),
+        (lookup, "Z",                              "Z Zulu"),
+        (lookup, "0",                              "0 zero"),
+        (lookup, "1",                              "1 one"),
+        (lookup, "2",                              "2 two"),
+        (lookup, "3",                              "3 three"),
+        (lookup, "4",                              "4 four"),
+        (lookup, "5",                              "5 five"),
+        (lookup, "6",                              "6 six"),
+        (lookup, "7",                              "7 seven"),
+        (lookup, "8",                              "8 eight"),
+        (lookup, "9",                              "9 nine")]),
+    ("Symbol keys", [
+        (lookup, "!",                              "bang exclamation"),
+        (lookup, "@",                              "at"),
+        (lookup, "#",                              "hash"),
+        (lookup, "$",                              "dollar"),
+        (lookup, "%",                              "percent"),
+        (lookup, "^",                              "caret"),
+        (lookup, "&",                              "and ampersand"),
+        (lookup, "*",                              "star asterisk"),
+        (lookup, "(",                              "leftparen lparen"),
+        (lookup, ")",                              "rightparen rparen"),
+        (lookup, "-",                              "minus hyphen"),
+        (lookup, "_",                              "underscore"),
+        (lookup, "+",                              "plus"),
+        (lookup, "`",                              "backtick"),
+        (lookup, "~",                              "tilde"),
+        (lookup, "[",                              "leftbracket lbracket"),
+        (lookup, "]",                              "rightbracket rbracket"),
+        (lookup, "{",                              "leftbrace lbrace"),
+        (lookup, "}",                              "rightbrace rbrace"),
+        (lookup, "\\",                             "backslash"),
+        (lookup, "|",                              "bar"),
+        (lookup, ":",                              "colon"),
+        (lookup, ";",                              "semicolon"),
+        (lookup, "'",                              "apostrophe singlequote squote"),
+        (lookup, '"',                              "quote doublequote dquote"),
+        (lookup, ",",                              "comma"),
+        (lookup, ".",                              "dot"),
+        (lookup, "/",                              "slash"),
+        (lookup, "<",                              "lessthan leftangle langle"),
+        (lookup, ">",                              "greaterthan rightangle rangle"),
+        (lookup, "?",                              "question"),
+        (lookup, "=",                              "equal equals")]),
+    ("Whitespace and editing keys", [
+        (vkey,   "win32con.VK_RETURN",             "enter"),
+        (vkey,   "win32con.VK_TAB",                "tab"),
+        (vkey,   "win32con.VK_SPACE",              "space"),
+        (vkey,   "win32con.VK_BACK",               "backspace"),
+        (vkey,   "win32con.VK_DELETE",             "delete del")]),
+    ("Modifier keys", [
+        (vkey,   "win32con.VK_SHIFT",              "shift"),
+        (vkey,   "win32con.VK_CONTROL",            "control ctrl"),
+        (vkey,   "win32con.VK_MENU",               "alt")]),
+    ("Special keys", [
+        (vkey,   "win32con.VK_ESCAPE",             "escape"),
+        (vkey,   "win32con.VK_INSERT",             "insert"),
+        (vkey,   "win32con.VK_PAUSE",              "pause"),
+        (vkey,   "win32con.VK_LWIN",               "win"),
+        (vkey,   "win32con.VK_APPS",               "apps popup")]),
+    ("Navigation keys", [
+        (vkey,   "win32con.VK_UP",                 "up"),
+        (vkey,   "win32con.VK_DOWN",               "down"),
+        (vkey,   "win32con.VK_LEFT",               "left"),
+        (vkey,   "win32con.VK_RIGHT",              "right"),
+        (vkey,   "win32con.VK_PRIOR",              "pageup pgup"),
+        (vkey,   "win32con.VK_NEXT",               "pagedown pgdown"),
+        (vkey,   "win32con.VK_HOME",               "home"),
+        (vkey,   "win32con.VK_END",                "end")]),
+    ("Number pad keys", [
+        (vkey,   "win32con.VK_MULTIPLY",           "npmul"),
+        (vkey,   "win32con.VK_ADD",                "npadd"),
+        (vkey,   "win32con.VK_SEPARATOR",          "npsep"),
+        (vkey,   "win32con.VK_SUBTRACT",           "npsub"),
+        (vkey,   "win32con.VK_DECIMAL",            "npdec"),
+        (vkey,   "win32con.VK_DIVIDE",             "npdiv"),
+        (vkey,   "win32con.VK_NUMPAD0",            "numpad0 np0"),
+        (vkey,   "win32con.VK_NUMPAD1",            "numpad1 np1"),
+        (vkey,   "win32con.VK_NUMPAD2",            "numpad2 np2"),
+        (vkey,   "win32con.VK_NUMPAD3",            "numpad3 np3"),
+        (vkey,   "win32con.VK_NUMPAD4",            "numpad4 np4"),
+        (vkey,   "win32con.VK_NUMPAD5",            "numpad5 np5"),
+        (vkey,   "win32con.VK_NUMPAD6",            "numpad6 np6"),
+        (vkey,   "win32con.VK_NUMPAD7",            "numpad7 np7"),
+        (vkey,   "win32con.VK_NUMPAD8",            "numpad8 np8"),
+        (vkey,   "win32con.VK_NUMPAD9",            "numpad9 np9")]),
+    ("Function keys", [
+        (vkey,   "win32con.VK_F1",                 "f1"),
+        (vkey,   "win32con.VK_F2",                 "f2"),
+        (vkey,   "win32con.VK_F3",                 "f3"),
+        (vkey,   "win32con.VK_F4",                 "f4"),
+        (vkey,   "win32con.VK_F5",                 "f5"),
+        (vkey,   "win32con.VK_F6",                 "f6"),
+        (vkey,   "win32con.VK_F7",                 "f7"),
+        (vkey,   "win32con.VK_F8",                 "f8"),
+        (vkey,   "win32con.VK_F9",                 "f9"),
+        (vkey,   "win32con.VK_F10",                "f10"),
+        (vkey,   "win32con.VK_F11",                "f11"),
+        (vkey,   "win32con.VK_F12",                "f12"),
+        (vkey,   "win32con.VK_F13",                "f13"),
+        (vkey,   "win32con.VK_F14",                "f14"),
+        (vkey,   "win32con.VK_F15",                "f15"),
+        (vkey,   "win32con.VK_F16",                "f16"),
+        (vkey,   "win32con.VK_F17",                "f17"),
+        (vkey,   "win32con.VK_F18",                "f18"),
+        (vkey,   "win32con.VK_F19",                "f19"),
+        (vkey,   "win32con.VK_F20",                "f20"),
+        (vkey,   "win32con.VK_F21",                "f21"),
+        (vkey,   "win32con.VK_F22",                "f22"),
+        (vkey,   "win32con.VK_F23",                "f23"),
+        (vkey,   "win32con.VK_F24",                "f24")]),
+    ("Multimedia keys", [
+        (vkey,   "win32con.VK_VOLUME_UP",          "volumeup volup"),
+        (vkey,   "win32con.VK_VOLUME_DOWN",        "volumedown voldown"),
+        (vkey,   "win32con.VK_VOLUME_MUTE",        "volumemute volmute"),
+        (vkey,   "win32con.VK_MEDIA_NEXT_TRACK",   "tracknext"),
+        (vkey,   "win32con.VK_MEDIA_PREV_TRACK",   "trackprev"),
+        (vkey,   "win32con.VK_MEDIA_PLAY_PAUSE",   "playpause"),
+        (vkey,   "win32con.VK_BROWSER_BACK",       "browserback"),
+        (vkey,   "win32con.VK_BROWSER_FORWARD",    "browserforward")]),
+    )
 
-#---------------------------------------------------------------------------
-# 
+print "---- Code for typeables.py"
+for group_name, group_map in key_map:
+    print "    # %s" % (group_name,)
+    for key_type, key_value, key_names in group_map:
+        for key_name in key_names.split():
+            if key_type == lookup:
+                value_code = "keyboard.get_typeable(char=%r)" % key_value
+            elif key_type == vkey:
+                value_code = ("Typeable(code=%s, name=%r)"
+                              % (key_value, key_name))
+            else:
+                raise Exception("Invalid key type: {0!r} (for {1!r} {2!r})"
+                                .format(key_type, key_value, key_names))
+            print ('    "%s": %s%s,'
+                   % (key_name, " " * (16-len(key_name)), value_code))
+    print
 
-def parse(input):
-    output = []
-    for item in input.split(";"):
-        parts = item.split("=")
-        left_string = parts[0].strip()
-        if not left_string: continue
-        for right_string in parts[1].split(","):
-            right_string = right_string.strip()
-            if not right_string: continue
-            output.append((left_string, right_string))
-    return output
-
-
-#---------------------------------------------------------------------------
-# 
-
-constant_keys ="""
-    shift = shift; control = control, ctrl; menu = alt;
-    up = up; down = down; left = left; right = right;
-    prior = pgup;
-    next = pgdown;
-    home = home;
-    end = end;
-    return = enter;
-    tab = tab;
-    space = space;
-    back = backspace;
-    delete = delete, del;
-    apps = apps, popup;
-    escape = escape;
-
-    multiply = npmul;
-    add = npadd;
-    separator = npsep;
-    subtract = npsub;
-    decimal = npdec;
-    divide = npdiv;
-""" \
-    + " ".join(["numpad%(n)d = np%(n)d, numpad%(n)d;" % {"n": n} for n in range(10)]) \
-    + " ".join(["f%(n)d = f%(n)d;" % {"n": n} for n in range(1, 25)])
-
-for virtual_name, name in parse(constant_keys):
-    virtual_name = "VK_%s" % (virtual_name.upper())
-    keycode = getattr(win32con, virtual_name)
-    print '    "%s": %sTypeable(code=win32con.%s, %sname="%s"),' % (name, " "*(12-len(name)), virtual_name, " "*(12-len(virtual_name)), name)
-
-
-#---------------------------------------------------------------------------
-# 
-
-lookup_keys = r"""
-    a = alpha, a; b = bravo, b; c = charlie, c; d = delta, d;
-    e = echo, e; f = foxtrot, f; g = golf, g; h = hotel, h;
-    i = india, i; j = juliet, j; k = kilo, k; l = lima, l;
-    m = mike, m; n = november, n; o = oscar, o; p = papa, p;
-    q = quebec, q; r = romeo, r; s = sierra, s; t = tango, t;
-    u = uniform, u; v = victor, v; w = whisky, w; x = xray, x;
-
-    y = yankee, y; z = zulu, z;
-    A = Alpha, A; B = Bravo, B; C = Charlie, C; D = Delta, D;
-    E = Echo, E; F = Foxtrot, F; G = Golf, G; H = Hotel, H;
-    I = India, I; J = Juliet, J; K = Kilo, K; L = Lima, L;
-    M = Mike, M; N = November, N; O = Oscar, O; P = Papa, P;
-    Q = Quebec, Q; R = Romeo, R; S = Sierra, S; T = Tango, T;
-    U = Uniform, U; V = Victor, V; W = Whisky, W; X = Xray, X;
-    Y = Yankee, Y; Z = Zulu, Z;
-
-    0 = 0, zero; 1 = 1, one; 2 = 2, two; 3 = 3, three; 4 = 4, four;
-    5 = 5, five; 6 = 6, six; 7 = 7, seven; 8 = 8, eight; 9 = 9, nine;
-
-    ! = bang, exclamation;  @ = at;  # = hash;  $ = dollar;
-    % = percent;  ^ = caret;  & = and, ampersand;  * = star, asterisk; 
-    ( = leftparen, lparen; ) = rightparen, rparen;
-
-    - = minus, hyphen;
-    _ = underscore; + = plus; ` = backtick; ~ = tilde;
-    [ = leftbracket, lbracket; ] = rightbracket, rbracket;
-    { = leftbrace, lbrace; } = rightbrace, rbrace;
-    \ = backslash; | = bar;
-    : = colon;
-    ' = apostrophe, singlequote, squote; " = quote, doublequote, dquote;
-    , = comma; . = dot; / = slash;
-    < = lessthan, leftangle, langle; > = greaterthan, rightangle, rangle;
-    ? = question;
-"""
-
-for character, name in parse(lookup_keys):
-    print '    "%s": %skeyboard.get_typeable(char=%r),' \
-        % (name, " "*(12-len(name)),  character)
-
-character = "="
-for name in ("equal", "equals"):
-    print '    "%s": %skeyboard.get_typeable(char=%r),' \
-        % (name, " "*(12-len(name)),  character)
+print "---- Code for documentation in action_key.py"
+for group_name, group_map in key_map:
+    parts = [group_name + ":"]
+    for key_type, key_value, key_names in group_map:
+        key_name_parts = []
+        for key_name in key_names.split():
+            key_name_parts.append("``" + key_name + "``")
+        parts.append(" or ".join(key_name_parts) + ",")
+    parts[-1] = parts[-1][:-1]  # Remove trailing comma.
+    line = " - "
+    for part in parts:
+        concatenation = line + " " + part
+        if len(concatenation) <= 72:
+            line = concatenation
+        else:
+            print line
+            line = "   " + part
+    print line
