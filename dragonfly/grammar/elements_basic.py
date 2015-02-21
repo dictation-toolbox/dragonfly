@@ -754,11 +754,14 @@ class RuleRef(ElementBase):
 class ListRef(ElementBase):
 
     def __init__(self, name, list, key=None, default=None):
+        self._list = None
+        self._key = None
+
         ElementBase.__init__(self, name=name, default=default)
 
         if not isinstance(list, ListBase):
-            raise TypeError("List object of %s object must be a"
-                            " Dragonfly list." % self)
+            raise TypeError("List argument to %s constructor must be a"
+                            " Dragonfly list." % self.__class__.__name__)
         self._list = list
         self._key = key
 
@@ -766,9 +769,12 @@ class ListRef(ElementBase):
     # Methods for runtime introspection.
 
     def __str__(self):
-        arguments = self._list.name
-        if self._key: arguments += ", key=%r" % self._key
-        return '%s(%s)' % (self.__class__.__name__, arguments)
+        arguments = []
+        if self._list != None:
+            arguments.append(repr(self._list.name))
+        if self._key:
+            arguments.append("key=%r" % self._key)
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(arguments))
 
     list = property(lambda self: self._list)
 
