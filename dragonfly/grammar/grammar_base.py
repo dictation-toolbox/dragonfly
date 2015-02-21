@@ -194,16 +194,19 @@ class Grammar(object):
         self._log_load.debug("Grammar %s: adding list %s."
                             % (self._name, lst.name))
 
-        # Check for correct type and duplicate lists or list names.
+        # Make sure that the list can be loaded and is not a duplicate.
         if self._loaded:
             raise GrammarError("Cannot add list while loaded.")
         elif not isinstance(lst, ListBase):
             raise GrammarError("Invalid list object: %s" % lst)
-        elif lst in self._lists:
-            return
-        elif [True for l in self._lists if l.name == lst.name]:
-            raise GrammarError("Two lists with the same name '%s' not"
-                "allowed." % lst.name)
+
+        for l in self._lists:
+            if l.name == lst.name:
+                if l is lst:
+                    # This list was already added previously, so ignore.
+                    return
+                raise GrammarError("Two lists with the same name '%s' not"
+                                   " allowed." % lst.name)
 
         # Append the list to this grammar object's internal list.
         self._lists.append(lst)

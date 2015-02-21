@@ -1,0 +1,167 @@
+﻿
+..  _RefGrammarListDocTests:
+
+Doctests for the List class
+****************************************************************************
+
+List and ListRef element classes
+============================================================================
+
+Basic usage
+----------------------------------------------------------------------------
+
+Setup test tooling::
+
+    >>> from dragonfly import *
+    >>> from dragonfly.test import ElementTester
+    >>> list_fruit = List("list_fruit")
+    >>> element = Sequence([Literal("item"), ListRef("list_fruit_ref", list_fruit)])
+    >>> tester_fruit = ElementTester(element)
+    >>> # Explicitly load tester grammar because lists can only be updated
+    >>> # for loaded grammars.
+    >>> tester_fruit.load()
+
+
+Empty lists cannot be recognized::
+
+    >>> tester_fruit.recognize("item")
+    RecognitionFailure
+    >>> tester_fruit.recognize("item apple")
+    RecognitionFailure
+
+
+A list update is automatically available for recognition without reloading
+the grammar::
+
+    >>> tester_fruit.recognize("item apple")
+    RecognitionFailure
+
+    >>> list_fruit.append("apple")
+    >>> list_fruit
+    ['apple']
+    >>> tester_fruit.recognize("item apple")
+    [u'item', u'apple']
+    >>> tester_fruit.recognize("item banana")
+    RecognitionFailure
+
+    >>> list_fruit.append("banana")
+    >>> list_fruit
+    ['apple', 'banana']
+    >>> tester_fruit.recognize("item apple")
+    [u'item', u'apple']
+    >>> tester_fruit.recognize("item banana")
+    [u'item', u'banana']
+    >>> tester_fruit.recognize("item apple banana")
+    RecognitionFailure
+
+    >>> list_fruit.remove("apple")
+    >>> list_fruit
+    ['banana']
+    >>> tester_fruit.recognize("item apple")
+    RecognitionFailure
+    >>> tester_fruit.recognize("item banana")
+    [u'item', u'banana']
+
+
+Lists can contain the same value multiple times, although that does not
+affect recognition::
+
+    >>> list_fruit.append("banana")
+    >>> list_fruit
+    ['banana', 'banana']
+    >>> tester_fruit.recognize("item banana")
+    [u'item', u'banana']
+    >>> tester_fruit.recognize("item banana banana")
+    RecognitionFailure
+
+
+Tear down test tooling::
+
+    >>> # Explicitly unload tester grammar.
+    >>> tester_fruit.unload()
+
+
+Multiple lists
+----------------------------------------------------------------------------
+
+Setup test tooling::
+
+    >>> list_meat = List("list_meat")
+    >>> list_veg = List("list_veg")
+    >>> element = Sequence([Literal("food"),
+    ...                     ListRef("list_meat_ref", list_meat),
+    ...                     ListRef("list_veg_ref", list_veg)])
+    >>> tester_meat_veg = ElementTester(element)
+    >>> # Explicitly load tester grammar because lists can only be updated
+    >>> # for loaded grammars.
+    >>> tester_meat_veg.load()
+
+
+Multiple lists can be combined within a single rule::
+
+    >>> list_meat.append("steak")
+    >>> tester_meat_veg.recognize("food steak")
+    RecognitionFailure
+    >>> list_veg.append("carrot")
+    >>> tester_meat_veg.recognize("food steak carrot")
+    [u'food', u'steak', u'carrot']
+    >>> list_meat.append("hamburger")
+    >>> tester_meat_veg.recognize("food hamburger carrot")
+    [u'food', u'hamburger', u'carrot']
+
+
+Tear down test tooling::
+
+    >>> # Explicitly unload tester grammar.
+    >>> tester_meat_veg.unload()
+
+
+A single list can be present multiple times within a rule::
+
+    >>> element = Sequence([Literal("carnivore"),
+    ...                     ListRef("list_meat_ref1", list_meat),
+    ...                     ListRef("list_meat_ref2", list_meat)])
+    >>> tester_carnivore = ElementTester(element)
+    >>> # Explicitly load tester grammar because lists can only be updated
+    >>> # for loaded grammars.
+    >>> tester_carnivore.load()
+
+    >>> tester_carnivore.recognize("carnivore steak")
+    RecognitionFailure
+    >>> tester_carnivore.recognize("carnivore hamburger steak")
+    [u'carnivore', u'hamburger', u'steak']
+    >>> tester_carnivore.recognize("carnivore steak hamburger")
+    [u'carnivore', u'steak', u'hamburger']
+    >>> tester_carnivore.recognize("carnivore steak steak")
+    [u'carnivore', u'steak', u'steak']
+
+    >>> list_meat.remove("steak")
+    >>> tester_carnivore.recognize("carnivore steak hamburger")
+    RecognitionFailure
+    >>> tester_carnivore.recognize("carnivore hamburger hamburger")
+    [u'carnivore', u'hamburger', u'hamburger']
+
+
+Tear down test tooling::
+
+    >>> # Explicitly unload tester grammar.
+    >>> tester_carnivore.unload()
+
+
+Unique list names
+----------------------------------------------------------------------------
+
+The names of lists must be unique within a grammar::
+
+    >>> list_fruit1 = List("list_fruit")
+    >>> list_fruit2 = List("list_fruit")
+    >>> element = Sequence([Literal("fruit"),
+    ...                     ListRef("list_fruit1_ref", list_fruit1),
+    ...                     ListRef("list_fruit2_ref", list_fruit2)])
+    >>> tester_fruit = ElementTester(element)
+    >>> # Explicitly load tester grammar because lists can only be updated
+    >>> # for loaded grammars.
+    >>> tester_fruit.load()
+    Traceback (most recent call last):
+        ...
+    GrammarError: Two lists with the same name 'list_fruit' not allowed.

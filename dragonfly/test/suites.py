@@ -42,6 +42,7 @@ common_names   = [
                   "doc:documentation/test_action_base_doctest.txt",
                   "doc:documentation/test_grammar_elements_basic_doctest.txt",
                   "doc:documentation/test_grammar_elements_compound_doctest.txt",
+                  "doc:documentation/test_grammar_list_doctest.txt",
                  ]
 
 natlink_names  = [
