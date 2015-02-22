@@ -91,6 +91,15 @@ class CollectionIntBuilder(IntBuilderBase):
 
 class MagnitudeIntBuilder(IntBuilderBase):
 
+    _empty_list = None
+
+    @classmethod
+    def _get_empty_list(cls):
+        """ Class method to ensure only one empty list is created. """
+        if cls._empty_list == None:
+            cls._empty_list = List("_MagnitudeIntBuilder_empty")
+        return cls._empty_list
+
     def __init__(self, factor, spec, multipliers, remainders):
         self._factor = factor
         self._spec = spec
@@ -157,8 +166,8 @@ class MagnitudeIntBuilder(IntBuilderBase):
                                            first_remainder,
                                            last_remainder)
         if not remainders:
-            l = List("_MagnitudeIntBuilder_empty")
-            remainders = ListRef("_MagnitudeIntBuilder_emptyref", l)
+            empty = self._get_empty_list()
+            remainders = ListRef("_MagnitudeIntBuilder_empty_ref", empty)
 
         # Build magnitude element.
         multipliers.name = "multiplier"
