@@ -42,6 +42,11 @@ recognition users/developers:
    --- Archive.org snapshot from 2013-12-07, before this forum was
    taken down
 
+ * `Hands-Free Coding Blog
+   <http://handsfreecoding.org/>`_
+   --- James Stout's blog on his experiences with Dragonfly and other
+   tools for doing hands-free technical computer work
+
 Applications
 ============================================================================
 
