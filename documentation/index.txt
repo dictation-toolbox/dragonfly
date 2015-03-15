@@ -12,6 +12,14 @@ It currently supports the following speech recognition engines:
  - *Windows Speech Recognition* (WSR), included with Microsoft 
    Windows Vista, Windows 7, and freely available for Windows XP
 
+Dragonfly's documentation is available online at
+`Read the Docs <http://dragonfly.readthedocs.org/en/latest/>`_.
+Dragonfly's FAQ is available at `Stackoverflow
+<http://stackoverflow.com/questions/tagged/python-dragonfly>`_.
+Dragonfly's mailing list/discussion group is available at
+`Google Groups
+<https://groups.google.com/forum/#!forum/dragonflyspeech>`_.
+
 
 Documentation
 ----------------------------------------------------------------------------
@@ -34,20 +42,6 @@ Direct links within this documentation to help you get started:
 
  - :ref:`features_and_target_audience`
  - :ref:`installation`
-
-
-Existing command modules
-----------------------------------------------------------------------------
-
-A sister project is the Dragonfly
-`command-modules repository
-<http://dragonfly-modules.googlecode.com/svn/trunk/command-modules/documentation/index.html>`_.
-This is a steadily growing collection of command-modules for 
-controlling common programs and automating frequent desktop 
-activities. This is the place to look if you want to use speech 
-recognition to increase your productivity and efficiency. It 
-also contains many examples, from simple to complex, of how to 
-use the Dragonfly library.
 
 
 Usage example
