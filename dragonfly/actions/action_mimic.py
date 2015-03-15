@@ -104,7 +104,7 @@ class Mimic(ActionBase):
             # Append the extra data to the static words depending on
             #  the type of the extra data object.
             if isinstance(extra, engine.DictationContainer):
-                words += extra.words
+                words += tuple(extra.words)
             elif isinstance(extra, (tuple, list)):
                 words += tuple(extra)
             elif isinstance(extra, basestr):
