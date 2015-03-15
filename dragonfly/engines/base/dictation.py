@@ -60,7 +60,7 @@ class DictationContainerBase(object):
             :type words: sequence-of-unicode
 
         """
-        self._words = words
+        self._words = tuple(words)
         self._formatted = None
 
     def __str__(self):
