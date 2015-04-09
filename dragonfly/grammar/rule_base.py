@@ -102,6 +102,8 @@ class Rule(object):
                         doc="This rule's exported status.  (Read-only)")
     imported = property(lambda self: self._imported,
                         doc="This rule's imported status.  (Read-only)")
+    active   = property(lambda self: self._active,
+                        doc="Read-only access to a rule's active state.")
 
     def enable(self):
         """
@@ -206,12 +208,6 @@ class Rule(object):
                 self._log.warning("Failed to deactivate rule: %s (%s)"
                                   % (self, e))
             self._active = False
-
-    active = property(lambda self: self._active,
-        doc="Read-only access to a rule's active state.")
-
-    exported = property(lambda self: self._exported,
-        doc="Read-only access to a rule's exported state.")
 
     #-----------------------------------------------------------------------
     # Compilation related methods.
