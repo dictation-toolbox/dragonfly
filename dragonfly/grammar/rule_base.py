@@ -99,16 +99,25 @@ class Rule(object):
     element  = property(lambda self: self._element,
                         doc="This rule's root element.  (Read-only)")
     exported = property(lambda self: self._exported,
-                        doc="This rule's exported status.  (Read-only)")
+                        doc="This rule's exported status. See"
+                            " :ref:`RefObjectModelRulesExported` for"
+                            " more info.  (Read-only)")
     imported = property(lambda self: self._imported,
-                        doc="This rule's imported status.  (Read-only)")
+                        doc="This rule's imported status. See"
+                            " :ref:`RefObjectModelRulesImported` for"
+                            " more info.  (Read-only)")
     active   = property(lambda self: self._active,
-                        doc="Read-only access to a rule's active state.")
+                        doc="This rule's active state.  (Read-only)")
+    enabled  = property(lambda self: self._enabled,
+                        doc="This rule's enabled state. An enabled rule"
+                            " is active when its context matches, a"
+                            " disabled rule is never active regardless"
+                            " of context.  (Read-only)")
 
     def enable(self):
         """
-            Enable this grammar so that it is active to receive 
-            recognitions.
+            Enable this grammar so that it is active to receive
+            recognitions when its context matches.
 
         """
         self._enabled = True
@@ -116,17 +125,14 @@ class Rule(object):
 
     def disable(self):
         """
-            Disable this grammar so that it is not active to 
-            receive recognitions.
+            Disable this grammar so that it is never active to
+            receive recognitions, regardless of whether its context
+            matches or not.
 
         """
         self._enabled = False
         if self._active:
             self.deactivate()
-
-    enabled = property(lambda self: self._enabled,
-                doc = "Whether a grammar is active to receive"
-                      " recognitions or not.")
 
     def _get_grammar(self):
         return self._grammar

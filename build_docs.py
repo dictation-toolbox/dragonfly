@@ -40,7 +40,9 @@ def run_sphinx():
     src_dir = os.path.abspath(os.path.join(directory, "documentation"))
     dst_dir = os.path.abspath(os.path.join(directory, "build", "documentation"))
 
-    arguments = [python_binary, build_binary, "-a", "-b", build_type, src_dir, dst_dir]
+    arguments = [python_binary, build_binary,
+                 "-a", "-b",
+                 build_type, src_dir, dst_dir]
     subprocess.call(arguments)
 
 

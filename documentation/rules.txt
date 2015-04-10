@@ -1,6 +1,6 @@
-﻿.. _RefRuleClasses:
+﻿.. _RefRules:
 
-Rule classes
+Rules
 ============================================================================
 
 This section describes the following classes:

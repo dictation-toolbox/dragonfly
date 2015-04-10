@@ -1,13 +1,13 @@
 
 Object model
-============================================================================
+****************************************************************************
 
-The core of Dragonfly is a language object model revolving 
-around three types: grammars, rules, and elements.  This section 
-describes that object model.
-
+The core of Dragonfly is a language object model revolving around three 
+object types: grammars, rules, and elements. This section describes that 
+object model. 
 
 .. toctree::
+    :hidden:
 
     grammar
     rules
@@ -16,59 +16,129 @@ describes that object model.
 
 
 Grammars
-----------------------------------------------------------------------------
+============================================================================
 
-A grammar is a collection of rules.  It manages the rules, 
-loading and unloading them, activating and deactivating them, 
-and taking care of all communications with the speech 
-recognition engine.  When they recognition occurs, the 
-associated grammar received the recognition event and dispatches 
-it to the appropriate rule.
+A :ref:`grammar <RefGrammar>` is a collection of rules. It manages the 
+rules, loading and unloading them, activating and deactivating them, and 
+it takes care of all communications with the speech recognition engine. 
+When a recognition occurs, the associated grammar receives the 
+recognition event and dispatches it to the appropriate rule. 
 
 Normally a grammar is associated with a particular context or 
 functionality.  Normally the rules within a grammar are somehow 
 related to each other.  However, neither of these is strictly 
 necessary, they are just common use patterns.
 
-The :class:`Grammar` class and derived classes are described 
-in section :ref:`RefGrammarClasses`.
+The :class:`~dragonfly.grammar.grammar_base.Grammar` class and derived 
+classes are described in the :ref:`RefGrammarClasses` section.
 
+
+.. _RefObjectModelRules:
 
 Rules
+============================================================================
+
+:ref:`Rules <RefRules>` represent voice commands or parts of voice 
+commands. Each rule has a single root :ref:`element 
+<RefObjectModelElements>`, the basis of a tree structure of elements 
+defining how the rule is built up out of speakable parts. The element 
+tree determines what a user must say to cause this rule to be 
+recognized. 
+
+
+.. _RefObjectModelRulesExported:
+
+Exported rules
 ----------------------------------------------------------------------------
 
-A rule represents a voice command or part of one.  Its elements 
-define exactly what its contents are, i.e. what can be said to 
-activate this rule.  It has several attributes which determine, 
-for example, whether it is a top-level "standalone" command 
-which can be spoken directly, or whether it can only be 
-referenced from a different top level rule.
+Rules can be exported or not exported. Whether a rule is exported or not 
+is defined when the rule is created. 
 
-Each rule has one root element which defines the language 
-content of the rule.  Top-level rules have callback methods 
-which are called when the rule is recognized.
+Only exported rules can be spoken directly by the user. In other words, 
+they form the entry points into a grammar, causing things to happen 
+(callbacks to be called) when appropriate words are recognized. 
 
+WSR distinguishes between top-level rules, which can be recognized 
+directly, and exported rules, which can be referenced from rules in 
+other grammars. NatLink doesn't allow inter-grammar rule referencing and 
+uses exported to refer to directly recognizable rules. Dragonfly follows 
+NatLink in functionality and terminology on this topic. 
+
+Properties of exported rules:
+
+ * Exported rules are known as a top-level rules for WSR
+   (``SRATopLevel``).
+ * Exported rules can be spoken by the user directly.
+ * Exported rules can be referenced from other rules within
+   the same grammar.
+ * Exported rules can be referenced from rules in other grammars
+   (only possible for WSR).
+ * Exported rules can be enabled and disabled to receive recognitions
+   or not (:meth:`~dragonfly.grammar.rule_base.Rule.enable`,
+   :meth:`~dragonfly.grammar.rule_base.Rule.disable`).
+ * Exported rules have callbacks which are called when recognition
+   occurs (:meth:`~dragonfly.grammar.rule_base.Rule.process_begin`,
+   :meth:`~dragonfly.grammar.rule_base.Rule.process_recognition`).
+
+Non-exported rules cannot be recognized directly but only as parts of 
+other rules that reference them. 
+
+Properties of non-exported rules:
+
+ * Non-exported rules can't be spoken by the user directly.
+ * Non-exported rules can be referenced from other rules within
+   the same grammar.
+ * Non-exported rules can't be referenced from rules in other
+   grammars (never possible for DNS).
+
+
+.. _RefObjectModelRulesImported:
+
+Imported rules
+----------------------------------------------------------------------------
+
+Rules can be imported, i.e. defined outside the grammar referencing 
+them, or not imported, i.e. defined within the grammar. Whether a 
+rule is imported or not is defined when the rule is created. 
+
+NatLink in general doesn't allow rules from one grammar to be imported 
+into another grammar, i.e. inter-grammar rule referencing. However, it 
+does provide the following three built-in rules which can be imported: 
+
+ * ``dgnletters`` -- All the letters of the alphabet for spelling
+ * ``dgnwords`` -- All words active during dictation
+ * ``dgndictation`` -- A special rule which corresponds to free-form
+   dictation; imported by Dragonfly for its
+   :class:`~dragonfly.grammar.elements_basic.Dictation` element
+
+
+.. _RefObjectModelElements:
 
 Elements
-----------------------------------------------------------------------------
+============================================================================
 
-Elements are the basic building blocks of the language model. 
-The define exactly what can be said, inform the content of 
-rules.  The most common elements are:
+Elements are the basic building blocks of the language model. They 
+define exactly what can be said and thereby form the content of rules. 
+The most common elements are: 
 
- * ``Literal(...)`` -- one or more literal words.
- * ``Sequence(...)`` -- a series of other elements.
- * ``Alternative(...)`` -- a choice of other elements, only
-   one of which can be said within a single recognition.
- * ``Optional(...)`` -- an element container which makes
-   its single child element optional.
- * ``RuleRef(...)`` -- a reference to another rule.
- * ``ListRef(...)`` -- a reference to a list, which is
-   a dynamic language element which can be updated and
-   modified without reloading the grammar.
- * ``Dictation(...)`` -- a free-form dictation element
-   which allows the speaker to say one or more natural
-   language words.
+ * :class:`~dragonfly.grammar.elements_basic.Literal`
+   -- one or more literal words
+ * :class:`~dragonfly.grammar.elements_basic.Sequence`
+   -- a series of other elements.
+ * :class:`~dragonfly.grammar.elements_basic.Alternative`
+   -- a choice of other elements, only one of which can be said
+   within a single recognition
+ * :class:`~dragonfly.grammar.elements_basic.Optional`
+   -- an element container which makes its single child element
+   optional
+ * :class:`~dragonfly.grammar.elements_basic.RuleRef`
+   -- a reference to another rule
+ * :class:`~dragonfly.grammar.elements_basic.ListRef`
+   -- a reference to a list, which is a dynamic language element which
+   can be updated and modified without reloading the grammar
+ * :class:`~dragonfly.grammar.elements_basic.Dictation`
+   -- a free-form dictation element which allows the speaker to say
+   one or more natural language words
 
 The above mentioned element types are at the heart of 
 Dragonfly's object model.  But of course using them all the time 
@@ -76,6 +146,6 @@ to specify every grammar would be quite tedious.  There is
 therefore also a special element which constructs these basic 
 element types from a string specification:
 
- * ``Compound(...)`` -- a special element which parses a string 
-   spec to create a hierarchy of basic elements.  The format of 
-   this spec is described :ref:`RefElementClasses`.
+ * :class:`~dragonfly.grammar.elements_compound.Compound`
+   -- a special element which parses a string 
+   spec to create a hierarchy of basic elements.
