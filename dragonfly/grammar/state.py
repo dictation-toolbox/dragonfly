@@ -73,8 +73,13 @@ class State(object):
                 return self._rule_names[rule_id]
             elif rule_id == 1000000:
                 return "dgndictation"
+            elif rule_id == 1000001:
+                return "dgnletters"
             else:
-                raise GrammarError("Malformed recognition data.")
+                word = self._results[i][0]
+                raise GrammarError("Malformed recognition data:"
+                                   " word %r, rule id %d."
+                                   % (word, rule_id))
         else:
             return None
 
