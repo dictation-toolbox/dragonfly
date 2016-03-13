@@ -74,6 +74,9 @@ The following applications integrate Dragonfly for speech recognition:
  * `SublimeSpeech <https://github.com/Mozillion/SublimeSpeech>`_
    --- A Dragonfly-based speech recognition plug-in for Sublime Text 2
 
+ * `Speechcoder <https://github.com/bradteston/Speechcoder>`_
+   --- A plug-in for Notepad++ to facilitate writing code
+
 Command modules
 ============================================================================
 
@@ -102,6 +105,11 @@ Dragonfly:
 
  * `WhIzz2000's command modules
    <https://github.com/whIzz2000/natlink-py-scripts>`_
+
+ * `Designing Dragonfly grammars
+   <http://handsfreecoding.org/?p=100>`_
+   --- A blog post by James Stout discussing techniques to design command
+   grammars
 
 Forks
 ============================================================================
