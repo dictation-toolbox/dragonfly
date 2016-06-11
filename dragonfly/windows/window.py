@@ -185,6 +185,8 @@ class Window(object):
                                               buffer_len)
             buffer = buffer[:]
             buffer = buffer[:buffer.index("\0")]
+        finally:
+            windll.kernel32.CloseHandle(handle)
 
         return str(buffer)
 
