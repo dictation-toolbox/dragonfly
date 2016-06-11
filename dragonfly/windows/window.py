@@ -163,12 +163,31 @@ class Window(object):
         handle = windll.kernel32.OpenProcess(0x0410, 0, pid)
 
         # Retrieve and return the process's executable path.
-        buf_len = 256
-        buf = (c_wchar * buf_len)()
-        windll.psapi.GetModuleFileNameExW(handle, 0, pointer(buf), buf_len)
-        buf = buf[:]
-        buf = buf[:buf.index("\0")]
-        return str(buf)
+        try:
+            # Try to use the QueryForProcessImageNameW function
+            #  available since Windows Vista.
+            buffer_len = c_ulong(256)
+            buffer = (c_wchar * buffer_len.value)()
+            windll.kernel32.QueryFullProcessImageNameW(handle, 0,
+                                                       pointer(buffer),
+                                                       pointer(buffer_len))
+            buffer = buffer[:]
+            buffer = buffer[:buffer.index("\0")]
+        except Exception:
+            # If the function above failed, fall back to the older
+            #  GetModuleFileNameEx function, available since windows XP.
+            #  Note that this fallback function seems to fail when
+            #  this process is 32 bit Python and handle refers to a
+            #  64-bit process.
+            buffer_len = 256
+            buffer = (c_wchar * buffer_len)()
+            windll.psapi.GetModuleFileNameExW(handle, 0, pointer(buffer),
+                                              buffer_len)
+            buffer = buffer[:]
+            buffer = buffer[:buffer.index("\0")]
+
+        return str(buffer)
+
     executable = property(fget=_get_window_module)
 
 
