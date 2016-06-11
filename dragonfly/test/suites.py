@@ -48,7 +48,8 @@ common_names   = [
 natlink_names  = [
                   ".test_engine_natlink",
                   "doc:documentation/test_recobs_doctest.txt",
-                  "doc:documentation/test_word_formatting_doctest.txt",
+#                  "doc:documentation/test_word_formatting_v10_doctest.txt",
+                  "doc:documentation/test_word_formatting_v11_doctest.txt",
                  ]
 
 sapi5_names    = [
