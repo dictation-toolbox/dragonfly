@@ -31,7 +31,7 @@ from dragonfly.actions.keyboard import keyboard, Typeable
 # Mapping of name -> typeable.
 
 typeables = {
-    # Alphanumeric keys
+    # Lowercase letter keys
     "a":                keyboard.get_typeable(char='a'),
     "alpha":            keyboard.get_typeable(char='a'),
     "b":                keyboard.get_typeable(char='b'),
@@ -84,6 +84,8 @@ typeables = {
     "yankee":           keyboard.get_typeable(char='y'),
     "z":                keyboard.get_typeable(char='z'),
     "zulu":             keyboard.get_typeable(char='z'),
+
+    # Uppercase letter keys
     "A":                keyboard.get_typeable(char='A'),
     "Alpha":            keyboard.get_typeable(char='A'),
     "B":                keyboard.get_typeable(char='B'),
@@ -136,6 +138,8 @@ typeables = {
     "Yankee":           keyboard.get_typeable(char='Y'),
     "Z":                keyboard.get_typeable(char='Z'),
     "Zulu":             keyboard.get_typeable(char='Z'),
+
+    # Number keys
     "0":                keyboard.get_typeable(char='0'),
     "zero":             keyboard.get_typeable(char='0'),
     "1":                keyboard.get_typeable(char='1'),

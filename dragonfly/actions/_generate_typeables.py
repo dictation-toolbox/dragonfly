@@ -28,7 +28,7 @@
 (vkey, lookup) = range(2)
 
 key_map = (
-    ("Alphanumeric keys", [
+    ("Lowercase letter keys", [
         (lookup, "a",                              "a alpha"),
         (lookup, "b",                              "b bravo"),
         (lookup, "c",                              "c charlie"),
@@ -54,7 +54,8 @@ key_map = (
         (lookup, "w",                              "w whisky"),
         (lookup, "x",                              "x xray"),
         (lookup, "y",                              "y yankee"),
-        (lookup, "z",                              "z zulu"),
+        (lookup, "z",                              "z zulu")]),
+    ("Uppercase letter keys", [
         (lookup, "A",                              "A Alpha"),
         (lookup, "B",                              "B Bravo"),
         (lookup, "C",                              "C Charlie"),
@@ -80,7 +81,8 @@ key_map = (
         (lookup, "W",                              "W Whisky"),
         (lookup, "X",                              "X Xray"),
         (lookup, "Y",                              "Y Yankee"),
-        (lookup, "Z",                              "Z Zulu"),
+        (lookup, "Z",                              "Z Zulu")]),
+    ("Number keys", [
         (lookup, "0",                              "0 zero"),
         (lookup, "1",                              "1 one"),
         (lookup, "2",                              "2 two"),

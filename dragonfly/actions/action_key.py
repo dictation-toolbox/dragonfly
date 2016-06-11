@@ -85,7 +85,7 @@ that only *keyname* is required; the other fields are optional.
 Key names
 ............................................................................
 
- - Alphanumeric keys: ``a`` or ``alpha``, ``b`` or ``bravo``,
+ - Lowercase letter keys: ``a`` or ``alpha``, ``b`` or ``bravo``,
    ``c`` or ``charlie``, ``d`` or ``delta``, ``e`` or ``echo``,
    ``f`` or ``foxtrot``, ``g`` or ``golf``, ``h`` or ``hotel``,
    ``i`` or ``india``, ``j`` or ``juliet``, ``k`` or ``kilo``,
@@ -93,19 +93,20 @@ Key names
    ``o`` or ``oscar``, ``p`` or ``papa``, ``q`` or ``quebec``,
    ``r`` or ``romeo``, ``s`` or ``sierra``, ``t`` or ``tango``,
    ``u`` or ``uniform``, ``v`` or ``victor``, ``w`` or ``whisky``,
-   ``x`` or ``xray``, ``y`` or ``yankee``, ``z`` or ``zulu``,
-   ``A`` or ``Alpha``, ``B`` or ``Bravo``, ``C`` or ``Charlie``,
-   ``D`` or ``Delta``, ``E`` or ``Echo``, ``F`` or ``Foxtrot``,
-   ``G`` or ``Golf``, ``H`` or ``Hotel``, ``I`` or ``India``,
-   ``J`` or ``Juliet``, ``K`` or ``Kilo``, ``L`` or ``Lima``,
-   ``M`` or ``Mike``, ``N`` or ``November``, ``O`` or ``Oscar``,
-   ``P`` or ``Papa``, ``Q`` or ``Quebec``, ``R`` or ``Romeo``,
-   ``S`` or ``Sierra``, ``T`` or ``Tango``, ``U`` or ``Uniform``,
-   ``V`` or ``Victor``, ``W`` or ``Whisky``, ``X`` or ``Xray``,
-   ``Y`` or ``Yankee``, ``Z`` or ``Zulu``, ``0`` or ``zero``,
-   ``1`` or ``one``, ``2`` or ``two``, ``3`` or ``three``,
-   ``4`` or ``four``, ``5`` or ``five``, ``6`` or ``six``,
-   ``7`` or ``seven``, ``8`` or ``eight``, ``9`` or ``nine``
+   ``x`` or ``xray``, ``y`` or ``yankee``, ``z`` or ``zulu``
+ - Uppercase letter keys: ``A`` or ``Alpha``, ``B`` or ``Bravo``,
+   ``C`` or ``Charlie``, ``D`` or ``Delta``, ``E`` or ``Echo``,
+   ``F`` or ``Foxtrot``, ``G`` or ``Golf``, ``H`` or ``Hotel``,
+   ``I`` or ``India``, ``J`` or ``Juliet``, ``K`` or ``Kilo``,
+   ``L`` or ``Lima``, ``M`` or ``Mike``, ``N`` or ``November``,
+   ``O`` or ``Oscar``, ``P`` or ``Papa``, ``Q`` or ``Quebec``,
+   ``R`` or ``Romeo``, ``S`` or ``Sierra``, ``T`` or ``Tango``,
+   ``U`` or ``Uniform``, ``V`` or ``Victor``, ``W`` or ``Whisky``,
+   ``X`` or ``Xray``, ``Y`` or ``Yankee``, ``Z`` or ``Zulu``
+ - Number keys: ``0`` or ``zero``, ``1`` or ``one``, ``2`` or ``two``,
+   ``3`` or ``three``, ``4`` or ``four``, ``5`` or ``five``,
+   ``6`` or ``six``, ``7`` or ``seven``, ``8`` or ``eight``,
+   ``9`` or ``nine``
  - Symbol keys: ``bang`` or ``exclamation``, ``at``, ``hash``,
    ``dollar``, ``percent``, ``caret``, ``and`` or ``ampersand``,
    ``star`` or ``asterisk``, ``leftparen`` or ``lparen``,
