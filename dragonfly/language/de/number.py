@@ -34,8 +34,19 @@ from ..base.digits_internal   import DigitsContentBase
 int_0           = MapIntBuilder({
                                  "null":         0,
                                })
-int_1_9         = MapIntBuilder({
+int_1_9_eins    = MapIntBuilder({
                                  "eins":         1,
+                                 "zwei":         2,
+                                 "drei":         3,
+                                 "vier":         4,
+                                 "fuenf":        5,
+                                 "sechs":        6,
+                                 "sieben":       7,
+                                 "acht":         8,
+                                 "neun":         9,
+                               })
+int_1_9         = MapIntBuilder({
+                                 "ein":          1,
                                  "zwei":         2,
                                  "drei":         3,
                                  "vier":         4,
@@ -69,12 +80,12 @@ int_20_90_10    = MapIntBuilder({
                                })
 int_20_99       = MagnitudeIntBuilder(
                    factor      = 10,
-                   spec        = "<multiplier> [<remainder>]",
+                   spec        = "[<remainder> und] <multiplier>",
                    multipliers = [int_20_90_10],
                    remainders  = [int_1_9],
                   )
 int_and_1_99    = CollectionIntBuilder(
-                   spec        = "[und] <element>",
+                   spec        = "<element>",
                    set         = [int_1_9, int_10_19, int_20_99],
                   )
 int_100s        = MagnitudeIntBuilder(
@@ -106,7 +117,7 @@ int_1000000s    = MagnitudeIntBuilder(
 #---------------------------------------------------------------------------
 
 class IntegerContent(IntegerContentBase):
-    builders = [int_0, int_1_9, int_10_19, int_20_99,
+    builders = [int_0, int_1_9_eins, int_10_19, int_20_99,
                 int_100s, int_100big, int_1000s, int_1000000s]
 
 class DigitsContent(DigitsContentBase):
