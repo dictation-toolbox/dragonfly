@@ -122,7 +122,7 @@ import logging
 #  - loading -- Config setup is complete, loading from user file.
 #  - done -- Config initialization and loading complete, ready to use.
 
-_init, _load, _done = range(3)
+_init, _load, _done = list(range(3))
 
 
 #---------------------------------------------------------------------------
@@ -159,7 +159,7 @@ class Config(object):
 
     @classmethod
     def get_instances(cls):
-        instances = cls._configs_by_name.items()
+        instances = list(cls._configs_by_name.items())
         instances.sort()
         return [instance for name, instance in instances]
         
@@ -239,10 +239,10 @@ class Config(object):
             section.update_namespace(namespace)
 
         try:
-            execfile(path, namespace)
+            exec(compile(open(path).read(), path, 'exec'), namespace)
 #        except ConfigError, e:
-        except Exception, e:
-            print "exception:", e
+        except Exception as e:
+            print("exception:", e)
             t, v, tb = sys.exc_info()
             frames = traceback.extract_tb(tb)
             relevant_frames = []
@@ -250,7 +250,7 @@ class Config(object):
             include_all = False
             for frame in frames:
                 filename, line, function, text = frame
-                print "frame:", frame
+                print("frame:", frame)
 
                 if not include_all:
                     file1 = os.path.basename(filename)
@@ -332,7 +332,7 @@ class Config(object):
         while stack:
             # Try to retrieve the next section from the top of the stack.
             try: 
-                section_name, section = stack[-1].next()
+                section_name, section = next(stack[-1])
                 names.append(section_name)
             except StopIteration:
                 # No more subsections, remove section from top of stack.

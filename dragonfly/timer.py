@@ -39,9 +39,9 @@ class _Timer(object):
             self.next_time += self.interval
             try:
                 self.function()
-            except Exception, e:
+            except Exception as e:
                 logging.getLogger("timer").exception("Exception during timer callback")
-                print "Exception during timer callback: %s (%r)" % (e, e)
+                print("Exception during timer callback: %s (%r)" % (e, e))
 
     def __init__(self, interval):
         self.interval = interval

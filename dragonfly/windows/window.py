@@ -91,7 +91,7 @@ class Window(object):
     # Methods that control attribute access.
 
     def _set_handle(self, handle):
-        if not isinstance(handle, (int, long)):
+        if not isinstance(handle, int):
             raise TypeError("Window handle must be integer or long,"
                             " but received {0!r}".format(handle))
         self._handle = handle
@@ -106,7 +106,7 @@ class Window(object):
         for name in self._names:
             return name
     def _set_name(self, name):
-        assert isinstance(name, basestring)
+        assert isinstance(name, str)
         self._names.add(name)
         self._windows_by_name[name] = self
     name = property(fget=_get_name,

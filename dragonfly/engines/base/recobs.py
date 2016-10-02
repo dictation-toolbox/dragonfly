@@ -72,7 +72,7 @@ class RecObsManagerBase(object):
             try:
                 if hasattr(observer, "on_begin"):
                     observer.on_begin()
-            except Exception, e:
+            except Exception as e:
                 self._log.exception("Exception during on_begin()"
                                     " method of recognition observer %s: %s"
                                     % (observer, e))
@@ -82,7 +82,7 @@ class RecObsManagerBase(object):
             try:
                 if hasattr(observer, "on_recognition"):
                     observer.on_recognition(words)
-            except Exception, e:
+            except Exception as e:
                 self._log.exception("Exception during on_recognition()"
                                     " method of recognition observer %s: %s"
                                     % (observer, e))
@@ -92,7 +92,7 @@ class RecObsManagerBase(object):
             try:
                 if hasattr(observer, "on_failure"):
                     observer.on_failure()
-            except Exception, e:
+            except Exception as e:
                 self._log.exception("Exception during on_failure()"
                                     " method of recognition observer %s: %s"
                                     % (observer, e))

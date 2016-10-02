@@ -106,8 +106,8 @@ class CompoundRule(Rule):
         if exported is None: exported = self.exported
         if context  is None: context  = self.context
 
-        assert isinstance(name, (str, unicode))
-        assert isinstance(spec, (str, unicode))
+        assert isinstance(name, str)
+        assert isinstance(spec, str)
         assert isinstance(extras, (list, tuple))
         for item in extras:
             assert isinstance(item, ElementBase)
@@ -140,7 +140,7 @@ class CompoundRule(Rule):
                   "_node":     node,
                  }
         extras.update(self._defaults)
-        for name, element in self._extras.iteritems():
+        for name, element in self._extras.items():
             extra_node = node.get_child_by_name(name, shallow=True)
             if extra_node:
                 extras[name] = extra_node.value()

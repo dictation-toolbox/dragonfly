@@ -55,12 +55,12 @@ def get_engine(name=None):
                 _default_engine = get_specific_engine()
                 _engines_by_name["natlink"] = _default_engine
                 return _default_engine
-        except Exception, e:
+        except Exception as e:
             message = ("Exception while initializing natlink engine:"
                        " %s" % (e,))
             log.exception(message)
             traceback.print_exc()
-            print message
+            print(message)
             if name:
                 raise EngineError(message)
 
@@ -73,12 +73,12 @@ def get_engine(name=None):
                 _default_engine = get_specific_engine()
                 _engines_by_name["sapi5"] = _default_engine
                 return _default_engine
-        except Exception, e:
+        except Exception as e:
             message = ("Exception while initializing sapi5 engine:"
                        " %s" % (e,))
             log.exception(message)
             traceback.print_exc()
-            print message
+            print(message)
             if name:
                 raise EngineError(message)
 

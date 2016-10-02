@@ -43,10 +43,10 @@ def is_engine_available():
     # Attempt to import natlink.
     try:
         import natlink
-    except ImportError, e:
+    except ImportError as e:
         _log.info("Failed to import natlink package: %s" % (e,))
         return False
-    except Exception, e:
+    except Exception as e:
         _log.exception("Exception during import of natlink package: %s" % (e,))
         return False
 
@@ -57,7 +57,7 @@ def is_engine_available():
             _log.info("Natlink is available but NaturallySpeaking is not"
                       " running.")
             return False
-    except Exception, e:
+    except Exception as e:
         _log.exception("Exception during natlink.isNatSpeakRunning(): %s" % (e,))
         return False
 

@@ -90,11 +90,11 @@ class Grammar(object):
     def __del__(self):
         try:
             self.unload()
-        except Exception, e:
+        except Exception as e:
             try:
                 self._log.exception("Exception during grammar unloading:"
                                     " %s" % (e,))
-            except Exception, e:
+            except Exception as e:
                 pass
 
     #-----------------------------------------------------------------------
@@ -298,7 +298,7 @@ class Grammar(object):
             raise GrammarError("List '%s' not loaded in this grammar." \
                 % lst.name)
         elif [True for w in lst.get_list_items()
-                    if not isinstance(w, (str, unicode))]:
+                    if not isinstance(w, str)]:
             raise GrammarError("List '%s' contains objects other than" \
                 "strings." % lst.name)
 

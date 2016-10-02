@@ -107,7 +107,7 @@ class Function(ActionBase):
 
         try:
             self._function(**arguments)
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Exception from function %s:"
                                 % self._function.__name__)
             raise ActionError("%s: %s" % (self, e))

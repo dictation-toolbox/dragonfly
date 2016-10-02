@@ -25,7 +25,7 @@
 """
 
 
-(vkey, lookup) = range(2)
+(vkey, lookup) = list(range(2))
 
 key_map = (
     ("Lowercase letter keys", [
@@ -204,9 +204,9 @@ key_map = (
         (vkey,   "win32con.VK_BROWSER_FORWARD",    "browserforward")]),
     )
 
-print "---- Code for typeables.py"
+print("---- Code for typeables.py")
 for group_name, group_map in key_map:
-    print "    # %s" % (group_name,)
+    print("    # %s" % (group_name,))
     for key_type, key_value, key_names in group_map:
         for key_name in key_names.split():
             if key_type == lookup:
@@ -217,11 +217,11 @@ for group_name, group_map in key_map:
             else:
                 raise Exception("Invalid key type: {0!r} (for {1!r} {2!r})"
                                 .format(key_type, key_value, key_names))
-            print ('    "%s": %s%s,'
-                   % (key_name, " " * (16-len(key_name)), value_code))
-    print
+            print(('    "%s": %s%s,'
+                   % (key_name, " " * (16-len(key_name)), value_code)))
+    print()
 
-print "---- Code for documentation in action_key.py"
+print("---- Code for documentation in action_key.py")
 for group_name, group_map in key_map:
     parts = [group_name + ":"]
     for key_type, key_value, key_names in group_map:
@@ -236,6 +236,6 @@ for group_name, group_map in key_map:
         if len(concatenation) <= 72:
             line = concatenation
         else:
-            print line
+            print(line)
             line = "   " + part
-    print line
+    print(line)

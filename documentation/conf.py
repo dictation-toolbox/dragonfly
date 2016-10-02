@@ -18,7 +18,7 @@ version_string = open(path).readline()
 match = re.match(r"\s*(?P<rel>(?P<ver>\d+\.\d+)(?:\.\S+)*)\s*", version_string)
 version = match.group("ver")
 release = match.group("rel")
-print "Version:", version, "-- Release:", release
+print("Version:", version, "-- Release:", release)
 
 
 #---------------------------------------------------------------------------
@@ -49,8 +49,8 @@ templates_path = ["templates"]
 source_suffix = ".txt"
 master_doc = "index"
 
-project = u"Dragonfly"
-copyright = u"2014, Christo Butcher"
+project = "Dragonfly"
+copyright = "2014, Christo Butcher"
 
 today_fmt = "%Y-%m-%d"
 exclude_trees = []
@@ -72,6 +72,6 @@ htmlhelp_basename = "Dragonflydoc"
 # Options for LaTeX output
 
 latex_documents = [
-  ("index", "Dragonfly.tex", u"Dragonfly Documentation",
-   u"Christo Butcher", "manual"),
+  ("index", "Dragonfly.tex", "Dragonfly Documentation",
+   "Christo Butcher", "manual"),
 ]

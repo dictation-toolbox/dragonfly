@@ -28,7 +28,7 @@ class TestEngineSapi5(unittest.TestCase):
     def test_get_engine_sapi5_is_usable(self):
         """ Verify that the sapi5 engine is usable. """
         engine = get_engine()
-        self.assert_(isinstance(engine, EngineBase))
+        self.assertTrue(isinstance(engine, EngineBase))
         self.assertEqual("sapi5", engine.name)
 
         engine.speak("testing WSR")
@@ -37,4 +37,4 @@ class TestEngineSapi5(unittest.TestCase):
         seq = Sequence([Literal("hello"), Literal("world")])
         tester = ElementTester(seq, engine=engine)
         results = tester.recognize("hello world")
-        self.assertEqual([u"hello", u"world"], results)
+        self.assertEqual(["hello", "world"], results)

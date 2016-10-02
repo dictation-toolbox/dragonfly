@@ -40,7 +40,7 @@ class RuleTestGrammar(Grammar):
         Grammar.__init__(self, self.__class__.__name__, engine=engine)
 
     def recognize(self, words):
-        if isinstance(words, basestring):
+        if isinstance(words, str):
             words = words.split()
 
         if not self.loaded:
@@ -56,7 +56,7 @@ class RuleTestGrammar(Grammar):
             #  recognition.
             try:
                 self.set_exclusiveness(True)
-            except Exception, e:
+            except Exception as e:
                 msg = ("Exception during setting grammar as"
                        " exclusive: %s" % (e,))
                 self._log.exception(msg)
@@ -74,11 +74,11 @@ class RuleTestGrammar(Grammar):
             # Mimic recognition.
             try:
                 mimic_method(self, words)
-            except MimicFailure, e:
+            except MimicFailure as e:
                 msg = "Recognition failed. (Words: %s)" % (words,)
                 self._log.error(msg)
                 raise TestError(msg)
-            except Exception, e:
+            except Exception as e:
                 msg = ("Exception during recognition: %s" % (e,))
                 self._log.exception(msg)
                 raise TestError(msg)
@@ -87,7 +87,7 @@ class RuleTestGrammar(Grammar):
             if unload_after_recognition:
                 try:
                     self.unload()
-                except Exception, e:
+                except Exception as e:
                     # Log exception, but do not reraise it as that would
                     #  mask any earlier exception.
                     self._log.exception("Failed to unload grammar: %s"

@@ -67,19 +67,19 @@ class DictationTestCase(unittest.TestCase):
                 else:
                     raise TestError("Invalid test info: %s" % (test_info,))
 
-                if isinstance(words, basestring):
+                if isinstance(words, str):
                     words = words.split()
 
                 recognized_value = tester.recognize(words)
-                if isinstance(recognized_value, basestring):
-                    recognized_value = unicode(recognized_value)
+                if isinstance(recognized_value, str):
+                    recognized_value = str(recognized_value)
                 elif isinstance(recognized_value, DictationContainerBase):
-                    recognized_value = unicode(recognized_value)
-                print "result:", recognized_value
+                    recognized_value = str(recognized_value)
+                print("result:", recognized_value)
                 if recognized_value != expected_value:
                     failures.append((words, expected_value,
                                      recognized_value))
-        except TestError, e:
+        except TestError as e:
             self.fail(str(e))
 
         if failures:
@@ -97,47 +97,47 @@ class EnglishNatlinkDictationTestCase(DictationTestCase):
     language     = "en"
     input_output = [
                     # Trivial words.
-                    (ur"non-existent-word",           RecognitionFailure),
-                    (ur"hello",                       ur"hello"),
-                    (ur"hello world",                 ur"hello world"),
+                    (r"non-existent-word",           RecognitionFailure),
+                    (r"hello",                       r"hello"),
+                    (r"hello world",                 r"hello world"),
 
                     # Capitalization.
-                    (ur"\Cap hello",                  ur"Hello"),
-                    (ur"hello \Cap",                  ur"hello"),
-                    (ur"\Cap hello world",            ur"Hello world"),
-                    (ur"hello \Cap world",            ur"hello World"),
-                    (ur"\Caps-On hello world",        ur"Hello World"),
-                    (ur"\Caps-Off hello world",       ur"hello world"),
-                    (ur"\Caps-On hello \Caps-Off world", ur"Hello world"),
-                    (ur"\All-Caps hello world",       ur"HELLO world"),
+                    (r"\Cap hello",                  r"Hello"),
+                    (r"hello \Cap",                  r"hello"),
+                    (r"\Cap hello world",            r"Hello world"),
+                    (r"hello \Cap world",            r"hello World"),
+                    (r"\Caps-On hello world",        r"Hello World"),
+                    (r"\Caps-Off hello world",       r"hello world"),
+                    (r"\Caps-On hello \Caps-Off world", r"Hello world"),
+                    (r"\All-Caps hello world",       r"HELLO world"),
 
                     # Spacing.
-                    (ur"\No-Space hello",             ur"hello"),
-                    (ur"hello \No-Space world",       ur"helloworld"),
-                    (ur"hello \No-Space \Cap world",  ur"helloWorld"),
-                    (ur"hello \Cap \No-Space world",  ur"helloWorld"),
-                    (ur"\No-Space-On hello world",    ur"helloworld"),
-                    (ur"\No-Space-On hello \No-Space-Off world", ur"hello world"),
+                    (r"\No-Space hello",             r"hello"),
+                    (r"hello \No-Space world",       r"helloworld"),
+                    (r"hello \No-Space \Cap world",  r"helloWorld"),
+                    (r"hello \Cap \No-Space world",  r"helloWorld"),
+                    (r"\No-Space-On hello world",    r"helloworld"),
+                    (r"\No-Space-On hello \No-Space-Off world", r"hello world"),
 
                     # Words with special formatting.
-                    (ur".\full-stop hello world",     ur".  Hello world"),
-                    (ur"hello .\full-stop world",     ur"hello.  World"),
-                    (ur"hello world .\full-stop",     ur"hello world."),
-                    (ur",\comma hello world",         ur", hello world"),
-                    (ur"hello ,\comma world",         ur"hello, world"),
-                    (ur"hello world ,\comma",         ur"hello world,"),
-                    (ur"(\left-paren hello world",    ur"(hello world"),
-                    (ur"hello (\left-paren world",    ur"hello (world"),
-                    (ur"hello world (\left-paren",    ur"hello world ("),
-                    (ur"-\hyphen hello world",        ur"-hello world"),
-                    (ur"hello -\hyphen world",        ur"hello-world"),
-                    (ur"hello world -\hyphen",        ur"hello world-"),
-                    (ur"four .\point seven",          ur"4.7"),
-                    (ur"four .\dot seven",            ur"4.7"),
-                    (ur"four .\full-stop seven",      ur"4.  7"),
+                    (r".\full-stop hello world",     r".  Hello world"),
+                    (r"hello .\full-stop world",     r"hello.  World"),
+                    (r"hello world .\full-stop",     r"hello world."),
+                    (r",\comma hello world",         r", hello world"),
+                    (r"hello ,\comma world",         r"hello, world"),
+                    (r"hello world ,\comma",         r"hello world,"),
+                    (r"(\left-paren hello world",    r"(hello world"),
+                    (r"hello (\left-paren world",    r"hello (world"),
+                    (r"hello world (\left-paren",    r"hello world ("),
+                    (r"-\hyphen hello world",        r"-hello world"),
+                    (r"hello -\hyphen world",        r"hello-world"),
+                    (r"hello world -\hyphen",        r"hello world-"),
+                    (r"four .\point seven",          r"4.7"),
+                    (r"four .\dot seven",            r"4.7"),
+                    (r"four .\full-stop seven",      r"4.  7"),
 
                     # Characters with accents.
-                    (ur"Düsseldorf",                  ur"Düsseldorf"),
+                    (r"Düsseldorf",                  r"Düsseldorf"),
                    ]
 
 

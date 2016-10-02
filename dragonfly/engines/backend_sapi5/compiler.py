@@ -39,7 +39,7 @@ from ...grammar.elements_basic  import Impossible, Literal
 # Utility generator function for iterating over COM collections.
 
 def collection_iter(collection):
-    for index in xrange(0, collection.Count):
+    for index in range(0, collection.Count):
         yield collection.Item(index)
 
 _trace_level=0
@@ -109,7 +109,7 @@ class Sapi5Compiler(CompilerBase):
         while stack:
             self._log.error("%s: Stack len %s." % (self, len(stack)))
             try:
-                t = stack[-1][0].next()
+                t = next(stack[-1][0])
             except StopIteration:
                 stack.pop()
                 continue

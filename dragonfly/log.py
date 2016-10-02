@@ -157,7 +157,7 @@ def setup_log(use_stdout=True, use_file=True):
     global _stdout_filters, _file_filters
 
     # Remove any previously created dispatching handlers.
-    for name, handler in _dispatching_handlers.items():
+    for name, handler in list(_dispatching_handlers.items()):
         logger = logging.getLogger(name)
         logger.removeHandler(handler)
 
@@ -168,7 +168,7 @@ def setup_log(use_stdout=True, use_file=True):
         _file_handler = _setup_file_handler()
 
     # Create and register default filters.
-    for name, levels in default_levels.items():
+    for name, levels in list(default_levels.items()):
         stdout_level, file_level = levels
         handler = DispatchingHandler()
         _dispatching_handlers[name] = handler
@@ -192,7 +192,7 @@ def setup_log(use_stdout=True, use_file=True):
 def setup_tracing(output, limit=None):
     from pkg_resources import resource_filename
     library_prefix = os.path.dirname(resource_filename(__name__, "setup.py"))
-    print "prefix:", library_prefix
+    print("prefix:", library_prefix)
     exclude_filenames = ("parser.py",)
 
     def _tracing_callback(frame, event, arg):

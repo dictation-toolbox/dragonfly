@@ -36,7 +36,7 @@ class TestWindow(unittest.TestCase):
         # Verify that only integers and longs are accepted.
         Window(0)
         Window(int(1))
-        Window(long(2))
+        Window(int(2))
         self.assertRaises(TypeError, Window, [None])
         self.assertRaises(TypeError, Window, ["string"])
         self.assertRaises(TypeError, Window, [3.4])

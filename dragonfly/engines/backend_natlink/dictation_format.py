@@ -59,13 +59,13 @@ class FlagContainer(object):
         for flag in self.flag_names:
             if flag in self._flags_true:
                 flags_true_names.append(flag)
-        return u", ".join(flags_true_names)
+        return ", ".join(flags_true_names)
 
     def __unicode__(self):
-        return u"%s(%s)" % (self.__class__.__name__, self.flags_string())
+        return "%s(%s)" % (self.__class__.__name__, self.flags_string())
 
     def __str__(self):
-        return unicode(self).encode("utf-8")
+        return str(self).encode("utf-8")
 
     def __getattr__(self, name):
         if name not in self.flag_names:
@@ -184,10 +184,10 @@ class Word(object):
         flags_string = self.flags.flags_string()
         if flags_string:
             info.append(flags_string)
-        return u"%s(%s)" % (self.__class__.__name__, ", ".join(info))
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(info))
 
     def __str__(self):
-        return unicode(self).encode("utf-8")
+        return str(self).encode("utf-8")
 
 
 #===========================================================================
@@ -264,7 +264,7 @@ class WordParserDns10(WordParserBase):
             # DNS and Natlink provide recognized words as "Windows-1252"
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
-            input = unicode(input, "windows-1252")
+            input = str(input, "windows-1252")
 
         # The written and spoken forms of a word are separated by a "\"
         # character.
@@ -357,7 +357,7 @@ class WordParserDns11(WordParserBase):
             # DNS and Natlink provide recognized words as "Windows-1252"
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
-            input = unicode(input, "windows-1252")
+            input = str(input, "windows-1252")
 
         parts = input.split("\\")
         if len(parts) == 1:
@@ -463,7 +463,7 @@ class WordFormatter(object):
         self.two_spaces_after_period = two_spaces_after_period
 
     def format_dictation(self, input_words):
-        if isinstance(input_words, basestring):
+        if isinstance(input_words, str):
             raise ValueError("Argument input_words must be a sequence of"
                              " words, but received a single string: {0!r}"
                              .format(input_words))
@@ -478,7 +478,7 @@ class WordFormatter(object):
                             .format(word, formatted_words[-1],
                                     self.state, new_state))
             self.state = new_state
-        return u"".join(formatted_words)
+        return "".join(formatted_words)
 
     def apply_formatting(self, word):
         state = self.state

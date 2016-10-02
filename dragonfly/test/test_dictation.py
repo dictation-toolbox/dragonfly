@@ -42,20 +42,20 @@ class TestNonAsciiDictation(unittest.TestCase):
                            value_func=value_func)
         tester = ElementTester(element)
 
-        words = [u"test", u"touché"]
+        words = ["test", "touché"]
         dictation = tester.recognize(words)
 
         # Verify recognition returned dictation result.
         if not isinstance(dictation, DictationContainerBase):
-            message = (u"Expected recognition result to be a dictation"
-                       u" container, but received %r"
+            message = ("Expected recognition result to be a dictation"
+                       " container, but received %r"
                        % (repr(dictation).decode("windows-1252"),))
             self.fail(message.encode("windows-1252"))
 
         # Verifying dictation converts/encode successfully.
         self.assertEqual(str(dictation), "touché")
-        self.assertEqual(unicode(dictation), u"touché")
-        self.assert_(isinstance(repr(dictation), (str, unicode)))
+        self.assertEqual(str(dictation), "touché")
+        self.assertTrue(isinstance(repr(dictation), str))
 
 
 class NonAsciiUnicodeDictationTestCase(ElementTestCase):
@@ -63,15 +63,15 @@ class NonAsciiUnicodeDictationTestCase(ElementTestCase):
 
     def _build_element(self):
         def value_func(node, extras):
-            return unicode(extras["text"])
+            return str(extras["text"])
         return Compound("test <text>",
                         extras=[Dictation(name="text")],
                         value_func=value_func)
 
     input_output = [
-                    (u"test dictation",     u"dictation"),
-                    (u"test touché",        u"touché"),
-                    (u"test jalapeño",      u"jalapeño"),
+                    ("test dictation",     "dictation"),
+                    ("test touché",        "touché"),
+                    ("test jalapeño",      "jalapeño"),
                    ]
 
 

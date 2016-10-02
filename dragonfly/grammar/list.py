@@ -54,7 +54,7 @@
 
 class ListBase(object):
 
-    _valid_types = (str, unicode)
+    _valid_types = (str, str)
 
     def __init__(self, name):
         self._name = name
@@ -202,7 +202,7 @@ class DictList(ListBase, dict):
     # Accessor for the grammar to retrieve the list items.
 
     def get_list_items(self):
-        return self.keys()
+        return list(self.keys())
 
     #-----------------------------------------------------------------------
     # Custom methods.
