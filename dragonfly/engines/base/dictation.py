@@ -64,7 +64,9 @@ class DictationContainerBase(object):
         self._formatted = None
 
     def __str__(self):
-        return str(self).encode("windows-1252")
+        if self._formatted is None:
+            self._formatted = self.format()
+        return self._formatted
 
     def __unicode__(self):
         if self._formatted is None:
