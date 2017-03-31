@@ -250,6 +250,20 @@ class _Button(_EventBase):
         send_input_array(array)
 
 
+class _Scroll(_EventBase):
+
+    def __init__(self, flag, amount):
+        _EventBase.__init__(self)
+        self._flag = flag
+        self._amount = amount
+
+    def execute(self, window):
+        zero = pointer(c_ulong(0))
+        inputs = [MouseInput(0, 0, self._amount, self._flag, 0, zero)]
+        array = make_input_array(inputs)
+        send_input_array(array)
+
+
 class _Pause(_EventBase):
 
     def __init__(self, interval):
@@ -341,6 +355,13 @@ class Mouse(DynStrActionBase):
                                 win32con.MOUSEEVENTF_MIDDLEUP),
                     }
 
+    # Scroll amounts are multiples of 120, which is WHEEL_DELTA,
+    # or one scroll wheel click.
+    _scroll_flags = {
+                     "scrolldown":   (win32con.MOUSEEVENTF_WHEEL, -120),
+                     "scrollup":  (win32con.MOUSEEVENTF_WHEEL, 120),
+                    }
+
     def _process_button(self, spec, events):
         parts = spec.split(":", 1)
         button = parts[0].strip()
@@ -366,6 +387,24 @@ class Mouse(DynStrActionBase):
         events.append(event)
         return True
 
+    def _process_scroll(self, spec, events):
+        parts = spec.split(":", 1)
+        direction = parts[0].strip()
+        if len(parts) == 1:  special = 1
+        else:                special = parts[1].strip()
+
+        if direction not in self._scroll_flags:
+            return False
+        flag, multiplier = self._scroll_flags[direction]
+        try:
+            amount = int(special)
+        except ValueError:
+            return False
+        event = _Scroll(flag, multiplier * amount)
+
+        events.append(event)
+        return True
+
     def _process_pause(self, spec, events):
         if not spec.startswith("/"):
             return False
@@ -379,6 +418,7 @@ class Mouse(DynStrActionBase):
                  _process_screen_position,
                  _process_relative_position,
                  _process_button,
+                 _process_scroll,
                  _process_pause,
                 ]
 
