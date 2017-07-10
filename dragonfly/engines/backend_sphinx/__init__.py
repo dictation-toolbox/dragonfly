@@ -39,12 +39,16 @@ def is_engine_available():
     if _engine:
         return True
 
-    # TODO Attempt to communicate with Sphinx somehow
     try:
-        pass
-    except Exception, e:
-        _log.info("Failed to connect to Sphinx process: %s" % (e,))
+        import pocketsphinx
+    except ImportError, e:
+        _log.info("Failed to import pocketsphinx package: %s. Is it installed?" % (e,))
         return False
+    except Exception, e:
+        _log.info("Exception during import of pocketsphinx package: %s" % (e,))
+        return False
+
+    return True
 
 
 def get_engine():

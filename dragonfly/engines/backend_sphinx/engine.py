@@ -38,11 +38,19 @@ class SphinxEngine(EngineBase):
     def __init__(self):
         EngineBase.__init__(self)
 
+        try:
+            import pocketsphinx
+            self.sphinx = pocketsphinx
+        except ImportError:
+            self._log.error("%s: failed to import pocketsphinx module." % self)
+            raise EngineError("Failed to import the pocketsphinx module.")
+
         self._grammar_count = 0
         self._recognition_observer_manager = SphinxRecObsManager(self)
 
     def connect(self):
         """ Connect to Sphinx somehow. """
+        self.sphinx.Pocketsphinx()
         pass  # TODO
 
     def disconnect(self):
