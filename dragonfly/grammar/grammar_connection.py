@@ -22,9 +22,17 @@
     This file implements the ConnectionGrammar class.
 """
 
-
-from win32com.client import Dispatch
-from pywintypes import com_error
+try:
+    from win32com.client import Dispatch
+    from pywintypes import com_error
+except ImportError, error:
+    import sys
+    # These modules aren't available on non-Windows platforms, so mock them.
+    if "win" not in sys.platform:
+        from ..os_dependent_mock import Dispatch
+        from ..os_dependent_mock import COMError as com_error
+    else:
+        raise error
 
 from dragonfly.grammar.grammar_base import Grammar
 
