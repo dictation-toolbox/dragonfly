@@ -37,7 +37,7 @@ except ImportError, error:
 from dragonfly.grammar.grammar_base import Grammar
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 class ConnectionGrammar(Grammar):
     """
@@ -57,7 +57,7 @@ class ConnectionGrammar(Grammar):
     """
 
     def __init__(self, name, description=None, context=None, app_name=None):
-        assert isinstance(app_name, basestring) or app_name == None
+        assert isinstance(app_name, (str, unicode)) or app_name is None
         self._app_name = app_name
         self._application = None
         Grammar.__init__(self, name=name, description=description,
@@ -66,10 +66,11 @@ class ConnectionGrammar(Grammar):
     def __del__(self):
         try:
             self.disconnect()
-        except Exception, error:
-            pass
+        except Exception, e:
+            self._log.warning("Grammar %s: failed to disconnect from "
+                              "%r: %s." % (self, self._app_name, e))
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for context management.
 
     application = property(lambda self: self._application,
@@ -96,7 +97,7 @@ class ConnectionGrammar(Grammar):
             self.connection_up()
         return True
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for managing the application connection.
 
     def connect(self):
