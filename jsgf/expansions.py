@@ -178,6 +178,9 @@ class RuleRef(Expansion):
         else:
             return "<%s>" % self.rule.name
 
+    def __str__(self):
+        return "%s('%s')" % (self.__class__.__name__, self.rule.name)
+
     def matching_regex(self):
         return self.rule.expansion.matching_regex()
 
