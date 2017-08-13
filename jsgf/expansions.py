@@ -84,7 +84,7 @@ class Expansion(object):
 class Sequence(Expansion):
     def __init__(self, *expansions):
         self.expansions = map(self.handle, expansions)
-        super(Sequence, self).__init__(expansions)
+        super(Sequence, self).__init__(self.expansions)
 
     def compile(self, ignore_tags=False):
         seq = " ".join([
@@ -193,7 +193,7 @@ class KleeneStar(Expansion):
         :type expansion: Expansion
         """
         self.expansion = self.handle(expansion)
-        super(KleeneStar, self).__init__([expansion])
+        super(KleeneStar, self).__init__([self.expansion])
 
     def compile(self, ignore_tags=False):
         compiled = self.expansion.compile(ignore_tags)
@@ -221,7 +221,7 @@ class Repeat(Expansion):
         :type expansion: Expansion
         """
         self.expansion = self.handle(expansion)
-        super(Repeat, self).__init__([expansion])
+        super(Repeat, self).__init__([self.expansion])
 
     def compile(self, ignore_tags=False):
         compiled = self.expansion.compile(ignore_tags)
@@ -245,7 +245,7 @@ class OptionalGrouping(Expansion):
         :type expansion: Expansion
         """
         self.expansion = self.handle(expansion)
-        super(OptionalGrouping, self).__init__([expansion])
+        super(OptionalGrouping, self).__init__([self.expansion])
 
     def compile(self, ignore_tags=False):
         compiled = self.expansion.compile(ignore_tags)
@@ -265,7 +265,7 @@ class OptionalGrouping(Expansion):
 class RequiredGrouping(Expansion):
     def __init__(self, *expansions):
         self.expansions = map(self.handle, expansions)
-        super(RequiredGrouping, self).__init__(expansions)
+        super(RequiredGrouping, self).__init__(self.expansions)
 
     def compile(self, ignore_tags=False):
         grouping = "".join([
