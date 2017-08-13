@@ -51,6 +51,29 @@ class Rule(object):
         else:
             return False
 
+    @property
+    def dependencies(self):
+        """
+        Get the rules dependent on this on, i.e. the dependencies
+        :rtype: set
+        """
+        def collect_referenced_rules(expansion, result):
+            """
+            Recursively collect every RuleRef object's Rule in an Expansion tree and every
+            referenced rule in the referenced rule's Expansion tree and so on.
+            :type expansion: jsgf.Expansion
+            :type result: set
+            """
+            if isinstance(expansion, jsgf.RuleRef):
+                result.add(expansion.rule)
+                collect_referenced_rules(expansion.rule.expansion, result)
+            else:
+                for child in expansion.children:
+                    collect_referenced_rules(child, result)
+
+            return result
+        return collect_referenced_rules(self.expansion, set())
+
     @staticmethod
     def _tweak_literals(expansion):
         """
