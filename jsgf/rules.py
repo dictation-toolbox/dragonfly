@@ -44,7 +44,7 @@ class Rule(object):
         if not self._matching_regex:
             self._tweak_literals(self.expansion)
             self._matching_regex = re.compile(
-                self.expansion.matching_regex())
+                self.expansion.matching_regex() + r"\Z")
 
         if self._matching_regex.match(speech.lower()):
             return True
