@@ -27,7 +27,11 @@ Logging framework
 import sys
 import os.path
 import logging
-from win32com.shell import shell, shellcon
+try:
+    from win32com.shell import shell, shellcon
+except ImportError:
+    shell = None
+    shellcon = None
 
 
 #---------------------------------------------------------------------------
@@ -104,7 +108,7 @@ class DispatchingHandler(logging.Handler):
 #        import traceback; print traceback.extract_stack()
 #        import traceback; traceback.print_stack()
         for handler, filter in self.handler_filter_pairs:
-            if filter.filter(record):
+            if filter.filter(record) and "win" in sys.platform:
                 handler.handle(record)
 
 
@@ -129,14 +133,15 @@ def _setup_file_handler():
 #    import traceback; traceback.print_stack()
     if not _file_handler:
         # Lookup path the user's personal folder in which
-        #  to log Dragonfly messages.
-        mydocs_pidl = shell.SHGetFolderLocation(0, shellcon.CSIDL_PERSONAL, 0, 0)
-        mydocs_path = shell.SHGetPathFromIDList(mydocs_pidl)
-        log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
-        _file_handler = logging.FileHandler(log_file_path)
-        formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
-                                  " %(message)s" + repr(_file_handler))
-        _file_handler.setFormatter(formatter)
+        # to log Dragonfly messages.
+        if shell and shellcon:
+            mydocs_pidl = shell.SHGetFolderLocation(0, shellcon.CSIDL_PERSONAL, 0, 0)
+            mydocs_path = shell.SHGetPathFromIDList(mydocs_pidl)
+            log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
+            _file_handler = logging.FileHandler(log_file_path)
+            formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
+                                          " %(message)s" + repr(_file_handler))
+            _file_handler.setFormatter(formatter)
     return _file_handler
 
 
