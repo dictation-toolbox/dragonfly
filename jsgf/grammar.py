@@ -5,6 +5,11 @@ Classes for compiling and importing JSpeech Grammar Format grammars
 from .rules import Rule, PublicRule
 from .expansions import RuleRef, AlternativeSet
 
+
+class GrammarError(Exception):
+    pass
+
+
 class Import(object):
     def __init__(self, name):
         self.name = name
