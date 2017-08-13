@@ -27,7 +27,12 @@ from .engines           import get_engine, EngineError, MimicFailure
 
 #---------------------------------------------------------------------------
 from .grammar.grammar_base       import Grammar
-from .grammar.grammar_connection import ConnectionGrammar
+
+import sys
+if "win" in sys.platform:
+    from .grammar.grammar_connection import ConnectionGrammar
+else:
+    from .os_dependent_mock import ConnectionGrammar
 from .grammar.rule_base          import Rule
 from .grammar.rule_compound      import CompoundRule
 from .grammar.rule_mapping       import MappingRule
@@ -48,17 +53,34 @@ from .actions           import (ActionBase, DynStrActionBase, ActionError,
                                 Repeat, Key, Text, Mouse, Paste, Pause,
                                 Mimic, Playback, WaitWindow, FocusWindow,
                                 Function, StartApp, BringApp, PlaySound)
-from .actions.keyboard  import Typeable, Keyboard
-from .actions.typeables import typeables
-from .actions.sendinput import (KeyboardInput, MouseInput, HardwareInput,
-                                make_input_array, send_input_array)
+
+if "win" in sys.platform:
+    from .actions.keyboard  import Typeable, Keyboard
+    from .actions.typeables import typeables
+    from .actions.sendinput import (KeyboardInput, MouseInput, HardwareInput,
+                                    make_input_array, send_input_array)
+else:
+    from .os_dependent_mock    import Typeable, Keyboard
+    from .os_dependent_mock import typeables
+    from .os_dependent_mock    import (KeyboardInput, MouseInput, HardwareInput,
+                                       make_input_array, send_input_array)
 
 #---------------------------------------------------------------------------
-from .windows.point     import Point
+
+# OS agnostic imports
 from .windows.rectangle import Rectangle, unit
-from .windows.window    import Window
-from .windows.monitor   import Monitor, monitors
-from .windows.clipboard import Clipboard
+from .windows.point     import Point
+
+# Windows-specific
+if "win" in sys.platform:
+    from .windows             import Window
+    from .windows             import Monitor, monitors
+    from .windows             import Clipboard
+else:  # Mock imports
+    from .os_dependent_mock   import Window
+    from .os_dependent_mock   import Monitor, monitors
+    from .os_dependent_mock   import Clipboard
+
 
 #---------------------------------------------------------------------------
 from .language          import (Integer, IntegerRef,

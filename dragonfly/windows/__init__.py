@@ -17,3 +17,19 @@
 #   License along with Dragonfly.  If not, see 
 #   <http://www.gnu.org/licenses/>.
 #
+
+import sys
+
+# OS agnostic imports
+from rectangle import Rectangle, unit
+from point     import Point
+
+# Windows-specific
+if "win" in sys.platform:
+    from window    import Window
+    from monitor   import Monitor, monitors
+    from clipboard import Clipboard
+else:  # Mock imports
+    from ..os_dependent_mock      import Window
+    from ..os_dependent_mock      import Monitor, monitors
+    from ..os_dependent_mock      import Clipboard
