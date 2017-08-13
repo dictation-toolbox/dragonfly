@@ -4,12 +4,13 @@ Classes for compiling JSpeech Grammar Format rules
 import re
 import jsgf
 
+
 class Rule(object):
     def __init__(self, name, visible, expansion):
         """
-
         :type name: str
         :type visible: bool
+        :param expansion:
         """
         self.name = name
         self.visible = visible
@@ -17,6 +18,12 @@ class Rule(object):
         self._matching_regex = None
 
     def compile(self, ignore_tags=False):
+        """
+        Compile this rule's expansion tree and return the result.
+        Set ignore_tags to True to not include expansion tags in the result.
+        :type ignore_tags: bool
+        :rtype: str
+        """
         result = "<%s> = %s;" % (self.name,
                                  self.expansion.compile(ignore_tags))
 
@@ -56,6 +63,7 @@ class Rule(object):
             Recursively find the first Literal in an Expansion tree
             or in a referenced rule's Expansion tree.
             Also return the parent Expansion for handling special cases.
+            :param parent:
             :type expansion: jsgf.Expansion
             """
             # Check any referenced rules first
