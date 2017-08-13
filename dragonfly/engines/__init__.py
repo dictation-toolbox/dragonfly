@@ -29,10 +29,11 @@ import traceback
 from .base import EngineBase, EngineError, MimicFailure
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 _default_engine = None
 _engines_by_name = {}
+
 
 def get_engine(name=None):
     global _default_engine, _engines_by_name
@@ -106,10 +107,7 @@ def get_engine(name=None):
         raise EngineError("Requested engine %r not available." % (name,))
 
 
-#---------------------------------------------------------------------------
-
-_default_engine = None
-_engines_by_name = {}
+# ---------------------------------------------------------------------------
 
 def register_engine_init(engine):
     """

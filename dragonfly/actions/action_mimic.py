@@ -28,7 +28,7 @@ from .action_base      import ActionBase, ActionError
 from ..engines         import get_engine
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 class Mimic(ActionBase):
     """
@@ -77,8 +77,10 @@ class Mimic(ActionBase):
     def __init__(self, *words, **kwargs):
         ActionBase.__init__(self)
         self._words = tuple(words)
-        if "extra" in kwargs:  self._extra = kwargs.pop("extra")
-        else:                  self._extra = None
+        if "extra" in kwargs:
+            self._extra = kwargs.pop("extra")
+        else:
+            self._extra = None
 
         # Set pretty printing string used by __str__ and __unicode__.
         self._str = u", ".join(repr(w) for w in self._words)
@@ -107,7 +109,7 @@ class Mimic(ActionBase):
                 words += tuple(extra.words)
             elif isinstance(extra, (tuple, list)):
                 words += tuple(extra)
-            elif isinstance(extra, basestr):
+            elif isinstance(extra, (str, unicode)):
                 words += (extra,)
             else:
                 raise ActionError("Invalid extra data type: %r" % extra)
