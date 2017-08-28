@@ -109,7 +109,10 @@ class Sequence(Expansion):
 
 class Literal(Expansion):
     def __init__(self, text):
-        self.text = text
+        # CMU Sphinx recognizers use dictionaries with lower case words only
+        # So use lower() to fix errors similar to:
+        # "The word 'HELLO' is missing in the dictionary"
+        self.text = text.lower()
         self._whitespace_before_literal = True
         super(Literal, self).__init__([])
 
