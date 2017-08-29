@@ -154,12 +154,12 @@ class Grammar(object):
 
     def find_matching_rules(self, speech):
         """
-        Find each rule in this grammar that matches the 'speech' string.
+        Find each visible rule in this grammar that matches the 'speech' string.
         :type speech: str
         :return: list
         """
         matching = []
-        for rule in self.rules:
+        for rule in self.visible_rules:
             if rule.matches(speech):
                 matching.append(rule)
         return matching
