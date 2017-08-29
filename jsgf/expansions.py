@@ -113,24 +113,10 @@ class Literal(Expansion):
         # So use lower() to fix errors similar to:
         # "The word 'HELLO' is missing in the dictionary"
         self.text = text.lower()
-        self._whitespace_before_literal = True
         super(Literal, self).__init__([])
 
     def __str__(self):
         return "%s('%s')" % (self.__class__.__name__, self.text)
-
-    @property
-    def whitespace_before_literal(self):
-        """
-        Changes if whitespace is inserted before the
-        Literal's text in the matching_regex method.
-        :return: bool
-        """
-        return self._whitespace_before_literal
-
-    @whitespace_before_literal.setter
-    def whitespace_before_literal(self, value):
-        self._whitespace_before_literal = value
 
     def compile(self, ignore_tags=False):
         if self.tag and not ignore_tags:
@@ -143,25 +129,15 @@ class Literal(Expansion):
         A regex string for matching this expansion.
         :return: str
         """
-        # Raise an error if whitespace_before_literal isn't set
-        # because it is necessary to have more context here.
-        if self._whitespace_before_literal is None:
-            raise ExpansionError("cannot accurately generate regex for "
-                                 "Literals without "
-                                 "'whitespace_before_literal' set.")
-
         # Selectively escape certain characters because this text will
         # be used in a regular expression pattern string.
         #
         escaped = self.text.replace(".", r"\.")
 
         # Also make everything lowercase and allow matching 1 or more
-        # whitespace character between words
+        # whitespace characters between words and before the first word.
         words = escaped.lower().split()
-        if self.whitespace_before_literal:
-            return "\s+%s" % "\s+".join(words)
-        else:
-            return "\s+".join(words)
+        return "\s+%s" % "\s+".join(words)
 
 
 class RuleRef(Expansion):

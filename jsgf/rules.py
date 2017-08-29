@@ -14,8 +14,12 @@ class Rule(object):
         """
         self.name = name
         self.visible = visible
-        self.expansion = expansion
-        self._matching_regex = None
+
+        # Handle the object passed in as an expansion
+        self.expansion = jsgf.Expansion.handle(expansion)
+
+        self._matching_regex = re.compile(
+            self.expansion.matching_regex() + r"\Z")
 
     def compile(self, ignore_tags=False):
         """
@@ -41,12 +45,8 @@ class Rule(object):
         Whether speech matches this rule.
         :type speech: str
         """
-        if not self._matching_regex:
-            self._tweak_literals(self.expansion)
-            self._matching_regex = re.compile(
-                self.expansion.matching_regex() + r"\Z")
-
-        if self._matching_regex.match(speech.lower()):
+        # Insert whitespace before 'speech' to match regex properly.
+        if self._matching_regex.match(" " + speech.lower()):
             return True
         else:
             return False
@@ -73,53 +73,6 @@ class Rule(object):
 
             return result
         return collect_referenced_rules(self.expansion, set())
-
-    @staticmethod
-    def _tweak_literals(expansion):
-        """
-        Set up Literal Expansions so that their regular expressions
-        can be calculated correctly.
-        :type expansion: Expansion
-        """
-        def find_first_literal(expansion, parent):
-            """
-            Recursively find the first Literal in an Expansion tree
-            or in a referenced rule's Expansion tree.
-            Also return the parent Expansion for handling special cases.
-            :param parent:
-            :type expansion: jsgf.Expansion
-            """
-            # Check any referenced rules first
-            result = None
-            if isinstance(expansion, jsgf.RuleRef):
-                result = find_first_literal(expansion.rule.expansion, None)
-
-            elif isinstance(expansion, jsgf.Literal):
-                result = expansion, parent
-            else:
-                for child in expansion.children:
-                    result = find_first_literal(child, expansion)
-                    if result:
-                        break
-
-            return result
-
-        (first_literal, parent) = find_first_literal(expansion, None)
-
-        # The first Literal in an Expansion tree shouldn't have
-        # whitespace before it
-        if first_literal:
-            first_literal.whitespace_before_literal = False
-
-        # Handle the special case of AlternativeSet as a parent:
-        # Every Literal in an AlternativeSet with the first literal
-        # must also have no leading whitespace match before it,
-        # otherwise there will be issues matching the rule to any other
-        #  Literal.
-        if isinstance(parent, jsgf.AlternativeSet):
-            for child in parent.children:
-                if isinstance(child, jsgf.Literal):
-                    child.whitespace_before_literal = False
 
 
 class PublicRule(Rule):
