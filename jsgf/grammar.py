@@ -110,6 +110,21 @@ class Grammar(object):
         """
         return self._rules
 
+    visible_rules = property(
+        lambda self: filter(lambda rule: True if rule.visible else False, self.rules),
+        doc="""
+        The rules in this grammar which have the visible attribute set to True.
+        :rtype: list
+        """
+    )
+
+    rule_names = property(
+        lambda self: map(lambda rule: rule.name, self.rules),
+        doc="""
+        The rule names of each rule in this grammar.
+        :rtype: list
+        """
+    )
 
     def __str__(self):
         rules = ", ".join(["%s" % rule for rule in self.rules])
