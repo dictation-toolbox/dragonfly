@@ -163,3 +163,29 @@ class Grammar(object):
             if rule.matches(speech):
                 matching.append(rule)
         return matching
+
+    def remove_rule(self, rule_name):
+        """
+        Remove a rule from this grammar.
+        :param rule_name:
+        :type rule_name: str
+        """
+        if rule_name not in self.rule_names:
+            raise GrammarError("'%s' is not a rule in Grammar '%s'" % (rule_name, self))
+
+        if not isinstance(rule_name, str):
+            raise TypeError("object '%s' was not a string" % rule_name)
+
+        # Check if rule with name 'rule_name' is a dependency of another rule in this
+        # grammar.
+        # TODO Do this more efficiently for multiple rules
+        rule_dependencies = map(lambda r: r.dependencies, self.rules)
+        dependent_rules = set.union(*rule_dependencies)
+
+        dependent_rule_names = map(lambda r: r.name, dependent_rules)
+
+        if rule_name in dependent_rule_names:
+            raise GrammarError("Cannot remove rule '%s' as it a dependency of another rule."
+                               % rule_name)
+        i = self.rule_names.index(rule_name)
+        self._rules.pop(i)
