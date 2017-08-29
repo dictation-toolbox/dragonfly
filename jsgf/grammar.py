@@ -29,6 +29,14 @@ class Grammar(object):
 
     def compile_grammar(self, charset_name="UTF-8", language_name="en",
                         jsgf_version="1.0"):
+        """
+        Compile this grammar's imports and rules into a string that can be recognized by a
+        JSGF parser.
+        :param charset_name:
+        :param language_name:
+        :param jsgf_version:
+        :rtype: str
+        """
         grammar_header = "#JSGF V%s %s %s;\n" % (jsgf_version,
                                                  charset_name,
                                                  language_name)
@@ -45,6 +53,15 @@ class Grammar(object):
 
     def compile_to_file(self, file_path, charset_name="UTF-8",
                         language_name="en", jsgf_version="1.0"):
+        """
+        Compile this grammar by calling compile_grammar and write the result to the
+        specified file.
+        :param file_path:
+        :param charset_name:
+        :param language_name:
+        :param jsgf_version:
+        :return:
+        """
         compiled_lines = self.compile_grammar(charset_name, language_name,
                                               jsgf_version).splitlines()
         with open(file_path, "w+") as f:
@@ -112,11 +129,20 @@ class Grammar(object):
         self._rules.append(rule)
 
     def add_import(self, _import):
+        """
+        Add an import for another JSGF grammar file.
+        :type _import: Import
+        """
         if not isinstance(_import, Import):
             raise TypeError("object '%s' was not a JSGF Import object" % _import)
         self._rules.append(_import)
 
     def find_matching_rules(self, speech):
+        """
+        Find each rule in this grammar that matches the 'speech' string.
+        :type speech: str
+        :return: list
+        """
         matching = []
         for rule in self.rules:
             if rule.matches(speech):
