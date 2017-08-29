@@ -11,7 +11,7 @@ class TranslatorCase(unittest.TestCase):
 class PlainCase(TranslatorCase):
     def test_plain(self):
         spec = "Hello world"
-        expected = "public <test> = Hello world;"
+        expected = "public <test> = hello world;"
         rule = self.translator.translate_to_rule("test", spec, True)
         self.assertEqual(expected, rule.compile())
 
@@ -43,14 +43,14 @@ class BadRuleCase(TranslatorCase):
 class OptionalCase(TranslatorCase):
     def test_simple_optional(self):
         spec = "Hello [glorious] world"
-        expected = "public <test> = Hello [glorious] world;"
+        expected = "public <test> = hello [glorious] world;"
         self.assertEqual(expected,
                          self.translator.translate_to_rule("test", spec, True)
                          .compile())
 
     def test_complex_optional(self):
-        spec = "[[Hello] world] hi"
-        expected = "public <test> = [[Hello] world] hi;"
+        spec = "[[hello] world] hi"
+        expected = "public <test> = [[hello] world] hi;"
 
         self.assertEqual(expected,
                          self.translator.translate_to_rule("test", spec, True)
@@ -67,7 +67,7 @@ class ChoiceCase(TranslatorCase):
         compound_rule = CompoundRule(name="greet", spec=spec, extras=[
             Choice("person", {"Bob": "Bob", "John": "John"})
         ])
-        expected = "public <greet> = Hello (Bob|John);"
+        expected = "public <greet> = hello (bob|john);"
         rule = self.translator.translate_rule(compound_rule)
         self.assertEqual(expected, rule.compile())
 
