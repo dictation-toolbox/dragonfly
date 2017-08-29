@@ -10,9 +10,6 @@ See the specification here: https://www.w3.org/TR/jsgf/
 
 This module supports compiling JSGF grammars using custom rules, imports and
 expansions, such as the Kleene Star, optional and required groupings.
-
-(hello <name>
-
 """
 
 from expansions import AlternativeSet
