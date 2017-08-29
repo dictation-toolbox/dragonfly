@@ -18,7 +18,7 @@ class Import(object):
         return "import <%s>;" % self.name
 
     def __str__(self):
-        return "Import(%s)" % self.name
+        return "%s(%s)" % (self.__class__.__name__, self.name)
 
 
 class Grammar(object):
