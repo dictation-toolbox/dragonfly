@@ -66,8 +66,9 @@ class Rule(object):
             :type result: set
             """
             if isinstance(expansion, jsgf.RuleRef):
-                result.add(expansion.rule)
-                collect_referenced_rules(expansion.rule.expansion, result)
+                if expansion.rule not in result:  # prevent cycles
+                    result.add(expansion.rule)
+                    collect_referenced_rules(expansion.rule.expansion, result)
             else:
                 for child in expansion.children:
                     collect_referenced_rules(child, result)
