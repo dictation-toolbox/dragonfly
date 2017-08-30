@@ -55,7 +55,7 @@ class Rule(object):
     @property
     def dependencies(self):
         """
-        Get the rules dependent on this on, i.e. the dependencies
+        The set of rules which this rule directly and indirectly references.
         :rtype: set
         """
         def collect_referenced_rules(expansion, result):
