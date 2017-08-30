@@ -91,21 +91,26 @@ class VisibleRulesCase(unittest.TestCase):
     """
     Test the 'visible_rules' property of the Grammar class.
     """
-    def test_none(self):
+    def setUp(self):
         grammar1 = Grammar("test")
-        rule1 = HiddenRule("rule1", "Hello")
-        rule2 = HiddenRule("rule2", "Hey")
-        rule3 = HiddenRule("rule3", "Hi")
-        grammar1.add_rules(rule1, rule2, rule3)
-        self.assertListEqual(grammar1.visible_rules, [])
+        self.rule1 = HiddenRule("rule1", "Hello")
+        self.rule2 = HiddenRule("rule2", "Hey")
+        self.rule3 = HiddenRule("rule3", "Hi")
+        grammar1.add_rules(self.rule1, self.rule2, self.rule3)
+        self.grammar1 = grammar1
+
+        grammar2 = Grammar("test2")
+        self.rule4 = PublicRule("rule4", "Hello")
+        self.rule5 = PublicRule("rule5", "Hey")
+        self.rule6 = HiddenRule("rule6", "Hi")
+        grammar2.add_rules(self.rule4, self.rule5, self.rule6)
+        self.grammar2 = grammar2
+
+    def test_none(self):
+        self.assertListEqual(self.grammar1.visible_rules, [])
 
     def test_many(self):
-        grammar1 = Grammar("test")
-        rule1 = PublicRule("rule1", "Hello")
-        rule2 = PublicRule("rule2", "Hey")
-        rule3 = HiddenRule("rule3", "Hi")
-        grammar1.add_rules(rule1, rule2, rule3)
-        self.assertListEqual(grammar1.visible_rules, [rule1, rule2])
+        self.assertListEqual(self.grammar2.visible_rules, [self.rule4, self.rule5])
 
 
 if __name__ == '__main__':
