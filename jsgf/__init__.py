@@ -27,6 +27,7 @@ from expansions import Sequence
 from grammar import Grammar
 from grammar import GrammarError
 from grammar import Import
+from grammar import RootGrammar
 
 from rules import Rule
 from rules import PublicRule
