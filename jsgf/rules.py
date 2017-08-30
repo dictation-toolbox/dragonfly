@@ -20,6 +20,7 @@ class Rule(object):
 
         self._matching_regex = re.compile(
             self.expansion.matching_regex() + r"\Z")
+        self._reference_count = 0
 
     def compile(self, ignore_tags=False):
         """
@@ -73,6 +74,15 @@ class Rule(object):
 
             return result
         return collect_referenced_rules(self.expansion, set())
+
+    @property
+    def reference_count(self):
+        return self._reference_count
+
+    @reference_count.setter
+    def reference_count(self, value):
+        assert isinstance(value, int) and value >= 0
+        self._reference_count = value
 
 
 class PublicRule(Rule):

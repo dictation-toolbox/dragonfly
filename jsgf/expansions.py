@@ -148,8 +148,11 @@ class RuleRef(Expansion):
         """
         if not isinstance(rule, Rule):
             raise TypeError("'rule' parameter for RuleRef must be a JSGF rule.")
-        self.rule = rule
+
         super(RuleRef, self).__init__([])
+
+        self.rule = rule
+        self.rule.reference_count += 1
 
     def compile(self, ignore_tags=False):
         if self.tag and not ignore_tags:
@@ -162,6 +165,10 @@ class RuleRef(Expansion):
 
     def matching_regex(self):
         return self.rule.expansion.matching_regex()
+
+    def __del__(self):
+        self.rule.reference_count -= 1
+
 
 
 class Dictation(Expansion):
