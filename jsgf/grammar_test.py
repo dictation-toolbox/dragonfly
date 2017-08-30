@@ -3,24 +3,36 @@ from jsgf import *
 
 
 class BasicGrammarCase(unittest.TestCase):
-    def test_basic_grammar_compile(self):
-        grammar = Grammar("test")
+    def setUp(self):
         rule2 = HiddenRule("greetWord", AlternativeSet("hello", "hi"))
         rule3 = HiddenRule("name", AlternativeSet("peter", "john", "mary",
                                                   "anna"))
-        rule1 = PublicRule("greet", RequiredGrouping(
-            RuleRef(rule2), RuleRef(rule3)))
-        grammar.add_rules(rule1, rule2, rule3)
+        rule1 = PublicRule("greet", RequiredGrouping(RuleRef(rule2),
+                                                     RuleRef(rule3)))
+        self.grammar = Grammar("test")
+        self.grammar.add_rules(rule1, rule2, rule3)
+        self.rule1 = rule1
+        self.rule2 = rule2
+        self.rule3 = rule3
 
+    def test_basic_grammar_compile(self):
         expected = "#JSGF V1.0 UTF-8 en;\n" \
                    "grammar test;\n" \
                    "public <greet> = (<greetWord><name>);\n" \
                    "<greetWord> = (hello|hi);\n" \
                    "<name> = (peter|john|mary|anna);\n"
 
-        self.assertEqual(grammar.compile_grammar(charset_name="UTF-8",
-                                                 language_name="en",
-                                                 jsgf_version="1.0"), expected)
+        compiled = self.grammar.compile_grammar(charset_name="UTF-8",
+                                                language_name="en",
+                                                jsgf_version="1.0")
+        self.assertEqual(expected, compiled)
+
+    def test_remove_dependent_rule(self):
+        self.assertRaises(GrammarError, self.grammar.remove_rule, "greetWord")
+        self.assertRaises(GrammarError, self.grammar.remove_rule, "name")
+
+        self.grammar.remove_rule("greet")
+        self.assertListEqual([self.rule2, self.rule3], self.grammar.rules)
 
 
 class SpeechMatchCase(unittest.TestCase):
