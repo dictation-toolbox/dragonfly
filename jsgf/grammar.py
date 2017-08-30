@@ -67,12 +67,10 @@ class Grammar(object):
         with open(file_path, "w+") as f:
             f.writelines(compiled_lines)
 
-    def compile_with_root_public_rule(self, charset_name="UTF-8",
-                                      language_name="en",
-                                      jsgf_version="1.0"):
+    def recreate_with_root_public_rule(self):
         """
-        Compile the grammar with one public "root" rule containing rule
-        references in an alternative set to every other rule as such:
+        Create a new grammar with one public "root" rule containing rule references
+        in an alternative set to every other rule as such:
         public <root> = (<rule1>|<rule2>|..|<ruleN>);
         <rule1> = ...;
         <rule2> = ...;
@@ -80,27 +78,9 @@ class Grammar(object):
         .
         .
         <ruleN> = ...;
-        :type charset_name: str
-        :type language_name: str
-        :type jsgf_version: str
-        :rtype: str
+        :rtype: RootGrammar
         """
-        # Make every rule not public and make RuleRef objects for each
-        rule_refs = []
-        for rule in self.rules:
-            rule.visible = False
-            rule_refs.append(RuleRef(rule))
-
-        # Temporarily add a new public rule as the first rule
-        # that matches any rule once.
-        temp_root = PublicRule("root", AlternativeSet(*rule_refs))
-        self._rules.insert(0, temp_root)
-
-        compiled = self.compile_grammar(charset_name, language_name,
-                                    jsgf_version)
-        self._rules.remove(temp_root)
-        return compiled
-
+        return RootGrammar(self.rules)
 
     @property
     def rules(self):
