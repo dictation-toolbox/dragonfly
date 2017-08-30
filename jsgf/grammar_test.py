@@ -75,5 +75,26 @@ class SpeechMatchCase(unittest.TestCase):
         self.assert_no_match("", rule3)
 
 
+class VisibleRulesCase(unittest.TestCase):
+    """
+    Test the 'visible_rules' property of the Grammar class.
+    """
+    def test_none(self):
+        grammar1 = Grammar("test")
+        rule1 = HiddenRule("rule1", "Hello")
+        rule2 = HiddenRule("rule2", "Hey")
+        rule3 = HiddenRule("rule3", "Hi")
+        grammar1.add_rules(rule1, rule2, rule3)
+        self.assertListEqual(grammar1.visible_rules, [])
+
+    def test_many(self):
+        grammar1 = Grammar("test")
+        rule1 = PublicRule("rule1", "Hello")
+        rule2 = PublicRule("rule2", "Hey")
+        rule3 = HiddenRule("rule3", "Hi")
+        grammar1.add_rules(rule1, rule2, rule3)
+        self.assertListEqual(grammar1.visible_rules, [rule1, rule2])
+
+
 if __name__ == '__main__':
     unittest.main()
