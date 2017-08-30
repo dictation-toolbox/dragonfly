@@ -2,8 +2,8 @@ import unittest
 from jsgf import *
 
 
-class BasicGrammar(unittest.TestCase):
-    def test_basic_grammar(self):
+class BasicGrammarCase(unittest.TestCase):
+    def test_basic_grammar_compile(self):
         grammar = Grammar("test")
         rule2 = HiddenRule("greetWord", AlternativeSet("hello", "hi"))
         rule3 = HiddenRule("name", AlternativeSet("peter", "john", "mary",
