@@ -113,5 +113,89 @@ class VisibleRulesCase(unittest.TestCase):
         self.assertListEqual(self.grammar2.visible_rules, [self.rule4, self.rule5])
 
 
+class RootGrammarCase(BasicGrammarCase):
+    def setUp(self):
+        super(RootGrammarCase, self).setUp()
+        self.rule5 = HiddenRule("greetWord", AlternativeSet("hello", "hi"))
+        self.rule4 = PublicRule("greet", Sequence(RuleRef(self.rule5), "there"))
+        self.rule6 = PublicRule("partingPhrase", AlternativeSet("goodbye", "see you"))
+
+    def test_compile(self):
+        root = RootGrammar(rules=self.grammar.rules, name="root")
+
+        expected = "#JSGF V1.0 UTF-8 en;\n" \
+                   "grammar root;\n" \
+                   "public <root> = (<greet>);\n" \
+                   "<greet> = (<greetWord><name>);\n" \
+                   "<greetWord> = (hello|hi);\n" \
+                   "<name> = (peter|john|mary|anna);\n"
+
+        self.assertEqual(root.compile_grammar(charset_name="UTF-8", language_name="en",
+                                              jsgf_version="1.0"), expected)
+
+    def test_compile_add_remove_rule(self):
+        root = RootGrammar(rules=[self.rule5, self.rule4], name="root")
+
+        expected = "#JSGF V1.0 UTF-8 en;\n" \
+                   "grammar root;\n" \
+                   "public <root> = (<greet>);\n" \
+                   "<greetWord> = (hello|hi);\n" \
+                   "<greet> = <greetWord> there;\n"
+
+        self.assertEqual(root.compile_grammar(charset_name="UTF-8",
+                                              language_name="en",
+                                              jsgf_version="1.0"), expected)
+
+        root.add_rule(self.rule6)
+        expected = "#JSGF V1.0 UTF-8 en;\n" \
+                   "grammar root;\n" \
+                   "public <root> = (<greet>|<partingPhrase>);\n" \
+                   "<greetWord> = (hello|hi);\n" \
+                   "<greet> = <greetWord> there;\n" \
+                   "<partingPhrase> = (goodbye|see you);\n"
+
+        self.assertEqual(root.compile_grammar(charset_name="UTF-8",
+                                              language_name="en",
+                                              jsgf_version="1.0"), expected)
+
+        # Test removing the partingPhrase rule
+        root.remove_rule("partingPhrase")
+        expected = "#JSGF V1.0 UTF-8 en;\n" \
+                   "grammar root;\n" \
+                   "public <root> = (<greet>);\n" \
+                   "<greetWord> = (hello|hi);\n" \
+                   "<greet> = <greetWord> there;\n"
+
+        self.assertEqual(root.compile_grammar(charset_name="UTF-8",
+                                              language_name="en",
+                                              jsgf_version="1.0"), expected)
+
+    def test_match(self):
+        # Only rule1 should match
+        root = RootGrammar(rules=self.grammar.rules, name="root")
+        self.assertListEqual(root.find_matching_rules("Hello John"), [self.rule1])
+        self.assertListEqual(root.find_matching_rules("HELLO mary"), [self.rule1])
+        self.assertListEqual(root.find_matching_rules("hello ANNA"), [self.rule1])
+
+    def test_match_add_remove(self):
+        root = RootGrammar(rules=[self.rule5, self.rule4], name="root")
+        self.assertListEqual(root.find_matching_rules("Hello there"), [self.rule4])
+        self.assertListEqual(root.find_matching_rules("Hi there"), [self.rule4])
+
+        # Add a rule
+        root.add_rule(self.rule6)
+        self.assertListEqual(root.find_matching_rules("Goodbye"), [self.rule6])
+        self.assertListEqual(root.find_matching_rules("See you"), [self.rule6])
+
+        # Remove it and test again
+        root.remove_rule("partingPhrase")
+        self.assertListEqual(root.find_matching_rules("Goodbye"), [])
+        self.assertListEqual(root.find_matching_rules("See you"), [])
+
+    def test_remove_last_visible_rule(self):
+        root = RootGrammar(rules=[self.rule5, self.rule4], name="root")
+        self.assertRaises(GrammarError, root.remove_rule, "greet")
+
+
 if __name__ == '__main__':
     unittest.main()
