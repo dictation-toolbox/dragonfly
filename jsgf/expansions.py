@@ -20,6 +20,10 @@ class Expansion(object):
         else:
             raise TypeError("'children' must be a list or tuple")
 
+        # Set each child's parent as this expansion
+        for child in children:
+            child.parent = self
+
     def __add__(self, other):
         return self + other
 
