@@ -4,6 +4,7 @@ from dragonfly.parser import Parser, ParserError
 from dragonfly.grammar.elements_compound import stuff
 from dragonfly.grammar.rule_base import Rule
 import jsgf
+import jsgf_extensions
 from jsgf import Expansion
 import logging
 
@@ -157,10 +158,9 @@ class Translator(object):
                                       "not implemented yet.")
 
         elif isinstance(element, Dictation):
-            # This must be done with a special JSGF tag so a dictation
-            # Sphinx decoder can be prepared and used when necessary.
-            state.expansion = Expansion(())
-            state.expansion.tag = "dictation"
+            # A Sphinx decoder for handling dictation will be prepared and used
+            # when necessary.
+            state.expansion = jsgf_extensions.Dictation()
 
         elif isinstance(element, Impossible):
             raise TranslationError("Cannot translate 'Impossible' element.")
