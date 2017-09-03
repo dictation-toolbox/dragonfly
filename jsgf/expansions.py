@@ -14,6 +14,7 @@ class Expansion(object):
     """
     def __init__(self, children):
         self._tag = None
+        self._parent = None
         if isinstance(children, (tuple, list)):
             self._children = children
         else:
@@ -29,6 +30,17 @@ class Expansion(object):
             return self.tag
         else:
             return ""
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
+        if isinstance(value, Expansion) or value is None:
+            self._parent = value
+        else:
+            raise AttributeError("'parent' must be an Expansion or None")
 
     @property
     def tag(self):
@@ -168,7 +180,6 @@ class RuleRef(Expansion):
 
     def __del__(self):
         self.rule.reference_count -= 1
-
 
 
 class Dictation(Expansion):
