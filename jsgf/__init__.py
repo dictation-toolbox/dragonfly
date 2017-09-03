@@ -12,22 +12,22 @@ This module supports compiling JSGF grammars using custom rules, imports and
 expansions, such as the Kleene Star, optional and required groupings.
 """
 
-from expansions import AlternativeSet
-from expansions import Expansion
-from expansions import ExpansionError
-from expansions import KleeneStar
-from expansions import Literal
-from expansions import OptionalGrouping
-from expansions import Repeat
-from expansions import RequiredGrouping
-from expansions import RuleRef
-from expansions import Sequence
+from .expansions import AlternativeSet
+from .expansions import Expansion
+from .expansions import ExpansionError
+from .expansions import KleeneStar
+from .expansions import Literal
+from .expansions import OptionalGrouping
+from .expansions import Repeat
+from .expansions import RequiredGrouping
+from .expansions import RuleRef
+from .expansions import Sequence
 
-from grammar import Grammar
-from grammar import GrammarError
-from grammar import Import
-from grammar import RootGrammar
+from .grammar import Grammar
+from .grammar import GrammarError
+from .grammar import Import
+from .grammar import RootGrammar
 
-from rules import HiddenRule
-from rules import PublicRule
-from rules import Rule
+from .rules import HiddenRule
+from .rules import PublicRule
+from .rules import Rule

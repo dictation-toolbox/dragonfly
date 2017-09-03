@@ -244,7 +244,12 @@ class RootGrammar(Grammar):
 
         # Find and remove the corresponding RuleRef object
         i = rule_ref_names.index(rule_name)
-        self._rule_refs.pop(i)
+        rule_ref = self._rule_refs.pop(i)
+
+        # Manually decrement the reference count of the corresponding rule
+        # because the parent of the RuleRef will still have a reference
+        # to it
+        rule_ref.decrement_ref_count()
 
         # Also remove the rule from the match_rules list used for matching
         match_rule_names = map(lambda r: r.name, self._match_rules)

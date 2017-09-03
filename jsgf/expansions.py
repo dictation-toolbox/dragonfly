@@ -1,7 +1,6 @@
 """
 Classes for compiling JSpeech Grammar Format expansions
 """
-from rules import Rule
 
 
 class ExpansionError(Exception):
@@ -162,9 +161,6 @@ class RuleRef(Expansion):
         Class for referencing another rule from a rule.
         :type rule: RuleBase
         """
-        if not isinstance(rule, Rule):
-            raise TypeError("'rule' parameter for RuleRef must be a JSGF rule.")
-
         super(RuleRef, self).__init__([])
 
         self.rule = rule
@@ -182,8 +178,12 @@ class RuleRef(Expansion):
     def matching_regex(self):
         return self.rule.expansion.matching_regex()
 
+    def decrement_ref_count(self):
+        if self.rule.reference_count > 0:
+            self.rule.reference_count -= 1
+
     def __del__(self):
-        self.rule.reference_count -= 1
+        self.decrement_ref_count()
 
 
 class KleeneStar(Expansion):

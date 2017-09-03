@@ -2,7 +2,7 @@
 Classes for compiling JSpeech Grammar Format rules
 """
 import re
-import jsgf
+from .expansions import Expansion, RuleRef
 
 
 class Rule(object):
@@ -16,7 +16,7 @@ class Rule(object):
         self.visible = visible
 
         # Handle the object passed in as an expansion
-        self.expansion = jsgf.Expansion.handle(expansion)
+        self.expansion = Expansion.handle(expansion)
 
         self._matching_regex = re.compile(
             self.expansion.matching_regex() + r"\Z")
@@ -62,10 +62,10 @@ class Rule(object):
             """
             Recursively collect every RuleRef object's Rule in an Expansion tree and every
             referenced rule in the referenced rule's Expansion tree and so on.
-            :type expansion: jsgf.Expansion
+            :type expansion: Expansion
             :type result: set
             """
-            if isinstance(expansion, jsgf.RuleRef):
+            if isinstance(expansion, RuleRef):
                 if expansion.rule not in result:  # prevent cycles
                     result.add(expansion.rule)
                     collect_referenced_rules(expansion.rule.expansion, result)
