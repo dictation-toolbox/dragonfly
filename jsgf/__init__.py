@@ -13,9 +13,9 @@ expansions, such as the Kleene Star, optional and required groupings.
 """
 
 from expansions import AlternativeSet
-from expansions import ExpansionError
-from expansions import Expansion
 from expansions import Dictation
+from expansions import Expansion
+from expansions import ExpansionError
 from expansions import KleeneStar
 from expansions import Literal
 from expansions import OptionalGrouping
@@ -29,6 +29,6 @@ from grammar import GrammarError
 from grammar import Import
 from grammar import RootGrammar
 
-from rules import Rule
-from rules import PublicRule
 from rules import HiddenRule
+from rules import PublicRule
+from rules import Rule
