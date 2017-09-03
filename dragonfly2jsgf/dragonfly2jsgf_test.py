@@ -1,7 +1,7 @@
 import unittest
 
 from dragonfly import CompoundRule
-from jsgf.dragonfly2jsgf import *
+from dragonfly2jsgf import *
 
 
 class TranslatorCase(unittest.TestCase):

@@ -9,8 +9,7 @@ import logging
 
 
 class TranslationError(Exception):
-    def __init__(self, msg):
-        super(TranslationError, self).__init__(msg)
+    pass
 
 
 class LinkedGrammar(jsgf.Grammar):
