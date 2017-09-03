@@ -13,7 +13,6 @@ expansions, such as the Kleene Star, optional and required groupings.
 """
 
 from expansions import AlternativeSet
-from expansions import Dictation
 from expansions import Expansion
 from expansions import ExpansionError
 from expansions import KleeneStar
