@@ -58,6 +58,8 @@ setup(
       install_requires=[
                         "setuptools >= 0.6c7",
                         "pywin32",
+                        "sphinxwrapper",
+                        "pyjsgf",
                        ],
 
       classifiers=[
