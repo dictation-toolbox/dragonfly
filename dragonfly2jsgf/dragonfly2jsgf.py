@@ -51,7 +51,7 @@ class TranslationState(object):
         :type element: ElementBase
         """
         self.element = element
-        self.expansion = expansion
+        self._expansion = expansion
         if isinstance(dependencies, list):
             self.dependencies = dependencies
         else:
@@ -60,6 +60,18 @@ class TranslationState(object):
     rule_names = property(
         lambda self: map(lambda rule: rule.name, self.dependencies)
     )
+
+    @property
+    def expansion(self):
+        return self._expansion
+
+    @expansion.setter
+    def expansion(self, value):
+        # Valid values are an Expansion object or None
+        if value is not None and not isinstance(value, jsgf.Expansion):
+            raise AttributeError("value must be an Expansion object or None.")
+
+        self._expansion = value
 
 
 class Translator(object):
