@@ -1,12 +1,12 @@
-from dragonfly.grammar.elements import *
+import logging
+
+import jsgf
 from dragonfly import Grammar
-from dragonfly.parser import Parser, ParserError
+from dragonfly.grammar.elements import *
 from dragonfly.grammar.elements_compound import stuff
 from dragonfly.grammar.rule_base import Rule
-import jsgf
-import jsgf_extensions
-from jsgf import Expansion
-import logging
+from dragonfly.parser import Parser, ParserError
+from jsgf.ext import SequenceRule
 
 
 class TranslationError(Exception):
@@ -27,7 +27,7 @@ class LinkedGrammar(jsgf.Grammar):
         return self._df_grammar
 
 
-class LinkedRule(jsgf.Rule):
+class LinkedRule(SequenceRule):
     def __init__(self, name, visible, expansion, df_rule):
         self._df_rule = df_rule
         super(LinkedRule, self).__init__(name, visible, expansion)
