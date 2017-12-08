@@ -13,6 +13,18 @@ class TranslationError(Exception):
     pass
 
 
+class JSGFImpossible(jsgf.Expansion):
+    """
+    JSGF equivalent of dragonfly's Impossible element.
+    """
+    def __init__(self):
+        super(Impossible, self).__init__([])
+
+    def matches(self, speech):
+        self.current_match = None
+        return speech
+
+
 class LinkedGrammar(jsgf.Grammar):
     def __init__(self, name, df_grammar):
         self._df_grammar = df_grammar
@@ -175,7 +187,7 @@ class Translator(object):
             state.expansion = jsgf_extensions.Dictation()
 
         elif isinstance(element, Impossible):
-            raise TranslationError("Cannot translate 'Impossible' element.")
+            state.expansion = JSGFImpossible()
 
         elif element.children == ():  # improbable ElementBase case
             state.expansion = Expansion(())
