@@ -78,7 +78,6 @@ class ChoiceCase(TranslatorCase):
         ])
         rule = self.translator.translate_rule(compound_rule)
         self.assertTrue(rule.matches("hello Bob"))
-        self.assertTrue(rule.matches("HELLO BOB"))
 
 
 class GrammarCase(TranslatorCase):

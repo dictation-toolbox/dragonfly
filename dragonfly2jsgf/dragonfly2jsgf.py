@@ -184,13 +184,13 @@ class Translator(object):
         elif isinstance(element, Dictation):
             # A Sphinx decoder for handling dictation will be prepared and used
             # when necessary.
-            state.expansion = jsgf_extensions.Dictation()
+            state.expansion = jsgf.ext.Dictation()
 
         elif isinstance(element, Impossible):
             state.expansion = JSGFImpossible()
 
         elif element.children == ():  # improbable ElementBase case
-            state.expansion = Expansion(())
+            state.expansion = jsgf.Expansion([])
 
         elif isinstance(element, Sequence):
             state.expansion = jsgf.Sequence(*get_equiv_children())
