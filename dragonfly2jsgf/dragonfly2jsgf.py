@@ -18,7 +18,7 @@ class JSGFImpossible(jsgf.Expansion):
     JSGF equivalent of dragonfly's Impossible element.
     """
     def __init__(self):
-        super(Impossible, self).__init__([])
+        super(JSGFImpossible, self).__init__([])
 
     def matches(self, speech):
         self.current_match = None
@@ -28,7 +28,7 @@ class JSGFImpossible(jsgf.Expansion):
 class LinkedGrammar(jsgf.Grammar):
     def __init__(self, name, df_grammar):
         self._df_grammar = df_grammar
-        super(LinkedGrammar, self).__init__(name)
+        super(LinkedGrammar, self).__init__(name=name)
 
     @property
     def df_grammar(self):
@@ -39,7 +39,7 @@ class LinkedGrammar(jsgf.Grammar):
         return self._df_grammar
 
 
-class LinkedRule(SequenceRule):
+class LinkedRule(jsgf.Rule):
     def __init__(self, name, visible, expansion, df_rule):
         self._df_rule = df_rule
         super(LinkedRule, self).__init__(name, visible, expansion)
