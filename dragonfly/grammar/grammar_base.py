@@ -137,6 +137,9 @@ class Grammar(object):
                       " recognitions or not.")
 
     def set_exclusiveness(self, exclusive):
+        """
+        Set the exclusiveness of this grammar.
+        """
         self._engine.set_exclusiveness(self, exclusive)
 
     def _set_engine(self, engine):
@@ -341,10 +344,6 @@ class Grammar(object):
         self._engine.unload_grammar(self)
         self._loaded = False
         self._in_context = False
-
-    def set_exclusiveness(self, exclusiveness):
-        """ Set the exclusiveness of this grammar. """
-        self._engine.set_exclusiveness(self, exclusiveness)
 
     def get_complexity_string(self):
         """
