@@ -31,13 +31,13 @@ from .list             import ListBase
 from .context          import Context
 
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 class GrammarError(Exception):
     pass
 
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 class Grammar(object):
     """
@@ -65,8 +65,7 @@ class Grammar(object):
     _log_results  = logging.getLogger("grammar.results")
     _log          = logging.getLogger("grammar")
 
-
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Methods for initialization and cleanup.
 
     def __init__(self, name, description=None, context=None, engine=None):
@@ -94,10 +93,10 @@ class Grammar(object):
             try:
                 self._log.exception("Exception during grammar unloading:"
                                     " %s" % (e,))
-            except Exception, e:
+            except Exception:
                 pass
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Methods for runtime introspection.
 
     def __str__(self):
@@ -133,8 +132,8 @@ class Grammar(object):
         self._enabled = False
 
     enabled = property(lambda self: self._enabled,
-                doc = "Whether a grammar is active to receive"
-                      " recognitions or not.")
+                       doc="Whether a grammar is active to receive "
+                           "recognitions or not.")
 
     def set_exclusiveness(self, exclusive):
         """
@@ -144,19 +143,20 @@ class Grammar(object):
 
     def _set_engine(self, engine):
         if self._loaded:
-            raise GrammarError(" Grammar %s: Cannot set engine while loaded."
-                               % self)
+            raise GrammarError(" Grammar %s: Cannot set engine while "
+                               "loaded." % self)
         self._engine = engine
-    engine = property(lambda self: self._engine, _set_engine,
-                        doc="A grammar's SR engine.")
 
-    #-----------------------------------------------------------------------
+    engine = property(lambda self: self._engine, _set_engine,
+                      doc="A grammar's SR engine.")
+
+    # ----------------------------------------------------------------------
     # Methods for populating a grammar object instance.
 
     def add_rule(self, rule):
         """ Add a rule to this grammar. """
         self._log_load.debug("Grammar %s: adding rule %s."
-                            % (self._name, rule.name))
+                             % (self._name, rule.name))
 
         # Check for correct type and duplicate rules or rule names.
         if self._loaded:
@@ -169,7 +169,7 @@ class Grammar(object):
             return
         elif [True for r in self._rules if r.name == rule.name]:
             raise GrammarError("Two rules with the same name '%s' not"
-                " allowed." % rule.name)
+                               " allowed." % rule.name)
 
         # Append the rule to this grammar object's internal list.
         self._rules.append(rule)
@@ -178,7 +178,7 @@ class Grammar(object):
     def remove_rule(self, rule):
         """ Remove a rule from this grammar. """
         self._log_load.debug("Grammar %s: removing rule %s."
-                            % (self._name, rule.name))
+                             % (self._name, rule.name))
 
         # Check for correct type.
         if self._loaded:
@@ -195,7 +195,7 @@ class Grammar(object):
     def add_list(self, lst):
         """ Add a list to this grammar. """
         self._log_load.debug("Grammar %s: adding list %s."
-                            % (self._name, lst.name))
+                             % (self._name, lst.name))
 
         # Make sure that the list can be loaded and is not a duplicate.
         if self._loaded:
@@ -228,9 +228,10 @@ class Grammar(object):
             self.add_rule(dep)
         elif isinstance(dep, ListBase):
             self.add_list(dep)
-        else: raise GrammarError("Unknown dependency type %s." % dep)
+        else:
+            raise GrammarError("Unknown dependency type %s." % dep)
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Methods for runtime modification of a grammar's contents.
 
     def activate_rule(self, rule):
@@ -242,16 +243,16 @@ class Grammar(object):
             the rule itself is activated by the user.
 
         """
-        self._log_load.debug("Grammar %s: activating rule %s." \
-                            % (self._name, rule.name))
+        self._log_load.debug("Grammar %s: activating rule %s."
+                             % (self._name, rule.name))
 
         # Check for correct type and valid rule instance.
         assert self._loaded
         assert isinstance(rule, Rule), \
             "Dragonfly rule objects must be of the type dragonfly.rule.Rule"
         if rule not in self._rules:
-            raise GrammarError("Rule '%s' not loaded in this grammar." \
-                % rule.name)
+            raise GrammarError("Rule '%s' not loaded in this grammar."
+                               % rule.name)
         if not rule.exported:
             return
 
@@ -267,16 +268,16 @@ class Grammar(object):
             the rule itself is deactivated by the user.
 
         """
-        self._log_load.debug("Grammar %s: deactivating rule %s." \
-                            % (self._name, rule.name))
+        self._log_load.debug("Grammar %s: deactivating rule %s."
+                             % (self._name, rule.name))
 
         # Check for correct type and valid rule instance.
         assert self._loaded
         assert isinstance(rule, Rule), \
             "Dragonfly rule objects must be of the type dragonfly.rule.Rule"
         if rule not in self._rules:
-            raise GrammarError("Rule '%s' not loaded in this grammar." \
-                % rule.name)
+            raise GrammarError("Rule '%s' not loaded in this grammar."
+                               % rule.name)
         if not rule.exported:
             return
 
@@ -292,22 +293,22 @@ class Grammar(object):
             the list itself is modified by the user.
 
         """
-        self._log_load.debug("Grammar %s: updating list %s." \
-                            % (self._name, lst.name))
+        self._log_load.debug("Grammar %s: updating list %s."
+                             % (self._name, lst.name))
 
         # Check for correct type and valid list instance.
-#        assert self._loaded
+        #        assert self._loaded
         if lst not in self._lists:
-            raise GrammarError("List '%s' not loaded in this grammar." \
-                % lst.name)
+            raise GrammarError("List '%s' not loaded in this grammar."
+                               % lst.name)
         elif [True for w in lst.get_list_items()
-                    if not isinstance(w, (str, unicode))]:
-            raise GrammarError("List '%s' contains objects other than" \
-                "strings." % lst.name)
+              if not isinstance(w, (str, unicode))]:
+            raise GrammarError("List '%s' contains objects other than"
+                               "strings." % lst.name)
 
         self._engine.update_list(lst, self)
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Methods for registering a grammar object instance in natlink.
 
     def load(self):
@@ -326,19 +327,20 @@ class Grammar(object):
 
         # Update all lists loaded in this grammar.
         for rule in self._rules:
-            if rule.active != False:
+            if rule.active:
                 rule.activate(force=True)
         # Update all lists loaded in this grammar.
         for lst in self._lists:
             lst._update()
 
-#        self._log_load.warning(self.get_complexity_string())
+        #        self._log_load.warning(self.get_complexity_string())
 
     def unload(self):
         """ Unload this grammar from its SR engine. """
 
         # Prevent unloading the same grammar multiple times.
-        if not self._loaded: return
+        if not self._loaded:
+            return
         self._log_load.debug("Grammar %s: unloading." % self._name)
 
         self._engine.unload_grammar(self)
@@ -359,25 +361,27 @@ class Grammar(object):
             elements.extend(self._get_element_list(rule))
         text = ("Grammar: %3d (%3d, %3d) rules, %4d elements (%3d avg)     %s"
                 % (
-                   len(rules_all), len(rules_top), len(rules_imp),
-                   len(elements), len(elements)/len(rules_all),
-                   self,
-                  )
-               )
+                    len(rules_all), len(rules_top), len(rules_imp),
+                    len(elements), len(elements) / len(rules_all),
+                    self,
+                )
+                )
         for rule in rules_all:
             elements = self._get_element_list(rule)
             text += "\n  Rule: %4d  %s" % (len(elements), rule)
         return text
 
     def _get_element_list(self, thing):
-        if isinstance(thing, Rule):  element = thing.element
-        else:                        element = thing
+        if isinstance(thing, Rule):
+            element = thing.element
+        else:
+            element = thing
         elements = [element]
         for child in element.children:
             elements.extend(self._get_element_list(child))
         return elements
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Callback methods for handling utterances and recognitions.
 
     def process_begin(self, executable, title, handle):
@@ -427,7 +431,8 @@ class Grammar(object):
             [r.deactivate() for r in self._rules if r.active]
 
         self._log_begin.debug("Grammar %s:     active rules: %s."
-            % (self._name, [r.name for r in self._rules if r.active]))
+                              % (self._name,
+                                 [r.name for r in self._rules if r.active]))
 
     def enter_context(self):
         """
