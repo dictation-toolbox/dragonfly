@@ -19,34 +19,42 @@
 #
 
 """
-    This file implements the compiler for CMU Sphinx voice recognition engine.
+This file implements the compiler for CMU Pocket Sphinx speech recognition
+engine.
 """
+from dragonfly2jsgf.dragonfly2jsgf import Translator, TranslationState
+from ..base import CompilerBase
 
-from dragonfly.engines.compiler_natlink import NatlinkCompiler
-from dragonfly.engines.compiler_natlink import _Compiler as NatlinkInternalCompiler
-
-# import dragonfly.grammar.elements as elements_
-# from ..base import CompilerBase
+# noinspection PyUnusedLocal
 
 
-class SphinxCompiler(NatlinkCompiler):
+class SphinxJSGFCompiler(CompilerBase):
+    translator = Translator()
+
+    # -----------------------------------------------------------------------
+    # Methods for compiling grammars.
+
     def compile_grammar(self, grammar, *args, **kwargs):
         self._log.debug("%s: Compiling grammar %s." % (self, grammar.name))
 
-        compiler = _Compiler()
-        for rule in grammar.rules:
-            self._compile_rule(rule, compiler)
+        jsgf_grammar = self.translator.translate_grammar(grammar)
+        return jsgf_grammar
 
-        compiled_grammar = compiler.compile()
-        rule_names = compiler.rule_names
-        #        print compiler.debug_state_string()
-        return compiled_grammar, rule_names
+    def _compile_any_element(self, element, *args, **kwargs):
+        state = TranslationState(element)
+        expansion = self.translator.get_jsgf_equiv(state).expansion
+        return expansion.compile()
+
+    _compile_sequence     = _compile_any_element
+    _compile_alternative  = _compile_any_element
+    _compile_optional     = _compile_any_element
+    _compile_literal      = _compile_any_element
+    _compile_rule_ref     = _compile_any_element
+    _compile_list_ref     = _compile_any_element
+    _compile_dictation    = _compile_any_element
+    _compile_impossible   = _compile_any_element
+    _compile_empty        = _compile_any_element
 
     def _compile_unknown_element(self, element, *args, **kwargs):
-        pass
-
-
-# Internal compiler class for CMU Sphinx/PocketSphinx
-class _Compiler(NatlinkInternalCompiler):
-    def __init__(self):
-        pass
+        raise NotImplementedError("Compiler %s not implemented for element "
+                                  "type %s." % (self, element))
