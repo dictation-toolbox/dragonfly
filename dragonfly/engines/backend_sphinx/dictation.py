@@ -49,22 +49,7 @@ class SphinxDictationContainer(DictationContainerBase):
     def __str__(self):
         return unicode(self).encode()
 
-    def __unicode__(self):
-        if self._formatted is None:
-            self._formatted = self.format()
-        return self._formatted
-
     def __repr__(self):
         message = u"%s(%s)" % (self.__class__.__name__,
                                u", ".join(self._words))
         return message.encode()
-
-    @property
-    def words(self):
-        """ Sequence of the words forming this dictation. """
-        return self._words
-
-    def format(self):
-        """ Format and return this dictation as a Unicode object. """
-        # TODO Determine if Sphinx needs to have dictation output decoded.
-        return u" ".join(self._words)
