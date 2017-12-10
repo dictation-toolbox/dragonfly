@@ -40,12 +40,12 @@ def is_engine_available():
         return True
 
     try:
-        import pocketsphinx
+        import sphinxwrapper
     except ImportError, e:
-        _log.info("Failed to import pocketsphinx package: %s. Is it installed?" % (e,))
+        _log.info("Failed to import sphinxwrapper package: %s. Is it installed?" % (e,))
         return False
     except Exception, e:
-        _log.info("Exception during import of pocketsphinx package: %s" % (e,))
+        _log.info("Exception during import of sphinxwrapper package: %s" % (e,))
         return False
 
     return True
