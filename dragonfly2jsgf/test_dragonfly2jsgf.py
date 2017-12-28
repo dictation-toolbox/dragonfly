@@ -68,7 +68,7 @@ class ChoiceCase(TranslatorCase):
             Choice("person", {"Bob": "Bob", "John": "John"})
         ])
         expected = "public <greet> = hello (bob|john);"
-        rule = self.translator.translate_rule(compound_rule)
+        rule = self.translator.translate_rule(compound_rule).jsgf_rule
         self.assertEqual(expected, rule.compile())
 
     def test_choice_match(self):
@@ -76,7 +76,7 @@ class ChoiceCase(TranslatorCase):
         compound_rule = CompoundRule(name="greet", spec=spec, extras=[
             Choice("person", {"Bob": "Bob", "John": "John"})
         ])
-        rule = self.translator.translate_rule(compound_rule)
+        rule = self.translator.translate_rule(compound_rule).jsgf_rule
         self.assertTrue(rule.matches("hello Bob"))
 
 

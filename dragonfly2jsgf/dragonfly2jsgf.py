@@ -69,6 +69,9 @@ class TranslationState(object):
         else:
             self.dependencies = []
 
+        # Used if this object is being used to translate a dragonfly rule.
+        self.jsgf_rule = None
+
     rule_names = property(
         lambda self: map(lambda rule: rule.name, self.dependencies)
     )
@@ -103,24 +106,31 @@ class Translator(object):
         """
         Translate a dragonfly grammar into a JSGF grammar.
         :type grammar: Grammar
-        :rtype: LinkedGrammar
+        :return: LinkedGrammar
         """
         result = LinkedGrammar(grammar.name, grammar)
         for rule in grammar.rules:
-            result.add_rule(self.translate_rule(rule))
+            state = self.translate_rule(rule)
+
+            # Add the translated rule and any dependencies found during translation
+            result.add_rule(state.jsgf_rule)
+            for d in state.dependencies:
+                if d not in result.rules:  # don't add the same rule twice
+                    result.add_rule(d)
+
         return result
 
     def translate_rule(self, rule, visible=True):
         """
-        Translates a dragonfly rule into a JSGF rule.
+        Translate a dragonfly rule into a JSGF rule.
         :type rule: Rule
         :type visible: bool
-        :rtype: LinkedRule
+        :return: TranslationState
         """
         element = rule.element
         state = self.get_jsgf_equiv(TranslationState(element))
-        jsgf_rule = LinkedRule(rule.name, visible, state.expansion, rule)
-        return jsgf_rule
+        state.jsgf_rule = LinkedRule(rule.name, visible, state.expansion, rule)
+        return state
 
     def translate_rule_ref(self, state):
         """
