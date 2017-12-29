@@ -19,7 +19,7 @@
 #
 
 """
-Engine class for CMU Sphinx/Pocket Sphinx
+Engine class for CMU Pocket Sphinx
 """
 from dragonfly.engines.backend_sphinx import is_engine_available
 from ..base import EngineBase, EngineError, MimicFailure
@@ -30,7 +30,7 @@ import dragonfly.grammar.state as state_
 
 
 class SphinxEngine(EngineBase):
-    """Speech recognition engine back-end for CMU Sphinx/Pocket Sphinx."""
+    """Speech recognition engine back-end for CMU Pocket Sphinx."""
 
     _name = "sphinx"
     DictationContainer = SphinxDictationContainer
@@ -64,7 +64,7 @@ class SphinxEngine(EngineBase):
         super(SphinxEngine, self)._build_grammar_wrapper(grammar)
 
     def _load_grammar(self, grammar):
-        """ Load the given *grammar*. """
+        """ Load the given *grammar* and return a wrapper. """
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
 

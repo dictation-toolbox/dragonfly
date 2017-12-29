@@ -20,7 +20,7 @@
 
 
 """
-SR back-end package for CMU Sphinx/Pocket Sphinx
+SR back-end package for CMU Pocket Sphinx
 ============================================================================
 
 """
@@ -34,7 +34,7 @@ _engine = None
 
 
 def is_engine_available():
-    """ Check whether Sphinx is available. """
+    """ Check whether the Sphinx engine is available. """
     global _engine
     if _engine:
         return True
@@ -52,7 +52,7 @@ def is_engine_available():
 
 
 def get_engine():
-    """ Retrieve the Natlink back-end engine object. """
+    """ Retrieve the Sphinx back-end engine object. """
     global _engine
     if not _engine:
         from .engine import SphinxEngine
