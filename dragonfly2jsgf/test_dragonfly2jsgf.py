@@ -2,7 +2,7 @@ import unittest
 
 from dragonfly import CompoundRule
 from dragonfly2jsgf import *
-from dragonfly import List as DragonflyList
+from dragonfly import List as DragonflyList, DictList as DragonflyDictList
 
 
 class TranslatorCase(unittest.TestCase):
@@ -64,6 +64,11 @@ class ListsCase(TranslatorCase):
         self.fruit_list.append("apple")
         self.fruit_list_ref = ListRef("fruit_ref", self.fruit_list)
 
+        self.dict_list = DragonflyDictList("fruit_dict")
+        self.dict_list["apple"] = "yep"
+        self.dict_list["mango"] = "nope"
+        self.dict_list_ref = DictListRef("fruit_dict_ref", self.dict_list)
+
     def test_list(self):
         actual = self.translator.translate_list(self.fruit_list)
         expected = jsgf.HiddenRule("fruit", jsgf.AlternativeSet("apple"))
@@ -76,12 +81,35 @@ class ListsCase(TranslatorCase):
         self.assertEqual(jsgf.RuleRef(jsgf_rule), state.expansion)
         self.assertListEqual([jsgf_rule], state.dependencies)
 
-    def test_referencing_rule(self):
+    def test_list_referencing_rule(self):
         element = self.fruit_list_ref
         r = Rule("fav_fruit", element)
         state = self.translator.translate_rule(r)
         list_rule = jsgf.HiddenRule("fruit", jsgf.AlternativeSet(*self.fruit_list))
         expected_rule = LinkedRule("fav_fruit", True, jsgf.RuleRef(list_rule), r)
+        self.assertEqual(state.jsgf_rule, expected_rule)
+
+    def test_dict_list(self):
+        actual = self.translator.translate_dict_list(self.dict_list)
+        expected = jsgf.HiddenRule("fruit_dict",
+                                   jsgf.AlternativeSet("apple", "mango"))
+        self.assertEqual(expected, actual)
+
+    def test_dict_list_ref(self):
+        element = self.dict_list_ref
+        state = self.translator.translate_dict_list_ref(TranslationState(element))
+        expected_rule = jsgf.HiddenRule("fruit_dict",
+                                        jsgf.AlternativeSet("apple", "mango"))
+        self.assertEqual(jsgf.RuleRef(expected_rule), state.expansion)
+        self.assertListEqual([expected_rule], state.dependencies)
+
+    def test_dict_list_referencing_rule(self):
+        element = self.dict_list_ref
+        r = Rule("fruits", element)
+        state = self.translator.translate_rule(r)
+        list_rule = jsgf.HiddenRule("fruit_dict",
+                                    jsgf.AlternativeSet("apple", "mango"))
+        expected_rule = LinkedRule("fruits", True, jsgf.RuleRef(list_rule), r)
         self.assertEqual(state.jsgf_rule, expected_rule)
 
 

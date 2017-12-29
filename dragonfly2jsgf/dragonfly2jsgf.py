@@ -1,7 +1,7 @@
 import logging
 
 import jsgf
-from dragonfly import Grammar, List as DragonflyList
+from dragonfly import Grammar, List as DragonflyList, DictList as DragonflyDictList
 from dragonfly.grammar.elements import *
 from dragonfly.grammar.elements_compound import stuff
 from dragonfly.grammar.rule_base import Rule
@@ -174,6 +174,19 @@ class Translator(object):
         return jsgf.HiddenRule(lst.name, jsgf.AlternativeSet(*lst))
 
     @staticmethod
+    def translate_dict_list(dict_list):
+        """
+        Translate a dragonfly DictList object into a JSGF rule representing it.
+        The returned rule is a HiddenRule because dict lists can only be referenced
+        by rules using DictListRef, not spoken directly.
+        :type dict_list: DragonflyDictList
+        :return: HiddenRule
+        """
+        keys = dict_list.keys()
+        keys.sort()
+        return jsgf.HiddenRule(dict_list.name, jsgf.AlternativeSet(*keys))
+
+    @staticmethod
     def translate_list_ref(state):
         """
         Translate the dragonfly ListRef element inside the state object by
@@ -201,6 +214,28 @@ class Translator(object):
         state.expansion = jsgf.RuleRef(list_rule)
         return state
 
+    @staticmethod
+    def translate_dict_list_ref(state):
+        """
+        Translate the dragonfly DictListRef element inside the state object by
+        creating a JSGF rule representing the DictList.
+
+        state.expansion will be set to a JSGF RuleRef for the new rule and the new
+        rule itself will be added to the state.dependencies list.
+
+        :type state: TranslationState
+        :return: TranslationState
+        """
+        element = state.element
+        if not isinstance(element, (DictList, DictListRef)):
+            raise TranslationError("Cannot translate element '%s' as a "
+                                   "DictListRef." % element)
+
+        dict_list_rule = Translator.translate_dict_list(element.list)
+        state.dependencies.append(dict_list_rule)
+        state.expansion = jsgf.RuleRef(dict_list_rule)
+        return state
+
     def get_jsgf_equiv(self, state):
         """
         Take a TranslationState object containing a dragonfly element
@@ -226,12 +261,12 @@ class Translator(object):
             # Translate the dragonfly rule reference
             self.translate_rule_ref(state)
 
+        # DictListRef should be checked before ListRef because it is a subclass
+        elif isinstance(element, (DictListRef, DictList)):
+            self.translate_dict_list_ref(state)
+
         elif isinstance(element, (ListRef, List)):
             self.translate_list_ref(state)
-
-        elif isinstance(element, (DictListRef, DictList)):
-            raise NotImplementedError("Dragonfly DictLists are not implemented "
-                                      "yet.")
 
         elif isinstance(element, Dictation):
             # A Sphinx decoder for handling dictation will be prepared and used
