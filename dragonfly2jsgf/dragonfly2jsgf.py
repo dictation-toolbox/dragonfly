@@ -166,6 +166,8 @@ class Translator(object):
     def translate_list(lst):
         """
         Translate a dragonfly List object into a JSGF rule representing it.
+        The returned rule is a HiddenRule because lists can only be referenced by
+        rules using ListRef, not spoken directly.
         :type lst: DragonflyList
         :return: HiddenRule
         """
@@ -174,15 +176,15 @@ class Translator(object):
     @staticmethod
     def translate_list_ref(state):
         """
-        Translate the dragonfly ListRule object inside the state object by
+        Translate the dragonfly ListRef element inside the state object by
         creating a JSGF rule representing the List.
 
         JSGF has no equivalent for Lists or DictLists, however in the spirit
         of making this engine as full-featured as possible, they can be
         implemented as JSGF rules.
 
-        state.expansion will be set to a JSGF RuleRef for the new rule.
-        The new rule itself will be added to the state.dependencies list.
+        state.expansion will be set to a JSGF RuleRef for the new rule and the new
+        rule itself will be added to the state.dependencies list.
 
         :type state: TranslationState
         :return: TranslationState
