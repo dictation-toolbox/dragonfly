@@ -176,13 +176,15 @@ class SphinxEngine(EngineBase):
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
-        # TODO Implement simple config allowing for choice of text-to-speech engine
-        # Jasper project has such an implementation:
+        # CMU Sphinx speech recognition engines don't come with text-to-speech
+        # functionality. For those who need this, the Jasper project has
+        # implementations for popular text-to-speech engines:
         # https://github.com/jasperproject/jasper-client
-        pass
+        raise NotImplementedError("text-to-speech is not implemented for this "
+                                  "engine")
 
     def _get_language(self):
-        # TODO Write a file with the locale information like this if necessary
+        # TODO Use a config file with locale information like this
         return "en"
 
 
