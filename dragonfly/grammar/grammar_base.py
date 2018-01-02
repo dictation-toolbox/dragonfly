@@ -115,6 +115,16 @@ class Grammar(object):
                       doc="Whether a grammar is loaded into"
                           " its SR engine or not.")
 
+    @property
+    def rule_names(self):
+        """
+        List of grammar's rule names.
+        """
+        result = []
+        for rule in self._rules:
+            result.append(rule.name)
+        return result
+
     def enable(self):
         """
             Enable this grammar so that it is active to receive 
