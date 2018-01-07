@@ -102,7 +102,7 @@ class Context(object):
         return "%s(%s)" % (self.__class__.__name__, self._str)
 
     def copy(self):
-        return copy_.deepcopy(self)
+        return copy.deepcopy(self)
 
     #-----------------------------------------------------------------------
     # Logical operations.
