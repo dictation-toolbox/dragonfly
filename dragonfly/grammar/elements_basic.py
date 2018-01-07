@@ -900,7 +900,7 @@ class Dictation(ElementBase):
     def decode(self, state):
         state.decode_attempt(self)
 
-        # Check that at least one word has been dictated, otherwise feel.
+        # Check that at least one word has been dictated, otherwise fail.
         if state.rule() != "dgndictation":
             state.decode_failure(self)
             return
