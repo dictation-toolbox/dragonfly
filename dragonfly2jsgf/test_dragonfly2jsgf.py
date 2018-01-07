@@ -1,6 +1,8 @@
 import unittest
 
-from dragonfly import CompoundRule
+import jsgf
+from dragonfly import *
+from dragonfly.parser import ParserError
 from dragonfly2jsgf import *
 from dragonfly import List as DragonflyList, DictList as DragonflyDictList
 
