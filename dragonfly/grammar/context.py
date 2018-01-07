@@ -66,7 +66,7 @@ import copy
 import logging
 
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 class Context(object):
     """
@@ -92,7 +92,7 @@ class Context(object):
     _log = logging.getLogger("context.match")
     _log_match = _log
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Initialization and aggregation methods.
 
     def __init__(self):
@@ -104,7 +104,7 @@ class Context(object):
     def copy(self):
         return copy.deepcopy(self)
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Logical operations.
 
     def __and__(self, other):
@@ -116,7 +116,7 @@ class Context(object):
     def __invert__(self):
         return LogicNotContext(self)
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Matching methods.
 
     def matches(self, executable, title, handle):
@@ -141,7 +141,7 @@ class Context(object):
         return True
 
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 # Wrapper contexts for combining contexts in logical structures.
 
 class LogicAndContext(Context):
@@ -180,7 +180,7 @@ class LogicNotContext(Context):
         return not self._child.matches(executable, title, handle)
 
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 class AppContext(Context):
     """
@@ -199,7 +199,7 @@ class AppContext(Context):
 
     """
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Initialization methods.
 
     def __init__(self, executable=None, title=None, exclude=False):
@@ -211,7 +211,7 @@ class AppContext(Context):
             self._executable = None
         else:
             raise TypeError("executable argument must be a string or None;"
-                        " received %r" % executable)
+                            " received %r" % executable)
 
         if isinstance(title, str):
             self._title = title.lower()
@@ -219,14 +219,14 @@ class AppContext(Context):
             self._title = None
         else:
             raise TypeError("title argument must be a string or None;"
-                        " received %r" % title)
+                            " received %r" % title)
 
         self._exclude = bool(exclude)
 
         self._str = "%s, %s, %s" % (self._executable, self._title,
                                     self._exclude)
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Matching methods.
 
     def matches(self, executable, title, handle):
@@ -236,15 +236,16 @@ class AppContext(Context):
         if self._executable:
             found = (executable.find(self._executable) != -1)
             if self._exclude == found:
-                self._log_match.debug("%s:"
-                        " No match, executable doesn't match." % (self))
+                self._log_match.debug("%s: No match, executable doesn't"
+                                      " match." % self)
                 return False
         if self._title:
             found = (title.find(self._title) != -1)
             if self._exclude == found:
-                self._log_match.debug("%s:"
-                        " No match, title doesn't match." % (self))
+                self._log_match.debug("%s: No match, title doesn't match."
+                                      % self)
                 return False
 
-        if self._log_match: self._log_match.debug("%s: Match." % (self))
+        if self._log_match:
+            self._log_match.debug("%s: Match." % self)
         return True
