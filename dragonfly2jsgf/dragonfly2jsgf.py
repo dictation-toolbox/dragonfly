@@ -147,8 +147,11 @@ class Translator(object):
         name = element.name
         if name not in state.rule_names:
             # Make a new equivalent JSGF rule
-            rule_expansion = self.get_jsgf_equiv(element.rule.element)
-            new_rule = jsgf.Rule(name, False, rule_expansion)
+            state.element = element.rule.element
+            self.get_jsgf_equiv(state)
+            rule_expansion = state.expansion
+            new_rule = jsgf.HiddenRule(name, rule_expansion)
+            state.element = element
             state.dependencies.append(new_rule)
             state.expansion = jsgf.RuleRef(new_rule)
         else:

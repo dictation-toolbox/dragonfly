@@ -146,6 +146,16 @@ class GrammarCase(TranslatorCase):
         jsgf_grammar = self.translator.translate_grammar(grammar)
         self.assertTrue(jsgf_grammar.rules[0].matches("HELLO WORLD"))
 
+    def test_using_rule_ref(self):
+        rule1 = Rule("rule", Literal("hello"))
+        rule_ref = RuleRef(rule1, name="rule_ref")
+        state = TranslationState(rule_ref)
+        self.translator.translate_rule_ref(state)
+        self.assertEqual(state.element, rule_ref)
+        expected_jsgf_rule = jsgf.HiddenRule("rule_ref", "hello")
+        self.assertListEqual(state.dependencies, [expected_jsgf_rule])
+        self.assertEqual(state.expansion, jsgf.RuleRef(expected_jsgf_rule))
+
 
 if __name__ == '__main__':
     unittest.main()
