@@ -56,6 +56,9 @@ sapi5_names    = [
                   ".test_engine_sapi5",
                  ]
 
+sphinx_names   = [
+                  ".test_engine_sphinx",
+                 ]
 #===========================================================================
 
 def build_suite(suite, names):
@@ -84,3 +87,5 @@ natlink_suite  = build_suite(EngineTestSuite("natlink"),
                              natlink_names + common_names)
 sapi5_suite    = build_suite(EngineTestSuite("sapi5"),
                              sapi5_names + common_names)
+sphinx_suite    = build_suite(EngineTestSuite("sphinx"),
+                             sphinx_names + common_names)
