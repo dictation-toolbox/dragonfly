@@ -39,3 +39,25 @@ class TestRule(MappingRule):
 g = Grammar("test")
 g.add_rule(TestRule())
 g.load()
+
+
+if __name__ == '__main__':
+    # If this file is being run, not imported, set up the engine and an observer
+    # to print some info.
+
+    class Observer(RecognitionObserver):
+        def on_begin(self):
+            print("Speech started.")
+
+        def on_recognition(self, words_list):
+            words = []
+            for w, _ in words_list:
+                words.append(w)
+            print(" ".join(words))
+
+        def on_failure(self):
+            print("Sorry, what was that?")
+
+    observer = Observer()
+    observer.register()
+    g.engine.recognise_forever()
