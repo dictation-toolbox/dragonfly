@@ -60,6 +60,7 @@ setup(
                         "pywin32",
                         "sphinxwrapper",
                         "pyjsgf",
+                        "pyaudio",
                        ],
 
       classifiers=[
