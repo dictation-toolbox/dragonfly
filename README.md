@@ -11,6 +11,7 @@ It currently supports the following speech recognition engines:
  - *Dragon NaturallySpeaking* (DNS), a product of *Nuance*
  - *Windows Speech Recognition* (WSR), included with Microsoft 
    Windows Vista, Windows 7, and freely available for Windows XP
+ - *CMU Pocket Sphinx* (with caveats)
 
 Dragonfly's documentation is available online at
 [Read the Docs](http://dragonfly.readthedocs.org/en/latest/).
@@ -18,6 +19,26 @@ Dragonfly's FAQ is available at
 [Stackoverflow](http://stackoverflow.com/questions/tagged/python-dragonfly).
 Dragonfly's mailing list/discussion group is available at
 [Google Groups](https://groups.google.com/forum/#!forum/dragonflyspeech).
+
+
+CMU Sphinx
+----------------------------------------------------------------------------
+
+This fork is a work in progress version of dragonfly for use with the open 
+source CMU Sphinx speech recognition engines, specifically Pocket Sphinx. 
+You can read more about the CMU Sphinx speech recognition projects [here](https://cmusphinx.github.io/wiki/).
+
+To use the Pocket Sphinx engine you will need to install the [sphinxwrapper](https://github.com/Danesprite/sphinxwrapper), 
+[pyjsgf](https://github.com/Danesprite/pyjsgf), and 
+[pyaudio](http://people.csail.mit.edu/hubert/pyaudio/) Python packages, 
+then install dragonfly with the following command:
+``` Shell
+python setup.py install
+```
+
+There is more information on how the engine works, what the limitations 
+are, the to-do list and more 
+[here](dragonfly/engines/backend_sphinx/README.md).
 
 
 Features
