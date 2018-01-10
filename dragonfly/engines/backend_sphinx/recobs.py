@@ -25,50 +25,19 @@ Recognition observer class for the Sphinx engine
 """
 
 from ..base import RecObsManagerBase
-from ...grammar.grammar import Grammar
-from ...grammar.rule_base import Rule
-from ...grammar.elements import Impossible
 
 
 class SphinxRecObsManager(RecObsManagerBase):
-
+    """
+    This class's methods are called by the engine directly, rather than through a
+    grammar.
+    """
     def __init__(self, engine):
         RecObsManagerBase.__init__(self, engine)
-        self._grammar = None
 
+    # The following methods must be implemented by RecObsManagers.
     def _activate(self):
-        if not self._grammar:
-            self._grammar = SphinxRecObsGrammar(self)
-        self._grammar.load()
+        pass
 
     def _deactivate(self):
-        if self._grammar:
-            self._grammar.unload()
-        self._grammar = None
-
-
-class SphinxRecObsGrammar(Grammar):
-
-    def __init__(self, manager):
-        self._manager = manager
-        name = "_recobs_grammar"
-        Grammar.__init__(self, name, description=None, context=None)
-
-        rule = Rule(element=Impossible(), exported=True)
-        self.add_rule(rule)
-
-    # -----------------------------------------------------------------------
-    # Callback methods for handling utterances and recognitions.
-
-    def process_begin(self, executable, title, handle):
-        self._manager.notify_begin()
-
-    def process_recognition(self, words):
-        raise RuntimeError("Recognition observer received an unexpected"
-                           " recognition: %s" % (words,))
-
-    def process_recognition_other(self, words):
-        self._manager.notify_recognition(words)
-
-    def process_recognition_failure(self):
-        self._manager.notify_failure()
+        pass
