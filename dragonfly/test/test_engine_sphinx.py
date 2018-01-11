@@ -23,7 +23,7 @@ class TestEngineSphinx(unittest.TestCase):
         # that break tests. Value of 0 means no timeout at all.
         self.engine.config.NEXT_PART_TIMEOUT = 0
 
-        # Map from test function to test object
+        # Map for test functions
         self.test_map = {}
 
     def tearDown(self):
