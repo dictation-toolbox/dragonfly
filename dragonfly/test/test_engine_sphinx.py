@@ -19,6 +19,10 @@ class TestEngineSphinx(unittest.TestCase):
         engine.connect()
         self.engine = engine
 
+        # Set a default NEXT_PART_TIMEOUT value so there aren't weird timing errors
+        # that break tests. Value of 0 means no timeout at all.
+        self.engine.config.NEXT_PART_TIMEOUT = 0
+
         # Map from test function to test object
         self.test_map = {}
 
