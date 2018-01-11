@@ -17,11 +17,3 @@
 #   License along with Dragonfly.  If not, see 
 #   <http://www.gnu.org/licenses/>.
 #
-
-import sys
-
-# Import Windows OS dependent classes only for Windows
-if sys.platform.startswith("win"):
-    from grammar_connection          import ConnectionGrammar
-else:
-    from ..os_dependent_mock import ConnectionGrammar

@@ -36,7 +36,7 @@ class TestRule(MappingRule):
         })
     ]
 
-g = Grammar("test")
+g = Grammar("test", engine=get_engine("sphinx"))
 g.add_rule(TestRule())
 g.load()
 

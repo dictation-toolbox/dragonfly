@@ -745,7 +745,7 @@ class GrammarWrapper(object):
         """
         # Get context info for the process_begin method. Dragonfly has a handy
         # static method for this:
-        fg_window = Window().get_foreground()
+        fg_window = Window.get_foreground()
         if sys.platform.startswith("win"):
             process_method = self.grammar.process_begin
         else:

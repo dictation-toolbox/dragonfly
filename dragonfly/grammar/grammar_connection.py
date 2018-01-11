@@ -34,7 +34,7 @@ except ImportError, error:
         from ..os_dependent_mock import Dispatch
         from ..os_dependent_mock import COMError as com_error
 
-from dragonfly.grammar.grammar_base import Grammar
+from .grammar_base import Grammar
 
 
 # ---------------------------------------------------------------------------
