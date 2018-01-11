@@ -25,7 +25,7 @@ from rectangle import Rectangle, unit
 from point     import Point
 
 # Windows-specific
-if "win" in sys.platform:
+if sys.platform.startswith("win"):
     from window    import Window
     from monitor   import Monitor, monitors
     from clipboard import Clipboard

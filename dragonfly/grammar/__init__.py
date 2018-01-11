@@ -21,7 +21,7 @@
 import sys
 
 # Import Windows OS dependent classes only for Windows
-if "win" in sys.platform:
+if sys.platform.startswith("win"):
     from grammar_connection          import ConnectionGrammar
 else:
     from ..os_dependent_mock import ConnectionGrammar

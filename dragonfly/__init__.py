@@ -29,7 +29,7 @@ from .engines           import get_engine, EngineError, MimicFailure
 from .grammar.grammar_base       import Grammar
 
 import sys
-if "win" in sys.platform:
+if sys.platform.startswith("win"):
     from .grammar.grammar_connection import ConnectionGrammar
 else:
     from .os_dependent_mock import ConnectionGrammar
@@ -54,7 +54,7 @@ from .actions           import (ActionBase, DynStrActionBase, ActionError,
                                 Mimic, Playback, WaitWindow, FocusWindow,
                                 Function, StartApp, BringApp, PlaySound)
 
-if "win" in sys.platform:
+if sys.platform.startswith("win"):
     from .actions.keyboard  import Typeable, Keyboard
     from .actions.typeables import typeables
     from .actions.sendinput import (KeyboardInput, MouseInput, HardwareInput,
@@ -72,7 +72,7 @@ from .windows.rectangle import Rectangle, unit
 from .windows.point     import Point
 
 # Windows-specific
-if "win" in sys.platform:
+if sys.platform.startswith("win"):
     from .windows             import Window
     from .windows             import Monitor, monitors
     from .windows             import Clipboard

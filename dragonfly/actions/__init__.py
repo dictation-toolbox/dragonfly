@@ -29,7 +29,7 @@ from .action_base         import (ActionBase, DynStrActionBase,
 from .action_mimic        import Mimic
 
 # Import Windows OS dependent classes only for Windows
-if "win" in sys.platform:
+if sys.platform.startswith("win"):
     from .action_key          import Key
     from .action_text         import Text
     from .action_mouse        import Mouse

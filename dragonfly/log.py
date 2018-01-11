@@ -108,7 +108,7 @@ class DispatchingHandler(logging.Handler):
         # import traceback; print traceback.extract_stack()
         # import traceback; traceback.print_stack()
         for handler, filter in self.handler_filter_pairs:
-            if filter.filter(record) and "win" in sys.platform:
+            if filter.filter(record) and sys.platform.startswith("win"):
                 handler.handle(record)
 
 

@@ -746,7 +746,7 @@ class GrammarWrapper(object):
         # Get context info for the process_begin method. Dragonfly has a handy
         # static method for this:
         fg_window = Window().get_foreground()
-        if "win" in sys.platform:
+        if sys.platform.startswith("win"):
             process_method = self.grammar.process_begin
         else:
             # Note: get_foreground() is mocked for non-Windows platforms
@@ -780,7 +780,7 @@ class GrammarWrapper(object):
         s = state_.State(words_rules, rule_ids, self.engine)
         for r in self.grammar.rules:
             # TODO Remove the if windows condition when contexts are working
-            if not r.active and "win" in sys.platform:
+            if not r.active and sys.platform.startswith("win"):
                 continue
             s.initialize_decoding()
 
