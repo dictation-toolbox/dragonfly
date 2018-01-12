@@ -556,7 +556,7 @@ class SphinxEngine(EngineBase):
 
         # Process the rules using a shallow copy of the in progress list because the
         # original list will be modified
-        for rule in [_ for _ in self._in_progress_sequence_rules]:
+        for rule in tuple(self._in_progress_sequence_rules):
             # Get a dictation hypothesis if it is required
             if rule.current_is_dictation_only and dict_hypothesis is False and \
                     not self.recognising_dictation:
