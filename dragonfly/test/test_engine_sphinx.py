@@ -466,17 +466,23 @@ class TestEngineSphinx(unittest.TestCase):
         self.assert_mimic_success("hello world")
         self.assert_test_function_called(test2, 1)
 
+        # Test that it works with a break shorter than the timeout value
+        self.assert_mimic_success("say")
+        time.sleep(timeout / 2 * 0.001)  # translate to seconds
+        self.assert_mimic_success("hello")
+        self.assert_test_function_called(test1, 2)
+
         # Test with a timeout of 0 (no timeout)
         timeout = 0
         self.engine.config.NEXT_PART_TIMEOUT = timeout
         self.assert_mimic_success("say")
         time.sleep(0.1)  # sleep for 100ms
         self.assert_mimic_success("testing")
-        self.assert_test_function_called(test1, 2)
+        self.assert_test_function_called(test1, 3)
 
         # Test without a sleep between rule parts
         self.assert_mimic_success("say", "testing")
-        self.assert_test_function_called(test1, 3)
+        self.assert_test_function_called(test1, 4)
 
         # Test that mapping 2 still has no issue matching
         self.assert_mimic_success("hello world")

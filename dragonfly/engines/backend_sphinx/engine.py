@@ -80,7 +80,7 @@ class SphinxEngine(EngineBase):
         self._recognising = False
         self._recognition_paused = False  # used in pausing/resuming recognition
         self._cancel_recognition_next_time = False
-        self._last_recognition_start_time = None
+        self._last_recognition_time = None
 
     @property
     def config(self):
@@ -380,19 +380,16 @@ class SphinxEngine(EngineBase):
         if not self._in_progress_sequence_rules:
             return
 
-        # First recognition has started. Set an initial time.
-        if not self._last_recognition_start_time:
-            self._last_recognition_start_time = time.time() * 1000
-            return
-
-        assert self._last_recognition_start_time is not None
+        assert self._last_recognition_time,\
+            "SequenceRule is in progress, but there is no recorded last "\
+            "recognition time"
 
         # Check if the next part of the rule wasn't spoken in time.
         current_time = time.time() * 1000
-        timed_out = current_time >= self._last_recognition_start_time + next_part_timeout
+        timed_out = current_time >= self._last_recognition_time + next_part_timeout
         if next_part_timeout and timed_out:
             self._log.info("Recognition time-out after %d ms"
-                           % (current_time - self._last_recognition_start_time))
+                           % (current_time - self._last_recognition_time))
 
             # I'm not sure if the approach below is quick enough to not interrupt
             # the flow of speech, but this does happen at the beginning of an
@@ -413,7 +410,7 @@ class SphinxEngine(EngineBase):
             self._decoder.batch_process(self._audio_buffers, use_callbacks=False)
 
         # Set the new last recognition start time
-        self._last_recognition_start_time = current_time
+        self._last_recognition_time = current_time
 
     def speech_start_callback(self):
         # Handle recognition timeout where if speech started too late
@@ -506,6 +503,10 @@ class SphinxEngine(EngineBase):
                     # the in progress list
                     rule.set_next()
                     self._in_progress_sequence_rules.append(rule)
+
+                    # Sequence rule is in progress so set the last recognition time
+                    # to now.
+                    self._last_recognition_time = time.time() * 1000
                 else:
                     # The entire sequence has been matched. This rule could only
                     # have had one part to it.
@@ -546,6 +547,9 @@ class SphinxEngine(EngineBase):
         if not speech:
             self._reset_all_sequence_rules()
             return []
+
+        # Sequence rule is in progress so set the last recognition time to now.
+        self._last_recognition_time = time.time() * 1000
 
         result = []
         dict_hypothesis = False  # in this case False means unset
