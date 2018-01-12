@@ -42,6 +42,14 @@ This could be useful if you need to, for example, use different models or a diff
 The `config` property of the engine class can be used to set the configuration module/object you want to use. If you change the configuration while the engine is connected, the decoder configuration used will not take effect until you restart the engine using `disconnect()` and then `connect()` again. Same with the PyAudio stream configuration; you need to disconnect and then do `recognise_forever()` again.
 
 
+Improving Speech Recognition Accuracy
+----------------------------------------------------------------------------
+
+The Sphinx engines can have some trouble recognising what was said accurately. To remedy this, you may need to adapt the acoustic model that Pocket Sphinx is using. This is similar to training DNS. There is information on how to do that [here](https://cmusphinx.github.io/wiki/tutorialadapt/) and a good video on it [here](https://www.youtube.com/watch?v=IAHH6-t9jK0). Adapting an acoustic model is currently a rather involved process, although it could be improved with some scripting.
+
+Adapting your model might not be necessary; there might be other issues with your setup. There's more information on tuning the recognition accuracy [here](https://cmusphinx.github.io/wiki/tutorialtuning/).
+
+
 Limitations
 ----------------------------------------------------------------------------
 
@@ -57,7 +65,7 @@ Unfortunately, the 'Dictation' support that DNS and WSR provide is difficult to 
 
 ### Spoken Language Support
 
-There are only a handful of languages with working language models and dictionaries available [here](https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/), although it is possible to build your own language model [using lmtool](http://www.speech.cs.cmu.edu/tools/lmtool-new.html) or pronunciation dictionary [using lextool](http://www.speech.cs.cmu.edu/tools/lextool.html). There are other tools out there as well.
+There are only a handful of languages with working language models and dictionaries available [here](https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/), although it is possible to build your own language model [using lmtool](http://www.speech.cs.cmu.edu/tools/lmtool-new.html) or pronunciation dictionary [using lextool](http://www.speech.cs.cmu.edu/tools/lextool.html). There are other tools out there as well. See more on building a language model [here](https://cmusphinx.github.io/wiki/tutoriallm/).
 
 You may get errors if your grammars use words that aren't in Pocket Sphinx's loaded pronunciation dictionary and/or language model. This can happen if you've misspelled words, if the words aren't written in the same language that the dictionary and language model are for (e.g. US English), or if the words just aren't in the loaded dictionary or language model.
 
