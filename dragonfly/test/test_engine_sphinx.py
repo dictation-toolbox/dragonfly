@@ -432,7 +432,7 @@ class TestEngineSphinx(unittest.TestCase):
         """
         # Set a timeout period for this test of 100 ms, which is unreasonable for
         # humans, but fine for mimic().
-        timeout = 100
+        timeout = 0.1
         self.engine.config.NEXT_PART_TIMEOUT = timeout
 
         # Set up a test grammar with some rules
@@ -456,7 +456,7 @@ class TestEngineSphinx(unittest.TestCase):
 
         # Start recognising mapping 1 again, then sleep for a bit
         self.assert_mimic_success("say")
-        time.sleep(timeout * 0.001)  # translate to seconds
+        time.sleep(timeout)
 
         # The rest of mapping 1 should not match
         self.assert_mimic_failure("testing")
@@ -468,7 +468,7 @@ class TestEngineSphinx(unittest.TestCase):
 
         # Test that it works with a break shorter than the timeout value
         self.assert_mimic_success("say")
-        time.sleep(timeout / 2 * 0.001)  # translate to seconds
+        time.sleep(timeout / 2)
         self.assert_mimic_success("hello")
         self.assert_test_function_called(test1, 2)
 

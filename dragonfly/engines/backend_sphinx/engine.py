@@ -385,7 +385,7 @@ class SphinxEngine(EngineBase):
             "recognition time"
 
         # Check if the next part of the rule wasn't spoken in time.
-        current_time = time.time() * 1000
+        current_time = time.time()
         timed_out = current_time >= self._last_recognition_time + next_part_timeout
         if next_part_timeout and timed_out:
             self._log.info("Recognition time-out after %d ms"
@@ -506,7 +506,7 @@ class SphinxEngine(EngineBase):
 
                     # Sequence rule is in progress so set the last recognition time
                     # to now.
-                    self._last_recognition_time = time.time() * 1000
+                    self._last_recognition_time = time.time()
                 else:
                     # The entire sequence has been matched. This rule could only
                     # have had one part to it.
@@ -549,7 +549,7 @@ class SphinxEngine(EngineBase):
             return []
 
         # Sequence rule is in progress so set the last recognition time to now.
-        self._last_recognition_time = time.time() * 1000
+        self._last_recognition_time = time.time()
 
         result = []
         dict_hypothesis = False  # in this case False means unset

@@ -27,7 +27,7 @@ PYAUDIO_STREAM_KEYWORD_ARGS = {
 # User language for the engine to use.
 LANGUAGE = "en"
 
-# Timeout in milliseconds for speaking the next part of a rule involving dictation.
+# Timeout in seconds for speaking the next part of a rule involving dictation.
 # This does not include the first part of such a rule. If this value is set to 0,
 # then there will be no timeout.
-NEXT_PART_TIMEOUT = 2000
+NEXT_PART_TIMEOUT = 2.0
