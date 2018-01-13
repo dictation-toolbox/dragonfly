@@ -282,6 +282,13 @@ class Translator(object):
         elif element.children == ():  # improbable ElementBase case
             state.expansion = jsgf.Expansion([])
 
+        # Repetition should be checked before Sequence because it is a subclass
+        elif isinstance(element, Repetition):
+            equiv_children = get_equiv_children()
+            if len(equiv_children) != 1:
+                raise TranslationError("Repetition may only have 1 child.")
+            state.expansion = jsgf.Repeat(equiv_children[0])
+
         elif isinstance(element, Sequence):
             state.expansion = jsgf.Sequence(*get_equiv_children())
 
@@ -298,11 +305,5 @@ class Translator(object):
             if len(equiv_children) != 1:
                 raise TranslationError("Optional grouping may only have 1 child.")
             state.expansion = jsgf.OptionalGrouping(equiv_children[0])
-
-        elif isinstance(element, Repetition):
-            equiv_children = get_equiv_children()
-            if len(equiv_children) != 1:
-                raise TranslationError("Repetition may only have 1 child.")
-            state.expansion = jsgf.Repeat(equiv_children[0])
 
         return state
