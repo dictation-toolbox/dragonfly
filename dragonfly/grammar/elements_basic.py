@@ -576,6 +576,16 @@ class Repetition(Sequence):
 
         Sequence.__init__(self, children, name=name, default=default)
 
+    min = property(lambda self: self._min,
+                   doc="The minimum number of times that the child element must be"
+                       "recognized; may be 0. (Read-only)")
+
+    max = property(lambda self: self._max,
+                   doc="The maximum number of times that the child element must be"
+                       "recognized; if *None*, the child element must be "
+                       "recognized exactly *min* times (i.e. *max = min + 1*). "
+                       "(Read-only)")
+
     def dependencies(self, memo):
         if self in memo:
             return []
