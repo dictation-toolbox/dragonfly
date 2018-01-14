@@ -120,16 +120,16 @@ class Translator(object):
 
         return result
 
-    def translate_rule(self, rule, visible=True):
+    def translate_rule(self, rule):
         """
         Translate a dragonfly rule into a JSGF rule.
         :type rule: Rule
-        :type visible: bool
         :return: TranslationState
         """
         element = rule.element
         state = self.get_jsgf_equiv(TranslationState(element))
-        state.jsgf_rule = LinkedRule(rule.name, visible, state.expansion, rule)
+        state.jsgf_rule = LinkedRule(rule.name, rule.exported, state.expansion,
+                                     rule)
         return state
 
     def translate_rule_ref(self, state):
@@ -150,7 +150,7 @@ class Translator(object):
             state.element = element.rule.element
             self.get_jsgf_equiv(state)
             rule_expansion = state.expansion
-            new_rule = jsgf.HiddenRule(name, rule_expansion)
+            new_rule = jsgf.Rule(name, element.rule.exported, rule_expansion)
             state.element = element
             state.dependencies.append(new_rule)
             state.expansion = jsgf.RuleRef(new_rule)

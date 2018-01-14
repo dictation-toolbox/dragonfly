@@ -165,7 +165,7 @@ class TestEngineSphinx(unittest.TestCase):
 
         # Load a new grammar with a rule referencing the fruit list
         grammar = Grammar("test")
-        r = Rule("fav_fruit", fruit_list_ref)
+        r = Rule("fav_fruit", fruit_list_ref, exported=True)
         grammar.add_rule(r)
         grammar.load()
 
@@ -188,7 +188,8 @@ class TestEngineSphinx(unittest.TestCase):
 
         # Add a new rule to the grammar using a DictListRef element and load it
         grammar = Grammar("test")
-        r = Rule("fruits", DictListRef("fruit_dict_ref", fruit_dict))
+        r = Rule("fruits", DictListRef("fruit_dict_ref", fruit_dict),
+                 exported=True)
         grammar.add_rule(r)
         grammar.load()
 

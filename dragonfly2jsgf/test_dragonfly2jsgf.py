@@ -85,7 +85,7 @@ class ListsCase(TranslatorCase):
 
     def test_list_referencing_rule(self):
         element = self.fruit_list_ref
-        r = Rule("fav_fruit", element)
+        r = Rule("fav_fruit", element, exported=True)
         state = self.translator.translate_rule(r)
         list_rule = jsgf.HiddenRule("fruit", jsgf.AlternativeSet(*self.fruit_list))
         expected_rule = LinkedRule("fav_fruit", True, jsgf.RuleRef(list_rule), r)
@@ -107,7 +107,7 @@ class ListsCase(TranslatorCase):
 
     def test_dict_list_referencing_rule(self):
         element = self.dict_list_ref
-        r = Rule("fruits", element)
+        r = Rule("fruits", element, exported=True)
         state = self.translator.translate_rule(r)
         list_rule = jsgf.HiddenRule("fruit_dict",
                                     jsgf.AlternativeSet("apple", "mango"))
@@ -147,12 +147,12 @@ class GrammarCase(TranslatorCase):
         self.assertTrue(jsgf_grammar.rules[0].matches("HELLO WORLD"))
 
     def test_using_rule_ref(self):
-        rule1 = Rule("rule", Literal("hello"))
+        rule1 = Rule("rule", Literal("hello"), exported=True)
         rule_ref = RuleRef(rule1, name="rule_ref")
         state = TranslationState(rule_ref)
         self.translator.translate_rule_ref(state)
         self.assertEqual(state.element, rule_ref)
-        expected_jsgf_rule = jsgf.HiddenRule("rule_ref", "hello")
+        expected_jsgf_rule = jsgf.Rule("rule_ref", True, "hello")
         self.assertListEqual(state.dependencies, [expected_jsgf_rule])
         self.assertEqual(state.expansion, jsgf.RuleRef(expected_jsgf_rule))
 
