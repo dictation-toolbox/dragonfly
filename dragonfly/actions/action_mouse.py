@@ -67,6 +67,9 @@ The code below moves the mouse cursor 25 pixels right and 25 pixels up
     #  by the given number of pixels.
     Mouse("<25, -25>").execute()
 
+The following code scrolls down 4 mouse scroll wheel clicks::
+
+    Mouse("scrolldown:4").execute()
 
 Mouse specification format
 ............................................................................
@@ -128,6 +131,19 @@ Mouse button-hold or button-release action:
 
     - ``down`` -- hold the button down
     - ``up`` -- release the button
+
+ - *pause* --
+   Specifies how long to pause *after* clicking the button; same as above.
+
+Mouse scroll wheel action:
+   *direction* [``:`` *repeat*] [``/`` *pause*]
+
+ - *direction* -- Specifies which direction to scroll:
+
+    - ``scrolldown`` -- scroll down
+    - ``scrollup`` -- scroll up
+
+ - *repeat* -- Specifies how many scroll wheel clicks to simulate.
 
  - *pause* --
    Specifies how long to pause *after* clicking the button; same as above.
