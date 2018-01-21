@@ -354,12 +354,17 @@ class SphinxEngine(EngineBase):
             self._decoder.active_search = current_search
         return dict_hypothesis
 
-    def _get_grammar_wrapper_and_rule(self, linked_rule):
+    def _get_grammar_wrapper_and_rule(self, rule):
         """
-        Get the dragonfly Rule and GrammarWrapper for a LinkedRule.
-        :type linked_rule: LinkedRule
+        Get the dragonfly Rule and GrammarWrapper for a JSGF Rule.
+        :param rule: JSGF Rule
         :return: tuple
         """
+        if isinstance(rule, LinkedRule):
+            linked_rule = rule
+        else:
+            linked_rule = self._root_grammar.get_original_rule(rule)
+
         df_rule = linked_rule.df_rule
         wrapper = self._get_grammar_wrapper(df_rule.grammar)
         return wrapper, df_rule
@@ -470,6 +475,41 @@ class SphinxEngine(EngineBase):
         # Switch back to the relevant grammar search (or maybe dictation)
         self._set_grammar_search()
 
+    def _generate_words_list(self, rule, complete_match):
+        """
+        Generate a words list compatible with dragonfly's processing classes.
+        :param rule: JSGF Rule
+        :param complete_match: whether all expansions in a SequenceRule must match
+        :return: list
+        """
+        wrapper, df_rule = self._get_grammar_wrapper_and_rule(rule)
+        if isinstance(rule, SequenceRule):
+            words_list = []
+            # Generate a words list using the match values for each expansion in the
+            # sequence
+            for e in rule.expansion_sequence:
+                # Use rule IDs compatible with dragonfly's processing classes
+                if only_dictation_in_expansion(e):
+                    rule_id = 1000000  # dgndictation id
+                else:
+                    rule_id = wrapper.grammar.rules.index(df_rule)
+
+                # If the SequenceRule is not completely matched yet and
+                # complete_match is False, then use the match values thus far.
+                if not complete_match and e.current_match is None:
+                    break
+
+                # Get the words from the expansion's current match
+                words = e.current_match.split()
+                assert words is not None
+                for word in words:
+                    words_list.append((word, rule_id))
+        else:
+            rule_id = wrapper.grammar.rules.index(df_rule)
+            words_list = [(word, rule_id)
+                          for word in rule.expansion.current_match.split()]
+        return words_list
+
     def _handle_normal_rules(self, speech):
         """
         Internal method used by the hypothesis callback for handling normal rules
@@ -515,10 +555,8 @@ class SphinxEngine(EngineBase):
             else:
                 # This rule has been fully recognised. So generate a rule id and
                 # words list compatible with dragonfly's processing classes.
-                wrapper, df_rule = self._get_grammar_wrapper_and_rule(
-                    self._root_grammar.get_original_rule(rule))
-                rule_id = wrapper.grammar.rules.index(df_rule)
-                words_list = [(word, rule_id) for word in speech.split()]
+                wrapper, df_rule = self._get_grammar_wrapper_and_rule(rule)
+                words_list = self._generate_words_list(rule, True)
 
                 # Process the complete recognition and break out of the loop; only
                 # one rule should match.
@@ -605,23 +643,9 @@ class SphinxEngine(EngineBase):
         :type rule: SequenceRule
         """
         # Get the GrammarWrapper and dragonfly rule from the SequenceRule
-        wrapper, df_rule = self._get_grammar_wrapper_and_rule(
-            self._root_grammar.get_original_rule(rule))
-
-        # Generate a words list using the match values for each expansion in the
-        # sequence
-        words_list = []
-        for e in rule.expansion_sequence:
-            # Use rule IDs compatible with dragonfly's processing classes
-            if only_dictation_in_expansion(e):
-                rule_id = 1000000  # dgndictation id
-            else:
-                rule_id = wrapper.grammar.rules.index(df_rule)
-
-            words = e.current_match.split()
-            assert words is not None
-            for word in words:
-                words_list.append((word, rule_id))
+        wrapper, df_rule = self._get_grammar_wrapper_and_rule(rule)
+        # Generate a words list
+        words_list = self._generate_words_list(rule, True)
 
         self._process_complete_recognition(wrapper, words_list)
 
