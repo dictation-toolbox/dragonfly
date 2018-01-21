@@ -49,14 +49,20 @@ if __name__ == '__main__':
         def on_begin(self):
             print("Speech started.")
 
+        @staticmethod
+        def _get_words(words_list):
+            # Get just the words from the tuple list
+            return " ".join([word for word, _ in words_list])
+
         def on_recognition(self, words_list):
-            words = []
-            for w, _ in words_list:
-                words.append(w)
-            print(" ".join(words))
+            print(self._get_words(words_list))
 
         def on_failure(self):
             print("Sorry, what was that?")
+
+        def on_next_rule_part(self, words_list):
+            print("Next part of rule started.")
+            print("Current words: %s" % self._get_words(words_list))
 
     observer = Observer()
     observer.register()
