@@ -53,14 +53,14 @@ class RecognitionObserver(object):
         engine = get_engine()
         engine.unregister_recognition_observer(self)
 
-#    def on_begin(self):
-#        pass
-#
-#    def on_recognition(self, words):
-#        pass
-#
-#    def on_failure(self):
-#        pass
+    def on_begin(self):
+        pass
+
+    def on_recognition(self, words):
+        pass
+
+    def on_failure(self):
+        pass
 
 
 #---------------------------------------------------------------------------
