@@ -462,7 +462,7 @@ class SphinxEngine(EngineBase):
         :type wrapper: GrammarWrapper
         :type words_list: list
         """
-        # Notify the recognition observer
+        # Notify recognition observers
         self._recognition_observer_manager.notify_recognition(words_list)
 
         # Begin dragonfly processing
@@ -547,6 +547,11 @@ class SphinxEngine(EngineBase):
                     # Sequence rule is in progress so set the last recognition time
                     # to now.
                     self._last_recognition_time = time.time()
+
+                    # Notify observers
+                    self._recognition_observer_manager.notify_next_rule_part(
+                        self._generate_words_list(rule, False)
+                    )
                 else:
                     # The entire sequence has been matched. This rule could only
                     # have had one part to it.
@@ -594,6 +599,7 @@ class SphinxEngine(EngineBase):
 
         # Process the rules using a shallow copy of the in progress list because the
         # original list will be modified
+        notified = False
         for rule in tuple(self._in_progress_sequence_rules):
             # Get a dictation hypothesis if it is required
             if rule.current_is_dictation_only and dict_hypothesis is False and \
@@ -615,6 +621,13 @@ class SphinxEngine(EngineBase):
                 # current expansion's current_match value. Go to the next expansion.
                 rule.set_next()
                 result.append(rule)
+
+                # Notify with the current recognised words list. Only notify once.
+                if not notified:
+                    self._recognition_observer_manager.notify_next_rule_part(
+                        self._generate_words_list(rule, False)
+                    )
+                    notified = True
             else:
                 # SequenceRule has been completely matched.
                 self._handle_complete_sequence_rule(rule)

@@ -330,10 +330,12 @@ class TestEngineSphinx(unittest.TestCase):
         on_begin_test = self.get_test_function()
         on_recognition_test = self.get_test_function()
         on_failure_test = self.get_test_function()
+        on_next_rule_part_test = self.get_test_function()
 
         # Set up a custom observer using test methods
         class TestObserver(RecognitionObserver):
             on_begin = on_begin_test
+            on_next_rule_part = on_next_rule_part_test
             on_recognition = on_recognition_test
             on_failure = on_failure_test
 
@@ -350,11 +352,12 @@ class TestEngineSphinx(unittest.TestCase):
         self.assert_mimic_success("hello world")
 
         # on_begin is called during each mimic. on_recognition should be called
-        # once per successful and complete recognition. on_failure won't have been
-        # called yet.
+        # once per successful and complete recognition. Both on_failure and
+        # on_next_rule_part shouldn't have been called yet.
         self.assert_test_function_called(on_begin_test, 1)
         self.assert_test_function_called(on_recognition_test, 1)
         self.assert_test_function_called(on_failure_test, 0)
+        self.assert_test_function_called(on_next_rule_part_test, 0)
 
         # Test with a dictation rule
         self.assert_mimic_success("say")
@@ -364,6 +367,9 @@ class TestEngineSphinx(unittest.TestCase):
         self.assert_test_function_called(on_recognition_test, 1)
         self.assert_test_function_called(on_failure_test, 0)
 
+        # on_next_rule_part should be called because there are more rule parts
+        self.assert_test_function_called(on_next_rule_part_test, 1)
+
         # Test the next part of the dictation rule
         self.assert_mimic_success("testing testing")
 
@@ -372,9 +378,14 @@ class TestEngineSphinx(unittest.TestCase):
         self.assert_test_function_called(on_recognition_test, 2)
         self.assert_test_function_called(on_failure_test, 0)
 
+        # on_next_rule_part shouldn't have been called because this is the last part
+        # and on_recognition will be called instead
+        self.assert_test_function_called(on_next_rule_part_test, 1)
+
         # Recognition begins again and failure occurs.
         self.assert_mimic_failure("testing")
         self.assert_test_function_called(on_begin_test, 4)
+        self.assert_test_function_called(on_next_rule_part_test, 1)  # no change
         self.assert_test_function_called(on_failure_test, 1)
         self.assert_test_function_called(on_recognition_test, 2)
 
@@ -383,6 +394,7 @@ class TestEngineSphinx(unittest.TestCase):
         self.assert_test_function_called(on_failure_test, 2)
         self.assert_mimic_failure("")
         self.assert_test_function_called(on_failure_test, 3)
+        self.assert_test_function_called(on_next_rule_part_test, 1)  # no change
 
     def test_recognition_history(self):
         observer = RecognitionHistory()

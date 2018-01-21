@@ -41,3 +41,18 @@ class SphinxRecObsManager(RecObsManagerBase):
 
     def _deactivate(self):
         pass
+
+    def notify_next_rule_part(self, words):
+        """
+        Notify observers that the next part of a rule has been spoken. This is for
+        rules involving Dictation elements that must be spoken in sequence.
+        :type words: list
+        """
+        for observer in self._observers:
+            try:
+                if hasattr(observer, "on_next_rule_part"):
+                    observer.on_next_rule_part(words)
+            except Exception, e:
+                self._log.exception("Exception during on_next_rule_part()"
+                                    " method of recognition observer %s: %s"
+                                    % (observer, e))
