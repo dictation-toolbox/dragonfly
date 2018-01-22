@@ -1,12 +1,14 @@
 import logging
 
 import jsgf
+from jsgf import map_expansion
+from jsgf.ext import SequenceRule, dictation_in_expansion
+
 from dragonfly import Grammar, List as DragonflyList, DictList as DragonflyDictList
 from dragonfly.grammar.elements import *
 from dragonfly.grammar.elements_compound import stuff
 from dragonfly.grammar.rule_base import Rule
 from dragonfly.parser import Parser, ParserError
-from jsgf.ext import SequenceRule
 
 
 class TranslationError(Exception):
@@ -55,8 +57,8 @@ class LinkedRule(jsgf.Rule):
 
 class TranslationState(object):
     """
-    Translation state used in building a JSGF expansion tree
-    from a dragonfly rule
+    Translation state used in building JSGF expansions, rules and grammars from
+    dragonfly elements, rules and grammars.
     """
     def __init__(self, element, expansion=None, dependencies=None):
         """
@@ -93,6 +95,11 @@ class Translator(object):
     _log = logging.getLogger("dragonfly2jsgf")
     _parser = Parser(stuff, _log)
 
+    def __init__(self):
+        # Used to not add duplicate rules in translate_grammar that were already
+        # translated in translate_repetition_with_dictation.
+        self.expansion_black_list = []
+
     def translate(self, df_spec):
         element = self._parser.parse(df_spec)
         if not element:
@@ -108,6 +115,7 @@ class Translator(object):
         :type grammar: Grammar
         :return: LinkedGrammar
         """
+        self.expansion_black_list = []
         result = LinkedGrammar(grammar.name, grammar)
         for rule in grammar.rules:
             state = self.translate_rule(rule)
@@ -118,6 +126,11 @@ class Translator(object):
                 if d not in result.rules:  # don't add the same rule twice
                     result.add_rule(d)
 
+        # Remove any rules with black listed expansions added during translation of
+        # repeating dictation rules.
+        for rule in result.rules:
+            if rule.expansion in self.expansion_black_list:
+                result.remove_rule(rule)
         return result
 
     def translate_rule(self, rule):
@@ -239,6 +252,72 @@ class Translator(object):
         state.expansion = jsgf.RuleRef(dict_list_rule)
         return state
 
+    def _has_dictation_descendant(self, element):
+        """
+        Find if there is a Dictation element in an element tree. This will also
+        find Dictation elements in any referenced rule's tree.
+        :return: list
+        """
+        result = False
+        if isinstance(element, Dictation):
+            result = True
+        elif isinstance(element, RuleRef):
+            result = result or self._has_dictation_descendant(element.rule.element)
+        else:
+            for child in element.children:
+                result = result or self._has_dictation_descendant(child)
+        return result
+
+    def translate_repetition_with_dictation(self, state):
+        """
+        Translate a dragonfly Repetition element that has at least one Dictation
+        descendant.
+        :type state: TranslationState
+        :return: TranslationState
+        """
+        element = state.element
+
+        # Calculate the equivalent JSGF expansion for the first child and ignore the
+        # rest (if any); such children are used for min/max limits on the number of
+        # repetitions. These limits doesn't make much sense for Dictation
+        # functionality that has required utterance pauses. Any min/max limit is
+        # handled by the engine on a JSGF rule level instead of here.
+        state.element = state.element.children[0]
+        self.get_jsgf_equiv(state)
+        child = state.expansion
+
+        # Switch element back to the Repetition
+        state.element = element
+
+        # Process rule references in the expansion tree with dictation
+        def process(x):
+            if isinstance(x, jsgf.RuleRef) and dictation_in_expansion(x):
+                # Skip the RuleRef and use the rule's expansion tree instead
+                if x.parent:
+                    # If there is a parent, replace x with the referenced rule's
+                    # expansion in the parent's children list.
+                    i = x.parent.children.index(x)
+                    x.parent.children.remove(x)
+                    x.parent.children.insert(i, x.rule.expansion)
+                x.rule.expansion.parent = x.parent
+
+                # The rule is no longer a dependency and should not be included in
+                # the final grammar
+                state.dependencies.remove(x.rule)
+
+                # In case it was translated before this method, blacklist it!
+                self.expansion_black_list.append(x.rule.expansion)
+
+                # Replace the original child if necessary
+                if x is child:
+                    state.expansion = x.rule.expansion
+
+        map_expansion(child, process)
+
+        # Wrap the new expansion in a Repeat
+        state.expansion = jsgf.Repeat(state.expansion)
+        return state
+
     def get_jsgf_equiv(self, state):
         """
         Take a TranslationState object containing a dragonfly element
@@ -284,10 +363,15 @@ class Translator(object):
 
         # Repetition should be checked before Sequence because it is a subclass
         elif isinstance(element, Repetition):
-            equiv_children = get_equiv_children()
-            if len(equiv_children) != 1:
-                raise TranslationError("Repetition may only have 1 child.")
-            state.expansion = jsgf.Repeat(equiv_children[0])
+            # Repetition should have at least one child
+            assert len(state.element.children) > 0
+
+            if self._has_dictation_descendant(element):
+                self.translate_repetition_with_dictation(state)
+            elif len(element.children) == 1:
+                state.expansion = jsgf.Repeat(*get_equiv_children())
+            else:
+                state.expansion = jsgf.Sequence(*get_equiv_children())
 
         elif isinstance(element, Sequence):
             state.expansion = jsgf.Sequence(*get_equiv_children())

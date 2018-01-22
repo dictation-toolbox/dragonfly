@@ -1,6 +1,7 @@
 import unittest
 
-import jsgf
+import jsgf, jsgf.ext
+
 from dragonfly import *
 from dragonfly.parser import ParserError
 from dragonfly2jsgf import *
@@ -58,6 +59,43 @@ class OptionalCase(TranslatorCase):
         self.assertEqual(expected,
                          self.translator.translate_to_rule("test", spec, True)
                          .compile())
+
+
+class RepetitionCase(TranslatorCase):
+    def test_repetition_with_no_max(self):
+        r = Rule("test", Repetition(Literal("hello")), exported=True)
+        expected = LinkedRule("test", True, jsgf.Repeat("hello"), r)
+        actual = self.translator.translate_rule(r).jsgf_rule
+        self.assertEqual(actual, expected)
+
+    def test_repetition_with_max(self):
+        seq, opt = jsgf.Sequence, jsgf.OptionalGrouping
+        r = Rule("test", Repetition(Literal("hello"), max=3), exported=True)
+        expected_expansion = seq("hello", opt(seq("hello", opt("hello"))))
+        expected = LinkedRule("test", True, expected_expansion, r)
+        actual = self.translator.translate_rule(r).jsgf_rule
+        self.assertEqual(actual, expected)
+
+        # Test again with a higher max value
+        r = Rule("test", Repetition(Literal("hello"), max=6), exported=True)
+        expected_expansion = seq(
+            "hello", opt(seq("hello", opt(seq("hello", opt(seq(
+                "hello", opt(seq("hello", opt("hello"))))))))))
+        expected = LinkedRule("test", True, expected_expansion, r)
+        actual = self.translator.translate_rule(r).jsgf_rule
+        self.assertEqual(actual, expected)
+
+    def test_with_dictation(self):
+        """
+        Test that rules involving dictation translate the same regardless of the
+        min/max values of the Repetition element.
+        """
+        r = Rule("test", Repetition(Dictation()), exported=True)
+        expected = LinkedRule("test", True, jsgf.Repeat(jsgf.ext.Dictation()), r)
+        self.assertEqual(self.translator.translate_rule(r).jsgf_rule, expected)
+
+        r = Rule("test", Repetition(Dictation(), 1, 16), exported=True)
+        self.assertEqual(self.translator.translate_rule(r).jsgf_rule, expected)
 
 
 class ListsCase(TranslatorCase):
@@ -155,6 +193,47 @@ class GrammarCase(TranslatorCase):
         expected_jsgf_rule = jsgf.Rule("rule_ref", True, "hello")
         self.assertListEqual(state.dependencies, [expected_jsgf_rule])
         self.assertEqual(state.expansion, jsgf.RuleRef(expected_jsgf_rule))
+
+    def test_repeated_referenced_dictation(self):
+        """
+        Test that dragonfly rules containing Dictation referenced by a RuleRef with
+        a Repetition element as an ancestor is translated correctly, with rules
+        joined as necessary.
+        """
+        g = Grammar("test")
+
+        # Add two simple rules, a more complex MappingRule and a rule referencing it
+        # that allows repetition of its mappings
+        r1 = Rule("dict", Dictation("dictation"))
+        r2 = Rule("test1", Repetition(RuleRef(r1)), exported=True)
+        r3 = MappingRule("mapping", mapping={
+            "testing": ActionBase(),
+            "hello <dictation>": ActionBase(),
+            "<dictation>": ActionBase(),
+        }, extras=[Dictation("dictation")])
+        r4 = Rule("test2", Repetition(RuleRef(r3)), exported=True)
+        g.add_rule(r2)
+        g.add_rule(r4)
+
+        # Translate the 'test' grammar and make some assertions
+        translated = self.translator.translate_grammar(g)
+        expected_test1 = LinkedRule(
+            "test1", True, jsgf.Repeat(jsgf.ext.Dictation()), r1
+        )
+
+        # Note: this is not how the engine sees MappingRules with Dictation
+        # elements: they are further processed later on into JSGF SequenceRules.
+        # This is the format the rules should be in for the later processing.
+        expected_test2 = LinkedRule("test2", True, jsgf.Repeat(
+            jsgf.AlternativeSet(
+                "testing", jsgf.Sequence("hello", jsgf.ext.Dictation()),
+                jsgf.ext.Dictation()
+            )
+        ), r4)
+
+        # Neither of the referenced rules should be in the final grammar, only the
+        # two joined rules
+        self.assertListEqual(translated.rules, [expected_test1, expected_test2])
 
 
 if __name__ == '__main__':
