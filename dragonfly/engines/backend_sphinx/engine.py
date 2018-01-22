@@ -90,14 +90,24 @@ class SphinxEngine(EngineBase):
         return self._config
 
     @config.setter
-    def config(self, engine_config):
+    def config(self, value):
         # Validate configuration module
-        if not (hasattr(engine_config, "DECODER_CONFIG") or
-                hasattr(engine_config, "PYAUDIO_STREAM_KEYWORD_ARGS") or
-                hasattr(engine_config, "LANGUAGE") or
-                hasattr(engine_config, "NEXT_PART_TIMEOUT")):
-            EngineError("invalid configuration module")
-        self._config = engine_config
+        self.validate_config(value)
+        self._config = value
+
+    @staticmethod
+    def validate_config(engine_config):
+        """
+        Method for validating engine configuration.
+        :raises: AssertionError
+        """
+        attributes = [
+            "DECODER_CONFIG", "PYAUDIO_STREAM_KEYWORD_ARGS", "LANGUAGE",
+            "NEXT_PART_TIMEOUT"
+        ]
+        for attr in attributes:
+            assert hasattr(engine_config, attr), "invalid engine configuration: " \
+                                                "'%s' not present" % attr
 
     def connect(self):
         """

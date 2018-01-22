@@ -6,6 +6,8 @@ import unittest
 
 import time
 
+from sphinxwrapper import DefaultConfig
+
 from dragonfly import *
 from dragonfly import List as DragonflyList, DictList as DragonflyDict
 from dragonfly.engines.backend_sphinx.engine import SphinxEngine
@@ -19,6 +21,9 @@ class TestEngineSphinx(unittest.TestCase):
         engine.connect()
         self.engine = engine
 
+        # Save current config
+        self.engine_config = self.engine.config
+
         # Set a default NEXT_PART_TIMEOUT value so there aren't weird timing errors
         # that break tests. Value of 0 means no timeout at all.
         self.engine.config.NEXT_PART_TIMEOUT = 0
@@ -27,8 +32,9 @@ class TestEngineSphinx(unittest.TestCase):
         self.test_map = {}
 
     def tearDown(self):
+        # Restore saved config
+        self.engine.config = self.engine_config
         self.engine.disconnect()
-        self.engine = None
         self.test_map = []
 
     # ---------------------------------------------------------------------
@@ -101,6 +107,37 @@ class TestEngineSphinx(unittest.TestCase):
         g.load()
         self.assert_mimic_success("hello world")
         self.assert_test_function_called(test, 1)
+
+    def test_engine_config(self):
+        """
+        Test whether engine configuration is validated correctly.
+        """
+
+        # Required config names
+        required = [
+            "DECODER_CONFIG",
+            "LANGUAGE",
+            "PYAUDIO_STREAM_KEYWORD_ARGS",
+            "NEXT_PART_TIMEOUT"
+        ]
+
+        class TestConfig(object):
+            DECODER_CONFIG = DefaultConfig()
+            LANGUAGE = "en"
+            PYAUDIO_STREAM_KEYWORD_ARGS = {}
+            NEXT_PART_TIMEOUT = 0
+
+        def set_config(value):
+            self.engine.config = value
+
+        # Test with correct attributes
+        self.assertIsNone(set_config(TestConfig()))
+
+        # Delete each attribute and check that an AssertionError is raised upon
+        # setting the config again
+        for name in required:
+            delattr(TestConfig, name)
+            self.assertRaises(AssertionError, set_config, TestConfig())
 
     def test_load_unload(self):
         """
