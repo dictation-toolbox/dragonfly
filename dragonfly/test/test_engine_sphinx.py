@@ -13,7 +13,10 @@ from dragonfly import List as DragonflyList, DictList as DragonflyDict
 from dragonfly.engines.backend_sphinx.engine import SphinxEngine
 
 
-class TestEngineSphinx(unittest.TestCase):
+class SphinxEngineCase(unittest.TestCase):
+    """
+    Base TestCase class for Sphinx engine tests
+    """
     def setUp(self):
         engine = get_engine("sphinx")
         assert isinstance(engine, SphinxEngine)
@@ -88,9 +91,11 @@ class TestEngineSphinx(unittest.TestCase):
     def assert_mimic_failure(self, *phrases):
         self.assertRaises(MimicFailure, self.engine.mimic, *phrases)
 
-    # ---------------------------------------------------------------------
-    # Test methods
 
+class BasicEngineTests(SphinxEngineCase):
+    """
+    Tests for basic engine functionality.
+    """
     def test_get_engine_sphinx_is_usable(self):
         """
         Verify that the sphinx engine is usable by testing that a simple
@@ -272,6 +277,24 @@ class TestEngineSphinx(unittest.TestCase):
             self.assert_mimic_success(phrase)
             self.assert_test_function_called(test, i+1)  # starting at 1, not 0.
 
+    def test_recognition_history(self):
+        observer = RecognitionHistory()
+        observer.register()
+        self.assertListEqual(observer, [])  # RecognitionHistory is a list subclass
+
+        # Set up a test grammar and rule
+        g = Grammar("test")
+        g.add_rule(CompoundRule("rule1", "testing"))
+        g.load()
+
+        self.assert_mimic_success("testing")
+        self.assertListEqual(observer, [[("testing", 0)]])
+
+
+class DictationEngineTests(SphinxEngineCase):
+    """
+    Tests for the engine's dictation functionality.
+    """
     def test_single_dictation(self):
         """
         Test that the engine can handle a dragonfly rule using a Dictation element.
@@ -432,19 +455,6 @@ class TestEngineSphinx(unittest.TestCase):
         self.assert_mimic_failure("")
         self.assert_test_function_called(on_failure_test, 3)
         self.assert_test_function_called(on_next_rule_part_test, 1)  # no change
-
-    def test_recognition_history(self):
-        observer = RecognitionHistory()
-        observer.register()
-        self.assertListEqual(observer, [])  # RecognitionHistory is a list subclass
-
-        # Set up a test grammar and rule
-        g = Grammar("test")
-        g.add_rule(CompoundRule("rule1", "testing"))
-        g.load()
-
-        self.assert_mimic_success("testing")
-        self.assertListEqual(observer, [[("testing", 0)]])
 
     def test_no_hypothesis(self):
         """
