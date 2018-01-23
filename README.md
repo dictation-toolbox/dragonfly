@@ -20,6 +20,10 @@ Dragonfly's FAQ is available at
 Dragonfly's mailing list/discussion group is available at
 [Google Groups](https://groups.google.com/forum/#!forum/dragonflyspeech).
 
+There is also a gitter channel:
+
+[![Join the chat at https://gitter.im/sphinx-dragonfly](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sphinx-dragonfly)
+
 
 CMU Sphinx
 ----------------------------------------------------------------------------
