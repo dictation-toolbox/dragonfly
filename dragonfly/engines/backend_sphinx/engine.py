@@ -403,7 +403,7 @@ class SphinxEngine(EngineBase):
         current_time = time.time()
         timed_out = current_time >= self._last_recognition_time + next_part_timeout
         if next_part_timeout and timed_out:
-            self._log.info("Recognition time-out after %d ms"
+            self._log.info("Recognition time-out after %f seconds"
                            % (current_time - self._last_recognition_time))
 
             # I'm not sure if the approach below is quick enough to not interrupt
