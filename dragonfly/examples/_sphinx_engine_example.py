@@ -21,7 +21,7 @@ def disconnect():
 
 class TestRule(MappingRule):
     mapping = {
-        "disconnect": Function(disconnect),
+        "disconnect engine": Function(disconnect),
         "hello <dictation>": ActionBase(),
         "more <dictation> stuff and <dictation>": ActionBase(),
         "pause for <n> seconds": Function(pause),
@@ -29,11 +29,7 @@ class TestRule(MappingRule):
 
     extras = [
         Dictation("dictation"),
-        Choice("n", {
-            "one": 1,
-            "five": 5,
-            "ten": 10
-        })
+        IntegerRef("n", 1, 20),
     ]
 
 g = Grammar("test", engine=get_engine("sphinx"))
