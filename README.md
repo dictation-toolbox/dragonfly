@@ -40,6 +40,13 @@ then install dragonfly with the following command:
 python setup.py install
 ```
 
+Once it's installed, you'll need to copy the *sphinx_module_loader.py* script from *dragonfly/examples* into the folder with your grammars and run it using:
+``` Shell
+python sphinx_module_loader.py
+```
+
+This is the equivalent to the 'core' directory that NatLink uses to load grammar modules.
+
 There is more information on how the engine works, what the limitations 
 are, the to-do list and more 
 [here](dragonfly/engines/backend_sphinx/README.md).
