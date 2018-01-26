@@ -684,7 +684,14 @@ class Literal(ElementBase):
         # Iterate through this element's words.
         # If all match, success.  Else, failure.
         for i in xrange(len(self._words)):
-            if state.word(i).lower() != self._words[i].lower():
+            word = state.word(i)
+
+            # If word isn't None, make it lowercase.
+            if word:
+                word = word.lower()
+
+            # If the words are not the same, then this is a decode failure.
+            if word != self._words[i].lower():
                 state.decode_failure(self)
                 return
 
