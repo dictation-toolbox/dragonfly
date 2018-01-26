@@ -20,6 +20,11 @@ The engine uses the [dragonfly2jsgf](../../../dragonfly2jsgf/) and *pyjsgf* pack
   - [ ] dynamically add unknown words to the dictionary and language model using the decoder `add_word` method, somehow getting a phone string for the second parameter, perhaps using [lextool](http://www.speech.cs.cmu.edu/tools/lextool.html) or something similar. The underlying `ps_add_word` C function is documented in the include file [here](https://github.com/cmusphinx/pocketsphinx/blob/master/include/pocketsphinx.h#L245).
 
 
+Testing and examples
+----------------------------------------------------------------------------
+There are Python unit tests for this engine [here](../../test/test_engine_sphinx.py) and an example grammar module [here](../../examples/sphinx_engine_example.py). The engine grammar module loader is [here](../../examples/sphinx_module_loader.py).
+
+
 Cross-platform Engine
 ----------------------------------------------------------------------------
 
