@@ -61,8 +61,8 @@ if __name__ == '__main__':
             print("Sorry, what was that?")
 
         def on_next_rule_part(self, words_list):
-            print("Next part of rule started.")
             print("Current words: %s" % self._get_words(words_list))
+            print("Awaiting next rule part...")
 
     observer = Observer()
     observer.register()
