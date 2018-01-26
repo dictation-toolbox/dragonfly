@@ -55,6 +55,27 @@ class LinkedRule(jsgf.Rule):
         return self._df_rule
 
 
+class CustomLiteral(jsgf.Literal):
+    """
+    Subclass of JSGF Literal that preserves the original casing of the text.
+    This is necessary because Pocket Sphinx only recognises lowercase words.
+    """
+    def __init__(self, text):
+        self._original = text
+        super(CustomLiteral, self).__init__(text.lower())
+
+    def _matches_internal(self, speech):
+        result = super(CustomLiteral, self)._matches_internal(speech)
+
+        # Use the original text string if in lowercase it is current_match.
+        if self.current_match == self._original.lower():
+            self.current_match = self._original
+        return result
+
+    def __eq__(self, other):
+        return isinstance(other, jsgf.Literal) and self.text == other.text
+
+
 class TranslationState(object):
     """
     Translation state used in building JSGF expansions, rules and grammars from
@@ -337,7 +358,8 @@ class Translator(object):
             return children
 
         if isinstance(element, Literal):  # Literal == word list
-            state.expansion = jsgf.Literal(element.gstring())
+            text = " ".join(element.words)
+            state.expansion = CustomLiteral(text)
 
         elif isinstance(element, (RuleRef, Rule)):
             # Translate the dragonfly rule reference
