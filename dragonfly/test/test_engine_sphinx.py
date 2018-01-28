@@ -38,7 +38,7 @@ class SphinxEngineCase(unittest.TestCase):
         # Restore saved config
         self.engine.config = self.engine_config
         self.engine.disconnect()
-        self.test_map = []
+        self.test_map = {}
 
     # ---------------------------------------------------------------------
     # Methods for control-flow assertion.
@@ -68,12 +68,12 @@ class SphinxEngineCase(unittest.TestCase):
         self.assertEqual(x, n, "wrapped test function was called %d time(s) "
                                "instead of %d time(s)" % (x, n))
 
-    def reset_test_functions(self, *functions):
+    def reset_test_functions(self):
         """
-        Reset the test_map values for the given test functions.
+        Reset the test_map values for all test functions.
         """
-        for f in functions:
-            self.test_map[id(f)] = 0
+        for key in self.test_map.keys():
+            self.test_map[key] = 0
 
     # ---------------------------------------------------------------------
     # Methods for asserting mimic success or failure
@@ -189,7 +189,7 @@ class BasicEngineTests(SphinxEngineCase):
         self.assert_test_function_called(test1, 1)
         self.assert_test_function_called(test2, 0)
         # Reset test functions
-        self.reset_test_functions(test1, test2)
+        self.reset_test_functions()
 
         # Test 'hi' rule works and that only the test2 function was called
         self.assert_mimic_success("hi")
@@ -351,31 +351,31 @@ class DictationEngineTests(SphinxEngineCase):
         self.assert_mimic_success("testing", "testing")
 
         # Test that it works again with mapping 1
-        self.reset_test_functions(test1, test2)
+        self.reset_test_functions()
         self.assert_mimic_success("hello", "world")
         self.assert_test_function_called(test1, 1)
         self.assert_test_function_called(test2, 0)
 
         # Test with mapping 2 again
-        self.reset_test_functions(test1, test2)
+        self.reset_test_functions()
         self.assert_mimic_success("test", "testing")
         self.assert_test_function_called(test1, 0)
         self.assert_test_function_called(test2, 1)
 
         # Test again with multiple words
-        self.reset_test_functions(test1, test2)
+        self.reset_test_functions()
         self.assert_mimic_success("hello", "hi there")
         self.assert_test_function_called(test1, 1)
         self.assert_test_function_called(test2, 0)
 
         # And test again using mapping 2
-        self.reset_test_functions(test1, test2)
+        self.reset_test_functions()
         self.assert_mimic_success("test test test", "testing")
         self.assert_test_function_called(test2, 1)
         self.assert_test_function_called(test1, 0)
 
         # Test incomplete sequences
-        self.reset_test_functions(test1, test2)
+        self.reset_test_functions()
         self.assert_mimic_success("hello")  # start of mapping one
         self.assert_test_function_called(test1, 0)  # incomplete sequence
         self.assert_mimic_success("test", "testing")
@@ -455,6 +455,9 @@ class DictationEngineTests(SphinxEngineCase):
         self.assert_mimic_failure("")
         self.assert_test_function_called(on_failure_test, 3)
         self.assert_test_function_called(on_next_rule_part_test, 1)  # no change
+
+        # Unregister the observer
+        observer.unregister()
 
     def test_no_hypothesis(self):
         """
