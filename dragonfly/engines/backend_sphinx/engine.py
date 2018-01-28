@@ -21,7 +21,7 @@
 """
 Engine class for CMU Pocket Sphinx
 """
-
+import logging
 import time
 import sys
 
@@ -55,6 +55,9 @@ class SphinxEngine(EngineBase):
 
     def __init__(self):
         EngineBase.__init__(self)
+
+        # Set up the engine logger
+        logging.basicConfig()
 
         try:
             import sphinxwrapper
