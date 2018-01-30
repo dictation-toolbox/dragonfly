@@ -25,7 +25,7 @@ import logging
 import time
 import sys
 
-from jsgf import GrammarError
+from jsgf import GrammarError, RootGrammar
 from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion
 from pyaudio import PyAudio
 
@@ -45,6 +45,11 @@ except ImportError:
     # readability:
     # e.g. using PocketSphinx instead of sphinxwrapper.PocketSphinx
     pass
+
+
+class RootDictationGrammar(DictationGrammar):
+    def _init_jsgf_only_grammar(self):
+        self._jsgf_only_grammar = RootGrammar(name=self.name)
 
 
 class SphinxEngine(EngineBase):
@@ -75,7 +80,7 @@ class SphinxEngine(EngineBase):
         self._decoder = None
         self._audio_buffers = []
         self.compiler = SphinxJSGFCompiler()
-        self._root_grammar = DictationGrammar()
+        self._root_grammar = RootDictationGrammar()
         self._recognition_observer_manager = SphinxRecObsManager(self)
         self._in_progress_sequence_rules = []
 
@@ -154,7 +159,7 @@ class SphinxEngine(EngineBase):
         self._audio_buffers = []
 
         # Reset the root grammar
-        self._root_grammar = DictationGrammar()
+        self._root_grammar = RootDictationGrammar()
         self._in_progress_sequence_rules = []
 
     def disconnect(self):
