@@ -260,7 +260,7 @@ class SphinxEngine(EngineBase):
             # in the grammar because all rules are being removed.
             for rule in wrapper.jsgf_grammar.rules:
                 self._root_grammar.remove_rule(rule.name,
-                                               ignore_dependent=False)
+                                               ignore_dependent=True)
             self._load_root_grammar()
         except Exception, e:
             self._log.exception("Failed to unload grammar %s: %s."
