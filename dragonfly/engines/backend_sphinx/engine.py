@@ -116,6 +116,14 @@ class SphinxEngine(EngineBase):
             assert hasattr(engine_config, attr), "invalid engine configuration: " \
                                                 "'%s' not present" % attr
 
+    @property
+    def observer_manager(self):
+        return self._recognition_observer_manager
+
+    @property
+    def log(self):
+        return self._log
+
     def connect(self):
         """
         Set up the CMU Pocket Sphinx decoder if necessary.
