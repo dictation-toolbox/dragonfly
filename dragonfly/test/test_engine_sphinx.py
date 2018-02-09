@@ -305,6 +305,52 @@ class BasicEngineTests(SphinxEngineCase):
         self.assert_mimic_success("testing")
         self.assertListEqual(observer, [[("testing", 0)]])
 
+    def test_name_conflict(self):
+        """
+        Test whether the engine correctly handles rules with the same name, but
+        different elements.
+        """
+        g1 = Grammar("test1")
+        g2 = Grammar("test2")
+        g1.add_rule(CompoundRule(name="rule", spec="test"))
+        g2.add_rule(CompoundRule(name="rule", spec="testing"))
+
+        g1.load()
+        self.assertTrue(g1.loaded)
+        g2.load()
+        self.assertTrue(g2.loaded)
+        self.assert_mimic_success("test")
+        self.assert_mimic_success("testing")
+
+    def test_same_rule_in_different_grammars(self):
+        g1 = Grammar("test1")
+        g2 = Grammar("test2")
+
+        test1 = self.get_test_function()
+        test2 = self.get_test_function()
+
+        class Rule1(CompoundRule):
+            spec = "test"
+            _process_recognition = test1
+
+        class Rule2(CompoundRule):
+            spec = "test"
+            _process_recognition = test2
+
+        # Add and load the rules
+        g1.add_rule(Rule1())
+        g2.add_rule(Rule2())
+        g1.load()
+        self.assertTrue(g1.loaded)
+        g2.load()
+        self.assertTrue(g2.loaded)
+
+        self.assert_mimic_success("test")
+
+        # Check that only one of these rules was processed
+        self.assert_test_function_called(test1, 1)
+        self.assert_test_function_called(test2, 0)
+
 
 class DictationEngineTests(SphinxEngineCase):
     """
