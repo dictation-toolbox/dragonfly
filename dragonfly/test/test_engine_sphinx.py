@@ -110,6 +110,7 @@ class BasicEngineTests(SphinxEngineCase):
         g = Grammar("test1")
         g.add_rule(TestRule())
         g.load()
+        self.assertTrue(g.loaded)
         self.assert_mimic_success("hello world")
         self.assert_test_function_called(test, 1)
 
@@ -153,8 +154,10 @@ class BasicEngineTests(SphinxEngineCase):
         rule1 = CompoundRule("rule1", "hello")
         grammar.add_rule(rule1)
         grammar.load()
+        self.assertTrue(grammar.loaded)
         self.assert_mimic_success("hello")
         grammar.unload()
+        self.assertFalse(grammar.loaded)
         self.assert_mimic_failure("hello")
 
         # Test that a dependent rule is unloaded correctly.
@@ -162,8 +165,10 @@ class BasicEngineTests(SphinxEngineCase):
                              extras=[RuleRef(rule1, name="rule1ref")])
         grammar.add_rule(rule2)
         grammar.load()
+        self.assertTrue(grammar.loaded)
         self.assert_mimic_success("hello there")
         grammar.unload()
+        self.assertFalse(grammar.loaded)
         self.assert_mimic_failure("hello there")
 
     def test_mapping_rule(self):
@@ -183,6 +188,7 @@ class BasicEngineTests(SphinxEngineCase):
         g = Grammar("test")
         g.add_rule(TestRule())
         g.load()
+        self.assertTrue(g.loaded)
 
         # Test 'hello' rule works and that only the test1 function was called
         self.assert_mimic_success("hello")
@@ -210,6 +216,7 @@ class BasicEngineTests(SphinxEngineCase):
         r = Rule("fav_fruit", fruit_list_ref, exported=True)
         grammar.add_rule(r)
         grammar.load()
+        self.assertTrue(grammar.loaded)
 
         self.assert_mimic_success("apple")
 
@@ -234,6 +241,7 @@ class BasicEngineTests(SphinxEngineCase):
                  exported=True)
         grammar.add_rule(r)
         grammar.load()
+        self.assertTrue(grammar.loaded)
 
         self.assert_mimic_success("mango")
 
@@ -270,6 +278,7 @@ class BasicEngineTests(SphinxEngineCase):
         g = Grammar("test")
         g.add_rule(TestRule())
         g.load()
+        self.assertTrue(g.loaded)
 
         # Test that all choices are processed correctly
         for i, phrase in enumerate(["one", "two", "three", "four", "five", "six",
@@ -286,6 +295,7 @@ class BasicEngineTests(SphinxEngineCase):
         g = Grammar("test")
         g.add_rule(CompoundRule("rule1", "testing"))
         g.load()
+        self.assertTrue(g.loaded)
 
         self.assert_mimic_success("testing")
         self.assertListEqual(observer, [[("testing", 0)]])
@@ -308,6 +318,7 @@ class DictationEngineTests(SphinxEngineCase):
         g = Grammar("test")
         g.add_rule(TestRule())
         g.load()
+        self.assertTrue(g.loaded)
         self.assert_mimic_success("hello")
         self.assert_test_function_called(test, 1)
 
@@ -341,6 +352,7 @@ class DictationEngineTests(SphinxEngineCase):
         g = Grammar("test")
         g.add_rule(TestRule())
         g.load()
+        self.assertTrue(g.loaded)
 
         # Dictation and other elements are processed separately with pauses
         self.assert_mimic_success("hello", "world")  # test mapping 1
@@ -407,6 +419,7 @@ class DictationEngineTests(SphinxEngineCase):
         grammar.add_rule(CompoundRule("rule2", "say <dictation>",
                                       extras=[Dictation("dictation")]))
         grammar.load()
+        self.assertTrue(grammar.loaded)
 
         # Test that each method is called properly
         self.assert_mimic_success("hello world")
@@ -477,6 +490,7 @@ class DictationEngineTests(SphinxEngineCase):
         g = Grammar("test")
         g.add_rule(TestRule())
         g.load()
+        self.assertTrue(g.loaded)
 
         self.assert_mimic_failure(None)
         self.assert_test_function_called(test1, 0)
@@ -512,6 +526,7 @@ class DictationEngineTests(SphinxEngineCase):
         grammar = Grammar("test")
         grammar.add_rule(TestRule())
         grammar.load()
+        self.assertTrue(grammar.loaded)
 
         # Test that mapping 1 can be recognised fully
         self.assert_mimic_success("say", "hello")
