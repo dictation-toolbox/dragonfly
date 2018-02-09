@@ -53,7 +53,12 @@ class SphinxEngineCase(unittest.TestCase):
         """
         def func(*args):
             # Function was reached
-            self.test_map[id(func)] += 1
+            try:
+                self.test_map[id(func)] += 1
+            except KeyError:
+                # Ignore any key errors; if this function's id is not in test_map,
+                # then it's not relevant to the currently running test method.
+                pass
 
         self.test_map[id(func)] = 0
         return func
