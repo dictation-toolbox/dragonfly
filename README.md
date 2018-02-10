@@ -34,8 +34,19 @@ You can read more about the CMU Sphinx speech recognition projects [here](https:
 
 To use the Pocket Sphinx engine you will need to install the [sphinxwrapper](https://github.com/Danesprite/sphinxwrapper), 
 [pyjsgf](https://github.com/Danesprite/pyjsgf), and 
-[pyaudio](http://people.csail.mit.edu/hubert/pyaudio/) Python packages, 
-then install dragonfly with the following command:
+[pyaudio](http://people.csail.mit.edu/hubert/pyaudio/) Python packages.
+
+You can install *sphinxwrapper* and *pyjsgf* from the git submodules by running the following commands:
+``` Shell
+git clone --recursive https://github.com/Danesprite/dragonfly.git
+cd pysjgf
+python setup.py install
+cd ../sphinxwrapper
+python setup.py install
+cd ..
+```
+
+Then install dragonfly:
 ``` Shell
 python setup.py install
 ```
