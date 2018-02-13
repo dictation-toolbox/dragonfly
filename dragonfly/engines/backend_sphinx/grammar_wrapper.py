@@ -1,11 +1,114 @@
 """
 GrammarWrapper class for CMU Pocket Sphinx engine
 """
-
+import functools
 import sys
+
+from jsgf import RuleRef, map_expansion
+from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion, dictation_in_expansion
 
 import dragonfly.grammar.state as state_
 from dragonfly import Grammar, Window
+from dragonfly2jsgf import LinkedRule
+
+
+@functools.total_ordering
+class ProcessingState(object):
+    """
+    State class used to process matching rules in a GrammarWrapper.
+
+    ProcessingState objects can be compared to find the best state to process.
+    """
+    def __init__(self, wrapper, speech):
+        """
+        :type wrapper: GrammarWrapper
+        :type speech: str
+        """
+        self._wrapper = wrapper
+        self._post_collection_tasks = []
+        self.speech = speech
+        self.in_progress_rules = []
+        self.complete_rules = []
+        self.speech_is_dictation = self.wrapper.engine.recognising_dictation
+
+        # Collect matching rules into this state's rule lists.
+        self.wrapper.collect_matching_rules(self)
+
+    @property
+    def wrapper(self):
+        """
+        The GrammarWrapper this state object was created for.
+        :rtype: GrammarWrapper
+        """
+        return self._wrapper
+
+    @property
+    def is_processable(self):
+        """
+        Whether this state can be processed by its GrammarWrapper.
+        """
+        return bool(self.in_progress_rules or self.complete_rules)
+
+    @property
+    def complete_sequence_rules(self):
+        return list(filter(
+            lambda x: isinstance(x, SequenceRule),
+            self.complete_rules
+        ))
+
+    @property
+    def repeatable_complete_sequence_rules(self):
+        return list(filter(
+            lambda x: x.can_repeat,
+            self.complete_sequence_rules
+        ))
+
+    @property
+    def complete_normal_rules(self):
+        return list(filter(
+            lambda x: not isinstance(x, SequenceRule),
+            self.complete_rules
+        ))
+
+    @property
+    def matched_rules(self):
+        return self.in_progress_rules + self.complete_rules
+
+    def process(self, timed_out=False):
+        """
+        Process this state object by calling the wrapper's process method.
+        """
+        self.wrapper.process(self, timed_out)
+
+    def add_post_collection_task(self, task):
+        """
+        Add a post collection task to be executed when `do_post_collection_tasks` is
+        called.
+        :param task: callable object
+        :return:
+        """
+        if not callable(task):
+            raise TypeError("%s is not a callable object" % task)
+        self._post_collection_tasks.append(task)
+
+    def do_post_collection_tasks(self):
+        # Execute each task in the order they were added.
+        while self._post_collection_tasks:
+            self._post_collection_tasks.pop(0)()
+
+    def __lt__(self, other):
+        return (
+            # Favour processable states.
+            not self.is_processable and other.is_processable
+
+            # Favour a specific grammar context over no context.
+            or not self.wrapper.grammar._context and other.wrapper.grammar._context
+        )
+
+    def __eq__(self, other):
+        return (self.speech == other.speech and self.wrapper == other.wrapper
+                and self.in_progress_rules == other.in_progress_rules
+                and self.complete_rules == other.complete_rules)
 
 
 class GrammarWrapper(object):
@@ -16,13 +119,131 @@ class GrammarWrapper(object):
         """
         self.grammar = grammar
         self.engine = engine
+
+        # Compile the grammar into a JSGF grammar and add those rules into
+        # a JSGF DictationGrammar.
         self._jsgf_grammar = engine.compiler.compile_grammar(grammar)
+        self._dictation_grammar = DictationGrammar(self._jsgf_grammar.rules)
+
+        # Set internal variables
+        self._in_progress_sequence_rules = []
+
+        # Set the default search name based on whether only dictation can be matched
+        grammar_has_jsgf = False
+        for rule in self._dictation_grammar.match_rules:
+            if not rule.active:
+                continue  # skip disabled rules; they can't be matched
+            if not only_dictation_in_expansion(rule.expansion):
+                grammar_has_jsgf = True
+                break
+
+        if grammar_has_jsgf:
+            self._default_search_name = self.grammar.name
+        else:
+            self._default_search_name = self.engine.dictation_search_name
+
+        # Set the default value of search_name
+        self._search_name = self._default_search_name
 
     @property
-    def jsgf_grammar(self):
-        return self._jsgf_grammar
+    def dictation_grammar(self):
+        return self._dictation_grammar
 
-    def process_begin(self):
+    @property
+    def search_name(self):
+        """
+        The name of the Pocket Sphinx search that the engine should use to process
+        speech for the grammar.
+        :return: str
+        """
+        return self._search_name
+
+    @property
+    def default_search_name(self):
+        """
+        The name of the default Pocket Sphinx search that the engine should use to
+        process speech for the grammar.
+
+        This is not necessarily the current search that should be used for the
+        grammar.
+        """
+        return self._default_search_name
+
+    def reset_all_sequence_rules(self):
+        """
+        Resetting all SequenceRules, clear the in progress list and reset
+        search_name.
+        """
+        for r in self._dictation_grammar.rules:
+            if isinstance(r, SequenceRule):
+                r.restart_sequence()
+
+            # Also ensure all rules are now enabled again.
+            r.enable()
+
+        # Clear the in-progress list and set search_name back to default.
+        self._in_progress_sequence_rules = []
+
+        if self.search_name != self._default_search_name:
+            # Unset the search used for in-progress rules. This won't unset the
+            # dictation search.
+            self.engine.unset_search(self.search_name)
+
+            # Set search name back to default.
+            self._search_name = self._default_search_name
+            self.engine.set_grammar(self)
+
+    def collect_matching_rules(self, state):
+        """
+        Collect rules matching state.speech (speech hypothesis) into the given
+        state object's rule lists.
+        The ProcessingState object can be processed using the GrammarWrapper
+        `process` method.
+        :type state: ProcessingState
+        :rtype: ProcessingState
+        """
+        speech = state.speech
+        if not speech and not self.engine.recognising_dictation:
+            # Check if there are any match rules with dictation expansions
+            dict_hyp_required = False
+            for rule in self.dictation_grammar.match_rules:
+                if dictation_in_expansion(rule.expansion):
+                    dict_hyp_required = True
+                    break
+
+            if dict_hyp_required:
+                dict_hyp = self.engine.get_dictation_hypothesis()
+                if dict_hyp:
+                    state.speech = dict_hyp
+                    state.speech_is_dictation = True
+
+        # Collect matching any in-progress SequenceRules
+        if self._in_progress_sequence_rules:
+            self._collect_in_progress_sequence_rules(state)
+
+        # Collect matching normal rules
+        self._collect_normal_rules(state)
+        return state
+
+    def process(self, state, timed_out=False):
+        """
+        Process a ProcessingState object from `collect_matching_rules`.
+        :type state: ProcessingState
+        :param timed_out: used by recognition timeout thread
+        """
+        complete_seq = state.complete_sequence_rules
+        if complete_seq:
+            words_list = self._generate_words_list(complete_seq[0], True)
+            self._process_complete_recognition(words_list)
+
+        elif state.in_progress_rules and not timed_out:
+            self._notify_partial_recognition(state.in_progress_rules[0])
+
+        elif state.complete_rules:
+            words_list = self._generate_words_list(state.complete_rules[0], True)
+            self._process_complete_recognition(words_list)
+
+    def _process_begin(self):
         """
         Start the dragonfly grammar processing.
         """
@@ -39,13 +260,13 @@ class GrammarWrapper(object):
         # Call the process begin method
         process_method(fg_window.executable, fg_window.title, fg_window.handle)
 
-    def process_results(self, words):
+    def _process_results(self, words):
         """
         Start the dragonfly processing of the speech hypothesis.
         :param words: a sequence of (word, rule_id) 2-tuples (pairs)
         """
-        self.engine._log.debug("Grammar %s: received recognition %r."
-                               % (self.grammar.name, words))
+        self.engine.log.debug("Grammar %s: received recognition %r." %
+                              (self.grammar.name, words))
 
         words_rules = tuple((unicode(w), r) for w, r in words)
         rule_ids = tuple(r for _, r in words_rules)
@@ -74,5 +295,200 @@ class GrammarWrapper(object):
                     r.process_recognition(root)
                     return
 
-        self.engine._log.warning("Grammar %s: failed to decode recognition %r."
-                                 % (self.grammar.name, words))
+        self.engine.log.warning("Grammar %s: failed to decode recognition %r."
+                                % (self.grammar.name, words))
+
+    def _get_dragonfly_rule(self, rule):
+        """
+        Get the original dragonfly Rule given a JSGF Rule.
+        :param rule: JSGF Rule
+        :return: Rule
+        """
+        if isinstance(rule, LinkedRule):
+            linked_rule = rule
+        else:
+            linked_rule = self._dictation_grammar.get_original_rule(rule)
+
+        df_rule = linked_rule.df_rule
+        return df_rule
+
+    def _notify_partial_recognition(self, rule):
+        """
+        Internal method to notify the engine's next_rule_part observers of a
+        partial recognition.
+        :type rule: SequenceRule
+        """
+        self.engine.observer_manager.notify_next_rule_part(
+            self._generate_words_list(rule, False)
+        )
+
+    def _process_complete_recognition(self, words_list):
+        """
+        Internal method for processing complete recognitions.
+        :type words_list: list
+        """
+        # Notify recognition observers
+        self.engine.observer_manager.notify_recognition(words_list)
+
+        # Begin dragonfly processing
+        try:
+            self._process_begin()
+            self._process_results(words_list)
+        except Exception as e:
+            self.engine.log.error("%s: caught Exception while processing "
+                                  "recognised words: %s" % (self, e))
+
+        # Clear the in progress list and reset all sequence rules in the grammar.
+        self.reset_all_sequence_rules()
+
+        # Switch back to the relevant Pocket Sphinx search
+        self.engine.set_grammar(self)
+
+    def _generate_words_list(self, rule, complete_match):
+        """
+        Generate a words list compatible with dragonfly's processing classes.
+        :param rule: JSGF Rule
+        :param complete_match: whether all expansions in a SequenceRule must match
+        :return: list
+        """
+        df_rule = self._get_dragonfly_rule(rule)
+        if isinstance(rule, SequenceRule):
+            words_list = []
+            # Generate a words list using the match values for each expansion in the
+            # sequence
+            for e in rule.expansion_sequence:
+                # Use rule IDs compatible with dragonfly's processing classes
+                if only_dictation_in_expansion(e):
+                    rule_id = 1000000  # dgndictation id
+                else:
+                    rule_id = self.grammar.rules.index(df_rule)
+
+                # If the SequenceRule is not completely matched yet and
+                # complete_match is False, then use the match values thus far.
+                if not complete_match and e.current_match is None:
+                    break
+
+                # Get the words from the expansion's current match
+                words = e.current_match.split()
+                assert words is not None
+                for word in words:
+                    words_list.append((word, rule_id))
+        else:
+            rule_id = self.grammar.rules.index(df_rule)
+            words_list = [(word, rule_id)
+                          for word in rule.expansion.current_match.split()]
+        return words_list
+
+    def _collect_normal_rules(self, state):
+        """
+        Internal method used to collect normal rules that can be spoken in one
+        utterance that match a speech string.
+        :type state: ProcessingState
+        :rtype: ProcessingState
+        """
+        # No rules will match None or ""
+        if not state.speech:
+            return state
+
+        # Find rules of active grammars that match the speech string
+        matching_rules = self._dictation_grammar.find_matching_rules(
+            state.speech, advance_sequence_rules=False)
+
+        for rule in matching_rules:
+            if isinstance(rule, SequenceRule):  # spoken in multiple utterances
+                if rule.current_is_dictation_only and not \
+                        self.engine.recognising_dictation:
+                    # Get a dictation hypothesis
+                    dict_hypothesis = self.engine.get_dictation_hypothesis()
+
+                    # Note: if dict_hypothesis is None, then this recognition was
+                    # probably invoked by mimic, so don't invalidate the match.
+                    if dict_hypothesis:
+                        rule.refuse_matches = False
+                        rule.matches(dict_hypothesis)
+
+                if rule.has_next_expansion:
+                    # Add this rule to the in progress list and enqueue
+                    # `rule.set_next()` as a post collection task.
+                    state.add_post_collection_task(rule.set_next)
+                    self._in_progress_sequence_rules.append(rule)
+                    state.in_progress_rules.append(rule)
+                else:
+                    # The entire sequence has been matched. This rule could only
+                    # have had one part to it.
+                    state.complete_rules.append(rule)
+            else:
+                # This rule has been fully recognised.
+                state.complete_rules.append(rule)
+        return state
+
+    def _collect_in_progress_sequence_rules(self, state):
+        """
+        Match against SequenceRules that are in progress and add them to the state
+        object.
+        :type state: ProcessingState
+        """
+        # No rules will match None or ""
+        if not state.speech:
+            state.add_post_collection_task(self.reset_all_sequence_rules)
+            return state
+
+        # Process the rules using a shallow copy of the in progress list because the
+        # original list will be modified
+        for rule in tuple(self._in_progress_sequence_rules):
+            # Get a dictation hypothesis if it is required
+            if rule.current_is_dictation_only and \
+                    not self.engine.recognising_dictation:
+                dict_hypothesis = self.engine.get_dictation_hypothesis()
+
+            # Match the rule with the appropriate hypothesis string.
+            if rule.current_is_dictation_only and dict_hypothesis:
+                rule.matches(dict_hypothesis)
+            else:
+                rule.matches(state.speech)
+
+            if not rule.was_matched:
+                # Remove and reset the SequenceRule if it didn't match
+                state.add_post_collection_task(rule.restart_sequence)
+                self._in_progress_sequence_rules.remove(rule)
+            elif rule.has_next_expansion:
+                # By calling rule.matches, the speech value was stored as the
+                # current expansion's current_match value.
+                state.add_post_collection_task(rule.set_next)
+                self._in_progress_sequence_rules.append(rule)
+                state.in_progress_rules.append(rule)
+            else:
+                # SequenceRule has been completely matched.
+                state.complete_rules.append(rule)
+
+        # If the list still has rules, then it needs further processing.
+        # Load a JSGF Pocket Sphinx search with just the rules in the list, or
+        # switch to the dictation search if there are only dictation rules.
+        if self._in_progress_sequence_rules:
+            not_in_progress_rules = filter(
+                lambda x: x not in self._in_progress_sequence_rules,
+                self.dictation_grammar.match_rules
+            )
+
+            # Disable rules in the grammar that aren't in the in-progress list
+            for rule in not_in_progress_rules:
+                rule.disable()
+
+            # Recursively enable any rules referenced by an in-progress rule
+            def enable_referenced(x):
+                if isinstance(x, RuleRef):
+                    x.rule.enable()
+
+            for rule in self._in_progress_sequence_rules:
+                map_expansion(rule.expansion, enable_referenced)
+
+            # Set the search name for a new Pocket Sphinx search.
+            # If we use a new name, Pocket Sphinx will keep the grammar's
+            # original search around so we can switch back to it later without
+            # recompiling and setting it again.
+            self._search_name = "%s_narrowed" % self.grammar.name
+
+        def process():
+            self.engine.set_grammar(self)
+        state.add_post_collection_task(process)
+        return state

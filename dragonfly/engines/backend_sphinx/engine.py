@@ -25,13 +25,16 @@ Engine class for CMU Pocket Sphinx
 import logging
 import time
 
-from jsgf import GrammarError, RootGrammar
-from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion
+from threading import Timer, RLock, current_thread
+
+from jsgf import GrammarError, RootGrammar, PublicRule, Literal
 from pyaudio import PyAudio
 
+from dragonfly import Grammar
 from dragonfly.engines.backend_sphinx import is_engine_available
-from dragonfly.engines.backend_sphinx.grammar_wrapper import GrammarWrapper
-from dragonfly2jsgf import Translator, LinkedRule
+from dragonfly.engines.backend_sphinx.grammar_wrapper import GrammarWrapper, ProcessingState
+from dragonfly2jsgf import Translator
+
 from .compiler import SphinxJSGFCompiler
 from .dictation import SphinxDictationContainer
 from .recobs import SphinxRecObsManager
@@ -46,16 +49,15 @@ except ImportError:
     pass
 
 
-class RootDictationGrammar(DictationGrammar):
-    def _init_jsgf_only_grammar(self):
-        self._jsgf_only_grammar = RootGrammar(name=self.name)
-
-
 class SphinxEngine(EngineBase):
     """Speech recognition engine back-end for CMU Pocket Sphinx."""
 
     _name = "sphinx"
     DictationContainer = SphinxDictationContainer
+
+    # A hypothesis from Pocket Sphinx can be None, so this object used to indicate
+    # when a dictation hypothesis has not been calculated for the current utterance.
+    _DICTATION_HYP_UNSET = object()
 
     def __init__(self):
         EngineBase.__init__(self)
@@ -79,15 +81,24 @@ class SphinxEngine(EngineBase):
         self._decoder = None
         self._audio_buffers = []
         self.compiler = SphinxJSGFCompiler()
-        self._root_grammar = RootDictationGrammar()
         self._recognition_observer_manager = SphinxRecObsManager(self)
-        self._in_progress_sequence_rules = []
+        self._in_progress_states = set()
+        self._current_grammar_wrapper = None
+        self._valid_searches = set()
+
+        # Members used in recognition timeouts
+        self._last_recognition_time = None
+        self._timeout_timer = None
+        self._thread_lock = RLock()
 
         # Recognising loop control variables
         self._recognising = False
         self._recognition_paused = False  # used in pausing/resuming recognition
         self._cancel_recognition_next_time = False
         self._last_recognition_time = None
+
+        # Variable used in caching dictation hypotheses for speech utterances.
+        self._current_dictation_hyp = self._DICTATION_HYP_UNSET
 
     @property
     def config(self):
@@ -144,15 +155,16 @@ class SphinxEngine(EngineBase):
 
         # Initialise a new decoder with the given configuration
         self._decoder = PocketSphinx(decoder_config)
+        self._valid_searches.add(self.dictation_search_name)
 
         # Set up callback function wrappers
         def hypothesis(hyp):
             # Set speech to the hypothesis string or None if there isn't one
             speech = hyp.hypstr if hyp else None
-            return self.hypothesis_callback(speech)
+            return self._hypothesis_callback(speech, False)
 
         def speech_start():
-            return self.speech_start_callback()
+            return self._speech_start_callback()
 
         self._decoder.hypothesis_callback = hypothesis
         self._decoder.speech_start_callback = speech_start
@@ -161,13 +173,17 @@ class SphinxEngine(EngineBase):
         """
         Internal method for freeing the resources used by the engine.
         """
+        # Cancel and free the timeout timer if it is active.
+        self._cancel_and_free_timeout_timer()
+
         # Free the decoder and clear the audio buffer list
         self._decoder = None
         self._audio_buffers = []
 
-        # Reset the root grammar
-        self._root_grammar = RootDictationGrammar()
-        self._in_progress_sequence_rules = []
+        # Clear dictionaries and sets
+        self._grammar_wrappers.clear()
+        self._in_progress_states.clear()
+        self._valid_searches.clear()
 
     def disconnect(self):
         """
@@ -186,30 +202,80 @@ class SphinxEngine(EngineBase):
     def _build_grammar_wrapper(self, grammar):
         return GrammarWrapper(grammar, self)
 
-    def _load_root_grammar(self):
-        # TODO Ideally this would be called once all grammars load, rather than every time
-        # Should be able to do that using a module loader
+    def set_grammar(self, wrapper):
+        """
+        Set and/or switch to an appropriate Pocket Sphinx search for a given
+        GrammarWrapper.
+        This method is thread safe.
+        :type wrapper: GrammarWrapper
+        """
+        with self._thread_lock:
+            self._set_grammar(wrapper)
+
+    def _set_grammar(self, wrapper):
         if not is_engine_available():
             return
 
-        # Connect to the engine if it isn't connected already and set a Pocket
-        # Sphinx JSGF search with the compiled root grammar.
+        # Connect to the engine if it isn't connected already.
         self.connect()
+        self._current_grammar_wrapper = wrapper
+
+        # Check if the wrapper's search_name is valid
+        if wrapper.search_name in self._valid_searches:
+            # If the wrapper's search_name is not the active search name, then swap
+            # to it.
+            if wrapper.search_name != self._decoder.active_search:
+                self._decoder.end_utterance()
+                self._decoder.active_search = wrapper.search_name
+
+            # wrapper.search_name is active and is a valid search, so return.
+            return
 
         # Compile and set the jsgf search. If it compiles to nothing or if there is
         # a GrammarError during compilation, fallback to the dictation search
         # instead.
         try:
-            compiled = self._root_grammar.compile_grammar(
-                language_name=self.language)
+            compiled = wrapper.dictation_grammar.compile_as_root_grammar()
+            if "<root>" not in compiled:
+                compiled = ""
         except GrammarError:
             compiled = ""
 
         if compiled:
-            self._decoder.set_jsgf_string("jsgf", compiled)
-            self._set_grammar_search(recompile=False)  # no point recompiling
+            try:
+                # Set the JSGF search
+                self._decoder.end_utterance()
+                self._decoder.set_jsgf_string(wrapper.search_name, compiled)
+                self._decoder.active_search = wrapper.search_name
+            except RuntimeError:
+                self._log.error("error setting PS JSGF search: %s" % compiled)
         else:
             self._set_dictation_search()
+
+        # Grammar search has been loaded, add the search name to the set.
+        self._valid_searches.add(self._decoder.active_search)
+
+    def unset_search(self, name):
+        """
+        Unset a Pocket Sphinx search with the given name.
+        Note that this method will not unset the dictation search.
+        This method is thread safe.
+        :type name: str
+        """
+        with self._thread_lock:
+            if name == self.dictation_search_name:
+                return
+
+            if name in self._valid_searches:
+                # TODO Unset the Pocket Sphinx search.
+                # Unfortunately, the C function for doing this (ps_unset_search) is
+                # not exposed... >_<
+                # With the current Python API, this could be done either by freeing
+                # the decoder used or by overriding the Pocket Sphinx search with
+                # something else.
+
+                # Remove the search from the valid searches set.
+                self._valid_searches.remove(name)
 
     def _set_dictation_search(self):
         """
@@ -218,30 +284,6 @@ class SphinxEngine(EngineBase):
         if not self.recognising_dictation:
             self._decoder.end_utterance()  # ensure we're not processing
             self._decoder.active_search = "_default"
-
-    def _set_grammar_search(self, recompile=True):
-        """
-        Set the JSGF grammar search or the dictation grammar search if there are no
-        active JSGF rules.
-        :param recompile: whether to recompile the JSGF root grammar.
-        """
-        # Compile and set the jsgf search. If it compiles to nothing or if there is
-        # a GrammarError during compilation, fallback to the dictation search
-        # instead.
-        if recompile:
-            try:
-                compiled = self._root_grammar.compile_grammar(
-                    language_name=self.language)
-            except GrammarError:
-                compiled = ""
-        else:
-            compiled = ""  # doesn't matter, we haven't recompiled
-
-        if compiled or not recompile:
-            self._decoder.end_utterance()  # ensure we're not processing
-            self._decoder.active_search = "jsgf"
-        else:  # fallback to LM
-            self._set_dictation_search()
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar* and return a wrapper. """
@@ -256,24 +298,24 @@ class SphinxEngine(EngineBase):
                 grammar.add_dependency(d)
 
         wrapper = self._build_grammar_wrapper(grammar)
-        rules = wrapper.jsgf_grammar.rules
-        self._root_grammar.add_rules(*rules)
         try:
-            self._load_root_grammar()
+            self.set_grammar(wrapper)
         except Exception, e:
             self._log.exception("Failed to load grammar %s: %s."
                                 % (grammar, e))
         return wrapper
 
     def _unload_grammar(self, grammar, wrapper):
-        """ Unload the given *grammar*. """
+        """
+        Unload the given *grammar*.
+        :type grammar: Grammar
+        :type wrapper: GrammarWrapper
+        """
         try:
-            # Update the root grammar and reload it. Ignore dependent rules
-            # in the grammar because all rules are being removed.
-            for rule in wrapper.jsgf_grammar.rules:
-                self._root_grammar.remove_rule(rule.name,
-                                               ignore_dependent=True)
-            self._load_root_grammar()
+            # Unload the current and default searches for the grammar.
+            # It doesn't matter if the names are the same.
+            self.unset_search(wrapper.search_name)
+            self.unset_search(wrapper.default_search_name)
         except Exception, e:
             self._log.exception("Failed to unload grammar %s: %s."
                                 % (grammar, e))
@@ -301,9 +343,9 @@ class SphinxEngine(EngineBase):
         if not wrapper:
             return
         try:
-            wrapper.jsgf_grammar.enable_rule(rule.name)
-            self._root_grammar.enable_rule(rule.name)
-            self._load_root_grammar()
+            wrapper.dictation_grammar.enable_rule(rule.name)
+            self.unset_search(wrapper.search_name)
+            self.set_grammar(wrapper)
         except Exception, e:
             self._log.exception("Failed to activate grammar %s: %s."
                                 % (grammar, e))
@@ -314,9 +356,9 @@ class SphinxEngine(EngineBase):
         if not wrapper:
             return
         try:
-            wrapper.jsgf_grammar.disable_rule(rule.name)
-            self._root_grammar.disable_rule(rule.name)
-            self._load_root_grammar()
+            wrapper.dictation_grammar.disable_rule(rule.name)
+            self.unset_search(wrapper.search_name)
+            self.set_grammar(wrapper)
         except Exception, e:
             self._log.exception("Failed to activate grammar %s: %s."
                                 % (grammar, e))
@@ -327,6 +369,8 @@ class SphinxEngine(EngineBase):
         if not wrapper:
             return
 
+        assert isinstance(wrapper, GrammarWrapper)
+
         # Unfortunately there is no way to update lists for Pocket Sphinx without
         # reloading the grammar, so we'll update the list's JSGF rule and reload.
 
@@ -334,13 +378,15 @@ class SphinxEngine(EngineBase):
         new_rule = Translator.translate_list(lst)
 
         # Find the old list rule in the grammar and modify its expansion
-        for r in wrapper.jsgf_grammar.rules:
+        for r in wrapper.dictation_grammar.rules:
             if r.name == name:
                 r.expansion = new_rule.expansion
                 break
 
-        # Reload the grammar
-        self._load_root_grammar()
+        # Reload the grammar's Pocket Sphinx JSGF searches.
+        self.unset_search(wrapper.search_name)
+        self.unset_search(wrapper.default_search_name)
+        self.set_grammar(wrapper)
 
     # -----------------------------------------------------------------------
     # Miscellaneous methods.
@@ -355,337 +401,392 @@ class SphinxEngine(EngineBase):
         return self._recognising
 
     @property
+    def dictation_search_name(self):
+        """
+        The name of the Pocket Sphinx search used for processing speech as
+        dictation.
+        :rtype: str
+        """
+        return "_default"
+
+    @property
     def recognising_dictation(self):
         """
         Whether the engine is currently processing speech as dictation.
         :return: bool
         """
-        return self._decoder.active_search == "_default"
+        return self._decoder.active_search == self.dictation_search_name
 
-    def _get_dictation_hypothesis(self, switch_back_afterwards=True):
+    def get_dictation_hypothesis(self):
         """
         Get a dictation hypothesis by reprocessing the audio buffers.
+
+        This method will calculate the dictation hypothesis once and use the same
+        value for successive calls in the processing of a speech utterance.
         """
+        if self._current_dictation_hyp is not self._DICTATION_HYP_UNSET:
+            return self._current_dictation_hyp
+
         # Save the current Pocket Sphinx search
         current_search = self._decoder.active_search
 
-        # Switch to the dictation search and reprocess the audio buffers
+        # Switch to the dictation search and reprocess the audio buffers.
         self._set_dictation_search()
         dict_hypothesis = self._decoder.batch_process(self._audio_buffers,
                                                       use_callbacks=False)
-        if switch_back_afterwards:
-            # Switch back to the last search
-            self._decoder.end_utterance()
+        if dict_hypothesis:
+            dict_hypothesis = dict_hypothesis.hypstr
+
+        # Switch back to the last search
+        if current_search != self._decoder.active_search:
             self._decoder.active_search = current_search
+
+        # Set _current_dictation_hyp
+        self._current_dictation_hyp = dict_hypothesis
         return dict_hypothesis
 
-    def _get_grammar_wrapper_and_rule(self, rule):
+    def _clear_in_progress_states_and_reset(self):
         """
-        Get the dragonfly Rule and GrammarWrapper for a JSGF Rule.
-        :param rule: JSGF Rule
-        :return: tuple
+        Reset sequence rules for all wrappers and clear the in-progress set.
+        This method is thread safe.
         """
-        if isinstance(rule, LinkedRule):
-            linked_rule = rule
-        else:
-            linked_rule = self._root_grammar.get_original_rule(rule)
+        # While holding the thread lock, clear in-progress states and reset
+        # grammar wrappers. This is required as the in-progress state set is
+        # a shared resource.
+        with self._thread_lock:
+            for wrapper in self._grammar_wrappers.values():
+                wrapper.reset_all_sequence_rules()
+            self._in_progress_states.clear()
 
-        df_rule = linked_rule.df_rule
-        wrapper = self._get_grammar_wrapper(df_rule.grammar)
-        return wrapper, df_rule
-
-    def _handle_recognition_timeout(self):
+    def _cancel_and_free_timeout_timer(self):
         """
-        Internal method for handling whether the current recognition started too
-        late. If it did, this method reprocesses the audio buffers read so far using
-        the default search, which might be the dictation (LM) or JSGF search,
-        depending on whether there are active JSGF only rules.
-
-        The timeout period is specific to rules containing Dictation elements which
-        must be recognised in sequence.
+        Cancel and free the timer used for recognition timeouts.
         """
-        # If the timeout period is 0 or no SequenceRule is in progress, then there
-        # is no timeout.
-        next_part_timeout = self.config.NEXT_PART_TIMEOUT
-        if not self._in_progress_sequence_rules:
+        if not self._timeout_timer:
             return
 
-        assert self._last_recognition_time,\
-            "SequenceRule is in progress, but there is no recorded last "\
-            "recognition time"
+        # This cannot be done from the Timer thread.
+        if current_thread() is self._timeout_timer:
+            return
 
-        # Check if the next part of the rule wasn't spoken in time.
-        current_time = time.time()
-        timed_out = current_time >= self._last_recognition_time + next_part_timeout
-        if next_part_timeout and timed_out:
+        # Cancel the timer.
+        self._timeout_timer.cancel()
+
+        # If the timer is alive, call join on it, timing out after 100ms to prevent
+        # deadlocks.
+        if self._timeout_timer.isAlive():
+            self._timeout_timer.join(0.1)
+
+        # Free it - Timer objects cannot be reused.
+        self._timeout_timer = None
+
+    def _on_next_part_timeout(self, best_complete_rule_state):
+        """
+        Method called when there is a next rule part timeout.
+        """
+        # Do nothing if the timeout value is 0.
+        if not self.config.NEXT_PART_TIMEOUT:
+            return
+
+        # Execute the following while holding _thread_lock to prevent race
+        # conditions, such as the _in_progress_states set changing during
+        # iteration and raising an error.
+        with self._thread_lock:
+            current_time = time.time()
             self._log.info("Recognition time-out after %f seconds"
                            % (current_time - self._last_recognition_time))
 
-            # I'm not sure if the approach below is quick enough to not interrupt
-            # the flow of speech, but this does happen at the beginning of an
-            # utterance, so it should be fine, except maybe on slow hardware.
+            # If there is one, process the best state with complete rules.
+            if best_complete_rule_state:
+                best_complete_rule_state.process(timed_out=True)
 
-            # Recognition has timed out. Reset sequence rules and start over.
-            self._reset_all_sequence_rules()
+            self._clear_in_progress_states_and_reset()
 
-            # Set the grammar search because only the in-progress rules will be
-            # loaded right now, or the search used for dictation.
-            # TODO Grammar might need to be reloaded here if the context has changed
-            self._set_grammar_search()
+    def _handle_recognition_timeout(self):
+        """
+        Internal method for handling recognition timeouts. If a recognition timeout
+        has not occurred yet, this method will cancel any scheduled timeout.
 
-            # Setting the grammar search will end the utterance, so we need to
-            # process the audio buffers again using batch_process. This will
-            # not yield any hypothesis because at this point the user is still
-            # speaking.
-            self._decoder.batch_process(self._audio_buffers, use_callbacks=False)
+        The timeout period is specific to rules containing Dictation elements which
+        must be recognised in sequence, although if there are matching normal rules,
+        those will be processed on timeout.
+        """
+        next_part_timeout = self.config.NEXT_PART_TIMEOUT
+        current_time = time.time()
+        if not self._last_recognition_time:
+            timed_out = False
+        else:
+            timed_out = next_part_timeout and (
+                current_time >= self._last_recognition_time + next_part_timeout
+            )
 
-        # Set the new last recognition start time
-        self._last_recognition_time = current_time
+        if not timed_out:
+            # If there is a timer, cancel and free it.
+            # It is important that this is not called while holding the lock as
+            # a deadlock can occur.
+            if self._timeout_timer:
+                self._cancel_and_free_timeout_timer()
+        else:
+            self._clear_in_progress_states_and_reset()
 
-    def speech_start_callback(self):
-        # Handle recognition timeout where if speech started too late
+    def _get_best_processing_state(self, states):
+        """
+        Internal method to get the best ProcessingState object from a list of
+        states.
+        :type states: list
+        :return: ProcessingState
+        """
+        # Filter out any states that are not processable.
+        states = filter(lambda s: s.is_processable, states)
+        if not states:
+            return None  # no best processing state
+
+        final_states = None
+
+        # Filter the states in 3 ways: states with matching normal rules, states
+        # with matching and complete sequence rules, and states with in-progress
+        # rules.
+        complete_normal = list(filter(lambda s: s.complete_normal_rules, states))
+        complete_seq = list(filter(lambda s: s.complete_sequence_rules, states))
+        in_progress = list(filter(lambda s: s.in_progress_rules, states))
+
+        # Handle states with complete sequence rules first.
+        if complete_seq and self._in_progress_states:
+            # Set the final_states list
+            final_states = complete_seq
+
+        elif complete_seq and not self._in_progress_states:
+            # Set the final_states list
+            final_states = complete_seq + complete_normal
+
+        # Then states with matching in-progress rules.
+        elif in_progress and not self._in_progress_states:
+            # Add states with in-progress and complete normal rules to the engine's
+            # set. Complete normal rules should be added in case a next rule part
+            # timeout occurs, where they will be processed, if the grammar is still
+            # in-context and loaded.
+            for state in in_progress:
+                self._in_progress_states.add(state)
+            for state in complete_normal:
+                self._in_progress_states.add(state)
+
+            # Set the final_states list
+            final_states = in_progress + complete_normal
+
+        elif in_progress:
+            # Replace the old in-progress states with the new ones.
+            self._in_progress_states = set(in_progress)
+
+            # Set the final_states list
+            final_states = in_progress
+
+        # Then states with only normal matching rules.
+        elif complete_normal:
+            # Set the final_states list
+            final_states = complete_normal
+
+        if final_states:
+            # Do any post collection tasks for all states.
+            for state in states:
+                state.do_post_collection_tasks()
+
+            # Sort the list by the best state to use and return the first state.
+            final_states.sort()
+            return final_states[0]
+        else:
+            # Otherwise return None (no best state).
+            return None
+
+    def _get_best_hypothesis(self, hypothesises):
+        """
+        Take a list of speech hypothesises and return the most likely one.
+        :type hypothesises: iterable
+        :return: str | None
+        """
+        # Get all distinct, non-null hypothesises using a set and a filter.
+        distinct = tuple(filter(lambda h: bool(h), set(hypothesises)))
+        if not distinct:
+            return None
+        elif len(distinct) == 1:
+            return distinct[0]  # only one choice
+
+        # Decide between non-null hypothesises using a Pocket Sphinx search with
+        # each hypothesis as a grammar rule.
+        grammar = RootGrammar()
+        for i, hypothesis in enumerate(distinct):
+            grammar.add_rule(PublicRule("rule%d" % i, Literal(hypothesis)))
+
+        compiled = grammar.compile_as_root_grammar()
+        name = "_temp"
+        self._decoder.end_utterance()
+        self._decoder.set_jsgf_string(name, compiled)
+        self._decoder.active_search = name
+
+        # Do the processing.
+        result = self._decoder.batch_process(
+            self._audio_buffers,
+            use_callbacks=False
+        )
+
+        if result:
+            result = result.hypstr
+        return result
+
+    def _speech_start_callback(self):
+        # Handle recognition timeout where speech started too late
         self._handle_recognition_timeout()
 
         # Notify observers
-        self._recognition_observer_manager.notify_begin()
+        self.observer_manager.notify_begin()
 
-    def hypothesis_callback(self, speech):
+        # TODO Trim excess audio buffers from the list
+        # TODO Move 100ms magic number in main loop to __init__ as a member
+
+    def _hypothesis_callback(self, speech, mimicking):
         """
         Take a hypothesis string, match it against the JSGF grammar which Pocket
         Sphinx is using, then do whatever the matching Rule implementation does for
         processed recognitions.
         :type speech: str
+        :param mimicking: whether to treat speech as mimicked speech.
         """
-        matching_rules = []
-        if not speech and not self.recognising_dictation:
-            # Reprocess as dictation. Don't switch back to the previous search
-            # because processing of SequenceRules uses recognising_dictation
-            # to handle dictation-only rule parts.
-            dict_hyp = self._get_dictation_hypothesis(False)
-            speech = dict_hyp.hypstr if dict_hyp else None
+        processing_occurred = False
+        hypothesises = {}
 
-        # Handle matching in-progress SequenceRules (if any) or normal rules.
-        if speech and self._in_progress_sequence_rules:
-            matching_rules = self._handle_in_progress_sequence_rules(speech)
-        elif speech:
-            matching_rules = self._handle_normal_rules(speech)
+        # Collect each active grammar's GrammarWrapper.
+        wrappers = filter(
+            lambda w: w.grammar.enabled,
+            self._grammar_wrappers.values()
+        )
 
-        # Clear the internal audio buffer list because it is no longer needed
-        self._audio_buffers = []
-
-        if not matching_rules:
-            self._recognition_observer_manager.notify_failure()
-            self._set_grammar_search()
-
-        # In case this method was called by the mimic method, return the matching
-        # rules list for further processing.
-        return matching_rules
-
-    def _process_complete_recognition(self, wrapper, words_list):
-        """
-        Internal method for processing complete recognitions.
-        :type wrapper: GrammarWrapper
-        :type words_list: list
-        """
-        # Notify recognition observers
-        self._recognition_observer_manager.notify_recognition(words_list)
-
-        # Begin dragonfly processing
-        wrapper.process_begin()
-        wrapper.process_results(words_list)
-
-        # Clear the in progress list and reset all sequence rules in the grammar.
-        self._reset_all_sequence_rules()
-
-        # Switch back to the relevant grammar search (or maybe dictation)
-        self._set_grammar_search()
-
-    def _generate_words_list(self, rule, complete_match):
-        """
-        Generate a words list compatible with dragonfly's processing classes.
-        :param rule: JSGF Rule
-        :param complete_match: whether all expansions in a SequenceRule must match
-        :return: list
-        """
-        wrapper, df_rule = self._get_grammar_wrapper_and_rule(rule)
-        if isinstance(rule, SequenceRule):
-            words_list = []
-            # Generate a words list using the match values for each expansion in the
-            # sequence
-            for e in rule.expansion_sequence:
-                # Use rule IDs compatible with dragonfly's processing classes
-                if only_dictation_in_expansion(e):
-                    rule_id = 1000000  # dgndictation id
-                else:
-                    rule_id = wrapper.grammar.rules.index(df_rule)
-
-                # If the SequenceRule is not completely matched yet and
-                # complete_match is False, then use the match values thus far.
-                if not complete_match and e.current_match is None:
-                    break
-
-                # Get the words from the expansion's current match
-                words = e.current_match.split()
-                assert words is not None
-                for word in words:
-                    words_list.append((word, rule_id))
-        else:
-            rule_id = wrapper.grammar.rules.index(df_rule)
-            words_list = [(word, rule_id)
-                          for word in rule.expansion.current_match.split()]
-        return words_list
-
-    def _handle_normal_rules(self, speech):
-        """
-        Internal method used by the hypothesis callback for handling normal rules
-        that can be spoken in one utterance.
-        :return: list
-        """
-        # No rules will match None or ""
-        if not speech:
-            return []
-
-        # Find rules of active grammars that match the speech string
-        matching_rules = self._root_grammar.find_matching_rules(
-            speech, advance_sequence_rules=False)
-
-        for rule in matching_rules:
-            if isinstance(rule, SequenceRule):  # spoken in multiple utterances
-                if rule.current_is_dictation_only and not \
-                        self.recognising_dictation:
-                    # Reprocess audio as dictation instead
-                    dict_hypothesis = self._get_dictation_hypothesis()
-
-                    # Note: if dict_hypothesis is None, then this recognition was
-                    # probably invoked by mimic, so don't invalidate the match.
-                    if dict_hypothesis:
-                        rule.refuse_matches = False
-                        rule.matches(dict_hypothesis.hypstr)
-
-                if rule.has_next_expansion:
-                    # TODO Check if other rules have higher probability hypothesises
-                    # Go to the next expansion in the sequence and add this rule to
-                    # the in progress list
-                    rule.set_next()
-                    self._in_progress_sequence_rules.append(rule)
-
-                    # Sequence rule is in progress so set the last recognition time
-                    # to now.
-                    self._last_recognition_time = time.time()
-
-                    # Notify observers
-                    self._recognition_observer_manager.notify_next_rule_part(
-                        self._generate_words_list(rule, False)
-                    )
-                else:
-                    # The entire sequence has been matched. This rule could only
-                    # have had one part to it.
-                    self._handle_complete_sequence_rule(rule)
-                    break
-            else:
-                # This rule has been fully recognised. So generate a rule id and
-                # words list compatible with dragonfly's processing classes.
-                wrapper, df_rule = self._get_grammar_wrapper_and_rule(rule)
-                words_list = self._generate_words_list(rule, True)
-
-                # Process the complete recognition and break out of the loop; only
-                # one rule should match.
-                self._process_complete_recognition(wrapper, words_list)
-                break
-        return matching_rules
-
-    def _reset_all_sequence_rules(self):
-        """
-        Internal method for resetting all active SequenceRules and clearing the
-        in-progress list.
-        """
-        for r in self._root_grammar.rules:
-            if isinstance(r, SequenceRule):
-                r.restart_sequence()
-
-        self._in_progress_sequence_rules = []
-
-    def _handle_in_progress_sequence_rules(self, speech):
-        """
-        Handle recognising SequenceRules that are in progress.
-        Dragonfly processing won't happen in this method until one SequenceRule
-        has been matched completely.
-        """
-        # No rules will match None or ""
-        if not speech:
-            self._reset_all_sequence_rules()
-            return []
-
-        # Sequence rule is in progress so set the last recognition time to now.
         self._last_recognition_time = time.time()
 
-        result = []
-        dict_hypothesis = False  # in this case False means unset
+        # No grammar has been loaded.
+        if not self._current_grammar_wrapper or not wrappers:
+            # TODO What should we do here? Output formatted Dictation like DNS?
+            return processing_occurred
 
-        # Process the rules using a shallow copy of the in progress list because the
-        # original list will be modified
-        notified = False
-        for rule in tuple(self._in_progress_sequence_rules):
-            # Get a dictation hypothesis if it is required
-            if rule.current_is_dictation_only and dict_hypothesis is False and \
-                    not self.recognising_dictation:
-                dict_hypothesis = self._get_dictation_hypothesis()
+        # If the engine is processing in-progress rules, only use active in-progress
+        # wrappers.
+        in_progress_states = self._in_progress_states
+        if in_progress_states:
+            in_progress_wrappers = map(lambda s: s.wrapper, in_progress_states)
+            wrappers = filter(
+                lambda w: w in in_progress_wrappers,
+                wrappers
+            )
 
-            # Match the rule with the appropriate hypothesis string
-            if rule.current_is_dictation_only and dict_hypothesis:
-                rule.matches(dict_hypothesis.hypstr)
-            else:
-                rule.matches(speech)
+        if (self._current_grammar_wrapper.search_name !=
+                self._decoder.active_search):
+            # The grammar's search isn't set, so reprocess speech.
+            self.set_grammar(self._current_grammar_wrapper)
 
-            if not rule.was_matched:
-                # Remove and reset the SequenceRule if it didn't match
-                rule.restart_sequence()
-                self._in_progress_sequence_rules.remove(rule)
-            elif rule.has_next_expansion:
-                # By calling rule.matches, the speech value was stored as the
-                # current expansion's current_match value. Go to the next expansion.
-                rule.set_next()
-                result.append(rule)
+            if not mimicking:
+                hyp = self._decoder.batch_process(
+                    self._audio_buffers,
+                    use_callbacks=False
+                )
+                if hyp and not isinstance(hyp, str):
+                    speech = hyp.hypstr
+                else:
+                    speech = hyp
 
-                # Notify with the current recognised words list. Only notify once.
-                if not notified:
-                    self._recognition_observer_manager.notify_next_rule_part(
-                        self._generate_words_list(rule, False)
-                    )
-                    notified = True
-            else:
-                # SequenceRule has been completely matched.
-                self._handle_complete_sequence_rule(rule)
-                result.append(rule)
-                # TODO Check if other rules have higher probability hypothesises
-                # instead of using the first rule
-                break
+        # Use speech as the dictation hypothesis if mimicking.
+        if mimicking:
+            self._current_dictation_hyp = speech
 
-        # If the list still has rules, then it needs further processing.
-        # Load a JSGF Pocket Sphinx search with just the rules in the list, or
-        # switch to the dictation search if there are only dictation rules.
-        if self._in_progress_sequence_rules:
-            temp_grammar = DictationGrammar(rules=self._in_progress_sequence_rules)
-            compiled = temp_grammar.compile_grammar(language_name=self.language)
-            if not compiled:
-                self._set_dictation_search()
-            else:
-                name = "SeqRulesInProgress"
-                self._decoder.set_jsgf_string(name, compiled)
-                self._decoder.active_search = name
-        return result
+        # Use speech as the hypothesis for the current grammar wrapper.
+        hypothesises[self._current_grammar_wrapper.search_name] = speech
 
-    def _handle_complete_sequence_rule(self, rule):
-        """
-        Handle a SequenceRule that has been completely matched.
-        :type rule: SequenceRule
-        """
-        # Get the GrammarWrapper and dragonfly rule from the SequenceRule
-        wrapper, df_rule = self._get_grammar_wrapper_and_rule(rule)
-        # Generate a words list
-        words_list = self._generate_words_list(rule, True)
+        # Batch process audio buffers for each active grammar. Store each
+        # hypothesis.
+        for wrapper in wrappers:
+            if mimicking:
+                # Just use speech for every hypothesis if mimicking.
+                hypothesises[wrapper.search_name] = speech
+            elif wrapper.search_name not in hypothesises.keys():
+                # Switch to the search for this grammar if necessary
+                if self._decoder.active_search != wrapper.search_name:
+                    self._decoder.active_search = wrapper.search_name
 
-        self._process_complete_recognition(wrapper, words_list)
+                # TODO Do this in parallel with multiple decoders and Python's multiprocessing package
+                hypothesis = self._decoder.batch_process(
+                    self._audio_buffers,
+                    use_callbacks=False
+                )
+
+                if hypothesis:
+                    hypothesis = hypothesis.hypstr
+
+                hypothesises[wrapper.search_name] = hypothesis
+
+        # Get the best hypothesis.
+        speech = self._get_best_hypothesis(hypothesises.values())
+
+        # Only use wrappers whose search hypothesis is speech.
+        wrappers = filter(
+            lambda w: hypothesises[w.search_name] == speech,
+            wrappers
+        )
+
+        processing_states = []
+        for wrapper in wrappers:
+
+            # Collect matching rules in a ProcessingState object for each
+            # wrapper
+            hyp = hypothesises[wrapper.search_name]
+            processing_states.append(ProcessingState(wrapper, hyp))
+
+        # Process the best wrapper
+        best_state = self._get_best_processing_state(processing_states)
+        if best_state:
+            best_state.process()
+
+            if best_state.repeatable_complete_sequence_rules:
+                # TODO Handle complete sequence rules that can repeat.
+                # Start the repetition timeout timer.
+                pass
+            elif best_state.complete_sequence_rules:
+                # Now that a complete sequence rule has been processed,
+                # clear the engine's in-progress set and reset all wrappers.
+                self._clear_in_progress_states_and_reset()
+
+            processing_occurred = True
+
+        # If there are in-progress states, cancel the timer if it is running and
+        # start the timer.
+        timeout_value = self.config.NEXT_PART_TIMEOUT
+        self._cancel_and_free_timeout_timer()
+        if self._in_progress_states and timeout_value:
+            # If there are complete rules in any processing state, calculate
+            # the best state and start the timer.
+            best_complete_rule_state = self._get_best_processing_state(filter(
+                lambda s: s.complete_rules,
+                self._in_progress_states
+            ))
+
+            # Start the timer.
+            self._timeout_timer = Timer(
+                timeout_value,
+                self._on_next_part_timeout,
+                [best_complete_rule_state]
+            )
+            self._timeout_timer.start()
+
+        # Clear the internal audio buffer list because it is no longer needed.
+        self._audio_buffers = []
+
+        # Unset the dictation hypothesis because it is now invalid.
+        self._current_dictation_hyp = self._DICTATION_HYP_UNSET
+
+        if not processing_occurred:
+            self.observer_manager.notify_failure()
+            self._clear_in_progress_states_and_reset()
+            self._cancel_and_free_timeout_timer()
+            self.set_grammar(self._current_grammar_wrapper)
+
+        # In case this method was called by the mimic method, return a bool value.
+        return processing_occurred
 
     def recognise_forever(self):
         """
@@ -710,11 +811,13 @@ class SphinxEngine(EngineBase):
             # Cancel current recognition if it has been requested
             if self._cancel_recognition_next_time:
                 self._decoder.end_utterance()
+                self._audio_buffers = []
                 self._cancel_recognition_next_time = False
 
             # Don't read and process audio if recognition has been paused
             if self._recognition_paused:
-                time.sleep(0.2)
+                time.sleep(0.1)
+                self._audio_buffers = []
                 continue
 
             # Read from the audio device (default number of frames is 2048)
@@ -742,11 +845,11 @@ class SphinxEngine(EngineBase):
         method is implemented to accept variable phrases instead of a list of words.
         """
         # Pretend that Sphinx has started processing speech
-        self.speech_start_callback()
+        self._speech_start_callback()
 
         # Process phrases as if they were spoken
         for phrase in phrases:
-            result = self.hypothesis_callback(phrase)
+            result = self._hypothesis_callback(phrase, True)
             if not result:
                 raise MimicFailure("No matching rule found for words %s."
                                    % phrase)

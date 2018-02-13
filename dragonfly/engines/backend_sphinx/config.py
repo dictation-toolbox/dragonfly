@@ -30,4 +30,12 @@ LANGUAGE = "en"
 # Timeout in seconds for speaking the next part of a rule involving dictation.
 # This does not include the first part of such a rule. If this value is set to 0,
 # then there will be no timeout.
+#
+# If speech matched any normal rule that doesn't need to be spoken in sequence, it
+# will be processed after the timeout period if it happens. Take the following rule
+# specs for example:
+# "hello"
+# "hello <dictation>"
+# If you say "hello" and don't start speaking the <dictation> part of the second
+# rule, then the first "hello" rule will be processed instead.
 NEXT_PART_TIMEOUT = 2.0
