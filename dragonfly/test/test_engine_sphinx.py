@@ -618,6 +618,67 @@ class DictationEngineTests(SphinxEngineCase):
         self.assert_mimic_success("hello world")
         self.assert_test_function_called(test2, 2)
 
+    def test_long_sequence_rule(self):
+        """
+        Test that the engine can recognise a long sequence rule and that the
+        timeout functionality works correctly.
+        """
+        timeout = 0.1
+        self.engine.config.NEXT_PART_TIMEOUT = timeout
+
+        # Set up a test grammar with some rules
+        test1 = self.get_test_function()
+        test2 = self.get_test_function()
+
+        class TestRule(MappingRule):
+            mapping = {
+                "testing": Function(test1),
+                "testing <dictation> testing <dictation>": Function(test2),
+            }
+            extras = [Dictation("dictation")]
+
+        grammar = Grammar("test")
+        grammar.add_rule(TestRule())
+        grammar.load()
+        self.assertTrue(grammar.loaded)
+
+        # Test that mapping 2 can be recognised fully
+        self.assert_mimic_success("testing", "hello", "testing")
+        self.assert_mimic_success("hello")
+        self.assert_test_function_called(test2, 1)
+        self.assert_test_function_called(test1, 0)
+
+        # Start recognising mapping 2 again, then sleep for a bit
+        self.assert_mimic_success("testing")
+        time.sleep(timeout + 0.1)
+
+        # Only mapping 1 should have been processed
+        self.assert_test_function_called(test1, 1)
+        self.assert_test_function_called(test2, 1)
+
+        # Test that it works with a break shorter than the timeout value
+        self.assert_mimic_success("testing")
+        time.sleep(timeout / 2)
+        self.assert_mimic_success("hello")
+        time.sleep(timeout / 2)
+        self.assert_mimic_success("testing")
+        time.sleep(timeout / 2)
+        self.assert_mimic_success("hello")
+        self.assert_test_function_called(test2, 2)
+
+        # Test with a timeout of 0 (no timeout)
+        timeout = 0
+        self.engine.config.NEXT_PART_TIMEOUT = timeout
+        self.assert_mimic_success("testing")
+        time.sleep(0.1)  # sleep for 100ms
+        self.assert_test_function_called(test2, 2)  # no changes
+
+        # Test that mapping 1 won't process any more, even after a time.
+        self.assert_test_function_called(test1, 1)
+
+        # Mimicking the rest of the rule parts should make the rule process.
+        self.assert_mimic_success("hello", "testing", "hello")
+        self.assert_test_function_called(test2, 3)
 
 # ---------------------------------------------------------------------
 
