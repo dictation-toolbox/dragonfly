@@ -93,7 +93,7 @@ def get_engine(name=None):
                 _engines_by_name["sphinx"] = _default_engine
                 return _default_engine
         except Exception, e:
-            message = ("Exception while initializing natlink engine:"
+            message = ("Exception while initializing sphinx engine:"
                        " %s" % (e,))
             log.exception(message)
             traceback.print_exc()

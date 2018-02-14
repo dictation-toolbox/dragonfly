@@ -606,6 +606,7 @@ class DictationEngineTests(SphinxEngineCase):
         self.engine.config.NEXT_PART_TIMEOUT = timeout
         self.assert_mimic_success("say")
         time.sleep(0.1)  # sleep for 100ms
+        self.assert_test_function_called(test1, 2)  # no change
         self.assert_mimic_success("testing")
         self.assert_test_function_called(test1, 3)
 
