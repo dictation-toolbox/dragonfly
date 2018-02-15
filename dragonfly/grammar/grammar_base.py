@@ -108,6 +108,11 @@ class Grammar(object):
     rules = property(lambda self: tuple(self._rules),
                      doc="List of a grammar's rules.")
 
+    active_rules = property(
+        lambda self: [r for r in self.rules if r.active],
+        doc="List of a grammar's active rules."
+    )
+
     lists = property(lambda self: tuple(self._lists),
                      doc="List of a grammar's lists.")
 
@@ -335,7 +340,7 @@ class Grammar(object):
         self._loaded = True
         self._in_context = False
 
-        # Update all lists loaded in this grammar.
+        # Update all rules loaded in this grammar.
         for rule in self._rules:
             if rule.active:
                 rule.activate(force=True)
