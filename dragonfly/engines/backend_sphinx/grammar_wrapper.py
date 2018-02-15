@@ -2,13 +2,12 @@
 GrammarWrapper class for CMU Pocket Sphinx engine
 """
 import functools
-import sys
 
 from jsgf import RuleRef, map_expansion
 from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion, dictation_in_expansion
 
 import dragonfly.grammar.state as state_
-from dragonfly import Grammar, Window
+from dragonfly import Grammar
 from dragonfly2jsgf import LinkedRule
 
 
@@ -169,6 +168,14 @@ class GrammarWrapper(object):
         """
         return self._default_search_name
 
+    @property
+    def grammar_active(self):
+        """
+        Whether the grammar is enabled and has any active rules.
+        :rtype: bool
+        """
+        return self.grammar.enabled and any(self.grammar.active_rules)
+
     def reset_all_sequence_rules(self):
         """
         Resetting all SequenceRules, clear the in progress list and reset
@@ -243,22 +250,12 @@ class GrammarWrapper(object):
             words_list = self._generate_words_list(state.complete_rules[0], True)
             self._process_complete_recognition(words_list)
 
-    def _process_begin(self):
+    def process_begin(self, fg_window):
         """
         Start the dragonfly grammar processing.
         """
-        # Get context info for the process_begin method. Dragonfly has a handy
-        # static method for this:
-        fg_window = Window.get_foreground()
-        if sys.platform.startswith("win"):
-            process_method = self.grammar.process_begin
-        else:
-            # Note: get_foreground() is mocked for non-Windows platforms
-            # TODO Change to process_begin once cross platform contexts are working
-            process_method = self.grammar._process_begin
-
-        # Call the process begin method
-        process_method(fg_window.executable, fg_window.title, fg_window.handle)
+        self.grammar.process_begin(fg_window.executable, fg_window.title,
+                                   fg_window.handle)
 
     def _process_results(self, words):
         """
@@ -283,8 +280,7 @@ class GrammarWrapper(object):
         # and return.
         s = state_.State(words_rules, rule_ids, self.engine)
         for r in self.grammar.rules:
-            # TODO Remove the if windows condition when contexts are working
-            if not r.active and sys.platform.startswith("win"):
+            if not r.active:
                 continue
             s.initialize_decoding()
 
@@ -332,7 +328,6 @@ class GrammarWrapper(object):
 
         # Begin dragonfly processing
         try:
-            self._process_begin()
             self._process_results(words_list)
         except Exception as e:
             self.engine.log.error("%s: caught Exception while processing "

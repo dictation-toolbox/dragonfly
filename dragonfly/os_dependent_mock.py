@@ -23,9 +23,10 @@ regardless of operating system.
 
 
 class _WindowInfo(object):
-    executable = None
-    title = None
-    handle = None
+    # TODO Use proxy contexts instead
+    executable = ""
+    title = ""
+    handle = ""
 
 
 class Window(object):

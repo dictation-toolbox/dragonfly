@@ -30,7 +30,7 @@ from threading import Timer, RLock, current_thread
 from jsgf import GrammarError, RootGrammar, PublicRule, Literal
 from pyaudio import PyAudio
 
-from dragonfly import Grammar
+from dragonfly import Grammar, Window
 from dragonfly.engines.backend_sphinx import is_engine_available
 from dragonfly.engines.backend_sphinx.grammar_wrapper import GrammarWrapper, ProcessingState
 from dragonfly2jsgf import Translator
@@ -633,8 +633,47 @@ class SphinxEngine(EngineBase):
         return result
 
     def _speech_start_callback(self):
+        # Get context info. Dragonfly has a handy static method for this:
+        fg_window = Window.get_foreground()
+
+        # Call process_begin for all grammars so that any out of context grammar
+        # will not be used.
+        for wrapper in self._grammar_wrappers.values():
+            wrapper.process_begin(fg_window)
+
+        # If there are any in-progress states whose grammars are out of context,
+        # remove them from the set. Do this while holding the lock to prevent race
+        # conditions; the timeout timer could be active at this point.
+        with self._thread_lock:
+            for state in tuple(self._in_progress_states):
+                assert isinstance(state, ProcessingState)
+                if not state.wrapper.grammar_active:
+                    self._in_progress_states.remove(state)
+                    state.wrapper.reset_all_sequence_rules()
+
         # Handle recognition timeout where speech started too late
         self._handle_recognition_timeout()
+
+        # Set a new current grammar wrapper if necessary.
+        if (not self._current_grammar_wrapper or
+                not self._current_grammar_wrapper.grammar_active):
+            active_wrappers = filter(
+                lambda w: w.grammar_active,
+                self._grammar_wrappers.values()
+            )
+            if active_wrappers:
+                self._current_grammar_wrapper = active_wrappers[0]
+                self.set_grammar(self._current_grammar_wrapper)
+            else:
+                # No wrapper is usable. Set the dictation search.
+                self._current_grammar_wrapper = None
+                self._set_dictation_search()
+
+        # Reprocess current audio buffers if necessary; <decoder>.end_utterance
+        # can be called by the above code or by the timer thread.
+        # TODO Add public methods and/or properties to PocketSphinx class for this
+        if self._decoder._utterance_state == PocketSphinx._UTT_ENDED:
+            self._decoder.batch_process(self._audio_buffers, use_callbacks=False)
 
         # Notify observers
         self.observer_manager.notify_begin()
@@ -655,7 +694,7 @@ class SphinxEngine(EngineBase):
 
         # Collect each active grammar's GrammarWrapper.
         wrappers = filter(
-            lambda w: w.grammar.enabled,
+            lambda w: w.grammar_active,
             self._grammar_wrappers.values()
         )
 
