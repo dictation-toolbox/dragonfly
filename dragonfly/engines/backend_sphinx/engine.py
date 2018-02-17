@@ -480,7 +480,7 @@ class SphinxEngine(EngineBase):
         # Free it - Timer objects cannot be reused.
         self._timeout_timer = None
 
-    def _on_next_part_timeout(self, best_complete_rule_state):
+    def _on_next_part_timeout(self):
         """
         Method called when there is a next rule part timeout.
         """
@@ -496,17 +496,25 @@ class SphinxEngine(EngineBase):
             self._log.info("Recognition time-out after %f seconds"
                            % (current_time - self._last_recognition_time))
 
-            # If there is one, process the best state with complete rules.
-            # Only process it if the grammar is active.
-            state = best_complete_rule_state
-            if state and state.wrapper.grammar_active:
-                # Do context checking for the best state's grammar.
-                fg_window = Window.get_foreground()
+            # Remove any states with out of context grammars.
+            fg_window = Window.get_foreground()
+            for state in tuple(self._in_progress_states):
+                # Do context checking for each state.
                 state.wrapper.process_begin(fg_window)
 
-                # If the grammar is still active, process the state.
-                if state.wrapper.grammar_active:
-                    state.process(timed_out=True)
+                # Remove the state if the grammar is not active.
+                if not state.wrapper.grammar_active:
+                    self._in_progress_states.remove(state)
+
+            # Calculate the best in-progress state with complete rules if there is
+            # one.
+            best_state = self._get_best_processing_state(filter(
+                lambda s: s.complete_rules,
+                self._in_progress_states
+            ))
+
+            if best_state and best_state.wrapper.grammar_active:
+                best_state.process(timed_out=True)
 
             self._clear_in_progress_states_and_reset()
 
@@ -805,18 +813,10 @@ class SphinxEngine(EngineBase):
         timeout_value = self.config.NEXT_PART_TIMEOUT
         self._cancel_and_free_timeout_timer()
         if self._in_progress_states and timeout_value:
-            # If there are complete rules in any processing state, calculate
-            # the best state and start the timer.
-            best_complete_rule_state = self._get_best_processing_state(filter(
-                lambda s: s.complete_rules,
-                self._in_progress_states
-            ))
-
             # Start the timer.
             self._timeout_timer = Timer(
                 timeout_value,
-                self._on_next_part_timeout,
-                [best_complete_rule_state]
+                self._on_next_part_timeout
             )
             self._timeout_timer.start()
 
