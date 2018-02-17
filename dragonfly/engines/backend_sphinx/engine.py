@@ -497,8 +497,16 @@ class SphinxEngine(EngineBase):
                            % (current_time - self._last_recognition_time))
 
             # If there is one, process the best state with complete rules.
-            if best_complete_rule_state:
-                best_complete_rule_state.process(timed_out=True)
+            # Only process it if the grammar is active.
+            state = best_complete_rule_state
+            if state and state.wrapper.grammar_active:
+                # Do context checking for the best state's grammar.
+                fg_window = Window.get_foreground()
+                state.wrapper.process_begin(fg_window)
+
+                # If the grammar is still active, process the state.
+                if state.wrapper.grammar_active:
+                    state.process(timed_out=True)
 
             self._clear_in_progress_states_and_reset()
 
