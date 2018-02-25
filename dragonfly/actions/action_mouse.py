@@ -376,6 +376,8 @@ class Mouse(DynStrActionBase):
     _scroll_flags = {
                      "scrolldown":   (win32con.MOUSEEVENTF_WHEEL, -120),
                      "scrollup":  (win32con.MOUSEEVENTF_WHEEL, 120),
+                     "wheeldown":   (win32con.MOUSEEVENTF_WHEEL, -120),
+                     "wheelup":  (win32con.MOUSEEVENTF_WHEEL, 120),
                     }
 
     def _process_button(self, spec, events):
