@@ -47,7 +47,7 @@ def read(*names):
 install_requires = [
     "setuptools >= 0.6c7",
     "sphinxwrapper",
-    "pyjsgf",
+    "pyjsgf >= 1.0.1",
     "pyaudio",
 ]
 

@@ -1,7 +1,7 @@
 import logging
 
 import jsgf
-from jsgf import map_expansion
+from jsgf import map_expansion, VoidRef
 from jsgf.ext import SequenceRule, dictation_in_expansion
 
 from dragonfly import Grammar, List as DragonflyList, DictList as DragonflyDictList
@@ -15,19 +15,10 @@ class TranslationError(Exception):
     pass
 
 
-class JSGFImpossible(jsgf.Expansion):
-    """
-    JSGF equivalent of dragonfly's Impossible element.
-    """
-    def __init__(self):
-        super(JSGFImpossible, self).__init__([])
-
-    def matches(self, speech):
-        self.current_match = None
-        return speech
-
-
 class LinkedGrammar(jsgf.Grammar):
+    # TODO Change LinkedGrammar to a custom DictationGrammar that uses LinkedRules
+    # internally or something. This would be more efficient than using a sort of
+    # go-between grammar.
     def __init__(self, name, df_grammar):
         self._df_grammar = df_grammar
         super(LinkedGrammar, self).__init__(name=name)
@@ -299,18 +290,18 @@ class Translator(object):
                     i = x.parent.children.index(x)
                     x.parent.children.remove(x)
                     x.parent.children.insert(i, x.rule.expansion)
-                x.rule.expansion.parent = x.parent
+                x.referenced_rule.expansion.parent = x.parent
 
                 # The rule is no longer a dependency and should not be included in
                 # the final grammar
-                state.dependencies.remove(x.rule)
+                state.dependencies.remove(x.referenced_rule)
 
                 # In case it was translated before this method, blacklist it!
-                self.expansion_black_list.append(x.rule.expansion)
+                self.expansion_black_list.append(x.referenced_rule.expansion)
 
                 # Replace the original child if necessary
                 if x is child:
-                    state.expansion = x.rule.expansion
+                    state.expansion = x.referenced_rule.expansion
 
         map_expansion(child, process)
 
@@ -357,7 +348,11 @@ class Translator(object):
             state.expansion = jsgf.ext.Dictation()
 
         elif isinstance(element, Impossible):
-            state.expansion = JSGFImpossible()
+            # VoidRef is the equivalent of dragonfly's Impossible element.
+            # It is also automatically used by pyjsgf if an expansion that should
+            # have at least one child (e.g. Sequence/Repeat) doesn't have any at
+            # compile time.
+            state.expansion = VoidRef()
 
         elif element.children == ():  # improbable ElementBase case
             state.expansion = jsgf.Expansion([])
