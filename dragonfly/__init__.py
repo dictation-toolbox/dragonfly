@@ -27,12 +27,10 @@ from .engines           import get_engine, EngineError, MimicFailure
 
 #---------------------------------------------------------------------------
 from .grammar.grammar_base       import Grammar
+from .grammar.grammar_connection import ConnectionGrammar
 
 import sys
-if sys.platform.startswith("win"):
-    from .grammar.grammar_connection import ConnectionGrammar
-else:
-    from .os_dependent_mock import ConnectionGrammar
+
 from .grammar.rule_base          import Rule
 from .grammar.rule_compound      import CompoundRule
 from .grammar.rule_mapping       import MappingRule
@@ -72,14 +70,9 @@ from .windows.rectangle import Rectangle, unit
 from .windows.point     import Point
 
 # Windows-specific
-if sys.platform.startswith("win"):
-    from .windows             import Window
-    from .windows             import Monitor, monitors
-    from .windows             import Clipboard
-else:  # Mock imports
-    from .os_dependent_mock   import Window
-    from .os_dependent_mock   import Monitor, monitors
-    from .os_dependent_mock   import Clipboard
+from .windows             import Window
+from .windows             import Monitor, monitors
+from .windows             import Clipboard
 
 
 #---------------------------------------------------------------------------

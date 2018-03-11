@@ -29,10 +29,16 @@ except ImportError, error:
     import sys
     if sys.platform.startswith("win"):
         raise error
-    else:
-    # These modules aren't available on non-Windows platforms, so mock them.
-        from ..os_dependent_mock import Dispatch
-        from ..os_dependent_mock import COMError as com_error
+
+    # These modules aren't available on non-Windows platforms, so mock what is used.
+    class COMError(Exception):
+        pass
+
+    com_error = COMError
+
+    class Dispatch(object):
+        def __init__(self, _):
+            pass
 
 from .grammar_base import Grammar
 

@@ -20,6 +20,27 @@ Mock module to allow dragonfly to be imported on linux locally.
 Heavily modified to allow more dragonfly functionality to work
 regardless of operating system.
 """
+from .actions import ActionBase, DynStrActionBase
+
+
+# Mock ActionBase and DynStrActionBase classes
+
+def mock_action(*args, **kwargs):
+    return ActionBase()
+
+
+def mock_dyn_str_action(*args, **kwargs):
+    return DynStrActionBase(*args, **kwargs)
+
+Text = mock_dyn_str_action
+Key = mock_dyn_str_action
+Mouse = mock_dyn_str_action
+Paste = mock_dyn_str_action
+WaitWindow = mock_action
+FocusWindow = mock_action
+StartApp = mock_action
+BringApp = mock_action
+PlaySound = mock_action
 
 
 class _WindowInfo(object):
@@ -35,95 +56,47 @@ class Window(object):
         return _WindowInfo
 
 
-class COMError(Exception):
-    pass
-
-
-class Dispatch(object):
-    def __init__(self, app_name):
+class MockBase(object):
+    def __init__(self, *args, **kwargs):
         pass
 
 
-class Clipboard:
+class Clipboard(MockBase):
     pass
 
 
-class ConnectionGrammar:
+class HardwareInput(MockBase):
     pass
 
 
-class FocusWindow:
+class Keyboard(MockBase):
     pass
 
 
-class HardwareInput:
-    pass
-
-
-class Key:
-    pass
-
-
-class Keyboard:
-    pass
-
-
-class KeyboardInput:
+class KeyboardInput(MockBase):
     pass
 
 
 monitors = []
 
 
-class Monitor:
+class Monitor(MockBase):
     pass
 
 
-class Mouse:
+class MouseInput(MockBase):
     pass
 
 
-class MouseInput:
+class Typeable(object):
     pass
-
-
-class Paste:
-    pass
-
-
-class Text:
-    pass
-
-
-class Typeable:
-    pass
-
 
 typeables = {}
 
+
 def make_input_array(inputs):
-    pass
+    return inputs
 
 
 def send_input_array(input_array):
-    pass
-
-
-class WaitWindow:
-    pass
-
-
-class Word:
-    pass
-
-
-class StartApp:
-    pass
-
-
-class BringApp:
-    pass
-
-
-class PlaySound:
     pass

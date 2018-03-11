@@ -26,6 +26,7 @@ This file implements a Win32 keyboard interface using sendinput.
 
 import time
 import win32con
+
 from ctypes import windll, c_char, c_wchar
 from dragonfly.actions.sendinput import (KeyboardInput, make_input_array,
                                          send_input_array)
