@@ -39,11 +39,7 @@ To use the Pocket Sphinx engine you will need to install the [sphinxwrapper](htt
 You can install *sphinxwrapper* and *pyjsgf* from the git submodules by running the following commands:
 ``` Shell
 git clone --recursive https://github.com/Danesprite/dragonfly.git
-cd pysjgf
-python setup.py install
-cd ../sphinxwrapper
-python setup.py install
-cd ..
+git submodule foreach python setup.py install
 ```
 
 Then install dragonfly:
