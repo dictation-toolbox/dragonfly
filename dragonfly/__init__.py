@@ -28,16 +28,14 @@ from .engines           import get_engine, EngineError, MimicFailure
 #---------------------------------------------------------------------------
 from .grammar.grammar_base       import Grammar
 from .grammar.grammar_connection import ConnectionGrammar
-
-import sys
-
 from .grammar.rule_base          import Rule
 from .grammar.rule_compound      import CompoundRule
 from .grammar.rule_mapping       import MappingRule
 from .grammar.elements  import (ElementBase, Sequence, Alternative,
                                 Optional, Repetition, Literal,
                                 ListRef, DictListRef, Dictation,
-                                RuleRef, Empty, Compound, Choice)
+                                RuleRef, RuleWrap, Empty, Compound, Choice)
+
 from .grammar.context   import Context, AppContext
 from .grammar.list      import ListBase, List, DictList
 from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
@@ -47,32 +45,23 @@ from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
 #                                Number, NumberRef)
 
 #---------------------------------------------------------------------------
+
 from .actions           import (ActionBase, DynStrActionBase, ActionError,
                                 Repeat, Key, Text, Mouse, Paste, Pause,
                                 Mimic, Playback, WaitWindow, FocusWindow,
-                                Function, StartApp, BringApp, PlaySound)
-
-if sys.platform.startswith("win"):
-    from .actions.keyboard  import Typeable, Keyboard
-    from .actions.typeables import typeables
-    from .actions.sendinput import (KeyboardInput, MouseInput, HardwareInput,
-                                    make_input_array, send_input_array)
-else:
-    from .os_dependent_mock    import Typeable, Keyboard
-    from .os_dependent_mock import typeables
-    from .os_dependent_mock    import (KeyboardInput, MouseInput, HardwareInput,
-                                       make_input_array, send_input_array)
+                                Function, StartApp, BringApp, PlaySound,
+                                Typeable, Keyboard, typeables,
+                                KeyboardInput, MouseInput, HardwareInput,
+                                make_input_array, send_input_array
+                                )
 
 #---------------------------------------------------------------------------
 
-# OS agnostic imports
 from .windows.rectangle import Rectangle, unit
 from .windows.point     import Point
-
-# Windows-specific
-from .windows             import Window
-from .windows             import Monitor, monitors
-from .windows             import Clipboard
+from .windows           import Window
+from .windows           import Monitor, monitors
+from .windows           import Clipboard
 
 
 #---------------------------------------------------------------------------

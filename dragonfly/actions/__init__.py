@@ -38,6 +38,10 @@ if sys.platform.startswith("win"):
     from .action_focuswindow  import FocusWindow
     from .action_startapp     import StartApp, BringApp
     from .action_playsound    import PlaySound
+    from .keyboard import Typeable, Keyboard
+    from .typeables import typeables
+    from .sendinput import (KeyboardInput, MouseInput, HardwareInput,
+                            make_input_array, send_input_array)
 else:
     from ..os_dependent_mock import Key
     from ..os_dependent_mock import Text
@@ -47,3 +51,6 @@ else:
     from ..os_dependent_mock import FocusWindow
     from ..os_dependent_mock import StartApp, BringApp
     from ..os_dependent_mock import PlaySound
+    from ..os_dependent_mock import (Typeable, Keyboard, typeables, KeyboardInput,
+                                     MouseInput, HardwareInput, make_input_array,
+                                     send_input_array)
