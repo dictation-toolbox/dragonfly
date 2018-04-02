@@ -27,7 +27,7 @@ Loader
 import os.path
 import glob
 import time
-import ConfigParser
+import configparser
 import dragonfly
 from ...error                    import DragonflyError
 from ...grammar.rule_base        import Rule
@@ -40,6 +40,7 @@ from .state                      import StateBase as State
 from .state                      import Transition
 from .command                    import CompoundCommand
 from .loader_parser              import CallElement
+import collections
 
 
 #===========================================================================
@@ -62,7 +63,7 @@ class ContainerBase(object):
     def __init__(self, **kwargs):
         for name, default in self._attributes:
             if name in kwargs:       value = kwargs.pop(name)
-            elif callable(default):  value = default()
+            elif isinstance(default, collections.Callable):  value = default()
             else:                    value = default
             setattr(self, name, value)
         if kwargs:
@@ -110,7 +111,7 @@ class InfoPhase2(ContainerBase):
 #===========================================================================
 # Config parser class.
 
-class CommandConfigParser(ConfigParser.RawConfigParser):
+class CommandConfigParser(configparser.RawConfigParser):
     """ Customized ConfigParser class for parsing command files. """
 
     def optionxform(self, option):
@@ -255,7 +256,7 @@ class StateSection(ConfigSection):
             self.next = None
 
         self.commands = []
-        for spoken, spec in items_dict.items():
+        for spoken, spec in list(items_dict.items()):
             spoken = self._unescape_spoken_form(spoken)
             self.commands.append((spoken, spec))
 
@@ -406,7 +407,7 @@ class Loader(object):
             items = config.items(section_name)
             cooked_name = section_name.strip().lower()
             section_instance = None
-            for prefix, section_class in dispatchers.items():
+            for prefix, section_class in list(dispatchers.items()):
                 if cooked_name.startswith(prefix):
                     section_instance = section_class(section_name, items)
                     break
@@ -441,17 +442,17 @@ class Loader(object):
 
         # Iterate over all family sections and construct each family.
         families = []
-        for family_section in family_sections.values():
-            print "constructing family", family_section.tag
+        for family_section in list(family_sections.values()):
+            print("constructing family", family_section.tag)
             family = CommandFamily(name=family_section.name)
 
             extras_section = family_extras[family_section.tag]
-            print "  constructing extras", extras_section.tag, extras_section._section_name
+            print("  constructing extras", extras_section.tag, extras_section._section_name)
             self._build_family_extras(family, extras_section, input_info)
 
             states_by_tag = self._init_family_states(family, family_section, input_info)
-            for state_section in family_states[family_section.tag].values():
-                print "  constructing state", state_section.tag
+            for state_section in list(family_states[family_section.tag].values()):
+                print("  constructing state", state_section.tag)
 #                self._build_family_state(family, state_section, states_by_tag, input_info)
 
             families.append(family)
@@ -461,12 +462,12 @@ class Loader(object):
         element = CallElement()
         parser = Parser(element)
         for key, spec in extras_section.extras:
-            print "building extra", key, spec
+            print("building extra", key, spec)
 
             # Parse the input spec.
             output = parser.parse(spec)
             output.name = key
-            print "output:", output
+            print("output:", output)
             if not output:
                 raise SyntaxError("Invalid extra %r: %r" % (key, spec))
 
@@ -480,7 +481,7 @@ class Loader(object):
             family.add_extras(extra)
 
     def _init_family_states(self, family, family_section, input_info):
-        sections = input_info.family_states[family_section.tag].values()
+        sections = list(input_info.family_states[family_section.tag].values())
         states = []
         states_by_tag = {}
         for section in sections:
@@ -520,7 +521,7 @@ class Loader(object):
 #                     "__file__":  path,
 #                     "library":   library,
                     }
-        for (key, value) in dragonfly.__dict__.items():
+        for (key, value) in list(dragonfly.__dict__.items()):
             if isinstance(value, type) and issubclass(value, ActionBase):
                 namespace[key] = value
         namespace["Repeat"] = dragonfly.Repeat
@@ -554,7 +555,7 @@ class DictationExtrasFactory(ExtrasFactoryBase):
         if call_info.arguments:
             raise SyntaxError("Invalid arguments for dictation extra: %r"
                               % (call_info.arguments,))
-        print "just build", dragonfly.Dictation(name)
+        print("just build", dragonfly.Dictation(name))
         return dragonfly.Dictation(name)
 
 Loader.register_extras_factory("dictation", DictationExtrasFactory())
@@ -571,7 +572,7 @@ class IntegerExtrasFactory(ExtrasFactoryBase):
         if call_info.arguments:
             raise SyntaxError("Invalid arguments for integer extra: %r"
                               % (call_info.arguments,))
-        print "just build", dragonfly.Integer(name=name, min=min, max=max)
+        print("just build", dragonfly.Integer(name=name, min=min, max=max))
         return dragonfly.Integer(name=name, min=min, max=max)
 
 Loader.register_extras_factory("integer", IntegerExtrasFactory())

@@ -57,7 +57,7 @@ class Clipboard(object):
 
     @classmethod
     def set_system_text(cls, content):
-        content = unicode(content)
+        content = str(content)
         win32clipboard.OpenClipboard()
         try:
             win32clipboard.EmptyClipboard()
@@ -79,12 +79,12 @@ class Clipboard(object):
         if contents:
             try:
                 self._contents = dict(contents)
-            except Exception, e:
+            except Exception as e:
                 raise TypeError("Invalid contents: %s (%r)" % (e, contents))
 
         # Handle special case of text content.
         if not text is None:
-            self._contents[self.format_unicode] = unicode(text)
+            self._contents[self.format_unicode] = str(text)
 
     def __str__(self):
         arguments = []
@@ -139,7 +139,7 @@ class Clipboard(object):
                     if not isinstance(format, int):
                         raise TypeError("Invalid clipboard format: %r"
                                         % format)
-            except Exception, e:
+            except Exception as e:
                 raise
 
             # Retrieve Windows system clipboard content.
@@ -174,7 +174,7 @@ class Clipboard(object):
                 win32clipboard.EmptyClipboard()
 
             # Transfer content to Windows system clipboard.
-            for format, content in self._contents.items():
+            for format, content in list(self._contents.items()):
                 win32clipboard.SetClipboardData(format, content)
 
         finally:
@@ -230,7 +230,7 @@ class Clipboard(object):
             return None
 
     def set_text(self, content):
-        self._contents[self.format_unicode] = unicode(content)
+        self._contents[self.format_unicode] = str(content)
 
     text    = property(
                        lambda self:    self.get_text(),

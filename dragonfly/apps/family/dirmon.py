@@ -14,7 +14,7 @@ class _Dir(object):
     __slots__= ("path", "handle", "overlapped")
 
     def __init__(self, path):
-        if not isinstance(path, basestring):
+        if not isinstance(path, str):
             raise TypeError("Path argument must be a basestring; instead"
                             " received %r" % (path,))
         self.path = path
@@ -31,7 +31,7 @@ class _Dir(object):
         self.overlapped.hEvent = win32event.CreateEvent(None, True, 0, None)
 
     def is_modified(self, buffer):
-        print "path", self.path
+        print("path", self.path)
         result = win32file.ReadDirectoryChangesW(
              self.handle,
              buffer,
@@ -44,9 +44,9 @@ class _Dir(object):
               | win32con.FILE_NOTIFY_CHANGE_SECURITY,
              self.overlapped,
             )
-        print "result  1", result
+        print("result  1", result)
         result = win32event.WaitForMultipleObjects([self.overlapped.hEvent], True, 0)
-        print "result  2", result
+        print("result  2", result)
         if result != win32event.WAIT_TIMEOUT:
 #            result = win32file.GetOverlappedResult(self.handle, self.overlapped, False)
             return True
@@ -78,7 +78,7 @@ class DirectoryMonitor(object):
             if path not in self.directories:
                 try:
                     self._directories.append(_Dir(path))
-                except Exception, e:
+                except Exception as e:
                     self._log.exception("Failed to monitor directory %r: %s"
                                         % (path, e))
 

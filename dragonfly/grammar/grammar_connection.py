@@ -49,7 +49,7 @@ class ConnectionGrammar(Grammar):
     """
 
     def __init__(self, name, description=None, context=None, app_name=None):
-        assert isinstance(app_name, basestring) or app_name == None
+        assert isinstance(app_name, str) or app_name == None
         self._app_name = app_name
         self._application = None
         Grammar.__init__(self, name=name, description=description,
@@ -58,7 +58,7 @@ class ConnectionGrammar(Grammar):
     def __del__(self):
         try:
             self.disconnect()
-        except Exception, error:
+        except Exception as error:
             pass
 
     #-----------------------------------------------------------------------
@@ -96,7 +96,7 @@ class ConnectionGrammar(Grammar):
             return True
         try:
             self._application = Dispatch(self._app_name)
-        except com_error, e:
+        except com_error as e:
             if self._log_begin:
                 self._log_begin.warning("Grammar %s: failed to"
                                         " connect to %r: %s."

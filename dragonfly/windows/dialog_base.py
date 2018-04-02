@@ -111,7 +111,7 @@ class DialogBase(object):
         for control in self._dialog_controls:
             dialog_template.append(control.template_entry(w, h))
 
-        print "\n   ".join(str(value) for value in dialog_template)
+        print("\n   ".join(str(value) for value in dialog_template))
         return dialog_template
 
     def _calculate_center(self, size):
@@ -182,11 +182,11 @@ class DialogBase(object):
         # Collect all controls which expect callbacks.
         map = {}
         for control in self._dialog_controls:
-            for message, callback in control.message_callbacks.items():
+            for message, callback in list(control.message_callbacks.items()):
                 map.setdefault(message, {})[control.id] = callback
 
         # Create dispatchers for each type of message.
-        for message, control_callbacks in map.items():
+        for message, control_callbacks in list(map.items()):
             def dispatcher(hwnd, msg, wparam, lparam):
                 id = win32api.LOWORD(wparam)
                 if id in control_callbacks:
@@ -219,10 +219,10 @@ class DialogBase(object):
         return el, et, er, eb
 
     def tracer (function):
-        if hasattr(function, 'im_func'): name = function.im_func.func_name
-        else: name = function.func_name
+        if hasattr(function, 'im_func'): name = function.__func__.__name__
+        else: name = function.__name__
         def decorated (*a, **k):
-            print "call", name, "arguments:", a,k
+            print("call", name, "arguments:", a,k)
             return function(*a, **k)
         return decorated
 

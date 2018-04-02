@@ -60,7 +60,7 @@ class Timer(object):
         self.next_time += self.interval
         try:
             self.function()
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Exception during timer callback: %s" % (e,))
 
 
@@ -86,7 +86,7 @@ class TimerManagerBase(object):
     def remove_timer(self, timer):
         try:
             self.timers.remove(timer)
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Failed to remove timer: %s" % e)
             return
         if len(self.timers) == 0:
@@ -98,7 +98,7 @@ class TimerManagerBase(object):
             if c.next_time < now:
                 try:
                     c.call()
-                except Exception, e:
+                except Exception as e:
                     self._log.exception("Exception occurred during"
                                         " timer callback: %s" % (e,))
 

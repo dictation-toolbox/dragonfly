@@ -81,12 +81,12 @@ class Mimic(ActionBase):
         else:                  self._extra = None
 
         # Set pretty printing string used by __str__ and __unicode__.
-        self._str = u", ".join(repr(w) for w in self._words)
+        self._str = ", ".join(repr(w) for w in self._words)
 
         # Make sure that all keyword arguments have been consumed.
         if kwargs:
             raise ActionError("Invalid arguments: %r"
-                              % ", ".join(kwargs.keys()))
+                              % ", ".join(list(kwargs.keys())))
 
     def _execute(self, data=None):
         engine = get_engine()
@@ -118,5 +118,5 @@ class Mimic(ActionBase):
             engine.disable_recognition_observers()
             engine.mimic(words)
             engine.enable_recognition_observers()
-        except Exception, e:
+        except Exception as e:
             raise ActionError("Mimicking failed: %s" % e)

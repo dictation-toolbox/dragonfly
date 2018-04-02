@@ -143,7 +143,7 @@ class RelativeDate(Alternative):
         def value(self, node):
             value = Choice.value(self, node)
             n = node.get_child_by_name("n")
-            print "November:", n
+            print("November:", n)
             if n is not None:
                 value = value * n.value()
             return date.today() + timedelta(days=value)
@@ -163,7 +163,7 @@ class RelativeDate(Alternative):
             value = Choice.value(self, node)
             day = node.get_child_by_name("day").value()
             now = date.today().weekday()
-            print value, day, now
+            print(value, day, now)
             if value == "last day":
                 if day < now:  day_offset = -now + day
                 else:          day_offset = -7 - now + day

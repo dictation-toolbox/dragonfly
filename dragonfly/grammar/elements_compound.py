@@ -130,7 +130,7 @@ class _Single(parser_.Sequence):
 class _ElementRef(parser_.Sequence):
 
     def __init__(self):
-        characters = string.letters + string.digits + "_"
+        characters = string.ascii_letters + string.digits + "_"
         name = parser_.CharacterSeries(characters)
         elements = (parser_.String("<"), name, parser_.String(">"))
         parser_.Sequence.__init__(self, elements)
@@ -154,7 +154,7 @@ class _ElementRef(parser_.Sequence):
 class _ActionRef(parser_.Sequence):
 
     def __init__(self):
-        characters = string.letters + string.digits + "_"
+        characters = string.ascii_letters + string.digits + "_"
         name = parser_.CharacterSeries(characters)
         elements = (parser_.String("{"), name, parser_.String("}"))
         parser_.Sequence.__init__(self, elements)
@@ -178,7 +178,7 @@ class _ActionRef(parser_.Sequence):
 class _Literal(parser_.Sequence):
 
     def __init__(self):
-        characters = string.letters + string.digits + "_-.'"
+        characters = string.ascii_letters + string.digits + "_-.'"
         word = parser_.CharacterSeries(characters)
         whitespace = parser_.Whitespace()
         elements = (
@@ -284,7 +284,7 @@ class Compound(elements_.Alternative):
         if self._value_func is not None:
             # Prepare *extras* dict for passing to value_func().
             extras = {"_node": node}
-            for name, element in self._extras.iteritems():
+            for name, element in self._extras.items():
                 extra_node = node.get_child_by_name(name, shallow=True)
                 if extra_node:
                     extras[name] = extra_node.value()
@@ -292,7 +292,7 @@ class Compound(elements_.Alternative):
                     extras[name] = element.default
             try:
                 value = self._value_func(node, extras)
-            except Exception, e:
+            except Exception as e:
                 self._log.warning("Exception from value_func: %s" % e)
                 raise
             return value
@@ -310,16 +310,16 @@ class Choice(elements_.Alternative):
     def __init__(self, name, choices, extras=None, default=None):
 
         # Argument type checking.
-        assert isinstance(name, basestring) or name is None
+        assert isinstance(name, str) or name is None
         assert isinstance(choices, dict)
-        for k, v in choices.iteritems():
-            assert isinstance(k, basestring)
+        for k, v in choices.items():
+            assert isinstance(k, str)
 
         # Construct children from the given choice keys and values.
         self._choices = choices
         self._extras = extras
         children = []
-        for k, v in choices.iteritems():
+        for k, v in choices.items():
             child = Compound(spec=k, value=v, extras=extras)
             children.append(child)
 

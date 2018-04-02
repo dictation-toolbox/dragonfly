@@ -65,7 +65,7 @@ class Paste(DynStrActionBase):
     def __init__(self, contents, format=None, paste=None, static=False):
         if not format: format = self._default_format
         if not paste: paste = self._default_paste
-        if isinstance(contents, basestring):
+        if isinstance(contents, str):
             spec = contents
             self.contents = None
         else:
@@ -85,12 +85,12 @@ class Paste(DynStrActionBase):
         original = Clipboard()
         try:
             original.copy_from_system()
-        except pywintypes.error, e:
+        except pywintypes.error as e:
             self._log.warning("Failed to store original clipboard contents:"
                               " %s" % e)
 
         if self.format == win32con.CF_UNICODETEXT:
-            events = unicode(events, "windows-1252")
+            events = str(events, "windows-1252")
         elif self.format == win32con.CF_TEXT:
             events = str(events)
 

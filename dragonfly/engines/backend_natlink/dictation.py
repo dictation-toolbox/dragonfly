@@ -39,7 +39,7 @@ except ImportError:
 
 import logging
 from ..base import DictationContainerBase
-from dictation_format import WordFormatter
+from .dictation_format import WordFormatter
 
 
 #---------------------------------------------------------------------------
@@ -55,7 +55,7 @@ class NatlinkDictationContainer(DictationContainerBase):
     def __init__(self, words):
         unicode_words = []
         for word in words:
-            if isinstance(word, unicode):
+            if isinstance(word, str):
                 unicode_words.append(word)
             else:
                 unicode_words.append(word.decode("windows-1252"))

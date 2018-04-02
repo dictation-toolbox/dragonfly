@@ -55,8 +55,8 @@ class CommandModule(object):
 
         # Attempt to execute the module; handle any exceptions.
         try:
-            execfile(self._path, namespace)
-        except Exception, e:
+            exec(compile(open(self._path).read(), self._path, 'exec'), namespace)
+        except Exception as e:
             self._log.error("%s: Error loading module: %s" % (self, e))
             self._loaded = False
             return
@@ -87,7 +87,7 @@ class CommandModuleDirectory(object):
         valid_paths = self._get_valid_paths()
 
         # Remove any deleted modules.
-        for path, module in self._modules.items():
+        for path, module in list(self._modules.items()):
             if path not in valid_paths:
                 del self._modules[path]
                 module.unload()

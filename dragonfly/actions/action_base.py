@@ -53,11 +53,12 @@ class ActionBase(object):
     def __init__(self):
         self._str = ""
 
-    def __str__(self):
-        return unicode(self).encode("utf-8")
+    #http://stackoverflow.com/questions/6812031/how-to-make-unicode-string-with-python3
+    def __str__(self):        
+        return "%s(%s)" % (self.__class__.__name__, self._str)
 
     def __unicode__(self):
-        return u"%s(%s)" % (self.__class__.__name__, self._str)
+        return "%s(%s)" % (self.__class__.__name__, self._str)
 
     def __add__(self, other):
         return ActionSeries(self, other)
@@ -85,7 +86,7 @@ class ActionBase(object):
         try:
             if self._execute(data) == False:
                 raise ActionError(str(self))
-        except ActionError, e:
+        except ActionError as e:
             self._log_exec.error("Execution failed: %s" % e)
             return False
         return True
@@ -299,7 +300,7 @@ class Repeat(object):
             except KeyError:
                 raise ActionError("No extra repeat factor found for name %r"
                                   % (self._extra,))
-            except Exception, e:
+            except Exception as e:
                 raise ActionError("No extra repeat factor found for name %r"
                                   " (%s)" % (self._extra, e))
             count += additional
