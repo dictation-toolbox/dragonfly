@@ -23,7 +23,6 @@ use_setuptools()
 
 import os.path
 import re
-import sys
 from setuptools import setup, find_packages
 
 
@@ -44,16 +43,6 @@ release = match.group("rel")
 def read(*names):
     return open(os.path.join(os.path.dirname(__file__), *names)).read()
 
-install_requires = [
-    "setuptools >= 0.6c7",
-    "sphinxwrapper",
-    "pyjsgf >= 1.0.1",
-    "pyaudio",
-]
-
-if sys.platform.startswith("win"):
-    install_requires.append("pywin32")
-
 
 setup(
       name          = "dragonfly",
@@ -66,13 +55,24 @@ setup(
       zip_safe      = False,  # To unzip documentation files.
       long_description = read("README.md"),
 
-      install_requires=install_requires,
+      install_requires=[
+                        "setuptools >= 0.6c7",
+                        "pywin32;platform_system=='Windows'"
+                       ],
+
+      extras_require={
+          "sphinx": [
+                     "sphinxwrapper",
+                     "pyjsgf >= 1.0.1",
+                     "pyaudio"
+                    ]
+      },
 
       classifiers=[
                    "Environment :: Win32 (MS Windows)",
                    "Development Status :: 4 - Beta",
                    "License :: OSI Approved :: "
-                       "GNU Library or Lesser General Public License (LGPL)",
+                   "GNU Library or Lesser General Public License (LGPL)",
                    "Operating System :: Microsoft :: Windows",
                    "Programming Language :: Python",
                   ],
