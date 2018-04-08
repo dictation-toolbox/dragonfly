@@ -364,10 +364,14 @@ class Translator(object):
 
             if self._has_dictation_descendant(element):
                 self.translate_repetition_with_dictation(state)
-            elif len(element.children) == 1:
-                state.expansion = jsgf.Repeat(*get_equiv_children())
             else:
-                state.expansion = jsgf.Sequence(*get_equiv_children())
+                # Translate the first child only. The second child is of the form:
+                # [first_child [first_child ... first_child ] ... ]
+                # This is how matching a limited number of repetitions is done.
+                # Limitation (min/max) values for Repetition elements are ignored
+                # for the Sphinx engine for the moment.
+                equiv_child = get_equiv_children()[0]
+                state.expansion = jsgf.Repeat(equiv_child)
 
         elif isinstance(element, Sequence):
             state.expansion = jsgf.Sequence(*get_equiv_children())

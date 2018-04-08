@@ -1,11 +1,17 @@
 import unittest
 
-import jsgf, jsgf.ext
+import jsgf.ext
 
 from dragonfly import *
-from dragonfly.parser import ParserError
 from dragonfly2jsgf import *
+from dragonfly.parser import ParserError
 from dragonfly import List as DragonflyList, DictList as DragonflyDictList
+
+
+# Some JSGF class aliases for readability
+JRule, JSeq, JOpt = jsgf.Rule, jsgf.Sequence, jsgf.OptionalGrouping
+JAlt, JRef, JRep, = jsgf.AlternativeSet, jsgf.RuleRef, jsgf.Repeat
+JDict = jsgf.ext.Dictation
 
 
 class TranslatorCase(unittest.TestCase):
@@ -64,23 +70,21 @@ class OptionalCase(TranslatorCase):
 class RepetitionCase(TranslatorCase):
     def test_repetition_with_no_max(self):
         r = Rule("test", Repetition(Literal("hello")), exported=True)
-        expected = LinkedRule("test", True, jsgf.Repeat("hello"), r)
+        expected = LinkedRule("test", True, JRep("hello"), r)
         actual = self.translator.translate_rule(r).jsgf_rule
         self.assertEqual(actual, expected)
 
     def test_repetition_with_max(self):
-        seq, opt = jsgf.Sequence, jsgf.OptionalGrouping
+        """Repetition limits are ignored for all rules"""
         r = Rule("test", Repetition(Literal("hello"), max=3), exported=True)
-        expected_expansion = seq("hello", opt(seq("hello", opt("hello"))))
+        expected_expansion = JRep("hello")
         expected = LinkedRule("test", True, expected_expansion, r)
         actual = self.translator.translate_rule(r).jsgf_rule
         self.assertEqual(actual, expected)
 
         # Test again with a higher max value
         r = Rule("test", Repetition(Literal("hello"), max=6), exported=True)
-        expected_expansion = seq(
-            "hello", opt(seq("hello", opt(seq("hello", opt(seq(
-                "hello", opt(seq("hello", opt("hello"))))))))))
+        expected_expansion = JRep("hello")
         expected = LinkedRule("test", True, expected_expansion, r)
         actual = self.translator.translate_rule(r).jsgf_rule
         self.assertEqual(actual, expected)
@@ -91,7 +95,7 @@ class RepetitionCase(TranslatorCase):
         min/max values of the Repetition element.
         """
         r = Rule("test", Repetition(Dictation()), exported=True)
-        expected = LinkedRule("test", True, jsgf.Repeat(jsgf.ext.Dictation()), r)
+        expected = LinkedRule("test", True, JRep(JDict()), r)
         self.assertEqual(self.translator.translate_rule(r).jsgf_rule, expected)
 
         r = Rule("test", Repetition(Dictation(), 1, 16), exported=True)
@@ -111,45 +115,42 @@ class ListsCase(TranslatorCase):
 
     def test_list(self):
         actual = self.translator.translate_list(self.fruit_list)
-        expected = jsgf.HiddenRule("fruit", jsgf.AlternativeSet("apple"))
+        expected = JRule("fruit", False, JAlt("apple"))
         self.assertEqual(expected, actual)
 
     def test_list_ref(self):
         element = self.fruit_list_ref
         state = self.translator.translate_list_ref(TranslationState(element))
-        jsgf_rule = jsgf.HiddenRule("fruit", jsgf.AlternativeSet(*self.fruit_list))
-        self.assertEqual(jsgf.RuleRef(jsgf_rule), state.expansion)
+        jsgf_rule = JRule("fruit", False, JAlt(*self.fruit_list))
+        self.assertEqual(JRef(jsgf_rule), state.expansion)
         self.assertListEqual([jsgf_rule], state.dependencies)
 
     def test_list_referencing_rule(self):
         element = self.fruit_list_ref
         r = Rule("fav_fruit", element, exported=True)
         state = self.translator.translate_rule(r)
-        list_rule = jsgf.HiddenRule("fruit", jsgf.AlternativeSet(*self.fruit_list))
-        expected_rule = LinkedRule("fav_fruit", True, jsgf.RuleRef(list_rule), r)
+        list_rule = JRule("fruit", False, JAlt(*self.fruit_list))
+        expected_rule = LinkedRule("fav_fruit", True, JRef(list_rule), r)
         self.assertEqual(state.jsgf_rule, expected_rule)
 
     def test_dict_list(self):
         actual = self.translator.translate_dict_list(self.dict_list)
-        expected = jsgf.HiddenRule("fruit_dict",
-                                   jsgf.AlternativeSet("apple", "mango"))
+        expected = JRule("fruit_dict", False, JAlt("apple", "mango"))
         self.assertEqual(expected, actual)
 
     def test_dict_list_ref(self):
         element = self.dict_list_ref
         state = self.translator.translate_dict_list_ref(TranslationState(element))
-        expected_rule = jsgf.HiddenRule("fruit_dict",
-                                        jsgf.AlternativeSet("apple", "mango"))
-        self.assertEqual(jsgf.RuleRef(expected_rule), state.expansion)
+        expected_rule = JRule("fruit_dict", False, JAlt("apple", "mango"))
+        self.assertEqual(JRef(expected_rule), state.expansion)
         self.assertListEqual([expected_rule], state.dependencies)
 
     def test_dict_list_referencing_rule(self):
         element = self.dict_list_ref
         r = Rule("fruits", element, exported=True)
         state = self.translator.translate_rule(r)
-        list_rule = jsgf.HiddenRule("fruit_dict",
-                                    jsgf.AlternativeSet("apple", "mango"))
-        expected_rule = LinkedRule("fruits", True, jsgf.RuleRef(list_rule), r)
+        list_rule = JRule("fruit_dict", False, JAlt("apple", "mango"))
+        expected_rule = LinkedRule("fruits", True, JRef(list_rule), r)
         self.assertEqual(state.jsgf_rule, expected_rule)
 
 
@@ -190,9 +191,9 @@ class GrammarCase(TranslatorCase):
         state = TranslationState(rule_ref)
         self.translator.translate_rule_ref(state)
         self.assertEqual(state.element, rule_ref)
-        expected_jsgf_rule = jsgf.Rule("rule_ref", True, "hello")
-        self.assertListEqual(state.dependencies, [expected_jsgf_rule])
-        self.assertEqual(state.expansion, jsgf.RuleRef(expected_jsgf_rule))
+        expected_rule = JRule("rule_ref", True, "hello")
+        self.assertListEqual(state.dependencies, [expected_rule])
+        self.assertEqual(state.expansion, JRef(expected_rule))
 
     def test_repeated_referenced_dictation(self):
         """
@@ -217,18 +218,14 @@ class GrammarCase(TranslatorCase):
 
         # Translate the 'test' grammar and make some assertions
         translated = self.translator.translate_grammar(g)
-        expected_test1 = LinkedRule(
-            "test1", True, jsgf.Repeat(jsgf.ext.Dictation()), r1
-        )
+        expected_test1 = LinkedRule("test1", True, JRep(JDict()), r1)
 
         # Note: this is not how the engine sees MappingRules with Dictation
         # elements: they are further processed later on into JSGF SequenceRules.
         # This is the format the rules should be in for the later processing.
-        expected_test2 = LinkedRule("test2", True, jsgf.Repeat(
-            jsgf.AlternativeSet(
-                "testing", jsgf.Sequence("hello", jsgf.ext.Dictation()),
-                jsgf.ext.Dictation()
-            )
+
+        expected_test2 = LinkedRule("test2", True, JRep(
+            JAlt("testing", JSeq("hello", JDict()), JDict())
         ), r4)
 
         # Neither of the referenced rules should be in the final grammar, only the
