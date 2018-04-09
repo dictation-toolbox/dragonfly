@@ -177,6 +177,43 @@ class ChoiceCase(TranslatorCase):
         self.assertTrue(rule.matches("hello Bob"))
 
 
+class MappingRuleCase(TranslatorCase):
+    def test_int_ref(self):
+        r1 = MappingRule(
+            name="test",
+            mapping={
+                "back <n>": Key("backspace:%(n)d"),
+                "kill [<n>]": Key("delete:%(n)d"),
+            },
+            extras=[
+                IntegerRef("n", 1, 5)
+            ],
+            defaults={
+                "n": 1
+            }
+        )
+
+        state = self.translator.translate_rule(r1)
+        numbers = ["one", "two", "three", "four"]
+        n = JRule("n", False, JAlt(*numbers))
+        self.assertListEqual(state.dependencies, [n])
+        self.assertEqual(
+            state.jsgf_rule,
+            JRule("test", True, JAlt(
+                JSeq("back", JRef(n)),
+                JSeq("kill", JOpt(JRef(n))))))
+
+        # Test that matching works correctly
+        self.assertTrue(state.jsgf_rule.matches("kill"))
+        print(state.jsgf_rule)
+        for s in numbers:
+            self.assertTrue(state.dependencies[0].matches(s))
+            self.assertTrue(state.jsgf_rule.matches("back %s" % s),
+                            "'back %s' did not match" % s)
+            self.assertTrue(state.jsgf_rule.matches("kill %s" % s),
+                            "'kill %s' did not match" % s)
+
+
 class GrammarCase(TranslatorCase):
     def test_simple_rule_grammar(self):
         grammar = Grammar("test")
