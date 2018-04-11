@@ -10,7 +10,7 @@ from dragonfly import List as DragonflyList, DictList as DragonflyDictList
 
 # Some JSGF class aliases for readability
 JRule, JSeq, JOpt = jsgf.Rule, jsgf.Sequence, jsgf.OptionalGrouping
-JAlt, JRef, JRep, = jsgf.AlternativeSet, jsgf.RuleRef, jsgf.Repeat
+JAlt, JRef, JRep, = jsgf.AlternativeSet, jsgf.RuleRef, PatchedRepeat
 JDict = jsgf.ext.Dictation
 
 

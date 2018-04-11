@@ -46,6 +46,20 @@ class LinkedRule(jsgf.Rule):
         return self._df_rule
 
 
+class PatchedRepeat(jsgf.Repeat):
+    """
+    Repeat class patched to compile JSGF repeats as "expansion [expansion]*" to
+    avoid a bug in Pocket Sphinx with the repeat operator.
+    """
+    def compile(self, ignore_tags=False):
+        super(PatchedRepeat, self).compile()
+        compiled = self.child.compile(ignore_tags)
+        if self.tag and not ignore_tags:
+            return "(%s)[%s]*%s" % (compiled, compiled, self.tag)
+        else:
+            return "(%s)[%s]*" % (compiled, compiled)
+
+
 class TranslationState(object):
     """
     Translation state used in building JSGF expansions, rules and grammars from
@@ -306,7 +320,7 @@ class Translator(object):
         map_expansion(child, process)
 
         # Wrap the new expansion in a Repeat
-        state.expansion = jsgf.Repeat(state.expansion)
+        state.expansion = PatchedRepeat(state.expansion)
         return state
 
     def get_jsgf_equiv(self, state):
@@ -371,7 +385,7 @@ class Translator(object):
                 # Limitation (min/max) values for Repetition elements are ignored
                 # for the Sphinx engine for the moment.
                 equiv_child = get_equiv_children()[0]
-                state.expansion = jsgf.Repeat(equiv_child)
+                state.expansion = PatchedRepeat(equiv_child)
 
         elif isinstance(element, Sequence):
             state.expansion = jsgf.Sequence(*get_equiv_children())
