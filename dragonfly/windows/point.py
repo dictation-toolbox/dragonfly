@@ -43,6 +43,12 @@ class Point(object):
     def __str__(self):
         return "%s(%.2f,%.2f)" % (self.__class__.__name__, self._x, self._y)
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     #-----------------------------------------------------------------------
     # Methods that control attribute access.
 

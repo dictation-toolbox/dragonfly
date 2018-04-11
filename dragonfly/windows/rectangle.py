@@ -48,6 +48,13 @@ class Rectangle(Point):
         return "%s(%.1f, %.1f, %.1f, %.1f)" \
             % (self.__class__.__name__, self.x, self.y, self.dx, self.dy)
 
+    def __eq__(self, other):
+        return (super(Rectangle, self).__eq__(other) and
+                self.size == other.size)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     #-----------------------------------------------------------------------
     # Methods that control attribute access.
 
