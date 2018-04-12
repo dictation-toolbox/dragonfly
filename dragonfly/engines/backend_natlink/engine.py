@@ -63,8 +63,8 @@ class NatlinkEngine(EngineBase):
         self._timer_manager = NatlinkTimerManager(0.02, self)
 
     def connect(self):
-        """ Connect to natlink. """
-        self.natlink.natConnect()
+        """ Connect to natlink with Python threading support enabled. """
+        self.natlink.natConnect(True)
 
     def disconnect(self):
         """ Disconnect from natlink. """
