@@ -66,5 +66,5 @@ class ElementTestCase(unittest.TestCase):
                                     u" recognition %r, instead of expected %r"
                                     % (words, recognized_value,
                                        expected_value))
-        except TestError, e:
+        except TestError as e:
             self.fail(unicode(e))

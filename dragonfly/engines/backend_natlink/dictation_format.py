@@ -65,7 +65,7 @@ class FlagContainer(object):
         return u"%s(%s)" % (self.__class__.__name__, self.flags_string())
 
     def __str__(self):
-        return unicode(self).encode("utf-8")
+        return self.__unicode__().encode("utf-8")
 
     def __getattr__(self, name):
         if name not in self.flag_names:
@@ -187,7 +187,7 @@ class Word(object):
         return u"%s(%s)" % (self.__class__.__name__, ", ".join(info))
 
     def __str__(self):
-        return unicode(self).encode("utf-8")
+        return self.__unicode__().encode("utf-8")
 
 
 #===========================================================================

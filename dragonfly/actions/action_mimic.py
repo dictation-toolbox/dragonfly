@@ -88,7 +88,7 @@ class Mimic(ActionBase):
         # Make sure that all keyword arguments have been consumed.
         if kwargs:
             raise ActionError("Invalid arguments: %r"
-                              % ", ".join(kwargs.keys()))
+                              % ", ".join(list(kwargs.keys())))
 
     def _execute(self, data=None):
         engine = get_engine()
@@ -120,5 +120,5 @@ class Mimic(ActionBase):
             engine.disable_recognition_observers()
             engine.mimic(words)
             engine.enable_recognition_observers()
-        except Exception, e:
+        except Exception as e:
             raise ActionError("Mimicking failed: %s" % e)

@@ -38,3 +38,6 @@ class Sapi5DictationContainer(DictationContainerBase):
     def format(self):
         """ Format and return this dictation. """
         return " ".join(self._words)
+
+    def __str__(self):
+        return unicode(self).encode("windows-1252")

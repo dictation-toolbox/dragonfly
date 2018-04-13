@@ -131,7 +131,7 @@ class Sapi5SharedEngine(EngineBase):
         """ Unload the given *grammar*. """
         try:
             wrapper.handle.State = constants.SGSDisabled
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Failed to unload grammar %s: %s."
                                 % (grammar, e))
 
@@ -332,7 +332,7 @@ class Sapi5InProcEngine(Sapi5SharedEngine):
 def collection_iter(collection):
     if not collection:
         return
-    for index in xrange(0, collection.Count):
+    for index in range(0, collection.Count):
         yield collection.Item(index)
 
 
@@ -381,7 +381,7 @@ class GrammarWrapper(object):
             # Walk the tree of child rules and put their names in the list.
             stack = [collection_iter(phrase_info.Rule.Children)]
             while stack:
-                try: element = stack[-1].next()
+                try: element = next(stack[-1])
                 except StopIteration: stack.pop(); continue
                 name = element.Name
                 start = element.FirstElement
@@ -434,7 +434,7 @@ class GrammarWrapper(object):
                         r.process_recognition(root)
                         return
 
-        except Exception, e:
+        except Exception as e:
             Sapi5Engine._log.error("Grammar %s: exception: %s"
                                    % (self.grammar._name, e), exc_info=True)
 

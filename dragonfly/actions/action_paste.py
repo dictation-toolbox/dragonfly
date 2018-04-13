@@ -85,7 +85,7 @@ class Paste(DynStrActionBase):
         original = Clipboard()
         try:
             original.copy_from_system()
-        except pywintypes.error, e:
+        except pywintypes.error as e:
             self._log.warning("Failed to store original clipboard contents:"
                               " %s" % e)
 

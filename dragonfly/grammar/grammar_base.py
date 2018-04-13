@@ -89,11 +89,11 @@ class Grammar(object):
     def __del__(self):
         try:
             self.unload()
-        except Exception, e:
+        except Exception as e:
             try:
                 self._log.exception("Exception during grammar unloading:"
                                     " %s" % (e,))
-            except Exception:
+            except Exception as e:
                 pass
 
     # ----------------------------------------------------------------------

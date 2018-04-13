@@ -244,14 +244,14 @@ class State(object):
         self._depth -= 1
 
     def _get_frame_from_depth(self):
-        for i in xrange(len(self._stack)-1, -1, -1):
+        for i in range(len(self._stack)-1, -1, -1):
             frame = self._stack[i]
             if frame.depth == self._depth:
                 return frame
         return None
 
     def _get_frame_from_actor(self, actor):
-        for i in xrange(len(self._stack)-1, -1, -1):
+        for i in range(len(self._stack)-1, -1, -1):
             frame = self._stack[i]
             if frame.actor is actor:
                 return frame
@@ -410,7 +410,7 @@ class Sequence(ParserElementBase):
         path = [self._children[0].parse(state)]
         while path:
             # Allow the last child to attempt decoding.
-            try: path[-1].next()
+            try: next(path[-1])
             except StopIteration:
                 # Last child failed to decode, remove from path to
                 #  allowed the one-before-last child to reattempt.
@@ -469,7 +469,7 @@ class Repetition(ParserElementBase):
         path = [self._child.parse(state)]
         while path:
             # Allow the last child to attempt decoding.
-            try: path[-1].next()
+            try: next(path[-1])
             except StopIteration:
                 # Last child failed to decode, remove from path to
                 #  allow the one-before-last child to reattempt.
@@ -769,7 +769,7 @@ class Whitespace(CharacterSeries):
 class Letters(CharacterSeries):
 
     def __init__(self, name=None):
-        set = string.letters
+        set = string.ascii_letters
         CharacterSeries.__init__(self, set, name=name)
 
     def __str__(self):
@@ -779,7 +779,7 @@ class Letters(CharacterSeries):
 class Alphanumerics(CharacterSeries):
 
     def __init__(self, name=None):
-        set = string.letters + string.digits
+        set = string.ascii_letters + string.digits
         CharacterSeries.__init__(self, set, name=name)
 
     def __str__(self):
@@ -1028,11 +1028,11 @@ class Float(Sequence):
 #---------------------------------------------------------------------------
 
 def print_matches(node, indent = ""):
-    if not indent: print "Nodes:"
-    print indent, "%s: %r %s" % (node.actor.__class__.__name__, node.match(), id(node.parent))
+    if not indent: print("Nodes:")
+    print(indent, "%s: %r %s" % (node.actor.__class__.__name__, node.match(), id(node.parent)))
     [print_matches(c, indent + "   ") for c in node.children]
 def print_values(node, indent = ""):
-    if not indent: print "Values:"
-    print indent, "%s: %r %s" % (node.actor.__class__.__name__, node.value(), id(node.parent))
+    if not indent: print("Values:")
+    print(indent, "%s: %r %s" % (node.actor.__class__.__name__, node.value(), id(node.parent)))
     [print_values(c, indent + "   ") for c in node.children]
 

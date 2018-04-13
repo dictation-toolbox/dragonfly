@@ -287,7 +287,7 @@ class Sequence(ElementBase):
 
     def gstring(self):
         return "(" \
-             + " ".join(map(lambda e: e.gstring(), self._children)) \
+             + " ".join([e.gstring() for e in self._children]) \
              + ")"
 
     #-----------------------------------------------------------------------
@@ -309,7 +309,7 @@ class Sequence(ElementBase):
         path = [self._children[0].decode(state)]
         while path:
             # Allow the last child to attempt decoding.
-            try: path[-1].next()
+            try: next(path[-1])
             except StopIteration:
                 # Last child failed to decode, remove from path to
                 #  allowed the one-before-last child to reattempt.
@@ -467,7 +467,7 @@ class Alternative(ElementBase):
 
     def gstring(self):
         return "(" \
-             + " | ".join(map(lambda e: e.gstring(), self._children)) \
+             + " | ".join([e.gstring() for e in self._children]) \
              + ")"
 
     def dependencies(self, memo):
@@ -562,7 +562,7 @@ class Repetition(Sequence):
         optional_length = self._max - self._min - 1
         if optional_length > 0:
             element = Optional(child)
-            for index in xrange(optional_length):
+            for index in range(optional_length):
                 element = Optional(Sequence([child, element]))
 
             if self._min >= 1:
@@ -608,7 +608,7 @@ class Repetition(Sequence):
 
         """
         repetitions = []
-        for index in xrange(self._min):
+        for index in range(self._min):
             element = node.children[index]
             if element.actor != self._child:
                 raise TypeError("Invalid child of %s: %s" \
@@ -683,7 +683,7 @@ class Literal(ElementBase):
 
         # Iterate through this element's words.
         # If all match, success.  Else, failure.
-        for i in xrange(len(self._words)):
+        for i in range(len(self._words)):
             word = state.word(i)
 
             # If word isn't None, make it lowercase.
@@ -929,7 +929,7 @@ class Dictation(ElementBase):
 
         # Yield possible states where the number of dictated words
         # gobbled is decreased by 1 between yields.
-        for i in xrange(count, 0, -1):
+        for i in range(count, 0, -1):
             state.next(i)
             state.decode_success(self)
             yield state

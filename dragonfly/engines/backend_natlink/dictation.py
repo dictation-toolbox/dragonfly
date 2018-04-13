@@ -39,7 +39,7 @@ except ImportError:
 
 import logging
 from ..base import DictationContainerBase
-from dictation_format import WordFormatter
+from .dictation_format import WordFormatter
 
 
 #---------------------------------------------------------------------------
@@ -66,3 +66,6 @@ class NatlinkDictationContainer(DictationContainerBase):
         formatter = WordFormatter()
         formatted = formatter.format_dictation(self._words)
         return formatted
+
+    def __str__(self):
+        return unicode(self).encode("windows-1252")

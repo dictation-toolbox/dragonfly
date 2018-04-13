@@ -1,4 +1,5 @@
-﻿#
+﻿# -*- encoding: utf-8 -*-
+#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -75,11 +76,11 @@ class DictationTestCase(unittest.TestCase):
                     recognized_value = unicode(recognized_value)
                 elif isinstance(recognized_value, DictationContainerBase):
                     recognized_value = unicode(recognized_value)
-                print "result:", recognized_value
+                print("result:", recognized_value)
                 if recognized_value != expected_value:
                     failures.append((words, expected_value,
                                      recognized_value))
-        except TestError, e:
+        except TestError as e:
             self.fail(str(e))
 
         if failures:

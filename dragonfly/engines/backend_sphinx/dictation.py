@@ -46,9 +46,6 @@ class SphinxDictationContainer(DictationContainerBase):
     def __init__(self, words):
         DictationContainerBase.__init__(self, words=words)
 
-    def __str__(self):
-        return unicode(self).encode()
-
     def __repr__(self):
         message = u"%s(%s)" % (self.__class__.__name__,
                                u", ".join(self._words))

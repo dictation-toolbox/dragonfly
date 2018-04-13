@@ -110,9 +110,9 @@ class Keyboard(object):
     @classmethod
     def xget_virtual_keycode(cls, char):
         if isinstance(char, str):
-            code = windll.user32.VkKeyScanA(c_char(char))
+            code = windll.user32.VkKeyScanA(c_char(ord(char)))
         else:
-            code = windll.user32.VkKeyScanW(c_wchar(char))
+            code = windll.user32.VkKeyScanW(c_wchar(ord(char)))
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
 
@@ -126,9 +126,9 @@ class Keyboard(object):
     @classmethod
     def get_keycode_and_modifiers(cls, char):
         if isinstance(char, str):
-            code = windll.user32.VkKeyScanA(c_char(char))
+            code = windll.user32.VkKeyScanA(c_char(ord(char)))
         else:
-            code = windll.user32.VkKeyScanW(c_wchar(char))
+            code = windll.user32.VkKeyScanW(c_wchar(ord(char)))
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
 

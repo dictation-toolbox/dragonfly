@@ -63,7 +63,7 @@ class TestTimer(unittest.TestCase):
         self.assertEqual(callback_called, [1])
         self.assertEqual(len(self.log_capture.records), 1)
         log_message = self.log_capture.records[0].msg
-        self.assert_("Exception from timer callback" in log_message)
+        self.assertTrue("Exception from timer callback" in log_message)
 
 #===========================================================================
 

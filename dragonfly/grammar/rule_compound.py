@@ -140,7 +140,7 @@ class CompoundRule(Rule):
                   "_node":     node,
                  }
         extras.update(self._defaults)
-        for name, element in self._extras.iteritems():
+        for name, element in self._extras.items():
             extra_node = node.get_child_by_name(name, shallow=True)
             if extra_node:
                 extras[name] = extra_node.value()

@@ -61,10 +61,10 @@ def build_distribution_and_upload(directory, setup_path):
         filelist.append((modified, path))
     filelist = sorted(filelist)
     most_recent_path = filelist[-1][1]
-    print "most recent", most_recent_path
+    print("most recent", most_recent_path)
     filename = os.path.basename(most_recent_path)
     basename, extension = os.path.splitext(filename)
-    print "most recent basename", basename
+    print("most recent basename", basename)
     if extension != ".egg":
         raise RuntimeError("Most recent package not an egg file: %r"
                            % most_recent_path)
@@ -95,7 +95,7 @@ def build_distribution(directory, setup_path):
 
 def load_gcode_credentials(path):
     namespace = {}
-    exec open(path, "r").read() in namespace
+    exec(open(path, "r").read(), namespace)
     return namespace["gcode_username"], namespace["gcode_password"]
 
 

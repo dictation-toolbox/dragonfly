@@ -54,7 +54,7 @@ class ActionBase(object):
         self._str = ""
 
     def __str__(self):
-        return unicode(self).encode("utf-8")
+        return self.__unicode__().encode("utf-8")
 
     def __unicode__(self):
         return u"%s(%s)" % (self.__class__.__name__, self._str)
@@ -85,7 +85,7 @@ class ActionBase(object):
         try:
             if self._execute(data) == False:
                 raise ActionError(str(self))
-        except ActionError, e:
+        except ActionError as e:
             self._log_exec.error("Execution failed: %s" % e)
             return False
         return True
@@ -299,7 +299,7 @@ class Repeat(object):
             except KeyError:
                 raise ActionError("No extra repeat factor found for name %r"
                                   % (self._extra,))
-            except Exception, e:
+            except Exception as e:
                 raise ActionError("No extra repeat factor found for name %r"
                                   " (%s)" % (self._extra, e))
             count += additional

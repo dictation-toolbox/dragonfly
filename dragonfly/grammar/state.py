@@ -47,7 +47,7 @@ class State(object):
         self._previous_index = None
 
     def __str__(self):
-        return unicode(self).encode("windows-1252")
+        return self.__unicode__().encode("windows-1252")
 
     def __unicode__(self):
         words = self.words()
@@ -153,14 +153,14 @@ class State(object):
         self._depth -= 1
 
     def _get_frame_from_depth(self):
-        for i in xrange(len(self._stack)-1, -1, -1):
+        for i in range(len(self._stack)-1, -1, -1):
             frame = self._stack[i]
             if frame.depth == self._depth:
                 return frame
         return None
 
     def _get_frame_from_actor(self, actor):
-        for i in xrange(len(self._stack)-1, -1, -1):
+        for i in range(len(self._stack)-1, -1, -1):
             frame = self._stack[i]
             if frame.actor is actor:
                 return frame

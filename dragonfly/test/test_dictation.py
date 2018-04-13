@@ -55,7 +55,7 @@ class TestNonAsciiDictation(unittest.TestCase):
         # Verifying dictation converts/encode successfully.
         self.assertEqual(str(dictation), "touché")
         self.assertEqual(unicode(dictation), u"touché")
-        self.assert_(isinstance(repr(dictation), (str, unicode)))
+        self.assertTrue(isinstance(repr(dictation), (str, unicode)))
 
 
 class NonAsciiUnicodeDictationTestCase(ElementTestCase):

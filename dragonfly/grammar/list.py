@@ -202,7 +202,7 @@ class DictList(ListBase, dict):
     # Accessor for the grammar to retrieve the list items.
 
     def get_list_items(self):
-        return self.keys()
+        return list(self.keys())
 
     #-----------------------------------------------------------------------
     # Custom methods.

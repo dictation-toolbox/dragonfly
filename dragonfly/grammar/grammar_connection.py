@@ -25,7 +25,7 @@
 try:
     from win32com.client import Dispatch
     from pywintypes import com_error
-except ImportError, error:
+except ImportError as error:
     import sys
     if sys.platform.startswith("win"):
         raise error
@@ -72,7 +72,7 @@ class ConnectionGrammar(Grammar):
     def __del__(self):
         try:
             self.disconnect()
-        except Exception, e:
+        except Exception as e:
             self._log.warning("Grammar %s: failed to disconnect from "
                               "%r: %s." % (self, self._app_name, e))
 
@@ -111,7 +111,7 @@ class ConnectionGrammar(Grammar):
             return True
         try:
             self._application = Dispatch(self._app_name)
-        except com_error, e:
+        except com_error as e:
             if self._log_begin:
                 self._log_begin.warning("Grammar %s: failed to"
                                         " connect to %r: %s."

@@ -79,7 +79,7 @@ class Clipboard(object):
         if contents:
             try:
                 self._contents = dict(contents)
-            except Exception, e:
+            except Exception as e:
                 raise TypeError("Invalid contents: %s (%r)" % (e, contents))
 
         # Handle special case of text content.
@@ -139,7 +139,7 @@ class Clipboard(object):
                     if not isinstance(format, int):
                         raise TypeError("Invalid clipboard format: %r"
                                         % format)
-            except Exception, e:
+            except Exception as e:
                 raise
 
             # Retrieve Windows system clipboard content.
