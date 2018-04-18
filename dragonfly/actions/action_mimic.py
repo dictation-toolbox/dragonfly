@@ -23,7 +23,7 @@ Mimic action
 ============================================================================
 
 """
-
+from six               import string_types
 from .action_base      import ActionBase, ActionError
 from ..engines         import get_engine
 
@@ -109,7 +109,7 @@ class Mimic(ActionBase):
                 words += tuple(extra.words)
             elif isinstance(extra, (tuple, list)):
                 words += tuple(extra)
-            elif isinstance(extra, (str, unicode)):
+            elif isinstance(extra, string_types):
                 words += (extra,)
             else:
                 raise ActionError("Invalid extra data type: %r" % extra)

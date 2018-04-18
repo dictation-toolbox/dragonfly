@@ -22,6 +22,8 @@
 """
 
 import logging
+from six import string_types
+
 from dragonfly              import *
 from .error                 import TestError
 from ..test                 import infrastructure
@@ -40,7 +42,7 @@ class RuleTestGrammar(Grammar):
         Grammar.__init__(self, self.__class__.__name__, engine=engine)
 
     def recognize(self, words):
-        if isinstance(words, basestring):
+        if isinstance(words, string_types):
             words = words.split()
 
         if not self.loaded:

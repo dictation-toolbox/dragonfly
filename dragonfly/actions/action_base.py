@@ -30,6 +30,8 @@ import logging
 
 
 #---------------------------------------------------------------------------
+from six import PY2
+
 
 class ActionError(Exception):
     pass
@@ -54,7 +56,10 @@ class ActionBase(object):
         self._str = ""
 
     def __str__(self):
-        return self.__unicode__().encode("utf-8")
+        if PY2:
+            return self.__unicode__().encode("utf-8")
+        else:
+            return self.__unicode__()
 
     def __unicode__(self):
         return u"%s(%s)" % (self.__class__.__name__, self._str)

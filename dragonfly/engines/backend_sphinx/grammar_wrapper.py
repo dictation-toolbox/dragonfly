@@ -2,6 +2,7 @@
 GrammarWrapper class for CMU Pocket Sphinx engine
 """
 import functools
+from six import text_type, u, PY2
 
 from jsgf import RuleRef, map_expansion
 from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion, dictation_in_expansion
@@ -50,24 +51,15 @@ class ProcessingState(object):
 
     @property
     def complete_sequence_rules(self):
-        return list(filter(
-            lambda x: isinstance(x, SequenceRule),
-            self.complete_rules
-        ))
+        return [x for x in self.complete_rules if isinstance(x, SequenceRule)]
 
     @property
     def repeatable_complete_sequence_rules(self):
-        return list(filter(
-            lambda x: x.can_repeat,
-            self.complete_sequence_rules
-        ))
+        return [x for x in self.complete_sequence_rules if x.can_repeat]
 
     @property
     def complete_normal_rules(self):
-        return list(filter(
-            lambda x: not isinstance(x, SequenceRule),
-            self.complete_rules
-        ))
+        return [x for x in self.complete_rules if not isinstance(x, SequenceRule)]
 
     @property
     def matched_rules(self):
@@ -108,6 +100,9 @@ class ProcessingState(object):
         return (self.speech == other.speech and self.wrapper == other.wrapper
                 and self.in_progress_rules == other.in_progress_rules
                 and self.complete_rules == other.complete_rules)
+
+    def __hash__(self):
+        return hash(self.wrapper.grammar.name)
 
 
 class GrammarWrapper(object):
@@ -265,7 +260,10 @@ class GrammarWrapper(object):
         self.engine.log.debug("Grammar %s: received recognition %r." %
                               (self.grammar.name, words))
 
-        words_rules = tuple((unicode(w), r) for w, r in words)
+        if PY2:
+            words_rules = tuple((text_type(w), r) for w, r in words)
+        else:
+            words_rules = tuple((text_type(w), r) for w, r in words)
         rule_ids = tuple(r for _, r in words_rules)
         words = tuple(w for w, r in words_rules)
 
@@ -460,10 +458,8 @@ class GrammarWrapper(object):
         # Load a JSGF Pocket Sphinx search with just the rules in the list, or
         # switch to the dictation search if there are only dictation rules.
         if self._in_progress_sequence_rules:
-            not_in_progress_rules = filter(
-                lambda x: x not in self._in_progress_sequence_rules,
-                self.dictation_grammar.match_rules
-            )
+            not_in_progress_rules = [r for r in self.dictation_grammar.match_rules
+                                     if r not in self._in_progress_sequence_rules]
 
             # Disable rules in the grammar that aren't in the in-progress list
             for rule in not_in_progress_rules:

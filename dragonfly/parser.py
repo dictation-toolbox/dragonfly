@@ -33,6 +33,8 @@ import string
 
 
 #---------------------------------------------------------------------------
+from six import string_types
+
 
 class ParserError(Exception):
     pass
@@ -726,7 +728,7 @@ class Choice(Alternative):
         choice_pairs = []
         choice_elements = []
         for key, value in choices.items():
-            if isinstance(key, basestring):
+            if isinstance(key, string_types):
                 element = String(key)
             elif isinstance(key, ParserElementBase):
                 element = key

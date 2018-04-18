@@ -29,6 +29,8 @@ creating grammar element structures based on a simple text format.
 
 
 import string
+from six import string_types
+
 import dragonfly.grammar.elements_basic as elements_
 import dragonfly.parser as parser_
 import logging
@@ -310,10 +312,10 @@ class Choice(elements_.Alternative):
     def __init__(self, name, choices, extras=None, default=None):
 
         # Argument type checking.
-        assert isinstance(name, basestring) or name is None
+        assert isinstance(name, string_types) or name is None
         assert isinstance(choices, dict)
         for k, v in choices.items():
-            assert isinstance(k, basestring)
+            assert isinstance(k, string_types)
 
         # Construct children from the given choice keys and values.
         self._choices = choices

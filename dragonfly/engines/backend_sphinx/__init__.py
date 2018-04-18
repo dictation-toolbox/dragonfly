@@ -41,10 +41,10 @@ def is_engine_available():
 
     try:
         import sphinxwrapper
-    except ImportError, e:
+    except ImportError as e:
         _log.info("Failed to import sphinxwrapper package: %s. Is it installed?" % (e,))
         return False
-    except Exception, e:
+    except Exception as e:
         _log.info("Exception during import of sphinxwrapper package: %s" % (e,))
         return False
 

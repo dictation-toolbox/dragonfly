@@ -73,7 +73,7 @@ class SphinxEngine(EngineBase):
 
         # Import and set the default configuration module. This can be changed later
         # using the config property.
-        import config
+        from . import config
         self._config = None
         self.config = config
 
@@ -300,7 +300,7 @@ class SphinxEngine(EngineBase):
         wrapper = self._build_grammar_wrapper(grammar)
         try:
             self.set_grammar(wrapper)
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Failed to load grammar %s: %s."
                                 % (grammar, e))
         return wrapper
@@ -316,7 +316,7 @@ class SphinxEngine(EngineBase):
             # It doesn't matter if the names are the same.
             self.unset_search(wrapper.search_name)
             self.unset_search(wrapper.default_search_name)
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Failed to unload grammar %s: %s."
                                 % (grammar, e))
 
@@ -325,7 +325,7 @@ class SphinxEngine(EngineBase):
             # Not sure what this is, just going to silently ignore it for now
             self._log.debug("set_exclusiveness called for grammar %s. Not doing "
                             "anything yet.")
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Engine %s: failed set exclusiveness: %s."
                                 % (self, e))
 
@@ -346,7 +346,7 @@ class SphinxEngine(EngineBase):
             wrapper.dictation_grammar.enable_rule(rule.name)
             self.unset_search(wrapper.search_name)
             self.set_grammar(wrapper)
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Failed to activate grammar %s: %s."
                                 % (grammar, e))
 
@@ -359,7 +359,7 @@ class SphinxEngine(EngineBase):
             wrapper.dictation_grammar.disable_rule(rule.name)
             self.unset_search(wrapper.search_name)
             self.set_grammar(wrapper)
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Failed to activate grammar %s: %s."
                                 % (grammar, e))
 
@@ -508,10 +508,9 @@ class SphinxEngine(EngineBase):
 
             # Calculate the best in-progress state with complete rules if there is
             # one.
-            best_state = self._get_best_processing_state(filter(
-                lambda s: s.complete_rules,
-                self._in_progress_states
-            ))
+            best_state = self._get_best_processing_state(
+                [s for s in self._in_progress_states if s.complete_rules]
+            )
 
             if best_state and best_state.wrapper.grammar_active:
                 best_state.process(timed_out=True)
@@ -553,7 +552,7 @@ class SphinxEngine(EngineBase):
         :return: ProcessingState
         """
         # Filter out any states that are not processable.
-        states = filter(lambda s: s.is_processable, states)
+        states = [s for s in states if s.is_processable]
         if not states:
             return None  # no best processing state
 
@@ -562,9 +561,9 @@ class SphinxEngine(EngineBase):
         # Filter the states in 3 ways: states with matching normal rules, states
         # with matching and complete sequence rules, and states with in-progress
         # rules.
-        complete_normal = list(filter(lambda s: s.complete_normal_rules, states))
-        complete_seq = list(filter(lambda s: s.complete_sequence_rules, states))
-        in_progress = list(filter(lambda s: s.in_progress_rules, states))
+        complete_normal = [s for s in states if s.complete_normal_rules]
+        complete_seq = [s for s in states if s.complete_sequence_rules]
+        in_progress = [s for s in states if s.in_progress_rules]
 
         # Handle states with complete sequence rules first.
         if complete_seq and self._in_progress_states:
@@ -620,7 +619,7 @@ class SphinxEngine(EngineBase):
         :return: str | None
         """
         # Get all distinct, non-null hypothesises using a set and a filter.
-        distinct = tuple(filter(lambda h: bool(h), set(hypothesises)))
+        distinct = tuple([h for h in set(hypothesises) if bool(h)])
         if not distinct:
             return None
         elif len(distinct) == 1:
@@ -673,10 +672,8 @@ class SphinxEngine(EngineBase):
         # Set a new current grammar wrapper if necessary.
         if (not self._current_grammar_wrapper or
                 not self._current_grammar_wrapper.grammar_active):
-            active_wrappers = filter(
-                lambda w: w.grammar_active,
-                self._grammar_wrappers.values()
-            )
+            active_wrappers = [w for w in self._grammar_wrappers.values()
+                               if w.grammar_active]
             if active_wrappers:
                 self._current_grammar_wrapper = active_wrappers[0]
                 self.set_grammar(self._current_grammar_wrapper)
@@ -708,11 +705,17 @@ class SphinxEngine(EngineBase):
         processing_occurred = False
         hypothesises = {}
 
-        # Collect each active grammar's GrammarWrapper.
-        wrappers = filter(
-            lambda w: w.grammar_active,
-            self._grammar_wrappers.values()
-        )
+        # If the engine is processing in-progress rules, only use active in-progress
+        # wrappers.
+        in_progress_states = self._in_progress_states
+        if in_progress_states:
+            wrappers = [s.wrapper for s in in_progress_states
+                        if s.wrapper.grammar_active]
+
+        # Otherwise collect each active grammar's GrammarWrapper.
+        else:
+            wrappers = [w for w in self._grammar_wrappers.values()
+                        if w.grammar_active]
 
         self._last_recognition_time = time.time()
 
@@ -720,16 +723,6 @@ class SphinxEngine(EngineBase):
         if not self._current_grammar_wrapper or not wrappers:
             # TODO What should we do here? Output formatted Dictation like DNS?
             return processing_occurred
-
-        # If the engine is processing in-progress rules, only use active in-progress
-        # wrappers.
-        in_progress_states = self._in_progress_states
-        if in_progress_states:
-            in_progress_wrappers = map(lambda s: s.wrapper, in_progress_states)
-            wrappers = filter(
-                lambda w: w in in_progress_wrappers,
-                wrappers
-            )
 
         if (self._current_grammar_wrapper.search_name !=
                 self._decoder.active_search):
@@ -776,17 +769,13 @@ class SphinxEngine(EngineBase):
                 hypothesises[wrapper.search_name] = hypothesis
 
         # Get the best hypothesis.
-        speech = self._get_best_hypothesis(hypothesises.values())
+        speech = self._get_best_hypothesis(list(hypothesises.values()))
 
         # Only use wrappers whose search hypothesis is speech.
-        wrappers = filter(
-            lambda w: hypothesises[w.search_name] == speech,
-            wrappers
-        )
+        wrappers = [w for w in wrappers if hypothesises[w.search_name] == speech]
 
         processing_states = []
         for wrapper in wrappers:
-
             # Collect matching rules in a ProcessingState object for each
             # wrapper
             hyp = hypothesises[wrapper.search_name]

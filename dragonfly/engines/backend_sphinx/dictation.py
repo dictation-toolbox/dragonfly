@@ -32,6 +32,7 @@ on a dictation container object. A tuple of the raw  spoken words can be
 retrieved using :attr:`~DictationContainerBase.words`.
 
 """
+from six import PY2
 
 from ..base import DictationContainerBase
 
@@ -49,4 +50,7 @@ class SphinxDictationContainer(DictationContainerBase):
     def __repr__(self):
         message = u"%s(%s)" % (self.__class__.__name__,
                                u", ".join(self._words))
-        return message.encode()
+        if PY2:
+            return message.encode()
+        else:
+            return message

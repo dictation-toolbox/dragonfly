@@ -47,8 +47,8 @@ class CommandModule(object):
 
         # Attempt to execute the module; handle any exceptions.
         try:
-            execfile(self._path, namespace)
-        except Exception, e:
+            exec(compile(open(self._path).read(), self._path, 'exec'), namespace)
+        except Exception as e:
             self._log.error("%s: Error loading module: %s" % (self, e))
             self._loaded = False
             return

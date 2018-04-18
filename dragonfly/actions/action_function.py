@@ -31,8 +31,8 @@ the callable will be called.
 Simple usage::
 
     >>> def func(count):
-    ...     print "count:", count
-    ...
+    ...     print("count:", count)
+    ... 
     >>> action = Function(func)
     >>> action.execute({"count": 2})
     count: 2
@@ -45,9 +45,9 @@ Simple usage::
 Usage with default arguments::
 
     >>> def func(count, flavor):
-    ...     print "count:", count
-    ...     print "flavor:", flavor
-    ...
+    ...     print("count:", count)
+    ...     print("flavor:", flavor)
+    ... 
     >>> # The Function object can be given default argument values:
     >>> action = Function(func, flavor="spearmint")
     >>> action.execute({"count": 2})
@@ -90,6 +90,7 @@ class Function(ActionBase):
         self._defaults = defaults
         self._str = function.__name__
 
+        # TODO Use inspect.signature instead; getargspec is deprecated.
         (args, varargs, varkw, defaults) = getargspec(self._function)
         if varkw:  self._filter_keywords = False
         else:      self._filter_keywords = True

@@ -26,10 +26,12 @@ Test cases for the dictation container class for Natlink
 """
 
 import unittest
-from dragonfly        import *
-from ...test          import TestError, RecognitionFailure, ElementTester
-from ..base           import DictationContainerBase
-from .dictation       import NatlinkDictationContainer
+from six import string_types, text_type
+
+from dragonfly import *
+from ..test import TestError, RecognitionFailure, ElementTester
+from ..engines.base import DictationContainerBase
+from ..engines.backend_natlink.dictation import NatlinkDictationContainer
 
 
 #===========================================================================
@@ -68,14 +70,14 @@ class DictationTestCase(unittest.TestCase):
                 else:
                     raise TestError("Invalid test info: %s" % (test_info,))
 
-                if isinstance(words, basestring):
+                if isinstance(words, string_types):
                     words = words.split()
 
                 recognized_value = tester.recognize(words)
-                if isinstance(recognized_value, basestring):
-                    recognized_value = unicode(recognized_value)
+                if isinstance(recognized_value, string_types):
+                    recognized_value = text_type(recognized_value)
                 elif isinstance(recognized_value, DictationContainerBase):
-                    recognized_value = unicode(recognized_value)
+                    recognized_value = text_type(recognized_value)
                 print("result:", recognized_value)
                 if recognized_value != expected_value:
                     failures.append((words, expected_value,
@@ -98,47 +100,47 @@ class EnglishNatlinkDictationTestCase(DictationTestCase):
     language     = "en"
     input_output = [
                     # Trivial words.
-                    (ur"non-existent-word",           RecognitionFailure),
-                    (ur"hello",                       ur"hello"),
-                    (ur"hello world",                 ur"hello world"),
+                    (u"non-existent-word",           RecognitionFailure),
+                    (u"hello",                       u"hello"),
+                    (u"hello world",                 u"hello world"),
 
                     # Capitalization.
-                    (ur"\Cap hello",                  ur"Hello"),
-                    (ur"hello \Cap",                  ur"hello"),
-                    (ur"\Cap hello world",            ur"Hello world"),
-                    (ur"hello \Cap world",            ur"hello World"),
-                    (ur"\Caps-On hello world",        ur"Hello World"),
-                    (ur"\Caps-Off hello world",       ur"hello world"),
-                    (ur"\Caps-On hello \Caps-Off world", ur"Hello world"),
-                    (ur"\All-Caps hello world",       ur"HELLO world"),
+                    (u"\\Cap hello",                  u"Hello"),
+                    (u"hello \\Cap",                  u"hello"),
+                    (u"\\Cap hello world",            u"Hello world"),
+                    (u"hello \\Cap world",            u"hello World"),
+                    (u"\\Caps-On hello world",        u"Hello World"),
+                    (u"\\Caps-Off hello world",       u"hello world"),
+                    (u"\\Caps-On hello \\Caps-Off world", u"Hello world"),
+                    (u"\\All-Caps hello world",       u"HELLO world"),
 
                     # Spacing.
-                    (ur"\No-Space hello",             ur"hello"),
-                    (ur"hello \No-Space world",       ur"helloworld"),
-                    (ur"hello \No-Space \Cap world",  ur"helloWorld"),
-                    (ur"hello \Cap \No-Space world",  ur"helloWorld"),
-                    (ur"\No-Space-On hello world",    ur"helloworld"),
-                    (ur"\No-Space-On hello \No-Space-Off world", ur"hello world"),
+                    (u"\\No-Space hello",             u"hello"),
+                    (u"hello \\No-Space world",       u"helloworld"),
+                    (u"hello \\No-Space \\Cap world",  u"helloWorld"),
+                    (u"hello \\Cap \\No-Space world",  u"helloWorld"),
+                    (u"\\No-Space-On hello world",    u"helloworld"),
+                    (u"\\No-Space-On hello \\No-Space-Off world", u"hello world"),
 
                     # Words with special formatting.
-                    (ur".\full-stop hello world",     ur".  Hello world"),
-                    (ur"hello .\full-stop world",     ur"hello.  World"),
-                    (ur"hello world .\full-stop",     ur"hello world."),
-                    (ur",\comma hello world",         ur", hello world"),
-                    (ur"hello ,\comma world",         ur"hello, world"),
-                    (ur"hello world ,\comma",         ur"hello world,"),
-                    (ur"(\left-paren hello world",    ur"(hello world"),
-                    (ur"hello (\left-paren world",    ur"hello (world"),
-                    (ur"hello world (\left-paren",    ur"hello world ("),
-                    (ur"-\hyphen hello world",        ur"-hello world"),
-                    (ur"hello -\hyphen world",        ur"hello-world"),
-                    (ur"hello world -\hyphen",        ur"hello world-"),
-                    (ur"four .\point seven",          ur"4.7"),
-                    (ur"four .\dot seven",            ur"4.7"),
-                    (ur"four .\full-stop seven",      ur"4.  7"),
+                    (u".\\full-stop hello world",     u".  Hello world"),
+                    (u"hello .\\full-stop world",     u"hello.  World"),
+                    (u"hello world .\\full-stop",     u"hello world."),
+                    (u",\\comma hello world",         u", hello world"),
+                    (u"hello ,\\comma world",         u"hello, world"),
+                    (u"hello world ,\\comma",         u"hello world,"),
+                    (u"(\\left-paren hello world",    u"(hello world"),
+                    (u"hello (\\left-paren world",    u"hello (world"),
+                    (u"hello world (\\left-paren",    u"hello world ("),
+                    (u"-\\hyphen hello world",        u"-hello world"),
+                    (u"hello -\\hyphen world",        u"hello-world"),
+                    (u"hello world -\\hyphen",        u"hello world-"),
+                    (u"four .\\point seven",          u"4.7"),
+                    (u"four .\\dot seven",            u"4.7"),
+                    (u"four .\\full-stop seven",      u"4.  7"),
 
                     # Characters with accents.
-                    (ur"Düsseldorf",                  ur"Düsseldorf"),
+                    (u"Düsseldorf",                  u"Düsseldorf"),
                    ]
 
 
@@ -146,6 +148,7 @@ class EnglishNatlinkDictationTestCase(DictationTestCase):
 
 if __name__ == "__main__":
     import sys
+    import nose
     loader = nose.loader.TestLoader()
     suite = loader.loadTestsFromModule(sys.modules["__main__"])
     nose.core.TestProgram(suite=suite)

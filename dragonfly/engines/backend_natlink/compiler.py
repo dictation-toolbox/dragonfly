@@ -26,6 +26,8 @@
 #---------------------------------------------------------------------------
 
 import struct
+from six import string_types
+
 from ..base import CompilerBase, CompilerError
 
 
@@ -141,8 +143,8 @@ class _Compiler(object):
             raise CompilerError("Cannot start defining a rule while" \
                                "a different rule is already being defined.")
 
-        assert isinstance(name, basestring), ("The rule name must be a"
-                                              " string, received %r." % name)
+        assert isinstance(name, string_types), ("The rule name must be a"
+                                                " string, received %r." % name)
         self._current_rule_name = name
         self._current_rule_export = exported
         self._current_rule_definition = []

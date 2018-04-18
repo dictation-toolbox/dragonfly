@@ -85,7 +85,7 @@ class DgnImported(RuleRef):
 
         # Yield possible states where the number of dictated words
         # gobbled is decreased by 1 between yields.
-        for i in xrange(count, 0, -1):
+        for i in range(count, 0, -1):
             state.next(i)
             state.decode_success(self)
             yield state
@@ -105,7 +105,7 @@ class DgnImported(RuleRef):
 class DgnDictationRule(RecognitionAnalysisRule):
     """
         >>> tester = ElementTester(RuleRef(DgnDictationRule()))
-        >>> print tester.recognize("dictation hello world")
+        >>> print(tester.recognize("dictation hello world"))
         Recognition: "dictation hello world"
         Word and rule pairs:
          - dictation (1)
@@ -114,7 +114,7 @@ class DgnDictationRule(RecognitionAnalysisRule):
         Extras:
          - dgndictation: [u'hello', u'world']
 
-        >>> print tester.recognize("dictation")
+        >>> print(tester.recognize("dictation"))
         RecognitionFailure
 
     """
@@ -128,7 +128,7 @@ class DgnDictationRule(RecognitionAnalysisRule):
 class DgnLettersRule(RecognitionAnalysisRule):
     """
         >>> tester = ElementTester(RuleRef(DgnLettersRule()))
-        >>> print tester.recognize("letters a b c")
+        >>> print(tester.recognize("letters a b c"))
         Recognition: "letters a\\\\l b\\\\l c\\letter-c\\l"
         Word and rule pairs:
          - letters (1)
@@ -138,10 +138,10 @@ class DgnLettersRule(RecognitionAnalysisRule):
         Extras:
          - dgnletters: [u'a\\\\\\\\l', u'b\\\\\\\\l', u'c\\\\letter-c\\\\l']
 
-        >>> print tester.recognize("letters hello world")
+        >>> print(tester.recognize("letters hello world"))
         RecognitionFailure
 
-        >>> print tester.recognize("letters")
+        >>> print(tester.recognize("letters"))
         RecognitionFailure
 
     """
@@ -155,7 +155,7 @@ class DgnLettersRule(RecognitionAnalysisRule):
 class DgnWordsRule(RecognitionAnalysisRule):
     """
         >>> tester = ElementTester(RuleRef(DgnWordsRule()))
-        >>> print tester.recognize("words hello")
+        >>> print(tester.recognize("words hello"))
         Recognition: "words hello"
         Word and rule pairs:
          - words (1)
@@ -163,10 +163,10 @@ class DgnWordsRule(RecognitionAnalysisRule):
         Extras:
          - dgnwords: [u'hello']
 
-        >>> print tester.recognize("words hello world")
+        >>> print(tester.recognize("words hello world"))
         RecognitionFailure
 
-        >>> print tester.recognize("words")
+        >>> print(tester.recognize("words"))
         RecognitionFailure
 
     """

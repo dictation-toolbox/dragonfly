@@ -32,6 +32,8 @@ NaturallySpeaking engine.
 #  not available and the dictation container implemented here
 #  cannot be used.  However, we don't raise an exception because
 #  this file should still be importable for documentation purposes.
+from six import text_type, string_types
+
 try:
     import natlink
 except ImportError:
@@ -260,11 +262,12 @@ class WordParserDns10(WordParserBase):
         return WordFlags(*flag_names)
 
     def parse_input(self, input):
-        if isinstance(input, str):
+        # Not unicode (Python 2) or str (Python 3)
+        if not isinstance(input, text_type):
             # DNS and Natlink provide recognized words as "Windows-1252"
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
-            input = unicode(input, "windows-1252")
+            input = text_type(input).encode("windows-1252")
 
         # The written and spoken forms of a word are separated by a "\"
         # character.
@@ -353,11 +356,12 @@ class WordParserDns11(WordParserBase):
         return flags
 
     def parse_input(self, input):
-        if isinstance(input, str):
+        # Not unicode (Python 2) or str (Python 3)
+        if not isinstance(input, text_type):
             # DNS and Natlink provide recognized words as "Windows-1252"
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
-            input = unicode(input, "windows-1252")
+            input = text_type(input).encode("windows-1252")
 
         parts = input.split("\\")
         if len(parts) == 1:
@@ -463,7 +467,7 @@ class WordFormatter(object):
         self.two_spaces_after_period = two_spaces_after_period
 
     def format_dictation(self, input_words):
-        if isinstance(input_words, basestring):
+        if isinstance(input_words, string_types):
             raise ValueError("Argument input_words must be a sequence of"
                              " words, but received a single string: {0!r}"
                              .format(input_words))

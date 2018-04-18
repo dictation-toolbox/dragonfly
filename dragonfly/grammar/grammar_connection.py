@@ -21,6 +21,7 @@
 """
     This file implements the ConnectionGrammar class.
 """
+from six import string_types
 
 try:
     from win32com.client import Dispatch
@@ -63,7 +64,7 @@ class ConnectionGrammar(Grammar):
     """
 
     def __init__(self, name, description=None, context=None, app_name=None):
-        assert isinstance(app_name, (str, unicode)) or app_name is None
+        assert isinstance(app_name, string_types) or app_name is None
         self._app_name = app_name
         self._application = None
         Grammar.__init__(self, name=name, description=description,

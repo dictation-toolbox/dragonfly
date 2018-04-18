@@ -75,6 +75,7 @@ Class reference
 ............................................................................
 
 """
+from six import string_types
 
 from .rule_base         import Rule
 from .elements          import ElementBase, Compound, Alternative
@@ -126,10 +127,10 @@ class MappingRule(Rule):
             exported = self._default_exported
 
         # Type checking of initialization values.
-        assert isinstance(name, (str, unicode))
+        assert isinstance(name, string_types)
         assert isinstance(mapping, dict)
         for key, value in mapping.items():
-            assert isinstance(key, (str, unicode))
+            assert isinstance(key, string_types)
         assert isinstance(extras, (list, tuple))
         for item in extras:
             assert isinstance(item, ElementBase)

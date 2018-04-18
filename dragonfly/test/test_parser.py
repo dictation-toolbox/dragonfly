@@ -92,7 +92,7 @@ class TestParsers(unittest.TestCase):
         for input, outputs in input_outputs:
             results = p.parse_multiple(input, must_finish)
             self.assertEqual(len(results), len(outputs))
-            for index, result, output in zip(range(len(results)), results, outputs):
+            for index, result, output in zip(list(range(len(results))), results, outputs):
                 if isinstance(result, list): result = tuple(result)
                 if isinstance(output, list): output = tuple(output)
                 self.assertEqual(result, output)

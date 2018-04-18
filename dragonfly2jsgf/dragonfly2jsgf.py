@@ -79,9 +79,7 @@ class TranslationState(object):
         # Used if this object is being used to translate a dragonfly rule.
         self.jsgf_rule = None
 
-    rule_names = property(
-        lambda self: map(lambda rule: rule.name, self.dependencies)
-    )
+    rule_names = property(lambda self: [rule.name for rule in self.dependencies])
 
     @property
     def expansion(self):
@@ -203,7 +201,7 @@ class Translator(object):
         :type dict_list: DragonflyDictList
         :return: HiddenRule
         """
-        keys = dict_list.keys()
+        keys = list(dict_list.keys())
         keys.sort()
         return jsgf.HiddenRule(dict_list.name, jsgf.AlternativeSet(*keys))
 

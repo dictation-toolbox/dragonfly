@@ -1,5 +1,7 @@
 
 import time
+from six import string_types
+
 import win32file, win32event
 import win32con
 
@@ -14,9 +16,9 @@ class _Dir(object):
     __slots__= ("path", "handle", "overlapped")
 
     def __init__(self, path):
-        if not isinstance(path, basestring):
-            raise TypeError("Path argument must be a basestring; instead"
-                            " received %r" % (path,))
+        if not isinstance(path, string_types):
+            raise TypeError("Path argument must be a string/unicode object;"
+                            " instead received %r" % (path,))
         self.path = path
         self.handle = win32file.CreateFile(
              self.path,

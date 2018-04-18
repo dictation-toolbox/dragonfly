@@ -60,8 +60,9 @@ classes listed above:
 """
 
 
-import types
 import logging
+from six import string_types
+
 from .rule_base  import Rule
 from .list       import ListBase, DictList
 
@@ -656,7 +657,7 @@ class Literal(ElementBase):
         ElementBase.__init__(self, name, default=default)
         self._value = value
 
-        if not isinstance(text, (str, unicode)):
+        if not isinstance(text, string_types):
             raise TypeError("Text of %s object must be a"
                             " string." % self)
         self._words = text.split()

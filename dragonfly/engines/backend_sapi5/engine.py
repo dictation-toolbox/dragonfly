@@ -28,6 +28,8 @@ SAPI 5 engine classes
 #---------------------------------------------------------------------------
 
 import time
+from six import string_types, integer_types
+
 import win32con
 from ctypes import *
 
@@ -187,7 +189,7 @@ class Sapi5SharedEngine(EngineBase):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        if isinstance(words, basestring):
+        if isinstance(words, string_types):
             phrase = words
         else:
             phrase = " ".join(words)
@@ -297,7 +299,7 @@ class Sapi5InProcEngine(Sapi5SharedEngine):
 
         available_sources = self._recognizer.GetAudioInputs()
 
-        if isinstance(audio_source, (int, long)):
+        if isinstance(audio_source, integer_types):
             # Parameter is the index of the source to use.
             if 0 <= audio_source < available_sources.Count:
                 selected_source = available_sources.Item(audio_source)
@@ -308,7 +310,7 @@ class Sapi5InProcEngine(Sapi5SharedEngine):
                                   % (audio_source, available_sources.Count,
                                      available_sources.Count - 1))
 
-        elif isinstance(audio_source, basestring):
+        elif isinstance(audio_source, string_types):
             for item in collection_iter(available_sources):
                 if audio_source in item.GetDescription():
                     selected_source = item

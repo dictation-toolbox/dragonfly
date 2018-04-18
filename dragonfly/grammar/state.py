@@ -25,6 +25,8 @@
 
 
 import logging
+from six import text_type, PY2
+
 from .grammar_base import GrammarError
 
 
@@ -47,7 +49,10 @@ class State(object):
         self._previous_index = None
 
     def __str__(self):
-        return self.__unicode__().encode("windows-1252")
+        if PY2:
+            return self.__unicode__().encode("windows-1252")
+        else:
+            return self.__unicode__()
 
     def __unicode__(self):
         words = self.words()
@@ -171,11 +176,17 @@ class State(object):
             return
         indent = u"   " * self._depth
         output = u"%s%s: %s" % (indent, message, parser)
-        self._log_decode.debug(output.encode("utf-8"))
+        if PY2:
+            self._log_decode.debug(output.encode("utf-8"))
+        else:
+            self._log_decode.debug(output)
         if self._index != self._previous_index:
             self._previous_index = self._index
-            output = u"%s -- Decoding State: '%s'" % (indent, unicode(self))
-            self._log_decode.debug(output.encode("utf-8"))
+            output = u"%s -- Decoding State: '%s'" % (indent, text_type(self))
+            if PY2:
+                self._log_decode.debug(output.encode("utf-8"))
+            else:
+                self._log_decode.debug(output)
 
     # -----------------------------------------------------------------------
     # Methods for evaluation.

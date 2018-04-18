@@ -25,6 +25,8 @@ Tools for testing element classes
 """
 
 import logging
+from six import string_types
+
 from dragonfly              import *
 from ..test                 import TestError, RecognitionFailure
 from ..test.infrastructure  import Unique
@@ -50,7 +52,7 @@ class ElementTester(Grammar):
         self.add_rule(rule)
 
     def recognize(self, words):
-        if isinstance(words, basestring):
+        if isinstance(words, string_types):
             words = words.split()
 
         if not self.loaded:

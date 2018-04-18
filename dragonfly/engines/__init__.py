@@ -97,7 +97,7 @@ def get_engine(name=None):
                        " %s" % (e,))
             log.exception(message)
             traceback.print_exc()
-            print message
+            print(message)
             if name:
                 raise EngineError(message)
 

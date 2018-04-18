@@ -28,8 +28,10 @@ Detecting sleep mode
  - http://blogs.msdn.com/b/tsfaware/archive/2010/03/22/detecting-sleep-mode-in-sapi.aspx
 
 """
+from six import text_type
 
 from ..base        import EngineBase, EngineError, MimicFailure
+from ...grammar.grammar_base import GrammarError
 from .dictation    import NatlinkDictationContainer
 from .recobs       import NatlinkRecObsManager
 from .timer        import NatlinkTimerManager
@@ -194,7 +196,7 @@ class NatlinkEngine(EngineBase):
         try:
             prepared_words = []
             for word in words:
-                if isinstance(word, unicode):
+                if isinstance(word, text_type):
                     word = word.encode("windows-1252")
                 prepared_words.append(word)
         except Exception as e:
@@ -260,7 +262,8 @@ class GrammarWrapper(object):
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
             if func:
-                words = tuple(unicode(w, "windows-1252") for w in results.getWords(0))
+                words = tuple(text_type(w).encode("windows-1252")
+                              for w in results.getWords(0))
                 func(words)
             return
         elif words == "reject":
@@ -272,7 +275,7 @@ class GrammarWrapper(object):
         # If the words argument was not "other" or "reject", then
         #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
         #  into a tuple of unicode objects.
-        words_rules = tuple((unicode(w, "windows-1252"), r) for w, r in words)
+        words_rules = tuple((text_type(w).encode("windows-1252"), r) for w, r in words)
         words = tuple(w for w, r in words_rules)
 
         # Call the grammar's general process_recognition method, if present.

@@ -64,7 +64,7 @@ Class reference
 ............................................................................
 
 """
-
+from six import string_types
 
 from .rule_base  import Rule
 from .elements   import ElementBase, Compound
@@ -106,8 +106,8 @@ class CompoundRule(Rule):
         if exported is None: exported = self.exported
         if context  is None: context  = self.context
 
-        assert isinstance(name, (str, unicode))
-        assert isinstance(spec, (str, unicode))
+        assert isinstance(name, string_types)
+        assert isinstance(spec, string_types)
         assert isinstance(extras, (list, tuple))
         for item in extras:
             assert isinstance(item, ElementBase)
