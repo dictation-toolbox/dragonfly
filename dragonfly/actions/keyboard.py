@@ -25,6 +25,8 @@ This file implements a Win32 keyboard interface using sendinput.
 
 
 import time
+from six import PY3
+
 import win32con
 
 from ctypes import windll, c_char, c_wchar
@@ -109,10 +111,12 @@ class Keyboard(object):
 
     @classmethod
     def xget_virtual_keycode(cls, char):
+        if PY3:
+            char = ord(char)
         if isinstance(char, str):
-            code = windll.user32.VkKeyScanA(c_char(ord(char)))
+            code = windll.user32.VkKeyScanA(c_char(char))
         else:
-            code = windll.user32.VkKeyScanW(c_wchar(ord(char)))
+            code = windll.user32.VkKeyScanW(c_wchar(char))
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
 
@@ -125,10 +129,12 @@ class Keyboard(object):
 
     @classmethod
     def get_keycode_and_modifiers(cls, char):
+        if PY3:
+            char = ord(char)
         if isinstance(char, str):
-            code = windll.user32.VkKeyScanA(c_char(ord(char)))
+            code = windll.user32.VkKeyScanA(c_char(char))
         else:
-            code = windll.user32.VkKeyScanW(c_wchar(ord(char)))
+            code = windll.user32.VkKeyScanW(c_wchar(char))
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
 
