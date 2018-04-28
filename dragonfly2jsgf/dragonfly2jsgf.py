@@ -16,9 +16,6 @@ class TranslationError(Exception):
 
 
 class LinkedGrammar(jsgf.Grammar):
-    # TODO Change LinkedGrammar to a custom DictationGrammar that uses LinkedRules
-    # internally or something. This would be more efficient than using a sort of
-    # go-between grammar.
     def __init__(self, name, df_grammar):
         self._df_grammar = df_grammar
         super(LinkedGrammar, self).__init__(name=name)

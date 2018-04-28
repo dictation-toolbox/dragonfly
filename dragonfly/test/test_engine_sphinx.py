@@ -89,12 +89,12 @@ class SphinxEngineCase(unittest.TestCase):
         or fail with the provided error message.
         """
         try:
-            self.engine.mimic(*phrases)
+            self.engine.mimic_phrases(*phrases)
         except MimicFailure:
             self.fail("MimicFailure caught")
 
     def assert_mimic_failure(self, *phrases):
-        self.assertRaises(MimicFailure, self.engine.mimic, *phrases)
+        self.assertRaises(MimicFailure, self.engine.mimic_phrases, *phrases)
 
 
 class BasicEngineTests(SphinxEngineCase):
@@ -679,6 +679,89 @@ class DictationEngineTests(SphinxEngineCase):
         # Mimicking the rest of the rule parts should make the rule process.
         self.assert_mimic_success("hello", "testing", "hello")
         self.assert_test_function_called(test2, 3)
+
+    def test_engine_mimic(self):
+        """The engine.mimic method matches any rule/mapping in one call."""
+        # Note: it is normal for action.exec errors to be logged for this test.
+        # Set up a test grammar with some rules
+        test1 = self.get_test_function()
+        test2 = self.get_test_function()
+        test3 = self.get_test_function()
+        test4 = self.get_test_function()
+
+        class TestRule(MappingRule):
+            mapping = {
+                "testing": Function(test1),
+                "testing <dictation> testing": Function(test2),
+                "test with multiple words": Function(test3),
+                "forward [<n>]": Function(test4)
+            }
+            extras = [
+                Dictation("dictation"),
+                IntegerRef("n", 1, 3)
+            ]
+
+        grammar = Grammar("test")
+        grammar.add_rule(TestRule())
+        grammar.load()
+
+        def exec_mimic_action(words):
+            # Pass each word to Mimic
+            Mimic(*words.split(" ")).execute()
+
+        # Test with the engine's mimic method and the Mimic action
+        for f in [self.engine.mimic, exec_mimic_action]:
+            self.reset_test_functions()
+
+            # Test mapping 1
+            f("testing")
+            # engine.mimic will not match speech in sequence like
+            # engine.mimic_phrases
+            self.assert_test_function_called(test1, 1)
+            self.assert_test_function_called(test2, 0)
+            self.assert_test_function_called(test3, 0)
+
+            # Test that partial matches of mapping 2 fail.
+            if f is exec_mimic_action:
+                # ActionBase.execute() catches and logs raised errors, so don't use
+                # assertRaises for Mimic(...).execute()
+                f("testing testing")
+                f("testing hello")
+            else:
+                # engine.mimic(..) will raise MimicFailure
+                self.assertRaises(MimicFailure, f, "testing testing")
+                self.assertRaises(MimicFailure, f, "testing hello")
+
+            # Neither test function should have been called
+            self.assert_test_function_called(test1, 1)
+            self.assert_test_function_called(test2, 0)
+            self.assert_test_function_called(test3, 0)
+
+            # Test that full matches of mapping 2 are successful
+            f("testing hello testing")
+            self.assert_test_function_called(test1, 1)
+            self.assert_test_function_called(test2, 1)
+            self.assert_test_function_called(test3, 0)
+
+            # Test mapping 3
+            f("test with multiple words")
+            self.assert_test_function_called(test1, 1)
+            self.assert_test_function_called(test2, 1)
+            self.assert_test_function_called(test3, 1)  # mapping 3 processed
+            self.assert_test_function_called(test4, 0)
+
+            # Test mapping 4
+            f("forward")
+            self.assert_test_function_called(test4, 1)
+            f("forward one")
+            self.assert_test_function_called(test4, 2)
+
+        # TODO Make ambiguous matches work correctly - this is an issue with jsgf.ext.Dictation
+        self.engine.mimic("testing testing testing")
+        self.assert_test_function_called(test2, 2)
+        exec_mimic_action("testing testing testing")
+        self.assert_test_function_called(test2, 3)
+
 
 # ---------------------------------------------------------------------
 

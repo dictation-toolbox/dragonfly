@@ -3,8 +3,9 @@ GrammarWrapper class for CMU Pocket Sphinx engine
 """
 import functools
 
-from jsgf import RuleRef, map_expansion
-from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion, dictation_in_expansion
+from jsgf import RuleRef, map_expansion, Literal, find_expansion
+from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion, \
+    dictation_in_expansion
 
 import dragonfly.grammar.state as state_
 from dragonfly import Grammar
@@ -18,14 +19,18 @@ class ProcessingState(object):
 
     ProcessingState objects can be compared to find the best state to process.
     """
-    def __init__(self, wrapper, speech):
+    def __init__(self, wrapper, speech, use_linked_rules=False):
         """
         :type wrapper: GrammarWrapper
         :type speech: str
+        :type use_linked_rules: bool
         """
         self._wrapper = wrapper
         self._post_collection_tasks = []
         self.speech = speech
+
+        # This is used when mimicking speech as words.
+        self.use_linked_rules = use_linked_rules
         self.in_progress_rules = []
         self.complete_rules = []
         self.speech_is_dictation = self.wrapper.engine.recognising_dictation
@@ -210,7 +215,7 @@ class GrammarWrapper(object):
         :rtype: ProcessingState
         """
         speech = state.speech
-        if not speech and not self.engine.recognising_dictation:
+        if not ((speech or state.speech_is_dictation) or state.use_linked_rules):
             # Check if there are any match rules with dictation expansions
             dict_hyp_required = False
             for rule in self.dictation_grammar.match_rules:
@@ -346,32 +351,90 @@ class GrammarWrapper(object):
         :param complete_match: whether all expansions in a SequenceRule must match
         :return: list
         """
-        df_rule = self._get_dragonfly_rule(rule)
-        if isinstance(rule, SequenceRule):
+        df_rule_id = self.grammar.rules.index(
+            self._get_dragonfly_rule(rule)
+        )
+
+        if isinstance(rule, SequenceRule) or dictation_in_expansion(rule.expansion):
             words_list = []
-            # Generate a words list using the match values for each expansion in the
-            # sequence
-            for e in rule.expansion_sequence:
+            if isinstance(rule, SequenceRule):
+                # Used by real speech input and engine.mimic_phrases.
+                expansions = rule.expansion_sequence
+            else:
+                # LinkedRules cannot be partially matched, but this shouldn't
+                # happen regardless, so log an error.
+                if not rule.was_matched:
+                    self.engine.log.error("LinkedRule %s returned an empty words "
+                                          "list" % rule)
+                    return []
+
+                def matching(x):
+                    # Note that Dictation is a subclass of jsgf.Literal so it
+                    # doesn't need to be specified here.
+                    if isinstance(x, (Literal, RuleRef)) and x.current_match:
+                        # All ancestors must also have non-null match values.
+                        p = x.parent
+                        while p:
+                            if not p.current_match:
+                                return False
+                            p = p.parent
+                        return True
+
+                # Initialise the list with the first matching expansion.
+                first = find_expansion(rule.expansion, matching)
+                expansions = [first]
+
+                if not first:
+                    self.engine.log.error("Matching rule %s had no matching "
+                                          "expansions" % rule)
+                    return []
+
+                # Then add each matchable leaf afterwards. This does what
+                # Expansion.matchable_leaves_after does, except that it only looks
+                # at leaves in this tree, not referenced ones.
+                shallow_leaves = first.root_expansion.collect_leaves(shallow=True)
+                first_reached = False
+                for leaf in shallow_leaves:
+                    if leaf is first:
+                        first_reached = True
+                        continue
+                    elif first_reached and (not first.mutually_exclusive_of(leaf)
+                                            and matching(leaf)):
+                        expansions.append(leaf)
+
+            # Generate a words list using the match values for each expansion in
+            # the list.
+            for e in expansions:
                 # Use rule IDs compatible with dragonfly's processing classes
                 if only_dictation_in_expansion(e):
                     rule_id = 1000000  # dgndictation id
                 else:
-                    rule_id = self.grammar.rules.index(df_rule)
+                    rule_id = df_rule_id
 
-                # If the SequenceRule is not completely matched yet and
-                # complete_match is False, then use the match values thus far.
+                # If the rule is not completely matched yet and complete_match is
+                # False, then use the match values thus far. This should only happen
+                # for SequenceRules.
                 if not complete_match and e.current_match is None:
                     break
 
                 # Get the words from the expansion's current match
                 words = e.current_match.split()
-                assert words is not None
                 for word in words:
                     words_list.append((word, rule_id))
-        else:
-            rule_id = self.grammar.rules.index(df_rule)
-            words_list = [(word, rule_id)
+
+        # Non-sequential rules must match completely.
+        # These rules shouldn't have any Dictation expansions.
+        elif rule.was_matched:
+            words_list = [(word, df_rule_id)
                           for word in rule.expansion.current_match.split()]
+        else:
+            words_list = []
+
+        if not words_list:
+            self.engine.log.debug("Rule %s had match '%s', but returned an empty "
+                                  "words list"
+                                  % (rule, rule.expansion.current_match))
+
         return words_list
 
     def _collect_normal_rules(self, state):
@@ -386,13 +449,17 @@ class GrammarWrapper(object):
             return state
 
         # Find rules of active grammars that match the speech string
-        matching_rules = self._dictation_grammar.find_matching_rules(
-            state.speech, advance_sequence_rules=False)
+        if state.use_linked_rules:
+            matching_rules = self._jsgf_grammar.find_matching_rules(state.speech)
+            state.complete_rules.extend(matching_rules)
+            return state
+        else:
+            matching_rules = self._dictation_grammar.find_matching_rules(
+                state.speech, advance_sequence_rules=False)
 
         for rule in matching_rules:
             if isinstance(rule, SequenceRule):  # spoken in multiple utterances
-                if rule.current_is_dictation_only and not \
-                        self.engine.recognising_dictation:
+                if rule.current_is_dictation_only and not state.speech_is_dictation:
                     # Get a dictation hypothesis
                     dict_hypothesis = self.engine.get_dictation_hypothesis()
 
@@ -430,12 +497,8 @@ class GrammarWrapper(object):
 
         # Process the rules using a shallow copy of the in progress list because the
         # original list will be modified
+        dict_hypothesis = self.engine.get_dictation_hypothesis()
         for rule in tuple(self._in_progress_sequence_rules):
-            # Get a dictation hypothesis if it is required
-            if rule.current_is_dictation_only and \
-                    not self.engine.recognising_dictation:
-                dict_hypothesis = self.engine.get_dictation_hypothesis()
-
             # Match the rule with the appropriate hypothesis string.
             if rule.current_is_dictation_only and dict_hypothesis:
                 rule.matches(dict_hypothesis)

@@ -14,7 +14,6 @@ The following is a list of to-do items for the engine implementation in no parti
   - [X] use searches for each grammar instead of one large search
   - [ ] add support for command chaining + `Dictation` elements
   - [ ] full action support using Aenea in some way
-  - [ ] change mimic action class to work with the Sphinx engine's `mimic` method
   - [ ] dynamically add unknown words to the dictionary and language model using the decoder `add_word` method, somehow getting a phone string for the second parameter, perhaps using [lextool](http://www.speech.cs.cmu.edu/tools/lextool.html) or something similar. The underlying `ps_add_word` C function is documented in the include file [here](https://github.com/cmusphinx/pocketsphinx/blob/master/include/pocketsphinx.h#L245).
   - [ ] for better performance, use Python's `multiprocessing` package and multiple PS decoders to call `<decoder>.batch_process` in parallel.
   - [ ] properly document the public methods for the Sphinx engine with the Sphinx documentation that dragonfly uses

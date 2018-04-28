@@ -746,8 +746,11 @@ class SphinxEngine(EngineBase):
                 else:
                     speech = hyp
 
-        # Use speech as the dictation hypothesis if mimicking.
-        if mimicking:
+        if mimicking == "as words":
+            # Set dictation hypothesis to None if mimicking with engine.mimic
+            self._current_dictation_hyp = None
+        elif mimicking:
+            # Or if using mimic_phrases, use speech.
             self._current_dictation_hyp = speech
 
         # Use speech as the hypothesis for the current grammar wrapper.
@@ -786,11 +789,17 @@ class SphinxEngine(EngineBase):
 
         processing_states = []
         for wrapper in wrappers:
-
             # Collect matching rules in a ProcessingState object for each
             # wrapper
             hyp = hypothesises[wrapper.search_name]
-            processing_states.append(ProcessingState(wrapper, hyp))
+
+            # If called by engine.mimic (not engine.mimic_phrases), we need to match
+            # on LinkedRules instead to get a complete match, especially if there's
+            # dictation involved.
+            if mimicking == "as words":
+                processing_states.append(ProcessingState(wrapper, hyp, True))
+            else:
+                processing_states.append(ProcessingState(wrapper, hyp))
 
         # Process the best wrapper
         best_state = self._get_best_processing_state(processing_states)
@@ -885,11 +894,24 @@ class SphinxEngine(EngineBase):
         self._recognition_paused = False
         self._free_engine_resources()
 
-    def mimic(self, *phrases):
+    def mimic(self, words):
+        """ Mimic a recognition of the given *words* """
+        if isinstance(words, tuple):
+            words = " ".join(words)
+
+        # Pretend that Sphinx has started processing speech
+        self._speech_start_callback()
+
+        # Process the words as if they were spoken
+        result = self._hypothesis_callback(words, "as words")
+        if not result:
+            raise MimicFailure("No matching rule found for words %s." % words)
+
+    def mimic_phrases(self, *phrases):
         """
         Mimic a recognition of the given *phrases*.
-        Due to the way Dictation elements are processed for this engine, the mimic
-        method is implemented to accept variable phrases instead of a list of words.
+        This method is implemented to accept variable phrases instead of a list of
+        words and is used by the engine tests to mimic required utterance pauses.
         """
         # Pretend that Sphinx has started processing speech
         self._speech_start_callback()

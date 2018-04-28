@@ -63,7 +63,7 @@ setup(
       extras_require={
           "sphinx": [
                      "sphinxwrapper",
-                     "pyjsgf >= 1.2.0",
+                     "pyjsgf >= 1.2.2",
                      "pyaudio"
                     ]
       },
