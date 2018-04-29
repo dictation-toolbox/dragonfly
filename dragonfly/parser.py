@@ -202,19 +202,19 @@ class State(object):
             self.value = None; self.end = None
 
     def decode_attempt(self, element):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         self._depth += 1
         self._stack.append(State._Frame(self._depth, element, self._index))
         self._log_step(element, "attempt")
 
     def decode_retry(self, element):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         frame = self._get_frame_from_actor(element)
         self._depth = frame.depth
         self._log_step(element, "retry")
 
     def decode_rollback(self, element):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
             raise grammar_.GrammarError("Parser decoding stack broken")
@@ -226,7 +226,7 @@ class State(object):
         self._log_step(element, "rollback")
 
     def decode_success(self, element, value=None):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         self._log_step(element, "success")
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
@@ -236,7 +236,7 @@ class State(object):
         self._depth -= 1
 
     def decode_failure(self, element):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         frame = self._stack.pop()
         self._index = frame.begin
         self._depth = frame.depth
@@ -652,7 +652,10 @@ class String(ParserElementBase):
 
     def __init__(self, string, name=None):
         ParserElementBase.__init__(self, name)
-        self._string = string
+        if isinstance(string, unicode):
+            self._string = string.encode("utf-8")
+        else:
+            self._string = string
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
@@ -695,17 +698,27 @@ class CharacterSeries(ParserElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
+    def char_matches(self, c):
+        if isinstance(c, unicode):
+            c = c.encode("utf-8")
+        if self._set:
+            return c in self._set
+        else:
+            return False
+
     def parse(self, state):
         state.decode_attempt(self)
 
         # Gobble as many valid characters as possible.
         count = 0
         if self._exclude:
-            while not state.finished() and state.peek(1) not in self._set:
+            while (not state.finished() and not
+                    self.char_matches(state.peek(1))):
                 state.next(1)
                 count += 1
         else:
-            while not state.finished() and state.peek(1) in self._set:
+            while (not state.finished() and
+                    self.char_matches(state.peek(1))):
                 state.next(1)
                 count += 1
 

@@ -20,13 +20,12 @@
 
 
 import unittest
-import time
 import string
 
 from dragonfly import parser
 
-
 #===========================================================================
+
 
 class TestParsers(unittest.TestCase):
 
@@ -36,23 +35,45 @@ class TestParsers(unittest.TestCase):
     def test_character_series(self):
         """ Test CharacterSeries parser class. """
 
+        # Test with ascii characters
         self._test_multiple(
             parser.CharacterSeries(string.letters),
             [
                 ("abc", ["abc"]),
             ],
-            must_finish = False)
+            must_finish=False)
+
+        # Test with Unicode characters
+        self._test_multiple(
+            parser.Letters(),
+            [
+                (u"abc", [u"abc"]),
+            ],
+            must_finish=False
+        )
 
     def test_repetition(self):
         """ Test repetition parser class. """
-        word = parser.CharacterSeries(string.letters)
-        whitespace = parser.CharacterSeries(string.whitespace)
+        word = parser.Letters()
+        whitespace = parser.Whitespace()
         p = parser.Repetition(parser.Alternative((word, whitespace)))
+
+        # Test with ascii letters
         input_output = (
-            ("abc", ["abc"] ),
+            ("abc", ["abc"]),
             ("abc abc", ["abc", " ", "abc"]),
-            ("abc abc\t\t\n   cba", ["abc", " ", "abc", "\t\t\n   ", "cba"]),
+            ("abc abc\t\t\n   cba", ["abc", " ", "abc", "\t\t\n   ",
+                                     "cba"]),
             )
+        self._test_single(p, input_output)
+
+        # Test with Unicode characters
+        input_output = (
+            (u"abc", [u"abc"]),
+            (u"abc abc", [u"abc", u" ", u"abc"]),
+            (u"abc abc\t\t\n   cba", [
+                u"abc", " ", u"abc", u"\t\t\n   ", u"cba"]),
+        )
         self._test_single(p, input_output)
 
     def test_optional_greedy(self):
@@ -61,7 +82,7 @@ class TestParsers(unittest.TestCase):
         p = parser.Sequence([
             parser.Sequence([
                 parser.String("a"),
-                parser.Optional(parser.String("b"), greedy = False)
+                parser.Optional(parser.String("b"), greedy=False)
                 ]),
             parser.Sequence([
                 parser.Optional(parser.String("b")),
@@ -76,7 +97,7 @@ class TestParsers(unittest.TestCase):
         generator.next()
         root = state.build_parse_tree()
         self.assertEqual(root.value(), expected_output_1)
-    
+
         generator.next()
         root = state.build_parse_tree()
         self.assertEqual(root.value(), expected_output_2)
@@ -87,7 +108,7 @@ class TestParsers(unittest.TestCase):
             result = p.parse(input)
             self.assertEqual(result, output)
 
-    def _test_multiple(self, parser_element, input_outputs, must_finish = True):
+    def _test_multiple(self, parser_element, input_outputs, must_finish=True):
         p = parser.Parser(parser_element)
         for input, outputs in input_outputs:
             results = p.parse_multiple(input, must_finish)
