@@ -21,11 +21,12 @@
 """
     This file implements the ConnectionGrammar class.
 """
+from six import string_types
 
 try:
     from win32com.client import Dispatch
     from pywintypes import com_error
-except ImportError, error:
+except ImportError as error:
     import sys
     if sys.platform.startswith("win"):
         raise error
@@ -63,7 +64,7 @@ class ConnectionGrammar(Grammar):
     """
 
     def __init__(self, name, description=None, context=None, app_name=None):
-        assert isinstance(app_name, (str, unicode)) or app_name is None
+        assert isinstance(app_name, string_types) or app_name is None
         self._app_name = app_name
         self._application = None
         Grammar.__init__(self, name=name, description=description,
@@ -72,7 +73,7 @@ class ConnectionGrammar(Grammar):
     def __del__(self):
         try:
             self.disconnect()
-        except Exception, e:
+        except Exception as e:
             self._log.warning("Grammar %s: failed to disconnect from "
                               "%r: %s." % (self, self._app_name, e))
 
@@ -111,7 +112,7 @@ class ConnectionGrammar(Grammar):
             return True
         try:
             self._application = Dispatch(self._app_name)
-        except com_error, e:
+        except com_error as e:
             if self._log_begin:
                 self._log_begin.warning("Grammar %s: failed to"
                                         " connect to %r: %s."

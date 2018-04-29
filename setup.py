@@ -57,7 +57,8 @@ setup(
 
       install_requires=[
                         "setuptools >= 0.6c7",
-                        "pywin32;platform_system=='Windows'"
+                        "pywin32;platform_system=='Windows'",
+                        "six"
                        ],
 
       extras_require={

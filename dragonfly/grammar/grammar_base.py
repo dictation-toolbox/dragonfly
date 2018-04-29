@@ -25,6 +25,8 @@ Grammar class
 """
 
 import logging
+from six import string_types
+
 from ..engines         import get_engine
 from .rule_base        import Rule
 from .list             import ListBase
@@ -88,12 +90,14 @@ class Grammar(object):
 
     def __del__(self):
         try:
+            if self._loaded:
+                return
             self.unload()
-        except Exception, e:
+        except Exception as e:
             try:
                 self._log.exception("Exception during grammar unloading:"
                                     " %s" % (e,))
-            except Exception:
+            except Exception as e:
                 pass
 
     # ----------------------------------------------------------------------
@@ -317,7 +321,7 @@ class Grammar(object):
             raise GrammarError("List '%s' not loaded in this grammar."
                                % lst.name)
         elif [True for w in lst.get_list_items()
-              if not isinstance(w, (str, unicode))]:
+              if not isinstance(w, string_types)]:
             raise GrammarError("List '%s' contains objects other than"
                                "strings." % lst.name)
 

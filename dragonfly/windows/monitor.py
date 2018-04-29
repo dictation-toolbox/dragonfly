@@ -22,10 +22,11 @@
     This file offers an interface to the Win32 information about
     available monitors (a.k.a. screens, displays).
 """
-
+from six import integer_types
 
 import win32api
 import logging
+
 from .rectangle import Rectangle
 
 
@@ -47,7 +48,7 @@ class Monitor(object):
     # Methods for initialization and introspection.
 
     def __init__(self, handle, rectangle):
-        assert isinstance(handle, (int, long))
+        assert isinstance(handle, integer_types)
         self._handle = handle
         assert isinstance(rectangle, Rectangle)
         self._rectangle = rectangle
@@ -99,7 +100,7 @@ class Monitor(object):
     # Methods that control attribute access.
 
     def _set_handle(self, handle):
-        assert isinstance(handle, (int, long))
+        assert isinstance(handle, integer_types)
         self._handle = handle
     handle = property(fget=lambda self: self._handle,
                       fset=_set_handle,

@@ -146,6 +146,7 @@ class ValueElement(Alternative):
         Parser element for values.
 
         Usage examples:
+        >>> from six import string_types
         >>> from dragonfly.parser import Parser
         >>> parser = Parser(ValueElement())
         >>> def test_value_element(input, identifier):
@@ -155,7 +156,7 @@ class ValueElement(Alternative):
         ...         assert isinstance(output, Identifier)
         ...         assert output.name == input
         ...     else:
-        ...         assert isinstance(output, basestring)
+        ...         assert isinstance(output, string_types)
         ...         input = input.decode("string_escape")  # Interpret escaped chars.
         ...         assert output == input[1:-1]           # Strip off quotation marks.
         ...     return True
@@ -182,14 +183,15 @@ class ArgumentElement(Sequence):
         Parser element for call arguments.
 
         Usage examples:
+        >>> from six import string_types
         >>> from dragonfly.parser import Parser
         >>> parser = Parser(ArgumentElement())
         >>> def test_argument_element(input, name, value):
         ...     output = parser.parse(input)
         ...     if not output: return False
-        ...     assert isinstance(output.name, basestring) or output.name is None
+        ...     assert isinstance(output.name, string_types) or output.name is None
         ...     assert output.name == name
-        ...     assert isinstance(output.value, (basestring, Identifier))
+        ...     assert isinstance(output.value, (string_types, Identifier))
         ...     assert output.value == value
         ...     return True
         >>> assert test_argument_element("foo_bar",     None,     Identifier("foo_bar"))

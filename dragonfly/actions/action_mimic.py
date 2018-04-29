@@ -23,7 +23,7 @@ Mimic action
 ============================================================================
 
 """
-
+from six               import string_types
 from .action_base      import ActionBase, ActionError
 from ..engines         import get_engine
 
@@ -88,7 +88,7 @@ class Mimic(ActionBase):
         # Make sure that all keyword arguments have been consumed.
         if kwargs:
             raise ActionError("Invalid arguments: %r"
-                              % ", ".join(kwargs.keys()))
+                              % ", ".join(list(kwargs.keys())))
 
     def _execute(self, data=None):
         engine = get_engine()
@@ -109,7 +109,7 @@ class Mimic(ActionBase):
                 words += tuple(extra.words)
             elif isinstance(extra, (tuple, list)):
                 words += tuple(extra)
-            elif isinstance(extra, (str, unicode)):
+            elif isinstance(extra, string_types):
                 words += (extra,)
             else:
                 raise ActionError("Invalid extra data type: %r" % extra)
@@ -120,5 +120,5 @@ class Mimic(ActionBase):
             engine.disable_recognition_observers()
             engine.mimic(words)
             engine.enable_recognition_observers()
-        except Exception, e:
+        except Exception as e:
             raise ActionError("Mimicking failed: %s" % e)

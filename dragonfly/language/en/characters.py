@@ -64,7 +64,7 @@ uppercase_prefix = "(Cap | Shift)"
 
 lowercase_letter_names = letter_names
 uppercase_letter_names = dict((name, char.upper())
-                              for (name, char) in letter_names.items())
+                              for (name, char) in list(letter_names.items()))
 
 
 #---------------------------------------------------------------------------

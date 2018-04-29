@@ -23,6 +23,7 @@ Context factory implementations
 ============================================================================
 
 """
+from six import string_types
 
 import dragonfly
 from .loader    import ContextFactoryBase
@@ -78,7 +79,7 @@ def _get_single_anon_string(arguments, description):
     if argument.name is not None:
         raise Error("%s expects 1 argument"
                     " without a name." % description)
-    if not isinstance(argument.value, basestring):
+    if not isinstance(argument.value, string_types):
         raise Error("%s expects 1 argument"
                     " that is a literal string." % description)
     return argument.value

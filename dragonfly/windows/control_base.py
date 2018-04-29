@@ -64,7 +64,7 @@ class ControlBase(object):
 
         # Build this control's message callback mapping.
         self._message_callbacks = {}
-        for name, callback in kwargs.items():
+        for name, callback in list(kwargs.items()):
             message = self._message_names[name]
             self._message_callbacks[message] = callback
 

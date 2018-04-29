@@ -28,6 +28,8 @@ SAPI 5 engine classes
 #---------------------------------------------------------------------------
 
 import time
+from six import string_types, integer_types
+
 import win32con
 from ctypes import *
 
@@ -131,7 +133,7 @@ class Sapi5SharedEngine(EngineBase):
         """ Unload the given *grammar*. """
         try:
             wrapper.handle.State = constants.SGSDisabled
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Failed to unload grammar %s: %s."
                                 % (grammar, e))
 
@@ -187,7 +189,7 @@ class Sapi5SharedEngine(EngineBase):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        if isinstance(words, basestring):
+        if isinstance(words, string_types):
             phrase = words
         else:
             phrase = " ".join(words)
@@ -297,7 +299,7 @@ class Sapi5InProcEngine(Sapi5SharedEngine):
 
         available_sources = self._recognizer.GetAudioInputs()
 
-        if isinstance(audio_source, (int, long)):
+        if isinstance(audio_source, integer_types):
             # Parameter is the index of the source to use.
             if 0 <= audio_source < available_sources.Count:
                 selected_source = available_sources.Item(audio_source)
@@ -308,7 +310,7 @@ class Sapi5InProcEngine(Sapi5SharedEngine):
                                   % (audio_source, available_sources.Count,
                                      available_sources.Count - 1))
 
-        elif isinstance(audio_source, basestring):
+        elif isinstance(audio_source, string_types):
             for item in collection_iter(available_sources):
                 if audio_source in item.GetDescription():
                     selected_source = item
@@ -332,7 +334,7 @@ class Sapi5InProcEngine(Sapi5SharedEngine):
 def collection_iter(collection):
     if not collection:
         return
-    for index in xrange(0, collection.Count):
+    for index in range(0, collection.Count):
         yield collection.Item(index)
 
 
@@ -381,7 +383,7 @@ class GrammarWrapper(object):
             # Walk the tree of child rules and put their names in the list.
             stack = [collection_iter(phrase_info.Rule.Children)]
             while stack:
-                try: element = stack[-1].next()
+                try: element = next(stack[-1])
                 except StopIteration: stack.pop(); continue
                 name = element.Name
                 start = element.FirstElement
@@ -434,7 +436,7 @@ class GrammarWrapper(object):
                         r.process_recognition(root)
                         return
 
-        except Exception, e:
+        except Exception as e:
             Sapi5Engine._log.error("Grammar %s: exception: %s"
                                    % (self.grammar._name, e), exc_info=True)
 

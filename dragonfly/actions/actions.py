@@ -42,7 +42,7 @@ if sys.platform.startswith("win"):
     from .action_focuswindow  import FocusWindow
     from .action_startapp     import StartApp, BringApp
     from .action_playsound    import PlaySound
-    from keyboard             import Keyboard, Typeable
+    from .keyboard             import Keyboard, Typeable
 else:
     from ..os_dependent_mock import Key
     from ..os_dependent_mock import Text

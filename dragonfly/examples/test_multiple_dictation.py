@@ -22,7 +22,7 @@ Multiple consecutive dictation elements
 -------------------------------------------------------------------------------
 
 >>> tester = ElementTester(RuleRef(ConsecutiveDictationRule()))
->>> print tester.recognize("consecutive Alice Bob Charlie")
+>>> print(tester.recognize("consecutive Alice Bob Charlie"))
 Recognition: "consecutive Alice Bob Charlie"
 Word and rule pairs: ("1000000" is "dgndictation")
  - consecutive (1)
@@ -34,7 +34,7 @@ Extras:
  - dictation2: Bob
  - dictation3: Charlie
 
->>> print tester.recognize("consecutive Alice Bob")
+>>> print(tester.recognize("consecutive Alice Bob"))
 RecognitionFailure
 
 
@@ -57,7 +57,7 @@ the recognized words. However, do note that that order is well defined
 but arbitrarily chosen. 
 
 >>> tester = ElementTester(RuleRef(MixedDictationRule()))
->>> print tester.recognize("mixed Alice Bob command Charlie")
+>>> print(tester.recognize("mixed Alice Bob command Charlie"))
 Recognition: "mixed Alice Bob command Charlie"
 Word and rule pairs: ("1000000" is "dgndictation")
  - mixed (1)
@@ -70,7 +70,7 @@ Extras:
  - dictation2: Bob
  - dictation3: Charlie
 
->>> print tester.recognize("mixed Alice command Charlie")
+>>> print(tester.recognize("mixed Alice command Charlie"))
 Recognition: "mixed Alice command Charlie"
 Word and rule pairs: ("1000000" is "dgndictation")
  - mixed (1)
@@ -81,10 +81,10 @@ Extras:
  - dictation2: Alice
  - dictation3: Charlie
 
->>> print tester.recognize("mixed Alice Bob command")
+>>> print(tester.recognize("mixed Alice Bob command"))
 RecognitionFailure
 
->>> print tester.recognize("mixed command Charlie")
+>>> print(tester.recognize("mixed command Charlie"))
 RecognitionFailure
 
 
@@ -105,7 +105,7 @@ words in commands, and dynamic dictation elements. As an example,
 the show which of these actually occurs.
 
 >>> tester = ElementTester(RuleRef(RepeatedDictationRule()))
->>> print tester.recognize("command Alice")
+>>> print(tester.recognize("command Alice"))
 Recognition: "command Alice"
 Word and rule pairs: ("1000000" is "dgndictation")
  - command (1)
@@ -113,7 +113,7 @@ Word and rule pairs: ("1000000" is "dgndictation")
 Extras:
  - repetition: [[u'command', NatlinkDictationContainer(Alice)]]
 
->>> print tester.recognize("command Alice command Bob")
+>>> print(tester.recognize("command Alice command Bob"))
 Recognition: "command Alice command Bob"
 Word and rule pairs: ("1000000" is "dgndictation")
  - command (1)
