@@ -24,13 +24,22 @@ Paste action
 
 """
 
+import sys
 
-import win32con
-import pywintypes
-from dragonfly.actions.action_base  import DynStrActionBase, ActionError
-from dragonfly.actions.action_key   import Key
-from dragonfly.actions.action_text  import Text
-from dragonfly.windows.clipboard    import Clipboard
+from ..actions.action_base import DynStrActionBase
+from ..actions.action_key import Key
+from ..windows.clipboard import Clipboard
+
+
+if sys.platform.startswith("win"):
+    from win32con import CF_UNICODETEXT, CF_TEXT
+    from pywintypes import error as clipboard_manipulation_error
+else:
+    clipboard_manipulation_error = RuntimeError
+
+    # Use hardcoded values to allow Paste to work on multiple platforms.
+    CF_UNICODETEXT = 13
+    CF_TEXT = 1
 
 
 #---------------------------------------------------------------------------
@@ -58,13 +67,16 @@ class Paste(DynStrActionBase):
 
     """
 
+    _default_format = CF_UNICODETEXT
+
     # Default paste action.
-    _default_format = win32con.CF_UNICODETEXT
-    _default_paste = Key("c-v/20")
+    _default_paste = Key("s-insert/20")
 
     def __init__(self, contents, format=None, paste=None, static=False):
-        if not format: format = self._default_format
-        if not paste: paste = self._default_paste
+        if not format:
+            format = self._default_format
+        if not paste:
+            paste = self._default_paste
         if isinstance(contents, basestring):
             spec = contents
             self.contents = None
@@ -85,13 +97,13 @@ class Paste(DynStrActionBase):
         original = Clipboard()
         try:
             original.copy_from_system()
-        except pywintypes.error, e:
+        except clipboard_manipulation_error as e:
             self._log.warning("Failed to store original clipboard contents:"
                               " %s" % e)
 
-        if self.format == win32con.CF_UNICODETEXT:
+        if self.format == CF_UNICODETEXT:
             events = unicode(events, "windows-1252")
-        elif self.format == win32con.CF_TEXT:
+        elif self.format == CF_TEXT:
             events = str(events)
 
         clipboard = Clipboard(contents={self.format: events})
