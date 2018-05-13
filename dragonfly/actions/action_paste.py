@@ -88,9 +88,8 @@ class Paste(DynStrActionBase):
         except pywintypes.error, e:
             self._log.warning("Failed to store original clipboard contents:"
                               " %s" % e)
-
-        if self.format == win32con.CF_UNICODETEXT:
-            events = unicode(events, "windows-1252")
+        if self.format == win32con.CF_UNICODETEXT and not type(events) is unicode:
+            events = unicode(events, encoding='windows-1252', errors='ignore')
         elif self.format == win32con.CF_TEXT:
             events = str(events)
 
