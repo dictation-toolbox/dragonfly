@@ -51,6 +51,8 @@ class Clipboard(object):
         win32clipboard.OpenClipboard()
         try:
             content = win32clipboard.GetClipboardData(cls.format_unicode)
+            if not content:
+			    content = win32clipboard.GetClipboardData(cls.format_text)
         finally:
             win32clipboard.CloseClipboard()
         return content
