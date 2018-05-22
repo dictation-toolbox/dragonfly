@@ -127,7 +127,9 @@ class GrammarWrapper(object):
         # Compile the grammar into a JSGF grammar and add those rules into
         # a JSGF DictationGrammar.
         self._jsgf_grammar = engine.compiler.compile_grammar(grammar)
+        self._jsgf_grammar.language_name = engine.language
         self._dictation_grammar = DictationGrammar(self._jsgf_grammar.rules)
+        self._dictation_grammar.language_name = engine.language
 
         # Set internal variables
         self._in_progress_sequence_rules = []

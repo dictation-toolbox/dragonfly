@@ -629,6 +629,7 @@ class SphinxEngine(EngineBase):
         # Decide between non-null hypothesises using a Pocket Sphinx search with
         # each hypothesis as a grammar rule.
         grammar = RootGrammar()
+        grammar.language_name = self.language
         for i, hypothesis in enumerate(distinct):
             grammar.add_rule(PublicRule("rule%d" % i, Literal(hypothesis)))
 
