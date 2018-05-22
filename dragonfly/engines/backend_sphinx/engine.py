@@ -180,6 +180,10 @@ class SphinxEngine(EngineBase):
         self._decoder = None
         self._audio_buffers = []
 
+        # Reset other variables
+        self._cancel_recognition_next_time = False
+        self._current_grammar_wrapper = None
+
         # Clear dictionaries and sets
         self._grammar_wrappers.clear()
         self._in_progress_states.clear()
@@ -649,6 +653,25 @@ class SphinxEngine(EngineBase):
             result = result.hypstr
         return result
 
+    def _set_current_grammar_search(self):
+        """
+        Set _current_grammar_wrapper and the active search to the search of an
+        active grammar. If there is no active grammar, set current wrapper to None
+        and active search to the dictation search.
+        """
+        active_wrappers = list(filter(
+            lambda w: w.grammar_active,
+            self._grammar_wrappers.values()
+        ))
+        if active_wrappers:
+            # Switch to the first active grammar wrapper's search.
+            self._current_grammar_wrapper = active_wrappers[0]
+            self.set_grammar(self._current_grammar_wrapper)
+        else:
+            # No wrapper is usable. Set the dictation search.
+            self._current_grammar_wrapper = None
+            self._set_dictation_search()
+
     def _speech_start_callback(self):
         # Get context info. Dragonfly has a handy static method for this:
         fg_window = Window.get_foreground()
@@ -674,22 +697,11 @@ class SphinxEngine(EngineBase):
         # Set a new current grammar wrapper if necessary.
         if (not self._current_grammar_wrapper or
                 not self._current_grammar_wrapper.grammar_active):
-            active_wrappers = filter(
-                lambda w: w.grammar_active,
-                self._grammar_wrappers.values()
-            )
-            if active_wrappers:
-                self._current_grammar_wrapper = active_wrappers[0]
-                self.set_grammar(self._current_grammar_wrapper)
-            else:
-                # No wrapper is usable. Set the dictation search.
-                self._current_grammar_wrapper = None
-                self._set_dictation_search()
+            self._set_current_grammar_search()
 
         # Reprocess current audio buffers if necessary; <decoder>.end_utterance
         # can be called by the above code or by the timer thread.
-        # TODO Add public methods and/or properties to PocketSphinx class for this
-        if self._decoder._utterance_state == PocketSphinx._UTT_ENDED:
+        if self._decoder.utt_ended:
             self._decoder.batch_process(self._audio_buffers, use_callbacks=False)
 
         # Notify observers
@@ -720,6 +732,8 @@ class SphinxEngine(EngineBase):
         # No grammar has been loaded.
         if not self._current_grammar_wrapper or not wrappers:
             # TODO What should we do here? Output formatted Dictation like DNS?
+            self.observer_manager.notify_failure()
+            self._audio_buffers = []
             return processing_occurred
 
         # If the engine is processing in-progress rules, only use active in-progress

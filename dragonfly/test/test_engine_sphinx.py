@@ -1,5 +1,9 @@
 """
 Tests for the CMU Pocket Sphinx engine
+
+Most engine functionality is tested here, although the tests are done entirely
+via `mimic`, so there are some things which have to be tested manually for the
+moment.
 """
 
 import unittest
@@ -38,7 +42,7 @@ class SphinxEngineCase(unittest.TestCase):
         # Restore saved config
         self.engine.config = self.engine_config
         self.engine.disconnect()
-        self.test_map = {}
+        self.test_map.clear()
 
     # ---------------------------------------------------------------------
     # Methods for control-flow assertion.
@@ -142,13 +146,13 @@ class BasicEngineTests(SphinxEngineCase):
             self.engine.config = value
 
         # Test with correct attributes
-        self.assertIsNone(set_config(TestConfig()))
+        self.assertIsNone(set_config(TestConfig))
 
         # Delete each attribute and check that an AssertionError is raised upon
         # setting the config again
         for name in required:
             delattr(TestConfig, name)
-            self.assertRaises(AssertionError, set_config, TestConfig())
+            self.assertRaises(AssertionError, set_config, TestConfig)
 
     def test_load_unload(self):
         """
