@@ -1,3 +1,5 @@
+# This Python file uses the following encoding: utf-8
+
 """
 Default CMU Pocket Sphinx engine class configuration module
 """
@@ -8,8 +10,18 @@ import os
 
 # Configuration for the Pocket Sphinx decoder.
 DECODER_CONFIG = DefaultConfig()
+
 # Silence the decoder output by default.
 DECODER_CONFIG.set_string("-logfn", os.devnull)
+
+# Configuration for wake/sleep phrases
+# Note that the following CMU Sphinx tutorial has some advice on keyword thresholds
+# values: https://cmusphinx.github.io/wiki/tutoriallm/#keyword-lists
+START_ASLEEP = True
+WAKE_PHRASE = "wake up"
+WAKE_PHRASE_THRESHOLD = 1e-20
+SLEEP_PHRASE = "go to sleep"
+SLEEP_PHRASE_THRESHOLD = 1e-40
 
 # Keyword arguments given to the PyAudio.open method for opening a stream from a
 # microphone. PyAudio streams are used by the engine to recognise speech from audio.

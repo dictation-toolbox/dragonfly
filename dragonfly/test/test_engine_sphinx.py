@@ -35,6 +35,12 @@ class SphinxEngineCase(unittest.TestCase):
         # that break tests. Value of 0 means no timeout at all.
         self.engine.config.NEXT_PART_TIMEOUT = 0
 
+        # Ensure the relevant default configuration values are used
+        self.engine.config.START_ASLEEP = False
+        self.engine.config.WAKE_PHRASE = "wake up"
+        self.engine.config.SLEEP_PHRASE = "go to sleep"
+        self.engine.config.LANGUAGE = "en"
+
         # Map for test functions
         self.test_map = {}
 
@@ -133,7 +139,12 @@ class BasicEngineTests(SphinxEngineCase):
             "DECODER_CONFIG",
             "LANGUAGE",
             "PYAUDIO_STREAM_KEYWORD_ARGS",
-            "NEXT_PART_TIMEOUT"
+            "NEXT_PART_TIMEOUT",
+            "START_ASLEEP",
+            "WAKE_PHRASE",
+            "SLEEP_PHRASE",
+            "WAKE_PHRASE_THRESHOLD",
+            "SLEEP_PHRASE_THRESHOLD"
         ]
 
         class TestConfig(object):
@@ -141,6 +152,11 @@ class BasicEngineTests(SphinxEngineCase):
             LANGUAGE = "en"
             PYAUDIO_STREAM_KEYWORD_ARGS = {}
             NEXT_PART_TIMEOUT = 0
+            START_ASLEEP = False
+            WAKE_PHRASE = "wake up"
+            WAKE_PHRASE_THRESHOLD = 1e-20
+            SLEEP_PHRASE = "go to sleep"
+            SLEEP_PHRASE_THRESHOLD = 1e-40
 
         def set_config(value):
             self.engine.config = value
@@ -354,6 +370,113 @@ class BasicEngineTests(SphinxEngineCase):
         # Check that only one of these rules was processed
         self.assert_test_function_called(test1, 1)
         self.assert_test_function_called(test2, 0)
+
+    def test_pause_resume_recognition(self):
+        test = self.get_test_function()
+
+        class TestRule(CompoundRule):
+            spec = "hello world"
+            _process_recognition = test
+
+        g = Grammar("test1")
+        g.add_rule(TestRule())
+        g.load()
+        self.assertTrue(g.loaded)
+        self.assertFalse(self.engine.recognition_paused)
+
+        # Mimicking hello world should fail *silently* when recognition is paused
+        self.engine.pause_recognition()
+        self.assertTrue(self.engine.recognition_paused)
+        self.engine.mimic("hello world")  # note this is *not* a recognition failure
+        self.assert_test_function_called(test, 0)
+        self.engine.resume_recognition()
+        self.assertFalse(self.engine.recognition_paused)
+        self.assert_mimic_success("hello world")
+        self.assert_test_function_called(test, 1)
+
+        # Test again mimicking wake and sleep phrases
+        self.assert_mimic_success("go to sleep")
+        self.assertTrue(self.engine.recognition_paused)
+        self.engine.mimic("hello world")
+        self.assert_test_function_called(test, 1)  # no change
+        self.assert_mimic_success("wake up")
+        self.assertFalse(self.engine.recognition_paused)
+        self.assert_mimic_success("hello world")
+        self.assert_test_function_called(test, 2)
+
+    def test_start_asleep(self):
+        # config.START_ASLEEP is False for the tests by default, so test that first.
+        self.assertFalse(self.engine.recognition_paused)
+        self.assert_mimic_success("go to sleep")
+
+        # Now set it to True, restart the engine and test again.
+        self.engine.config.START_ASLEEP = True
+        self.engine.disconnect()
+        self.engine.connect()
+        self.engine.post_loader_init()  # used instead of 'recognise_forever' here
+        self.assertTrue(self.engine.recognition_paused)
+        self.assert_mimic_success("wake up")
+
+    def test_key_phrases(self):
+        """
+        Test key phrase functionality and observer notify methods.
+        """
+        test1 = self.get_test_function()
+        test2 = self.get_test_function()
+        on_begin_test = self.get_test_function()
+        on_recognition_test = self.get_test_function()
+        on_failure_test = self.get_test_function()
+
+        # Set up a custom observer using test methods
+        class TestObserver(RecognitionObserver):
+            on_begin = on_begin_test
+            on_recognition = on_recognition_test
+            on_failure = on_failure_test
+
+        self.engine.register_recognition_observer(TestObserver())
+
+        # Register two key phrases
+        self.engine.set_keyphrase("hello world", 1e-20, test1)
+        self.engine.set_keyphrase("testing testing", 1e-30, test2)
+
+        # Test that both key phrases can be mimicked
+        self.assert_mimic_success("hello world")
+        self.assert_test_function_called(test1, 1)
+        self.assert_test_function_called(on_begin_test, 1)
+        self.assert_test_function_called(on_recognition_test, 1)
+        self.assert_mimic_success("testing testing")
+        self.assert_test_function_called(test2, 1)
+        self.assert_test_function_called(on_begin_test, 2)
+        self.assert_test_function_called(on_recognition_test, 2)
+        self.assert_test_function_called(on_failure_test, 0)
+
+        # Test that neither of the key phrases match when recognition is paused
+        self.engine.pause_recognition()
+        self.engine.mimic("hello world")
+        self.assert_test_function_called(test1, 1)  # no change
+        self.engine.mimic("testing testing")
+        self.assert_test_function_called(test2, 1)  # no change
+
+        # Test that no notify test functions have been called again
+        self.assert_test_function_called(on_begin_test, 2)
+        self.assert_test_function_called(on_recognition_test, 2)
+        self.assert_test_function_called(on_failure_test, 0)
+
+        # Resume recognition again. on_recognition_test should have been called.
+        self.engine.resume_recognition()
+        self.assert_test_function_called(on_recognition_test, 3)
+
+        # Test that removed key phrases no longer match
+        self.engine.unset_keyphrase("hello world")
+        self.assert_mimic_failure("hello world")
+        self.assert_test_function_called(test1, 1)  # no change
+        self.assert_test_function_called(on_begin_test, 3)
+        self.assert_test_function_called(on_failure_test, 1)
+        self.engine.unset_keyphrase("testing testing")
+        self.assert_mimic_failure("testing testing")
+        self.assert_test_function_called(test2, 1)  # no change
+        self.assert_test_function_called(on_begin_test, 4)
+        self.assert_test_function_called(on_failure_test, 2)
 
 
 class DictationEngineTests(SphinxEngineCase):
