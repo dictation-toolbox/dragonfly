@@ -25,6 +25,8 @@ Tools for testing element classes
 """
 
 import logging
+from six import string_types
+
 from dragonfly              import *
 from ..test                 import TestError, RecognitionFailure
 from ..test.infrastructure  import Unique
@@ -50,7 +52,7 @@ class ElementTester(Grammar):
         self.add_rule(rule)
 
     def recognize(self, words):
-        if isinstance(words, basestring):
+        if isinstance(words, string_types):
             words = words.split()
 
         if not self.loaded:
@@ -71,20 +73,20 @@ class ElementTester(Grammar):
             try:
                 mimic_method = self._mimic_methods[self.engine.name]
                 mimic_method(self, words)
-            except MimicFailure, e:
+            except MimicFailure as e:
                 self._recognized_value = RecognitionFailure
-            except Exception, e:
+            except Exception as e:
                 self._log.exception("Exception within recognition: %s" % (e,))
                 raise
 
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Exception during recognition: %s" % (e,))
             raise
         finally:
             if unload_after_recognition:
                 try:
                     self.unload()
-                except Exception, e:
+                except Exception as e:
                     raise TestError("Failed to unload grammar: %s" % e)
 
         # If recognition was successful but this grammar did not

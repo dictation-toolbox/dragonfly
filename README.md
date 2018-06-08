@@ -128,7 +128,7 @@ from dragonfly.all import Grammar, CompoundRule
 class ExampleRule(CompoundRule):
     spec = "do something computer"                  # Spoken form of command.
     def _process_recognition(self, node, extras):   # Callback when command is spoken.
-        print "Voice command spoken."
+        print("Voice command spoken.")
 
 # Create a grammar which contains and loads the command rule.
 grammar = Grammar("example grammar")                # Create a grammar to contain the command rule.

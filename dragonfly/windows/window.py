@@ -23,11 +23,12 @@ Window class
 ============================================================================
 
 """
-
+from six import string_types, integer_types
 
 import win32gui
 import win32con
 from ctypes          import windll, pointer, c_wchar, c_ulong
+
 from .rectangle      import Rectangle, unit
 from .monitor        import monitors
 from .window_movers  import window_movers
@@ -91,7 +92,7 @@ class Window(object):
     # Methods that control attribute access.
 
     def _set_handle(self, handle):
-        if not isinstance(handle, (int, long)):
+        if not isinstance(handle, integer_types):
             raise TypeError("Window handle must be integer or long,"
                             " but received {0!r}".format(handle))
         self._handle = handle
@@ -106,7 +107,7 @@ class Window(object):
         for name in self._names:
             return name
     def _set_name(self, name):
-        assert isinstance(name, basestring)
+        assert isinstance(name, string_types)
         self._names.add(name)
         self._windows_by_name[name] = self
     name = property(fget=_get_name,

@@ -37,7 +37,7 @@ class TestParsers(unittest.TestCase):
 
         # Test with ascii characters
         self._test_multiple(
-            parser.CharacterSeries(string.letters),
+            parser.CharacterSeries(string.ascii_letters),
             [
                 ("abc", ["abc"]),
             ],
@@ -94,11 +94,10 @@ class TestParsers(unittest.TestCase):
 
         state = parser.State(input)
         generator = p.parse(state)
-        generator.next()
+        next(generator)
         root = state.build_parse_tree()
         self.assertEqual(root.value(), expected_output_1)
-
-        generator.next()
+        next(generator)
         root = state.build_parse_tree()
         self.assertEqual(root.value(), expected_output_2)
 
@@ -113,7 +112,7 @@ class TestParsers(unittest.TestCase):
         for input, outputs in input_outputs:
             results = p.parse_multiple(input, must_finish)
             self.assertEqual(len(results), len(outputs))
-            for index, result, output in zip(xrange(len(results)), results, outputs):
+            for index, result, output in zip(list(range(len(results))), results, outputs):
                 if isinstance(result, list): result = tuple(result)
                 if isinstance(output, list): output = tuple(output)
                 self.assertEqual(result, output)

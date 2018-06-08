@@ -20,6 +20,8 @@
 
 import sys
 import unittest
+from six import text_type
+
 from dragonfly        import *
 from ..test           import TestError, RecognitionFailure
 from .element_tester  import ElementTester
@@ -66,5 +68,5 @@ class ElementTestCase(unittest.TestCase):
                                     u" recognition %r, instead of expected %r"
                                     % (words, recognized_value,
                                        expected_value))
-        except TestError, e:
-            self.fail(unicode(e))
+        except TestError as e:
+            self.fail(text_type(e))

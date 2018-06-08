@@ -205,7 +205,6 @@ class MappingRuleCase(TranslatorCase):
 
         # Test that matching works correctly
         self.assertTrue(state.jsgf_rule.matches("kill"))
-        print(state.jsgf_rule)
         for s in numbers:
             self.assertTrue(state.dependencies[0].matches(s))
             self.assertTrue(state.jsgf_rule.matches("back %s" % s),

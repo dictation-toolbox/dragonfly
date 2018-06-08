@@ -21,7 +21,7 @@
 """
 This file implements an interface to the Windows system clipboard.
 """
-
+from six import text_type
 
 import win32clipboard
 import win32con
@@ -52,14 +52,14 @@ class Clipboard(object):
         try:
             content = win32clipboard.GetClipboardData(cls.format_unicode)
             if not content:
-			    content = win32clipboard.GetClipboardData(cls.format_text)
+                content = win32clipboard.GetClipboardData(cls.format_text)
         finally:
             win32clipboard.CloseClipboard()
         return content
 
     @classmethod
     def set_system_text(cls, content):
-        content = unicode(content)
+        content = text_type(content)
         win32clipboard.OpenClipboard()
         try:
             win32clipboard.EmptyClipboard()
@@ -81,12 +81,12 @@ class Clipboard(object):
         if contents:
             try:
                 self._contents = dict(contents)
-            except Exception, e:
+            except Exception as e:
                 raise TypeError("Invalid contents: %s (%r)" % (e, contents))
 
         # Handle special case of text content.
         if not text is None:
-            self._contents[self.format_unicode] = unicode(text)
+            self._contents[self.format_unicode] = text_type(text)
 
     def __str__(self):
         arguments = []
@@ -136,13 +136,10 @@ class Clipboard(object):
                 formats = (formats,)
 
             # Verify that the given formats are valid.
-            try:
-                for format in formats:
-                    if not isinstance(format, int):
-                        raise TypeError("Invalid clipboard format: %r"
-                                        % format)
-            except Exception, e:
-                raise
+            for format in formats:
+                if not isinstance(format, int):
+                    raise TypeError("Invalid clipboard format: %r"
+                                    % format)
 
             # Retrieve Windows system clipboard content.
             contents = {}
@@ -232,9 +229,6 @@ class Clipboard(object):
             return None
 
     def set_text(self, content):
-        self._contents[self.format_unicode] = unicode(content)
+        self._contents[self.format_unicode] = text_type(content)
 
-    text    = property(
-                       lambda self:    self.get_text(),
-                       lambda self, d: self.set_text(d)
-                      )
+    text    = property(get_text, set_text)

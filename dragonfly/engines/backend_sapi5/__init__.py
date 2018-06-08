@@ -44,17 +44,17 @@ def is_engine_available():
     try:
         from win32com.client import Dispatch
         from pywintypes import com_error
-    except Exception, e:
+    except Exception as e:
         _log.exception("COM error during dispatch: %s" % (e,))
         return False
 
     # Attempt to connect to SAPI.
     try:
         Dispatch("SAPI.SpSharedRecognizer")
-    except com_error, e:
+    except com_error as e:
         _log.exception("COM error during dispatch: %s" % (e,))
         return False
-    except Exception, e:
+    except Exception as e:
         _log.exception("Exception during Sapi5.isNatSpeakRunning(): %s" % (e,))
         return False
     return True

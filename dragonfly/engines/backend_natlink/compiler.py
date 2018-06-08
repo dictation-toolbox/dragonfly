@@ -26,6 +26,8 @@
 #---------------------------------------------------------------------------
 
 import struct
+from six import string_types
+
 from ..base import CompilerBase, CompilerError
 
 
@@ -141,8 +143,8 @@ class _Compiler(object):
             raise CompilerError("Cannot start defining a rule while" \
                                "a different rule is already being defined.")
 
-        assert isinstance(name, basestring), ("The rule name must be a"
-                                              " string, received %r." % name)
+        assert isinstance(name, string_types), ("The rule name must be a"
+                                                " string, received %r." % name)
         self._current_rule_name = name
         self._current_rule_export = exported
         self._current_rule_definition = []
@@ -346,7 +348,7 @@ class _Compiler(object):
         #  counting at 1.
         elements = []
         for name, id in zip(ordered_superset,
-                            xrange(1, len(ordered_superset) + 1)):
+                            range(1, len(ordered_superset) + 1)):
 
             # Skip names not included in the subset.
             if name not in subset: continue
@@ -379,7 +381,7 @@ class _Compiler(object):
         #  this grammar create a rule definition entry.
         definitions = []
         for name, id in zip(self._rules,
-                            xrange(1, len(self._rules) + 1)):
+                            range(1, len(self._rules) + 1)):
 
             # Skip imported rules.
             if name in self._import_rules:

@@ -42,7 +42,7 @@ class RecognitionObserver(object):
     def __del__(self):
         try:
             self.unregister()
-        except Exception, e:
+        except Exception as e:
             pass
 
     def register(self):

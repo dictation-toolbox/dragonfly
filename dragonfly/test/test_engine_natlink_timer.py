@@ -36,28 +36,28 @@ class NatlinkTimerManagerTest(unittest.TestCase):
         return
 
         import dragonfly.engines.backend_natlink as backend
-        print backend.is_engine_available()
+        print(backend.is_engine_available())
         engine = backend.get_engine()
-        print engine
+        print(engine)
         engine.connect()
         try:
-            print "starting timer..."
+            print("starting timer...")
             def callback():
                 engine._log.error("timer callback")
-                print "timer callback"
+                print("timer callback")
             timer = engine.create_timer(callback, 1)
-            print "timer:", timer
+            print("timer:", timer)
 
-            print "starting Luke..."
+            print("starting Luke...")
             import sys
             import time
             import win32gui
             timeout = time.time() + 3
             while time.time() < timeout:
-                print "Luke"
+                print("Luke")
                 sys.stdout.flush()
                 if win32gui.PumpWaitingMessages():
-                    raise RuntimeError, "We got an unexpected WM_QUIT message!"
+                    raise RuntimeError("We got an unexpected WM_QUIT message!")
                 time.sleep(1)
 
         finally:
@@ -90,13 +90,13 @@ class NatlinkTimerTest(object):#unittest.TestCase):
             import win32gui
             timeout = time.time() + 3
             while time.time() < timeout:
-                print "Luke"
+                print("Luke")
                 sys.stdout.flush()
                 if win32gui.PumpWaitingMessages():
-                    raise RuntimeError, "We got an unexpected WM_QUIT message!"
+                    raise RuntimeError("We got an unexpected WM_QUIT message!")
                 time.sleep(1)
             natlink.setTimerCallback(None, 0)
-            print "callback occurred:", callback_occurred
+            print("callback occurred:", callback_occurred)
         finally:
             natlink.natDisconnect()
 

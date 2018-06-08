@@ -75,6 +75,7 @@ Class reference
 ............................................................................
 
 """
+from six import string_types
 
 from .rule_base         import Rule
 from .elements          import ElementBase, Compound, Alternative
@@ -126,10 +127,10 @@ class MappingRule(Rule):
             exported = self._default_exported
 
         # Type checking of initialization values.
-        assert isinstance(name, (str, unicode))
+        assert isinstance(name, string_types)
         assert isinstance(mapping, dict)
-        for key, value in mapping.iteritems():
-            assert isinstance(key, (str, unicode))
+        for key, value in mapping.items():
+            assert isinstance(key, string_types)
         assert isinstance(extras, (list, tuple))
         for item in extras:
             assert isinstance(item, ElementBase)
@@ -142,7 +143,7 @@ class MappingRule(Rule):
         self._defaults = defaults
 
         children = []
-        for spec, value in self._mapping.iteritems():
+        for spec, value in self._mapping.items():
             c = Compound(spec, elements=self._extras, value=value)
             children.append(c)
 
@@ -165,7 +166,7 @@ class MappingRule(Rule):
                       "_node":     node,
                      }
             extras.update(self._defaults)
-            for name, element in self._extras.iteritems():
+            for name, element in self._extras.items():
                 extra_node = node.get_child_by_name(name, shallow=True)
                 if extra_node:
                     extras[name] = extra_node.value()
@@ -196,7 +197,7 @@ class MappingRule(Rule):
                   "_node":     node,
                  }
         extras.update(self._defaults)
-        for name, element in self._extras.iteritems():
+        for name, element in self._extras.items():
             extra_node = node.get_child_by_name(name, shallow=True)
             if extra_node:
                 extras[name] = extra_node.value()
