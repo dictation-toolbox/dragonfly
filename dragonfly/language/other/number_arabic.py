@@ -1,4 +1,5 @@
-﻿#
+﻿# coding=utf-8
+#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -87,19 +88,19 @@ int_100big      = MagnitudeIntBuilder(
                    factor      = 100,
                    spec        = "[<multiplier>] hundred [<remainder>]",
                    multipliers = [int_10_19, int_20_99],
-                   remainders  = [int_و_1_99]
+                   remainders  = [int_and_1_99]
                   )
 int_1000s       = MagnitudeIntBuilder(
                    factor      = 1000,
                    spec        = "[<multiplier>] thousand [<remainder>]",
                    multipliers = [int_1_9, int_10_19, int_20_99, int_100s],
-                   remainders  = [int_و_1_99, int_100s]
+                   remainders  = [int_and_1_99, int_100s]
                   )
 int_1000000s    = MagnitudeIntBuilder(
                    factor      = 1000000,
                    spec        = "[<multiplier>] million [<remainder>]",
                    multipliers = [int_1_9, int_10_19, int_20_99, int_100s, int_1000s],
-                   remainders  = [int_و_1_99, int_100s, int_1000s],
+                   remainders  = [int_and_1_99, int_100s, int_1000s],
                   )
 
 
