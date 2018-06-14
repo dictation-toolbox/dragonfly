@@ -25,7 +25,7 @@ This file implements a Win32 keyboard interface using sendinput.
 
 
 import time
-from six import PY3, text_type, PY2
+from six import text_type, PY2
 
 import win32con
 
@@ -117,6 +117,7 @@ class Keyboard(object):
             code = -1
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
+        return code
 
     @classmethod
     def xget_virtual_keycode(cls, char):
