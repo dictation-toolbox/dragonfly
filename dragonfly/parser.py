@@ -29,10 +29,11 @@ type of input they are meant to process.
 
 """
 
-import string
-
 
 #---------------------------------------------------------------------------
+
+import string
+import re
 from six import string_types, text_type, PY2
 
 
@@ -685,12 +686,17 @@ class String(ParserElementBase):
 #---------------------------------------------------------------------------
 
 class CharacterSeries(ParserElementBase):
+    """
+    Class for parsing from a character series or pattern.
+    """
 
-    def __init__(self, set, optional=False, exclude=False, name=None):
+    def __init__(self, set, optional=False, exclude=False, name=None,
+                 pattern=None):
         ParserElementBase.__init__(self, name)
         self._set = set
         self._optional = optional
         self._exclude = exclude
+        self._pattern = pattern
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
@@ -704,6 +710,8 @@ class CharacterSeries(ParserElementBase):
     def char_matches(self, c):
         if self._set:
             return c in self._set
+        elif self._pattern:
+            return bool(self._pattern.match(c))
         else:
             return False
 
@@ -781,20 +789,30 @@ class Whitespace(CharacterSeries):
 
 
 class Letters(CharacterSeries):
-
+    """
+    Class for parsing ascii and non-ascii letter characters.
+    """
     def __init__(self, name=None):
-        set = string.ascii_letters
-        CharacterSeries.__init__(self, set, name=name)
+        pattern = re.compile(r"\w", re.UNICODE)
+        CharacterSeries.__init__(self, None, name=name, pattern=pattern)
 
     def __str__(self):
         return self._str("")
 
+    def char_matches(self, c):
+        if c.isdigit():
+            return False
+        else:
+            return super(Letters, self).char_matches(c)
+
 
 class Alphanumerics(CharacterSeries):
-
+    """
+    Class for parsing ascii and non-ascii letter and digit characters.
+    """
     def __init__(self, name=None):
-        set = string.ascii_letters + string.digits
-        CharacterSeries.__init__(self, set, name=name)
+        pattern = re.compile(r"\w", re.UNICODE)
+        CharacterSeries.__init__(self, None, name=name, pattern=pattern)
 
     def __str__(self):
         return self._str("")
@@ -810,10 +828,24 @@ class QuotedStringContent(ParserElementBase):
                       "n":  "\n",
                       "t":  "\t",
                      }
+    valid_char_pattern = re.compile(r"\w", re.UNICODE)
 
     def __init__(self, delimiter_string, name=None):
         self.delimiter_string = delimiter_string
         ParserElementBase.__init__(self, name)
+
+    def valid_char(self, c):
+        """
+        Check whether a character is a valid. Valid characters include all
+        Unicode alphanumeric characters and any characters in
+        self.valid_chars.
+        :type c: str
+        :rtype: bool
+        """
+        if c in self.valid_chars:
+            return True
+        else:
+            return bool(self.valid_char_pattern.match(c))
 
     def parse(self, state):
         state.decode_attempt(self)
@@ -839,7 +871,7 @@ class QuotedStringContent(ParserElementBase):
                     # The escaped character is not special,
                     #  so simply unescape it.
                     next_char = escaped_char
-                    if next_char not in self.valid_chars:
+                    if not self.valid_char(next_char):
                         break
                 state.next(1)  # Gobble self.escape_char.
 
@@ -848,7 +880,7 @@ class QuotedStringContent(ParserElementBase):
                 break
 
             # If next_char is not acceptable, don't gobble it.
-            elif next_char not in self.valid_chars:
+            elif not self.valid_char(next_char):
                 break
 
             state.next(1)  # Gobble next_char.

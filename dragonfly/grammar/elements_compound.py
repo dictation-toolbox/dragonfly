@@ -29,6 +29,8 @@ creating grammar element structures based on a simple text format.
 
 
 import string
+
+import re
 from six import string_types
 
 import dragonfly.grammar.elements_basic as elements_
@@ -132,8 +134,10 @@ class _Single(parser_.Sequence):
 class _ElementRef(parser_.Sequence):
 
     def __init__(self):
-        characters = string.ascii_letters + string.digits + "_"
-        name = parser_.CharacterSeries(characters)
+        # Use a pattern to allow ascii and Unicode alphanumeric characters plus
+        # underscores.
+        pattern = re.compile(r"\w", re.UNICODE)
+        name = parser_.CharacterSeries(None, pattern=pattern)
         elements = (parser_.String("<"), name, parser_.String(">"))
         parser_.Sequence.__init__(self, elements)
         self._identifiers = None
@@ -156,8 +160,10 @@ class _ElementRef(parser_.Sequence):
 class _ActionRef(parser_.Sequence):
 
     def __init__(self):
-        characters = string.ascii_letters + string.digits + "_"
-        name = parser_.CharacterSeries(characters)
+        # Use a pattern to allow ascii and Unicode alphanumeric characters plus
+        # underscores.
+        pattern = re.compile(r"\w", re.UNICODE)
+        name = parser_.CharacterSeries(None, pattern=pattern)
         elements = (parser_.String("{"), name, parser_.String("}"))
         parser_.Sequence.__init__(self, elements)
         self._identifiers = None
@@ -180,8 +186,10 @@ class _ActionRef(parser_.Sequence):
 class _Literal(parser_.Sequence):
 
     def __init__(self):
-        characters = string.ascii_letters + string.digits + "_-.'"
-        word = parser_.CharacterSeries(characters)
+        # Use a pattern to allow ascii and Unicode alphanumeric characters plus a
+        # few special characters.
+        pattern = re.compile(r"[\w_\-.']", re.UNICODE)
+        word = parser_.CharacterSeries(None, pattern=pattern)
         whitespace = parser_.Whitespace()
         elements = (
             word,

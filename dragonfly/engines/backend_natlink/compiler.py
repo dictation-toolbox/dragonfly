@@ -26,7 +26,7 @@
 #---------------------------------------------------------------------------
 
 import struct
-from six import string_types
+from six import string_types, text_type, PY2
 
 from ..base import CompilerBase, CompilerError
 
@@ -359,6 +359,8 @@ class _Compiler(object):
             #  - szName; the element's name terminated by at least one 0.
             # The element's name must be followed by one or more 0
             #  characters, so that its size in bytes is a multiple of 4.
+            if isinstance(name, text_type) and PY2:
+                name = name.encode("windows-1252")
             padded_len = (len(name) + 4) & (~3)
             element = struct.pack("LL%ds" % padded_len,
                 padded_len + 8, id, str(name))

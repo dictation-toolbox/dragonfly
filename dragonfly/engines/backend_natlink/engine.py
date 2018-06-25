@@ -275,7 +275,13 @@ class GrammarWrapper(object):
         # If the words argument was not "other" or "reject", then
         #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
         #  into a tuple of unicode objects.
-        words_rules = tuple((text_type(w).encode("windows-1252"), r) for w, r in words)
+        def map_word(w):
+            if isinstance(w, text_type):
+                return w
+            else:
+                return w.decode("windows-1252")
+
+        words_rules = tuple((map_word(w), r) for w, r in words)
         words = tuple(w for w, r in words_rules)
 
         # Call the grammar's general process_recognition method, if present.
