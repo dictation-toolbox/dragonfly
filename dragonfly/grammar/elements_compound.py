@@ -28,8 +28,6 @@ creating grammar element structures based on a simple text format.
 """
 
 
-import string
-
 import re
 from six import string_types
 
@@ -41,6 +39,7 @@ import logging
 class _Stuff(parser_.Sequence):
 
     def __init__(self):
+        super(_Stuff, self).__init__()
         self._single = None
 
     def initialize(self):
@@ -85,11 +84,12 @@ class _Stuff(parser_.Sequence):
 stuff = _Stuff()
 
 
-
 class _Single(parser_.Sequence):
 
     def __init__(self):
-        pass
+        super(_Single, self).__init__()
+        self._action_identifier = None
+        self._element_identifier = None
 
     def initialize(self):
         self._element_identifier = _ElementRef()
@@ -286,7 +286,8 @@ class Compound(elements_.Alternative):
 
     def __str__(self):
         arguments = ["%r" % self._spec]
-        if self.name: arguments.append("name=%r" % self.name)
+        if self.name:
+            arguments.append("name=%r" % self.name)
         arguments = ", ".join(arguments)
         return "%s(%s)" % (self.__class__.__name__, arguments)
 

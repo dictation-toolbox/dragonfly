@@ -67,6 +67,8 @@ import logging
 
 
 # --------------------------------------------------------------------------
+from six import string_types
+
 
 class Context(object):
     """
@@ -205,7 +207,8 @@ class AppContext(Context):
     def __init__(self, executable=None, title=None, exclude=False):
         Context.__init__(self)
 
-        if isinstance(executable, str):
+        # Allow Unicode or strings to be used for executables and titles.
+        if isinstance(executable, string_types):
             self._executable = executable.lower()
         elif executable is None:
             self._executable = None
@@ -213,7 +216,7 @@ class AppContext(Context):
             raise TypeError("executable argument must be a string or None;"
                             " received %r" % executable)
 
-        if isinstance(title, str):
+        if isinstance(title, string_types):
             self._title = title.lower()
         elif title is None:
             self._title = None

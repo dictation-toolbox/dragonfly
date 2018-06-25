@@ -221,12 +221,12 @@ class State(object):
         # assert isinstance(element, ParserElementBase)
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
-            raise grammar_.GrammarError("Parser decoding stack broken")
+            raise ParserError("Parser decoding stack broken")
         if frame is self._stack[-1]:
             # Last parser on the stack, rollback.
             self._index = frame.begin
         else:
-            raise grammar_.GrammarError("Parser decoding stack broken")
+            raise ParserError("Parser decoding stack broken")
         self._log_step(element, "rollback")
 
     def decode_success(self, element, value=None):
@@ -234,7 +234,7 @@ class State(object):
         self._log_step(element, "success")
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
-            raise grammar_.GrammarError("Parser decoding stack broken.")
+            raise ParserError("Parser decoding stack broken.")
         frame.end = self._index
         frame.value = value
         self._depth -= 1
@@ -287,7 +287,11 @@ class Node(object):
         self.children = []
 
     def __str__(self):
-        return "Node: %s, %s" % (self.actor, self.words())
+        if PY2:
+            data = text_type(self.data).encode("utf-8")
+        else:
+            data = text_type(self.data)
+        return "Node: %s, %s" % (self.actor, data)
 
     def add_child(self, child):
         self.children.append(child)
