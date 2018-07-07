@@ -21,15 +21,21 @@
 """
 This file implements an interface to the Windows system clipboard.
 """
+
 from six import text_type
 
 import win32clipboard
 import win32con
 
+from ..util import BaseClipboard
 
 #===========================================================================
 
-class Clipboard(object):
+
+class Clipboard(BaseClipboard):
+    """
+    Class for interacting with the Windows system clipboard.
+    """
 
     #-----------------------------------------------------------------------
 
@@ -67,6 +73,13 @@ class Clipboard(object):
         finally:
             win32clipboard.CloseClipboard()
 
+    @classmethod
+    def clear_clipboard(cls):
+        win32clipboard.OpenClipboard()
+        try:
+            win32clipboard.EmptyClipboard()
+        finally:
+            win32clipboard.CloseClipboard()
 
     #-----------------------------------------------------------------------
 
@@ -208,6 +221,16 @@ class Clipboard(object):
                              % format)
 
     def set_format(self, format, content):
+        """
+            Set this instance's content for the given *format*.
+
+            Arguments:
+             - *format* (int) -- the clipboard format to set.
+             - *content* (string) -- the clipboard contents to set.
+
+            If the given *format* is not available, a *ValueError*
+            is raised.
+        """
         self._contents[format] = content
 
     def has_text(self):
@@ -231,4 +254,4 @@ class Clipboard(object):
     def set_text(self, content):
         self._contents[self.format_unicode] = text_type(content)
 
-    text    = property(get_text, set_text)
+    text = property(get_text, set_text)

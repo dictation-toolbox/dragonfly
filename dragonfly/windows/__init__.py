@@ -32,4 +32,4 @@ if sys.platform.startswith("win"):
 else:  # Mock imports
     from ..os_dependent_mock      import Window
     from ..os_dependent_mock      import Monitor, monitors
-    from ..os_dependent_mock      import Clipboard
+    from ..util import Clipboard

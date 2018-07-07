@@ -23,14 +23,15 @@ Paste action
 ============================================================================
 
 """
+
 from six import text_type, string_types, PY2
 
-import win32con
+from ..actions.action_base import DynStrActionBase
+from ..actions.action_key import Key
+from ..windows.clipboard import Clipboard
+
+from win32con import CF_UNICODETEXT, CF_TEXT
 import pywintypes
-from dragonfly.actions.action_base  import DynStrActionBase, ActionError
-from dragonfly.actions.action_key   import Key
-from dragonfly.actions.action_text  import Text
-from dragonfly.windows.clipboard    import Clipboard
 
 
 #---------------------------------------------------------------------------
@@ -58,13 +59,16 @@ class Paste(DynStrActionBase):
 
     """
 
+    _default_format = CF_UNICODETEXT
+
     # Default paste action.
-    _default_format = win32con.CF_UNICODETEXT
     _default_paste = Key("c-v/20")
 
     def __init__(self, contents, format=None, paste=None, static=False):
-        if not format: format = self._default_format
-        if not paste: paste = self._default_paste
+        if not format:
+            format = self._default_format
+        if not paste:
+            paste = self._default_paste
         if isinstance(contents, string_types):
             spec = contents
             self.contents = None
@@ -88,7 +92,7 @@ class Paste(DynStrActionBase):
         except pywintypes.error as e:
             self._log.warning("Failed to store original clipboard contents:"
                               " %s" % e)
-        if (self.format == win32con.CF_UNICODETEXT and
+        if (self.format == CF_UNICODETEXT and
                 not isinstance(events, text_type)):
             if PY2:
                 events = text_type(events, encoding='windows-1252',
@@ -96,7 +100,7 @@ class Paste(DynStrActionBase):
             else:
                 events = text_type(events)
 
-        elif self.format == win32con.CF_TEXT:
+        elif self.format == CF_TEXT:
             events = str(events)
 
         clipboard = Clipboard(contents={self.format: events})
