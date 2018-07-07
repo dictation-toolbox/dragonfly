@@ -23,12 +23,13 @@ import sys
 # OS agnostic imports
 from rectangle import Rectangle, unit
 from point     import Point
-from .clipboard import Clipboard
 
 # Windows-specific
 if sys.platform.startswith("win"):
     from window    import Window
     from monitor   import Monitor, monitors
+    from .clipboard import Clipboard
 else:  # Mock imports
     from ..os_dependent_mock      import Window
     from ..os_dependent_mock      import Monitor, monitors
+    from ..util import Clipboard

@@ -20,10 +20,13 @@
 
 import unittest
 
-from dragonfly import Clipboard
+from dragonfly.util import Clipboard
 
 
 class TestClipboard(unittest.TestCase):
+    """
+    Tests for the multi-platform Clipboard class.
+    """
     def setUp(self):
         # Clear the clipboard before each test.
         Clipboard.clear_clipboard()
@@ -46,7 +49,6 @@ class TestClipboard(unittest.TestCase):
     def test_empty(self):
         # A new clipboard has no content for the unicode format.
         c = Clipboard()
-        self.assertFalse(c.has_format(Clipboard.format_unicode))
 
         # Neither does a new clipboard have text.
         self.assertFalse(c.has_text())
@@ -57,7 +59,6 @@ class TestClipboard(unittest.TestCase):
         Clipboard.set_system_text(text)
         c = Clipboard(from_system=True)
         self.assertEqual(c.text, text)
-        self.assertTrue(c.has_format(Clipboard.format_unicode))
         self.assertTrue(c.has_text())
 
     def test_copy_from_system(self):
@@ -87,9 +88,22 @@ class TestClipboard(unittest.TestCase):
         text = "test"
         c.set_text(text)
         self.assertTrue(c.has_text())
-        self.assertTrue(c.has_format(Clipboard.format_unicode))
         self.assertEqual(c.get_text(), text)
         self.assertEqual(c.text, text)
+
+    def test_backwards_compatibility(self):
+        # The multi-platform class should be backwards compatible with the
+        # Windows-only Clipboard class, at least for the constructor.
+        text = u"unicode text"
+        c = Clipboard(contents={13: text})
+        c.copy_to_system()
+        self.assertEqual(Clipboard.get_system_text(), text)
+
+        # Test with the CF_TEXT format (1)
+        text = "text"
+        c = Clipboard(contents={1: text})
+        c.copy_to_system()
+        self.assertEqual(Clipboard.get_system_text(), text)
 
 
 if __name__ == '__main__':

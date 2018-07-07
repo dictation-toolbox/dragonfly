@@ -37,10 +37,6 @@ if sys.platform.startswith("win"):
 else:
     clipboard_manipulation_error = RuntimeError
 
-    # Use hardcoded values to allow Paste to work on multiple platforms.
-    CF_UNICODETEXT = 13
-    CF_TEXT = 1
-
 
 #---------------------------------------------------------------------------
 
@@ -70,7 +66,7 @@ class Paste(DynStrActionBase):
     _default_format = CF_UNICODETEXT
 
     # Default paste action.
-    _default_paste = Key("s-insert/20")
+    _default_paste = Key("c-v/20")
 
     def __init__(self, contents, format=None, paste=None, static=False):
         if not format:
