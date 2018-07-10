@@ -21,6 +21,8 @@
 
 
 import unittest
+from six import string_types, text_type
+
 from dragonfly.engines.base.dictation   import DictationContainerBase
 from dragonfly.grammar.elements         import Compound, Dictation
 from dragonfly.test.infrastructure      import RecognitionFailure
@@ -54,8 +56,8 @@ class TestNonAsciiDictation(unittest.TestCase):
 
         # Verifying dictation converts/encode successfully.
         self.assertEqual(str(dictation), "touché")
-        self.assertEqual(unicode(dictation), u"touché")
-        self.assert_(isinstance(repr(dictation), (str, unicode)))
+        self.assertEqual(text_type(dictation), u"touché")
+        self.assertTrue(isinstance(repr(dictation), string_types))
 
 
 class NonAsciiUnicodeDictationTestCase(ElementTestCase):
@@ -63,7 +65,7 @@ class NonAsciiUnicodeDictationTestCase(ElementTestCase):
 
     def _build_element(self):
         def value_func(node, extras):
-            return unicode(extras["text"])
+            return text_type(extras["text"])
         return Compound("test <text>",
                         extras=[Dictation(name="text")],
                         value_func=value_func)

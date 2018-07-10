@@ -201,7 +201,7 @@ def setup_log(use_stdout=True, use_file=True):
 def setup_tracing(output, limit=None):
     from pkg_resources import resource_filename
     library_prefix = os.path.dirname(resource_filename(__name__, "setup.py"))
-    print "prefix:", library_prefix
+    print("prefix:", library_prefix)
     exclude_filenames = ("parser.py",)
 
     def _tracing_callback(frame, event, arg):

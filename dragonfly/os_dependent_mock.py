@@ -61,10 +61,6 @@ class MockBase(object):
         pass
 
 
-class Clipboard(MockBase):
-    pass
-
-
 class HardwareInput(MockBase):
     pass
 

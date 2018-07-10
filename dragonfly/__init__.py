@@ -57,12 +57,14 @@ from .actions           import (ActionBase, DynStrActionBase, ActionError,
 
 #---------------------------------------------------------------------------
 
+from .util              import Clipboard
+
+#---------------------------------------------------------------------------
+
 from .windows.rectangle import Rectangle, unit
 from .windows.point     import Point
 from .windows           import Window
 from .windows           import Monitor, monitors
-from .windows           import Clipboard
-
 
 #---------------------------------------------------------------------------
 from .language          import (Integer, IntegerRef,

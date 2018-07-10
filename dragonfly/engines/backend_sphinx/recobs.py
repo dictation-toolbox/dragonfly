@@ -52,7 +52,7 @@ class SphinxRecObsManager(RecObsManagerBase):
             try:
                 if hasattr(observer, "on_next_rule_part"):
                     observer.on_next_rule_part(words)
-            except Exception, e:
+            except Exception as e:
                 self._log.exception("Exception during on_next_rule_part()"
                                     " method of recognition observer %s: %s"
                                     % (observer, e))

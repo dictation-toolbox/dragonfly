@@ -49,7 +49,7 @@ class MapIntBuilder(IntBuilderBase):
 
     def build_element(self, min, max):
         elements = [(spec, value)
-                    for spec, value in self._mapping.iteritems()
+                    for spec, value in self._mapping.items()
                     if min <= value < max]
         if len(elements) > 1:
             children = [Compound(spec=spec, value=value)

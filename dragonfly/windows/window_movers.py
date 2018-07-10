@@ -141,7 +141,7 @@ class PathBase(object):
             self._window.set_position(self._destination)
             return
         try:
-            rectangle = self._rectangles.next()
+            rectangle = next(self._rectangles)
         except StopIteration:
             self._rectangles = None
             self.stop()

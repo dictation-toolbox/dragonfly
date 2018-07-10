@@ -26,6 +26,8 @@
 #---------------------------------------------------------------------------
 
 import struct
+from six import string_types, text_type, PY2
+
 from ..base import CompilerBase, CompilerError
 
 
@@ -141,8 +143,8 @@ class _Compiler(object):
             raise CompilerError("Cannot start defining a rule while" \
                                "a different rule is already being defined.")
 
-        assert isinstance(name, basestring), ("The rule name must be a"
-                                              " string, received %r." % name)
+        assert isinstance(name, string_types), ("The rule name must be a"
+                                                " string, received %r." % name)
         self._current_rule_name = name
         self._current_rule_export = exported
         self._current_rule_definition = []
@@ -346,7 +348,7 @@ class _Compiler(object):
         #  counting at 1.
         elements = []
         for name, id in zip(ordered_superset,
-                            xrange(1, len(ordered_superset) + 1)):
+                            range(1, len(ordered_superset) + 1)):
 
             # Skip names not included in the subset.
             if name not in subset: continue
@@ -357,6 +359,8 @@ class _Compiler(object):
             #  - szName; the element's name terminated by at least one 0.
             # The element's name must be followed by one or more 0
             #  characters, so that its size in bytes is a multiple of 4.
+            if isinstance(name, text_type) and PY2:
+                name = name.encode("windows-1252")
             padded_len = (len(name) + 4) & (~3)
             element = struct.pack("LL%ds" % padded_len,
                 padded_len + 8, id, str(name))
@@ -379,7 +383,7 @@ class _Compiler(object):
         #  this grammar create a rule definition entry.
         definitions = []
         for name, id in zip(self._rules,
-                            xrange(1, len(self._rules) + 1)):
+                            range(1, len(self._rules) + 1)):
 
             # Skip imported rules.
             if name in self._import_rules:

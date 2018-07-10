@@ -24,6 +24,7 @@ Dictation container for the SAPI5 engine.
 """
 
 import logging
+
 from ..base import DictationContainerBase
 
 
@@ -38,3 +39,6 @@ class Sapi5DictationContainer(DictationContainerBase):
     def format(self):
         """ Format and return this dictation. """
         return " ".join(self._words)
+
+    def __str__(self):
+        return self.__unicode__().encode("windows-1252")

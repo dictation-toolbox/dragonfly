@@ -89,7 +89,7 @@ class LanguageSpecificLoader(object):
         try:
             from ..engines import get_engine
             language = get_engine().language
-        except Exception, e:
+        except Exception as e:
             self._log.exception("Failed to retrieve speaker language: %s" % e)
             raise
         return language
@@ -105,7 +105,7 @@ class LanguageSpecificLoader(object):
         # Attempt to import the language-dependent module.
         try:
             top_module = __import__(module_name)
-        except ImportError, e:
+        except ImportError as e:
             self._log.exception("Failed to load module %r for language %r"
                                 % (module_name, language))
             raise

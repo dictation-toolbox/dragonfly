@@ -86,5 +86,5 @@ class Playback(ActionBase):
                 engine.mimic(words)
                 if interval and self._speed:
                     sleep(interval / self._speed)
-            except Exception, e:
+            except Exception as e:
                 raise ActionError("Playback failed: %s" % e)

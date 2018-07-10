@@ -28,8 +28,10 @@ Detecting sleep mode
  - http://blogs.msdn.com/b/tsfaware/archive/2010/03/22/detecting-sleep-mode-in-sapi.aspx
 
 """
+from six import text_type
 
 from ..base        import EngineBase, EngineError, MimicFailure
+from ...grammar.grammar_base import GrammarError
 from .dictation    import NatlinkDictationContainer
 from .recobs       import NatlinkRecObsManager
 from .timer        import NatlinkTimerManager
@@ -105,7 +107,7 @@ class NatlinkEngine(EngineBase):
         attempt_connect = False
         try:
             grammar_object.load(compiled_grammar, all_results, hypothesis)
-        except self.natlink.NatError, e:
+        except self.natlink.NatError as e:
             # If loading failed because we're not connected yet,
             #  attempt to connect to natlink and reload the grammar.
             if (str(e) == "Calling GramObj.load is not allowed before"
@@ -120,7 +122,7 @@ class NatlinkEngine(EngineBase):
             self.connect()
             try:
                 grammar_object.load(compiled_grammar, all_results, hypothesis)
-            except self.natlink.NatError, e:
+            except self.natlink.NatError as e:
                 self._log.exception("Failed to load grammar %s: %s."
                                     % (grammar, e))
                 raise EngineError("Failed to load grammar %s: %s."
@@ -136,7 +138,7 @@ class NatlinkEngine(EngineBase):
             grammar_object.setBeginCallback(None)
             grammar_object.setResultsCallback(None)
             grammar_object.setHypothesisCallback(None)
-        except self.natlink.NatError, e:
+        except self.natlink.NatError as e:
             self._log.exception("Failed to unload grammar %s: %s."
                                 % (grammar, e))
 
@@ -144,7 +146,7 @@ class NatlinkEngine(EngineBase):
         try:
             grammar_object = self._get_grammar_wrapper(grammar).grammar_object
             grammar_object.setExclusive(exclusive)
-        except self.natlink.NatError, e:
+        except self.natlink.NatError as e:
             self._log.exception("Engine %s: failed set exclusiveness: %s."
                                 % (self, e))
 
@@ -194,10 +196,10 @@ class NatlinkEngine(EngineBase):
         try:
             prepared_words = []
             for word in words:
-                if isinstance(word, unicode):
+                if isinstance(word, text_type):
                     word = word.encode("windows-1252")
                 prepared_words.append(word)
-        except Exception, e:
+        except Exception as e:
             raise MimicFailure("Invalid mimic input %r: %s."
                                % (words, e))
         try:
@@ -260,7 +262,8 @@ class GrammarWrapper(object):
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
             if func:
-                words = tuple(unicode(w, "windows-1252") for w in results.getWords(0))
+                words = tuple(text_type(w).encode("windows-1252")
+                              for w in results.getWords(0))
                 func(words)
             return
         elif words == "reject":
@@ -272,7 +275,13 @@ class GrammarWrapper(object):
         # If the words argument was not "other" or "reject", then
         #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
         #  into a tuple of unicode objects.
-        words_rules = tuple((unicode(w, "windows-1252"), r) for w, r in words)
+        def map_word(w):
+            if isinstance(w, text_type):
+                return w
+            else:
+                return w.decode("windows-1252")
+
+        words_rules = tuple((map_word(w), r) for w, r in words)
         words = tuple(w for w, r in words_rules)
 
         # Call the grammar's general process_recognition method, if present.

@@ -57,7 +57,9 @@ setup(
 
       install_requires=[
                         "setuptools >= 0.6c7",
-                        "pywin32;platform_system=='Windows'"
+                        "pywin32;platform_system=='Windows'",
+                        "six",
+                        "pyperclip == 1.6.1"
                        ],
 
       extras_require={

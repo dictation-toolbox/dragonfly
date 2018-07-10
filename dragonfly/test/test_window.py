@@ -20,6 +20,8 @@
 
 
 import unittest
+from six import PY2
+
 from dragonfly.windows.window import Window
 
 
@@ -36,7 +38,8 @@ class TestWindow(unittest.TestCase):
         # Verify that only integers and longs are accepted.
         Window(0)
         Window(int(1))
-        Window(long(2))
+        if PY2:
+            Window(long(2))
         self.assertRaises(TypeError, Window, [None])
         self.assertRaises(TypeError, Window, ["string"])
         self.assertRaises(TypeError, Window, [3.4])

@@ -210,7 +210,7 @@ class Rule(object):
         if self._active:
             try:
                 self._grammar.deactivate_rule(self)
-            except Exception, e:
+            except Exception as e:
                 self._log.warning("Failed to deactivate rule: %s (%s)"
                                   % (self, e))
             self._active = False

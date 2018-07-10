@@ -22,8 +22,8 @@ The following PrintAction is used in this test suite::
     ...         ActionBase.__init__(self)
     ...         self._name = name
     ...     def execute(self, data=None):
-    ...         if data:  print "executing %r %r" % (self._name, data)
-    ...         else:     print "executing %r" % (self._name,)
+    ...         if data:  print("executing %r %r" % (self._name, data))
+    ...         else:     print("executing %r" % (self._name,))
     ...
     >>> a = PrintAction("a")
     >>> a.execute()
