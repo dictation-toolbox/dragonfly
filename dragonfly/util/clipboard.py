@@ -23,10 +23,13 @@ This file implements an interface to the system clipboard using pyperclip
 and should work on Windows, Mac OS and Linux-based operating systems.
 """
 
-import sys
 
-from six import text_type, PY2
+from six import text_type
 import pyperclip
+
+# This can be removed once pyperclip issue #129 is resolved.
+import pkg_resources
+pkg_resources.require("pyperclip == 1.6.1")
 
 
 class BaseClipboard(object):
@@ -70,10 +73,6 @@ class Clipboard(BaseClipboard):
 
     @classmethod
     def set_system_text(cls, content):
-        if (PY2 and sys.platform.startswith("win") and
-                isinstance(content, text_type)):
-            # Transform content to str to avoid errors on Windows
-            content = content.encode("utf-8")
         pyperclip.copy(content)
 
     @classmethod

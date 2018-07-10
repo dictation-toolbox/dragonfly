@@ -1,3 +1,4 @@
+# encoding=utf-8
 #
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
@@ -29,6 +30,9 @@ class TestClipboard(unittest.TestCase):
     """
     def setUp(self):
         # Clear the clipboard before each test.
+        Clipboard.clear_clipboard()
+
+    def tearDown(self):
         Clipboard.clear_clipboard()
 
     def test_system_text_methods(self):
@@ -103,6 +107,15 @@ class TestClipboard(unittest.TestCase):
         text = "text"
         c = Clipboard(contents={1: text})
         c.copy_to_system()
+        self.assertEqual(Clipboard.get_system_text(), text)
+
+    def test_non_ascii(self):
+        text = u"""
+        ૱ ꠸ ┯ ┰ ┱ ┲ ❗ ► ◄ Ă ă 0 1 2 3 4 5 6 7 8 9 Ǖ ǖ Ꞁ ¤ ­ Ð ¢ ℥ Ω ℧ K ℶ
+        ℷ ℸ ⅇ ⅊ ⚌ ⚍ ⚎ ⚏ ⚭ ⚮ ⌀ ⏑ ⏒ ⏓ ⏔ ⏕ ⏖ ⏗ ⏘ ⏙ ⏠ ⏡ ⏦ ᶀ ᶁ ᶂ ᶃ ᶄ ᶆ ᶇ ᶈ
+        ᶉ ᶊ ᶋ ᶌ ᶍ ᶎ ᶏ ᶐ ᶑ ᶒ ᶓ ᶔ ᶕ ᶖ ᶗ ᶘ ᶙ ᶚ ᶸ ᵯ ᵰ ᵴ ᵶ ᵹ ᵼ ᵽ ᵾ ᵿ
+        """
+        Clipboard.set_system_text(text)
         self.assertEqual(Clipboard.get_system_text(), text)
 
 
