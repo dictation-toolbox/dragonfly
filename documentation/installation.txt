@@ -23,8 +23,8 @@ To be able to use the dragonfly, you will need the following:
    `Mark Hammond's page
    <http://python.net/crew/mhammond/win32/Downloads.html>`_.
  * **Natlink** *(only for Dragon NaturallySpeaking users)* --
-   for example available from `Daniel Rocco
-   <http://www.westga.edu/~drocco/voice/NatLink/>`_.
+   for example available from `SourceForge
+   <https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`_.
 
 
 Installation of Dragonfly
@@ -48,7 +48,7 @@ Installation for Dragon NaturallySpeaking
 Dragonfly uses Natlink to communicate with DNS.  Natlink is 
 available in various forms, including Daniel Rocco's efficient 
 and tidy pure-Python package.  It is available `here 
-<http://www.westga.edu/~drocco/voice/NatLink/>`_.
+<https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`_.
 
 Once Natlink is up and running, Dragonfly command-modules can be 
 treated as any other Natlink macro files.  Natlink automatically 
