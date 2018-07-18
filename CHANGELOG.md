@@ -36,5 +36,32 @@ TODO
 ## [2014]
 TODO
 
+## [0.6.6b1] - 2009-04-13
+TODO
 
-[0.7.0]: https://github.com/Danesprite/dragonfly/compare/74981c1...0.7.0
+## [0.6.5] - 2009-04-08
+TODO
+
+## [0.6.4] - 2009-02-01
+TODO
+
+## [0.6.4-rc3] - 2008-12-06
+TODO
+
+## [0.6.4-rc2] - 2008-12-02
+TODO
+
+## [0.6.4-rc1] - 2008-11-12
+TODO
+
+## [0.6.1] - 2008-10-18
+This release is the first in the Git version control system.
+
+[0.7.0]:      https://github.com/Danesprite/dragonfly/compare/74981c1...0.7.0
+[0.6.6b1]:    https://github.com/Danesprite/dragonfly/compare/0.6.5...0.6.6b1
+[0.6.5]:      https://github.com/Danesprite/dragonfly/compare/0.6.4-rc3...0.6.5
+[0.6.4]:      https://github.com/Danesprite/dragonfly/compare/0.6.4-rc3...0.6.4
+[0.6.4-rc3]:  https://github.com/Danesprite/dragonfly/compare/0.6.4-rc2...0.6.4-rc3
+[0.6.4-rc2]:  https://github.com/Danesprite/dragonfly/compare/0.6.4-rc1...0.6.4-rc2
+[0.6.4-rc1]:  https://github.com/Danesprite/dragonfly/compare/0.6.1...0.6.4-rc1
+[0.6.1]:      https://github.com/Danesprite/dragonfly/compare/03d06af...0.6.1
