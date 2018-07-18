@@ -1,5 +1,6 @@
 Dragonfly
 ============================================================================
+[![Build Status](https://travis-ci.org/Danesprite/dragonfly.svg?branch=master)](https://travis-ci.org/Danesprite/dragonfly)
 
 Dragonfly is a speech recognition framework. It is a Python 
 package which offers a high-level object model and allows its 
