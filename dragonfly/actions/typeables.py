@@ -222,19 +222,35 @@ typeables = {
     "delete":           Typeable(code=win32con.VK_DELETE, name='delete'),
     "del":              Typeable(code=win32con.VK_DELETE, name='del'),
 
-    # Modifier keys
+    # Main modifier keys
     "shift":            Typeable(code=win32con.VK_SHIFT, name='shift'),
     "control":          Typeable(code=win32con.VK_CONTROL, name='control'),
     "ctrl":             Typeable(code=win32con.VK_CONTROL, name='ctrl'),
     "alt":              Typeable(code=win32con.VK_MENU, name='alt'),
+
+    # Right modifier keys
+    "ralt":             Typeable(code=win32con.VK_RMENU, name='ralt'),
+    "rshift":           Typeable(code=win32con.VK_RSHIFT, name='rshift'),
+    "rcontrol":         Typeable(code=win32con.VK_RCONTROL, name='rcontrol'),
+    "rctrl":            Typeable(code=win32con.VK_RCONTROL, name='rctrl'),
 
     # Special keys
     "escape":           Typeable(code=win32con.VK_ESCAPE, name='escape'),
     "insert":           Typeable(code=win32con.VK_INSERT, name='insert'),
     "pause":            Typeable(code=win32con.VK_PAUSE, name='pause'),
     "win":              Typeable(code=win32con.VK_LWIN, name='win'),
+    "rwin":             Typeable(code=win32con.VK_RWIN, name='rwin'),
     "apps":             Typeable(code=win32con.VK_APPS, name='apps'),
     "popup":            Typeable(code=win32con.VK_APPS, name='popup'),
+    "snapshot":         Typeable(code=win32con.VK_SNAPSHOT, name='snapshot'),
+    "printscreen":      Typeable(code=win32con.VK_SNAPSHOT, name='printscreen'),
+
+    # Lock keys
+    # win32api.GetKeyState(code) could be used to toggle lock keys sensibly
+    # instead of using the up/down modifiers.
+    "scrolllock":       Typeable(code=win32con.VK_SCROLL, name='scrolllock'),
+    "numlock":          Typeable(code=win32con.VK_NUMLOCK, name='numlock'),
+    "capslock":         Typeable(code=win32con.VK_CAPITAL, name='capslock'),
 
     # Navigation keys
     "up":               Typeable(code=win32con.VK_UP, name='up'),
