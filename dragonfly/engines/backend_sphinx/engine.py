@@ -754,11 +754,17 @@ class SphinxEngine(EngineBase):
         if self._decoder.utt_ended:
             self._decoder.batch_process(self._audio_buffers, use_callbacks=False)
 
+        # Trim excess audio buffers from the start of the list. Keep a maximum 3
+        # seconds of silence before speech start was detected. This should help
+        # increase the performance of batch reprocessing later.
+        chunk = self.config.PYAUDIO_STREAM_KEYWORD_ARGS["frames_per_buffer"]
+        rate = self.config.PYAUDIO_STREAM_KEYWORD_ARGS["rate"]
+        seconds = 3
+        n_buffers = int(rate / chunk * seconds)
+        self._audio_buffers = self._audio_buffers[-1 * n_buffers:]
+
         # Notify observers
         self.observer_manager.notify_begin()
-
-        # TODO Trim excess audio buffers from the list
-        # TODO Move 100ms magic number in main loop to __init__ as a member
 
     def _process_key_phrases(self, speech, mimicking):
         """
