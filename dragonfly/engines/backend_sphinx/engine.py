@@ -24,6 +24,7 @@ Engine class for CMU Pocket Sphinx
 
 import logging
 import time
+from six import string_types
 
 from threading import Timer, RLock, current_thread
 
@@ -199,6 +200,7 @@ class SphinxEngine(EngineBase):
         # Reset other variables
         self._cancel_recognition_next_time = False
         self._current_grammar_wrapper = None
+        self._current_dictation_hyp = self._DICTATION_HYP_UNSET
 
         # Clear dictionaries and sets
         self._grammar_wrappers.clear()
@@ -235,12 +237,14 @@ class SphinxEngine(EngineBase):
             self._set_grammar(wrapper)
 
     def _set_grammar(self, wrapper):
-        if not is_engine_available():
+        self._current_grammar_wrapper = wrapper
+
+        # Return if the engine isn't available or if wrapper is None.
+        if not (is_engine_available() and wrapper):
             return
 
         # Connect to the engine if it isn't connected already.
         self.connect()
-        self._current_grammar_wrapper = wrapper
 
         # Don't allow grammar wrappers to use key phrase search names.
         if wrapper.search_name in self._keyphrase_search_names:
@@ -766,6 +770,37 @@ class SphinxEngine(EngineBase):
         # Notify observers
         self.observer_manager.notify_begin()
 
+    def _hypothesis_callback(self, speech, mimicking):
+        """
+        Internal Pocket Sphinx hypothesis callback method. Calls _process_hypothesis
+        and does post-processing afterwards.
+        :param speech: hypothesis string | None
+        :param mimicking:  whether to treat speech as mimicked speech.
+        :rtype: bool
+        """
+        # Process speech. We should get back a boolean for whether processing
+        # occurred as well as the final speech hypothesis.
+        processing_occurred, speech = self._process_hypothesises(
+            speech, mimicking
+        )
+
+        # Do some things that should be done if no processing occurred.
+        if not processing_occurred:
+            self.observer_manager.notify_failure()
+            self._clear_in_progress_states_and_reset()
+            self._cancel_and_free_timeout_timer()
+            self.set_grammar(self._current_grammar_wrapper)
+
+        # Clear the internal audio buffer list because it is no longer needed.
+        self._audio_buffers = []
+
+        # Unset the dictation hypothesis because it is now invalid.
+        self._current_dictation_hyp = self._DICTATION_HYP_UNSET
+
+        # Return whether processing occurred in case this method was called by
+        # mimic.
+        return processing_occurred
+
     def _process_key_phrases(self, speech, mimicking):
         """
         Processing key phrase searches and return the matched keyphrase (if any).
@@ -808,24 +843,28 @@ class SphinxEngine(EngineBase):
             func()
 
         # Return speech if it matched a keyphrase.
-        return speech if speech in self._keyphrase_functions else None
+        result = speech if speech in self._keyphrase_functions else None
+        if isinstance(result, string_types):
+            # Strip leading/trailing whitespace from keyphrase.
+            result = result.strip()
+        return result
 
-    def _hypothesis_callback(self, speech, mimicking):
+    def _process_hypothesises(self, speech, mimicking):
         """
-        Take a hypothesis string, match it against the JSGF grammar which Pocket
-        Sphinx is using, then do whatever the matching Rule implementation does for
-        processed recognitions.
+        Internal method to process speech hypothesises. This should only be called
+        from 'SphinxEngine._hypothesis_callback' because that method does important
+        post processing.
         :type speech: str
         :param mimicking: whether to treat speech as mimicked speech.
+        :rtype: tuple
         """
         # Check key phrases search first.
         keyphrase = self._process_key_phrases(speech, mimicking)
         if keyphrase:
             # Keyphrase search matched. Notify observers and return True.
-            words_list = [(word, 0) for word in keyphrase.strip().split()]
+            words_list = [(word, 0) for word in keyphrase.split()]
             self.observer_manager.notify_recognition(words_list)
-            self._audio_buffers = []
-            return True
+            return True, keyphrase
 
         # Otherwise do grammar processing.
         processing_occurred = False
@@ -848,9 +887,7 @@ class SphinxEngine(EngineBase):
         # No grammar has been loaded.
         if not self._current_grammar_wrapper or not wrappers:
             # TODO What should we do here? Output formatted Dictation like DNS?
-            self.observer_manager.notify_failure()
-            self._audio_buffers = []
-            return processing_occurred
+            return processing_occurred, speech
 
         if (self._current_grammar_wrapper.search_name !=
                 self._decoder.active_search):
@@ -924,11 +961,11 @@ class SphinxEngine(EngineBase):
         if best_state:
             best_state.process()
 
-            if best_state.repeatable_complete_sequence_rules:
-                # TODO Handle complete sequence rules that can repeat.
-                # Start the repetition timeout timer.
-                pass
-            elif best_state.complete_sequence_rules:
+            # TODO Handle complete sequence rules that can repeat.
+            # if best_state.repeatable_complete_sequence_rules:
+            #     # Start the repetition timeout timer.
+            #     pass
+            if best_state.complete_sequence_rules:
                 # Now that a complete sequence rule has been processed,
                 # clear the engine's in-progress set and reset all wrappers.
                 self._clear_in_progress_states_and_reset()
@@ -947,20 +984,9 @@ class SphinxEngine(EngineBase):
             )
             self._timeout_timer.start()
 
-        # Clear the internal audio buffer list because it is no longer needed.
-        self._audio_buffers = []
-
-        # Unset the dictation hypothesis because it is now invalid.
-        self._current_dictation_hyp = self._DICTATION_HYP_UNSET
-
-        if not processing_occurred:
-            self.observer_manager.notify_failure()
-            self._clear_in_progress_states_and_reset()
-            self._cancel_and_free_timeout_timer()
-            self.set_grammar(self._current_grammar_wrapper)
-
-        # In case this method was called by the mimic method, return a bool value.
-        return processing_occurred
+        # Return whether processing occurred and the final speech hypothesis for
+        # post processing.
+        return processing_occurred, speech
 
     def process_buffer(self, buf):
         """
@@ -974,8 +1000,8 @@ class SphinxEngine(EngineBase):
             self._audio_buffers = []
             self._cancel_recognition_next_time = False
 
-        # Keep a list of AudioData objects for reprocessing with Pocket Sphinx
-        # LM search later if the utterance matches no rules.
+        # Keep a list of buffers for possible reprocessing using different Pocket
+        # Sphinx searches later.
         self._audio_buffers.append(buf)
 
         # Process audio and wait a few milliseconds.
@@ -1119,11 +1145,7 @@ class SphinxEngine(EngineBase):
                 pass
 
             def hypothesis(hyp):
-                # Allow strings so mimic() can call this function directly.
-                if isinstance(hyp, (str, unicode)):
-                    s = hyp
-                else:
-                    s = hyp.hypstr if hyp else None
+                s = hyp.hypstr if hyp else None
 
                 # Resume recognition if s is the wake keyphrase.
                 if s and s.strip() == self.config.WAKE_PHRASE.strip():

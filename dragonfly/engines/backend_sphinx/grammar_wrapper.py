@@ -2,7 +2,7 @@
 GrammarWrapper class for CMU Pocket Sphinx engine
 """
 import functools
-from six import text_type, u, PY2
+from six import text_type
 
 from jsgf import RuleRef, map_expansion, Literal, find_expansion
 from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion, \
@@ -267,10 +267,7 @@ class GrammarWrapper(object):
         self.engine.log.debug("Grammar %s: received recognition %r." %
                               (self.grammar.name, words))
 
-        if PY2:
-            words_rules = tuple((text_type(w), r) for w, r in words)
-        else:
-            words_rules = tuple((text_type(w), r) for w, r in words)
+        words_rules = tuple((text_type(w), r) for w, r in words)
         rule_ids = tuple(r for _, r in words_rules)
         words = tuple(w for w, r in words_rules)
 
@@ -391,7 +388,8 @@ class GrammarWrapper(object):
 
                 # Then add each matchable leaf afterwards. This does what
                 # Expansion.matchable_leaves_after does, except that it only looks
-                # at leaves in this tree, not referenced ones.
+                # at leaves in this tree, not referenced ones. This will not work
+                # with repetition.
                 shallow_leaves = first.root_expansion.collect_leaves(shallow=True)
                 first_reached = False
                 for leaf in shallow_leaves:
