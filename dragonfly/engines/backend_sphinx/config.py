@@ -23,6 +23,11 @@ WAKE_PHRASE_THRESHOLD = 1e-20
 SLEEP_PHRASE = "go to sleep"
 SLEEP_PHRASE_THRESHOLD = 1e-40
 
+# Configuration for acoustic model training.
+# Relative directory paths will use the current working directory, i.e. where the
+# loader is.
+TRAINING_DATA_DIR = "training/"
+
 # Keyword arguments given to the PyAudio.open method for opening a stream from a
 # microphone. PyAudio streams are used by the engine to recognise speech from audio.
 # You may wish to change the values to be optimal for the models you are using;

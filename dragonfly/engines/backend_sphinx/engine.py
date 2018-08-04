@@ -33,7 +33,9 @@ from pyaudio import PyAudio
 
 from dragonfly import Grammar, Window
 from dragonfly.engines.backend_sphinx import is_engine_available
-from dragonfly.engines.backend_sphinx.grammar_wrapper import GrammarWrapper, ProcessingState
+from dragonfly.engines.backend_sphinx.grammar_wrapper import GrammarWrapper,\
+    ProcessingState
+from dragonfly.engines.backend_sphinx.training import TrainingDataWriter
 from dragonfly2jsgf import Translator
 
 from .compiler import SphinxJSGFCompiler
@@ -105,6 +107,9 @@ class SphinxEngine(EngineBase):
         # Variable used in caching dictation hypotheses for speech utterances.
         self._current_dictation_hyp = self._DICTATION_HYP_UNSET
 
+        # Training data writer, initialised on connect().
+        self._training_data_writer = None
+
     @property
     def config(self):
         """
@@ -127,7 +132,8 @@ class SphinxEngine(EngineBase):
         attributes = [
             "DECODER_CONFIG", "PYAUDIO_STREAM_KEYWORD_ARGS", "LANGUAGE",
             "NEXT_PART_TIMEOUT", "START_ASLEEP", "WAKE_PHRASE",
-            "WAKE_PHRASE_THRESHOLD", "SLEEP_PHRASE", "SLEEP_PHRASE_THRESHOLD"
+            "WAKE_PHRASE_THRESHOLD", "SLEEP_PHRASE", "SLEEP_PHRASE_THRESHOLD",
+            "TRAINING_DATA_DIR"
         ]
         for attr in attributes:
             assert hasattr(engine_config, attr), "invalid engine configuration: " \
@@ -170,7 +176,7 @@ class SphinxEngine(EngineBase):
             return self._hypothesis_callback(speech, False)
 
         def speech_start():
-            return self._speech_start_callback()
+            return self._speech_start_callback(False)
 
         self._decoder.hypothesis_callback = hypothesis
         self._decoder.speech_start_callback = speech_start
@@ -185,6 +191,23 @@ class SphinxEngine(EngineBase):
             self.config.SLEEP_PHRASE, self.config.SLEEP_PHRASE_THRESHOLD,
             self.pause_recognition
         )
+
+        # Initialise a TrainingDataWriter instance if specified.
+        if self.config.TRAINING_DATA_DIR:
+            # Get required audio configuration from the engine config.
+            channels, sample_width, rate = (
+                self.config.PYAUDIO_STREAM_KEYWORD_ARGS["channels"],
+                PyAudio().get_sample_size(
+                    self.config.PYAUDIO_STREAM_KEYWORD_ARGS["format"]
+                ),
+                self.config.PYAUDIO_STREAM_KEYWORD_ARGS["rate"],
+            )
+            self._training_data_writer = TrainingDataWriter(
+                self.config.TRAINING_DATA_DIR, "training",
+                channels, sample_width, rate
+            )
+        else:
+            self._training_data_writer = None
 
     def _free_engine_resources(self):
         """
@@ -201,6 +224,11 @@ class SphinxEngine(EngineBase):
         self._cancel_recognition_next_time = False
         self._current_grammar_wrapper = None
         self._current_dictation_hyp = self._DICTATION_HYP_UNSET
+
+        # Close the training data files and discard the writer if necessary.
+        if self._training_data_writer:
+            self._training_data_writer.close_files()
+            self._training_data_writer = None
 
         # Clear dictionaries and sets
         self._grammar_wrappers.clear()
@@ -726,7 +754,7 @@ class SphinxEngine(EngineBase):
             self._current_grammar_wrapper = None
             self._set_dictation_search()
 
-    def _speech_start_callback(self):
+    def _speech_start_callback(self, mimicking):
         # Get context info. Dragonfly has a handy static method for this:
         fg_window = Window.get_foreground()
 
@@ -753,19 +781,26 @@ class SphinxEngine(EngineBase):
                 not self._current_grammar_wrapper.grammar_active):
             self._set_current_grammar_search()
 
-        # Reprocess current audio buffers if necessary; <decoder>.end_utterance
-        # can be called by the above code or by the timer thread.
-        if self._decoder.utt_ended:
-            self._decoder.batch_process(self._audio_buffers, use_callbacks=False)
+        # Do a few things with audio buffers if not mimicking.
+        if not mimicking:
+            # Reprocess current audio buffers if necessary; <decoder>.end_utterance
+            # can be called by the above code or by the timer thread.
+            if self._decoder.utt_ended and not mimicking:
+                self._decoder.batch_process(self._audio_buffers, use_callbacks=False)
 
-        # Trim excess audio buffers from the start of the list. Keep a maximum 3
-        # seconds of silence before speech start was detected. This should help
-        # increase the performance of batch reprocessing later.
-        chunk = self.config.PYAUDIO_STREAM_KEYWORD_ARGS["frames_per_buffer"]
-        rate = self.config.PYAUDIO_STREAM_KEYWORD_ARGS["rate"]
-        seconds = 3
-        n_buffers = int(rate / chunk * seconds)
-        self._audio_buffers = self._audio_buffers[-1 * n_buffers:]
+            # Trim excess audio buffers from the start of the list. Keep a maximum 3
+            # seconds of silence before speech start was detected. This should help
+            # increase the performance of batch reprocessing later.
+            chunk = self.config.PYAUDIO_STREAM_KEYWORD_ARGS["frames_per_buffer"]
+            rate = self.config.PYAUDIO_STREAM_KEYWORD_ARGS["rate"]
+            seconds = 3
+            n_buffers = int(rate / chunk * seconds)
+            self._audio_buffers = self._audio_buffers[-1 * n_buffers:]
+
+            # Add trimmed pre-speech audio buffers to training .wav file.
+            if self._training_data_writer:
+                for buf in self._audio_buffers:
+                    self._training_data_writer.write_to_wave_file(buf)
 
         # Notify observers
         self.observer_manager.notify_begin()
@@ -790,6 +825,12 @@ class SphinxEngine(EngineBase):
             self._clear_in_progress_states_and_reset()
             self._cancel_and_free_timeout_timer()
             self.set_grammar(self._current_grammar_wrapper)
+
+        # Finalise the current training data and open a new wav file. If speech is
+        # None, the current .wav file will be discarded.
+        if self._training_data_writer and not mimicking:
+            self._training_data_writer.finalise(speech)
+            self._training_data_writer.open_next_wav_file()
 
         # Clear the internal audio buffer list because it is no longer needed.
         self._audio_buffers = []
@@ -1004,6 +1045,13 @@ class SphinxEngine(EngineBase):
         # Sphinx searches later.
         self._audio_buffers.append(buf)
 
+        # Write the buffer to the current .wav file used for acoustic model
+        # training. Only do this if in speech, the writer is initialised and
+        # recognition is not paused.
+        if self._decoder.get_in_speech() and self._training_data_writer and \
+                not self.recognition_paused:
+            self._training_data_writer.write_to_wave_file(buf)
+
         # Process audio and wait a few milliseconds.
         self._decoder.process_audio(buf)
 
@@ -1066,7 +1114,7 @@ class SphinxEngine(EngineBase):
             return
 
         # Pretend that Sphinx has started processing speech
-        self._speech_start_callback()
+        self._speech_start_callback(True)
 
         # Process the words as if they were spoken
         result = self._hypothesis_callback(words, "as words")
@@ -1085,7 +1133,7 @@ class SphinxEngine(EngineBase):
             return
 
         # Pretend that Sphinx has started processing speech
-        self._speech_start_callback()
+        self._speech_start_callback(True)
 
         # Process phrases as if they were spoken
         for phrase in phrases:
@@ -1176,7 +1224,7 @@ class SphinxEngine(EngineBase):
 
             # Restore the callbacks to normal
             def speech_start():
-                return self._speech_start_callback()
+                return self._speech_start_callback(False)
 
             def hypothesis(hyp):
                 # Set speech to the hypothesis string or None if there isn't one

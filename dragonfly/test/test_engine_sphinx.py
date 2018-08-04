@@ -25,7 +25,6 @@ class SphinxEngineCase(unittest.TestCase):
         engine = get_engine("sphinx")
         assert isinstance(engine, SphinxEngine)
         assert engine.name == "sphinx"
-        engine.connect()
         self.engine = engine
 
         # Save current config
@@ -35,6 +34,9 @@ class SphinxEngineCase(unittest.TestCase):
         # that break tests. Value of 0 means no timeout at all.
         self.engine.config.NEXT_PART_TIMEOUT = 0
 
+        # Set training data directory to None for the tests.
+        self.engine.config.TRAINING_DATA_DIR = None
+
         # Ensure the relevant default configuration values are used
         self.engine.config.START_ASLEEP = False
         self.engine.config.WAKE_PHRASE = "wake up"
@@ -43,6 +45,9 @@ class SphinxEngineCase(unittest.TestCase):
 
         # Map for test functions
         self.test_map = {}
+
+        # Connect the engine.
+        engine.connect()
 
     def tearDown(self):
         # Restore saved config
@@ -144,7 +149,8 @@ class BasicEngineTests(SphinxEngineCase):
             "WAKE_PHRASE",
             "SLEEP_PHRASE",
             "WAKE_PHRASE_THRESHOLD",
-            "SLEEP_PHRASE_THRESHOLD"
+            "SLEEP_PHRASE_THRESHOLD",
+            "TRAINING_DATA_DIR",
         ]
 
         class TestConfig(object):
@@ -157,6 +163,7 @@ class BasicEngineTests(SphinxEngineCase):
             WAKE_PHRASE_THRESHOLD = 1e-20
             SLEEP_PHRASE = "go to sleep"
             SLEEP_PHRASE_THRESHOLD = 1e-40
+            TRAINING_DATA_DIR = None
 
         def set_config(value):
             self.engine.config = value
