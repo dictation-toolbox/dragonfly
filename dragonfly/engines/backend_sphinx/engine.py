@@ -530,7 +530,7 @@ class SphinxEngine(EngineBase):
         # Find the old list rule in the grammar and modify its expansion
         for r in wrapper.dictation_grammar.rules:
             if r.name == name:
-                r.expansion = new_rule.expansion
+                r.expansion.children = new_rule.expansion.children
                 break
 
         # Reload the grammar's Pocket Sphinx JSGF searches.

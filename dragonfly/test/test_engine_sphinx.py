@@ -968,12 +968,6 @@ class DictationEngineTests(SphinxEngineCase):
             f("forward one")
             self.assert_test_function_called(test4, 2)
 
-        # TODO Make ambiguous matches work correctly - this is an issue with jsgf.ext.Dictation
-        self.engine.mimic("testing testing testing")
-        self.assert_test_function_called(test2, 2)
-        exec_mimic_action("testing testing testing")
-        self.assert_test_function_called(test2, 3)
-
 
 # ---------------------------------------------------------------------
 
