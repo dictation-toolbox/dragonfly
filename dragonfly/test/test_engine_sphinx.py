@@ -41,6 +41,16 @@ class MockLoggingHandler(logging.Handler):
         self.messages[record.levelname.lower()].append(record.getMessage())
 
 
+class TestContext(Context):
+    def __init__(self, active):
+        super(TestContext, self).__init__()
+        self.active = active
+
+    def matches(self, executable, title, handle):
+        # Ignore the parameters and return self.active.
+        return self.active
+
+
 class SphinxEngineCase(unittest.TestCase):
     """
     Base TestCase class for Sphinx engine tests
@@ -439,6 +449,85 @@ class BasicEngineTests(SphinxEngineCase):
         self.assertFalse(self.engine.recognition_paused)
         self.assert_mimic_success("hello world")
         self.assert_test_function_called(test, 2)
+
+    def test_rule_contexts(self):
+        # Test that rules with contexts work and that rules with context=None still
+        # work regardless of context.
+        test1, test2 = self.get_test_function(), self.get_test_function()
+        rule1 = MappingRule(name="test1", mapping={"test global": Function(test1)})
+        context = TestContext(True)
+        rule2 = MappingRule(
+            name="test2", mapping={"test context": Function(test2)},
+            context=TestContext(True)
+        )
+
+        # Create and load a grammar.
+        grammar = Grammar("test")
+        grammar.add_rule(rule1)
+        grammar.add_rule(rule2)
+        grammar.load()
+
+        # Test that both rules rules work.
+        self.assert_mimic_success("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 1)
+        self.assert_test_function_called(test2, 1)
+
+        # Go out of context and test both rules again.
+        context.active = False
+        self.assert_mimic_failure("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 2)
+        self.assert_test_function_called(test2, 1)
+
+        # Try again in-context.
+        context.active = True
+        self.assert_mimic_success("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 3)
+        self.assert_test_function_called(test2, 2)
+
+    def test_grammar_contexts(self):
+        # Test that grammars with contexts work and that global contexts still work
+        # regardless of context.
+        test1, test2 = self.get_test_function(), self.get_test_function()
+
+        class TestRule1(MappingRule):
+            mapping = {"test global": Function(test1)}
+
+        class TestRule2(MappingRule):
+            mapping = {"test context": Function(test2)}
+
+        # Create and load a global grammar.
+        grammar1 = Grammar("global")
+        grammar1.add_rule(TestRule1())
+        grammar1.load()
+
+        # Create and load a grammar using a context.
+        context = TestContext(active=True)
+        grammar2 = Grammar("context", context=context)
+        grammar2.add_rule(TestRule2())
+        grammar2.load()
+
+        # Test that rules in both grammars work.
+        self.assert_mimic_success("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 1)
+        self.assert_test_function_called(test2, 1)
+
+        # Go out of context and test both rules again.
+        context.active = False
+        self.assert_mimic_failure("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 2)
+        self.assert_test_function_called(test2, 1)
+
+        # Try again in-context.
+        context.active = True
+        self.assert_mimic_success("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 3)
+        self.assert_test_function_called(test2, 2)
 
     def test_start_asleep(self):
         # config.START_ASLEEP is False for the tests by default, so test that first.
