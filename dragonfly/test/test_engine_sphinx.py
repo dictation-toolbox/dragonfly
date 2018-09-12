@@ -4,17 +4,41 @@ Tests for the CMU Pocket Sphinx engine
 Most engine functionality is tested here, although the tests are done entirely
 via `mimic`, so there are some things which have to be tested manually for the
 moment.
+
+These tests assume the US English pronunciation dictionary, acoustic and language
+models distributed with the `pocketsphinx` Python package are used.
 """
 
 import unittest
 
 import time
+import logging
 
 from sphinxwrapper import DefaultConfig
 
 from dragonfly import *
 from dragonfly import List as DragonflyList, DictList as DragonflyDict
 from dragonfly.engines.backend_sphinx.engine import SphinxEngine
+
+
+class MockLoggingHandler(logging.Handler):
+    """
+    Mock logging handler to check for expected logs.
+    Adapted this from a Stack Overflow answer: https://stackoverflow.com/a/1049375
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.messages = {
+            'debug': [],
+            'info': [],
+            'warning': [],
+            'error': [],
+            'critical': [],
+        }
+        logging.Handler.__init__(self, *args, **kwargs)
+
+    def emit(self, record):
+        self.messages[record.levelname.lower()].append(record.getMessage())
 
 
 class SphinxEngineCase(unittest.TestCase):
@@ -46,14 +70,19 @@ class SphinxEngineCase(unittest.TestCase):
         # Map for test functions
         self.test_map = {}
 
+        # Add a logging handler.
+        self.logging_handler = MockLoggingHandler()
+        self.engine.log.addHandler(self.logging_handler)
+
         # Connect the engine.
         engine.connect()
 
     def tearDown(self):
-        # Restore saved config
+        # Restore saved config and do some other things.
         self.engine.config = self.engine_config
         self.engine.disconnect()
         self.test_map.clear()
+        self.engine.log.removeHandler(self.logging_handler)
 
     # ---------------------------------------------------------------------
     # Methods for control-flow assertion.
@@ -484,6 +513,55 @@ class BasicEngineTests(SphinxEngineCase):
         self.assert_test_function_called(test2, 1)  # no change
         self.assert_test_function_called(on_begin_test, 4)
         self.assert_test_function_called(on_failure_test, 2)
+
+    def test_unknown_keyphrase_words(self):
+        # Test that keyphrases with unknown words log appropriate error messages.
+        self.engine.set_keyphrase("notaword", 1e-20, lambda: None)
+        self.assertEqual(
+            self.logging_handler.messages["error"][0],
+            "keyphrase used words not found in the pronunciation dictionary: "
+            "notaword"
+        )
+
+        # Set invalid wake and sleep keyphrases.
+        self.engine.config.WAKE_PHRASE = "wake up unknownword"
+        self.engine.config.SLEEP_PHRASE = "aninvalid sleepphrase"
+
+        # Restart the engine manually to verify an error is logged for the
+        # keyphrases on connect().
+        self.engine.disconnect()
+        self.engine.connect()
+
+        # Check the logged messages.
+        self.assertEqual(
+            self.logging_handler.messages["error"][1],
+            "keyphrase used words not found in the pronunciation dictionary: "
+            "aninvalid, sleepphrase, unknownword"
+        )
+
+    def test_unknown_grammar_words(self):
+        # Test that grammars using unknown words log appropriate error messages when
+        # they fail to load.
+        class TestRule1(CompoundRule):
+            spec = "testing unknownword"
+
+        class TestRule2(MappingRule):
+            mapping = {
+                "wordz": ActionBase(),
+                "natlink": ActionBase()
+            }
+
+        g = Grammar("test")
+        g.add_rule(TestRule1())
+        g.add_rule(TestRule2())
+        g.load()
+
+        # Check the logged messages. The words should be in alphabetical order.
+        self.assertEqual(
+            self.logging_handler.messages["error"][0],
+            "grammar 'test' used words not found in the pronunciation dictionary: "
+            "natlink, unknownword, wordz"
+        )
 
 
 class DictationEngineTests(SphinxEngineCase):

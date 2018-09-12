@@ -52,6 +52,10 @@ except ImportError:
     pass
 
 
+class UnknownWordError(Exception):
+    pass
+
+
 class SphinxEngine(EngineBase):
     """Speech recognition engine back-end for CMU Pocket Sphinx."""
 
@@ -181,16 +185,28 @@ class SphinxEngine(EngineBase):
         self._decoder.hypothesis_callback = hypothesis
         self._decoder.speech_start_callback = speech_start
 
-        # Set up wake phrase search using the engine configuration.
-        self._decoder.set_kws_list("_wake_phrase", {
-            self.config.WAKE_PHRASE: self.config.WAKE_PHRASE_THRESHOLD
-        })
+        try:
+            # Check that all words in the wake and sleep keyphrases are in the
+            # pronunciation dictionary. An UnknownWordError will be raised if one
+            # isn't.
+            words = []
+            words.extend(self.config.WAKE_PHRASE.split())
+            words.extend(self.config.SLEEP_PHRASE.split())
+            self._validate_words(words, "keyphrase")
 
-        # Add the sleep keyphrase + threshold to call pause_recognition when heard.
-        self.set_keyphrase(
-            self.config.SLEEP_PHRASE, self.config.SLEEP_PHRASE_THRESHOLD,
-            self.pause_recognition
-        )
+            # Set up wake phrase search using the engine configuration.
+            self._decoder.set_kws_list("_wake_phrase", {
+                self.config.WAKE_PHRASE: self.config.WAKE_PHRASE_THRESHOLD
+            })
+
+            # Add the sleep keyphrase + threshold to call pause_recognition when heard.
+            self.set_keyphrase(
+                self.config.SLEEP_PHRASE, self.config.SLEEP_PHRASE_THRESHOLD,
+                self.pause_recognition
+            )
+        except UnknownWordError as e:
+            # Log the error about unknown words.
+            self._log.error(e.message)
 
         # Initialise a TrainingDataWriter instance if specified.
         if self.config.TRAINING_DATA_DIR:
@@ -251,6 +267,32 @@ class SphinxEngine(EngineBase):
     # -----------------------------------------------------------------------
     # Methods for working with grammars.
 
+    def check_valid_word(self, word):
+        """
+        Check if a word is in the current Sphinx pronunciation dictionary.
+
+        This will always return False if connect() hasn't been called.
+
+        :returns: bool
+        """
+        if self._decoder:
+            return bool(self._decoder.lookup_word(word))
+
+        return False
+
+    def _validate_words(self, words, search_type):
+        unknown_words = []
+        for word in words:
+            if not self.check_valid_word(word):
+                unknown_words.append(word)
+
+        if unknown_words:
+            # Sort the word list before using it.
+            unknown_words.sort()
+            raise UnknownWordError("%s used words not found in the pronunciation "
+                                   "dictionary: %s"
+                                   % (search_type, ", ".join(unknown_words)))
+
     def _build_grammar_wrapper(self, grammar):
         return GrammarWrapper(grammar, self)
 
@@ -302,12 +344,21 @@ class SphinxEngine(EngineBase):
 
         if compiled:
             try:
+                # Check that each word in the grammar is in the pronunciation
+                # dictionary. This will raise an UnknownWordError if one or more
+                # aren't.
+                self._validate_words(wrapper.grammar_words,
+                                     "grammar '%s'" % wrapper.grammar.name)
+
                 # Set the JSGF search
                 self._decoder.end_utterance()
                 self._decoder.set_jsgf_string(wrapper.search_name, compiled)
                 self._decoder.active_search = wrapper.search_name
             except RuntimeError:
                 self._log.error("error setting PS JSGF search: %s" % compiled)
+
+                # Return early to avoid adding this search as valid.
+                return
         else:
             self._set_dictation_search()
 
@@ -346,6 +397,14 @@ class SphinxEngine(EngineBase):
         :type threshold: float
         :param func: function or method to call when keyphrase is heard
         """
+        # Check that all words in the keyphrase are in the pronunciation dictionary.
+        try:
+            self._validate_words(keyphrase.split(), "keyphrase")
+        except UnknownWordError as e:
+            # Log an error and return early.
+            self._log.error(e.message)
+            return
+
         # Add parameters to the relevant dictionaries.
         self._keyphrase_thresholds[keyphrase] = threshold
         self._keyphrase_functions[keyphrase] = func
@@ -387,6 +446,10 @@ class SphinxEngine(EngineBase):
         wrapper = self._build_grammar_wrapper(grammar)
         try:
             self.set_grammar(wrapper)
+        except UnknownWordError as e:
+            # Unknown words should be logged as plain error messages, not
+            # exception stack traces.
+            self._log.error(e.message)
         except Exception as e:
             self._log.exception("Failed to load grammar %s: %s."
                                 % (grammar, e))
@@ -721,6 +784,9 @@ class SphinxEngine(EngineBase):
 
         compiled = grammar.compile_as_root_grammar()
         name = "_temp"
+
+        # Note that there is no need to validate words in this case because each
+        # literal in the _temp grammar came from a Pocket Sphinx hypothesis.
         self._decoder.end_utterance()
         self._decoder.set_jsgf_string(name, compiled)
         self._decoder.active_search = name

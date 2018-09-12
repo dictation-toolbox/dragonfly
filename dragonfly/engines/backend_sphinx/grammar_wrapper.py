@@ -4,7 +4,7 @@ GrammarWrapper class for CMU Pocket Sphinx engine
 import functools
 from six import text_type
 
-from jsgf import RuleRef, map_expansion, Literal, find_expansion
+from jsgf import RuleRef, map_expansion, Literal, find_expansion, filter_expansion
 from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion, \
     dictation_in_expansion
 
@@ -145,6 +145,25 @@ class GrammarWrapper(object):
 
         # Set the default value of search_name
         self._search_name = self._default_search_name
+
+    @property
+    def grammar_words(self):
+        """
+        Set of all words used in this grammar.
+
+        :returns: set
+        """
+        words = []
+        for rule in self._jsgf_grammar.rules:
+            rule_literals = filter_expansion(
+                rule.expansion, lambda x: isinstance(x, Literal) and x.text,
+                shallow=True
+            )
+            for literal in rule_literals:
+                words.extend(literal.text.split())
+
+        # Return a set of words with no duplicates.
+        return set(words)
 
     @property
     def dictation_grammar(self):
