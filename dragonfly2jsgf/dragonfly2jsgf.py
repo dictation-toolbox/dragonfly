@@ -158,6 +158,7 @@ class Translator(object):
             raise TranslationError("Cannot translate element '%s' as a "
                                    "RuleRef." % state.element)
         name = element.name
+        if name is None: name = element.element_tree_string()  # f"RuleRef({referenced_rule_name})"
         if name not in state.rule_names:
             # Make a new equivalent JSGF rule
             state.element = element.rule.element
