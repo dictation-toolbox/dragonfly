@@ -154,6 +154,14 @@ class MappingRule(Rule):
 
     #-----------------------------------------------------------------------
 
+    @property
+    def specs(self):
+        """
+        Each spoken-form in the rule.
+        :rtype: list
+        """
+        return [k for k, _ in self._mapping.items()]
+
     def value(self, node):
         node = node.children[0]
         value = node.value()
