@@ -70,11 +70,11 @@ class ProcessingState(object):
     def matched_rules(self):
         return self.in_progress_rules + self.complete_rules
 
-    def process(self, timed_out=False):
+    def process(self, timed_out=False, notify_only=False):
         """
         Process this state object by calling the wrapper's process method.
         """
-        self.wrapper.process(self, timed_out)
+        self.wrapper.process(self, timed_out, notify_only)
 
     def add_post_collection_task(self, task):
         """
@@ -253,23 +253,25 @@ class GrammarWrapper(object):
         self._collect_normal_rules(state)
         return state
 
-    def process(self, state, timed_out=False):
+    def process(self, state, timed_out=False, notify_only=False):
         """
         Process a ProcessingState object from `collect_matching_rules`.
-        :type state: ProcessingState
+
+        :param state: ProcessingState
         :param timed_out: used by recognition timeout thread
+        :param notify_only: whether to only notify observers, not process
         """
         complete_seq = state.complete_sequence_rules
         if complete_seq:
             words_list = self._generate_words_list(complete_seq[0], True)
-            self._process_complete_recognition(words_list)
+            self._process_complete_recognition(words_list, notify_only)
 
         elif state.in_progress_rules and not timed_out:
             self._notify_partial_recognition(state.in_progress_rules[0])
 
         elif state.complete_rules:
             words_list = self._generate_words_list(state.complete_rules[0], True)
-            self._process_complete_recognition(words_list)
+            self._process_complete_recognition(words_list, notify_only)
 
     def process_begin(self, fg_window):
         """
@@ -339,20 +341,23 @@ class GrammarWrapper(object):
             self._generate_words_list(rule, False)
         )
 
-    def _process_complete_recognition(self, words_list):
+    def _process_complete_recognition(self, words_list, notify_only):
         """
         Internal method for processing complete recognitions.
         :type words_list: list
+        :param notify_only: whether to only notify observers, not process.
         """
         # Notify recognition observers
         self.engine.observer_manager.notify_recognition(words_list)
 
-        # Begin dragonfly processing
-        try:
-            self._process_results(words_list)
-        except Exception as e:
-            self.engine.log.error("%s: caught Exception while processing "
-                                  "recognised words: %s" % (self, e))
+        # Begin dragonfly processing if appropriate.
+        # notify_only is used by the Sphinx engine's training mode.
+        if not notify_only:
+            try:
+                self._process_results(words_list)
+            except Exception as e:
+                self.engine.log.error("%s: caught Exception while processing "
+                                      "recognised words: %s" % (self, e))
 
         # Clear the in progress list and reset all sequence rules in the grammar.
         self.reset_all_sequence_rules()

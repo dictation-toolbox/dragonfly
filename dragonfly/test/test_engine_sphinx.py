@@ -75,6 +75,8 @@ class SphinxEngineCase(unittest.TestCase):
         self.engine.config.START_ASLEEP = False
         self.engine.config.WAKE_PHRASE = "wake up"
         self.engine.config.SLEEP_PHRASE = "go to sleep"
+        self.engine.config.START_TRAINING_PHRASE = "start training session"
+        self.engine.config.END_TRAINING_PHRASE = "end training session"
         self.engine.config.LANGUAGE = "en"
 
         # Map for test functions
@@ -190,6 +192,10 @@ class BasicEngineTests(SphinxEngineCase):
             "WAKE_PHRASE_THRESHOLD",
             "SLEEP_PHRASE_THRESHOLD",
             "TRAINING_DATA_DIR",
+            "START_TRAINING_PHRASE",
+            "START_TRAINING_THRESHOLD",
+            "END_TRAINING_PHRASE",
+            "END_TRAINING_THRESHOLD",
         ]
 
         class TestConfig(object):
@@ -203,6 +209,10 @@ class BasicEngineTests(SphinxEngineCase):
             SLEEP_PHRASE = "go to sleep"
             SLEEP_PHRASE_THRESHOLD = 1e-40
             TRAINING_DATA_DIR = None
+            START_TRAINING_PHRASE = "start training session"
+            START_TRAINING_THRESHOLD = 1e-48
+            END_TRAINING_PHRASE = "end training session"
+            END_TRAINING_THRESHOLD = 1e-45
 
         def set_config(value):
             self.engine.config = value
@@ -612,20 +622,23 @@ class BasicEngineTests(SphinxEngineCase):
             "notaword"
         )
 
-        # Set invalid wake and sleep keyphrases.
+        # Test invalid built-in keyphrases.
         self.engine.config.WAKE_PHRASE = "wake up unknownword"
         self.engine.config.SLEEP_PHRASE = "aninvalid sleepphrase"
+        self.engine.config.START_TRAINING_PHRASE = "another invalidphrase"
+        self.engine.config.END_TRAINING_PHRASE = "end trainingsession"
 
-        # Restart the engine manually to verify an error is logged for the
+        # Restart the engine manually to verify that an error is logged for the
         # keyphrases on connect().
         self.engine.disconnect()
         self.engine.connect()
 
-        # Check the logged messages.
+        # Check the logged messages. Each of the unknown words in all four
+        # built-in keyphrases should be listed.
         self.assertEqual(
             self.logging_handler.messages["error"][1],
             "keyphrase used words not found in the pronunciation dictionary: "
-            "aninvalid, sleepphrase, unknownword"
+            "aninvalid, invalidphrase, sleepphrase, trainingsession, unknownword"
         )
 
     def test_unknown_grammar_words(self):
@@ -651,6 +664,53 @@ class BasicEngineTests(SphinxEngineCase):
             "grammar 'test' used words not found in the pronunciation dictionary: "
             "natlink, unknownword, wordz"
         )
+
+    def test_training_session(self):
+        # Test that no recognition processing is done when a training session is
+        # active.
+
+        # Set up a rule to "train".
+        test = self.get_test_function()
+
+        class TestRule(CompoundRule):
+            spec = "test training"
+            _process_recognition = test
+
+        # Create and load a grammar with the rule.
+        grammar = Grammar("test")
+        grammar.add_rule(TestRule())
+        grammar.load()
+
+        # Set up a custom observer using test methods
+        on_begin_test = self.get_test_function()
+        on_recognition_test = self.get_test_function()
+        on_failure_test = self.get_test_function()
+
+        class TestObserver(RecognitionObserver):
+            on_begin = on_begin_test
+            on_recognition = on_recognition_test
+            on_failure = on_failure_test
+
+        self.engine.register_recognition_observer(TestObserver())
+
+        # Start a training session.
+        self.engine.start_training_session()
+
+        # Test that mimic succeeds, no processing occurs, and the TestObserver
+        # is still notified of events.
+        self.assert_mimic_success("test training")
+        self.assert_test_function_called(test, 0)
+        self.assert_test_function_called(on_begin_test, 1)
+        self.assert_test_function_called(on_recognition_test, 1)
+        self.assert_test_function_called(on_failure_test, 0)
+
+        # End the session and test again.
+        self.engine.end_training_session()
+        self.assert_mimic_success("test training")
+        self.assert_test_function_called(test, 1)
+        self.assert_test_function_called(on_begin_test, 2)
+        self.assert_test_function_called(on_recognition_test, 2)
+        self.assert_test_function_called(on_failure_test, 0)
 
 
 class DictationEngineTests(SphinxEngineCase):

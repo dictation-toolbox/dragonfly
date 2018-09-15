@@ -15,7 +15,7 @@ DECODER_CONFIG = DefaultConfig()
 DECODER_CONFIG.set_string("-logfn", os.devnull)
 
 # Configuration for wake/sleep phrases
-# Note that the following CMU Sphinx tutorial has some advice on keyword thresholds
+# Note that the following CMU Sphinx tutorial has some advice on keyword threshold
 # values: https://cmusphinx.github.io/wiki/tutoriallm/#keyword-lists
 START_ASLEEP = True
 WAKE_PHRASE = "wake up"
@@ -27,6 +27,10 @@ SLEEP_PHRASE_THRESHOLD = 1e-40
 # Relative directory paths will use the current working directory, i.e. where the
 # loader is.
 TRAINING_DATA_DIR = "training/"
+START_TRAINING_PHRASE = "start training session"
+START_TRAINING_THRESHOLD = 1e-48
+END_TRAINING_PHRASE = "end training session"
+END_TRAINING_THRESHOLD = 1e-45
 
 # Keyword arguments given to the PyAudio.open method for opening a stream from a
 # microphone. PyAudio streams are used by the engine to recognise speech from audio.

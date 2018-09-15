@@ -24,7 +24,6 @@ Engine class for CMU Pocket Sphinx
 
 import logging
 import time
-from six import string_types
 
 from threading import Timer, RLock, current_thread
 
@@ -114,6 +113,9 @@ class SphinxEngine(EngineBase):
         # Training data writer, initialised on connect().
         self._training_data_writer = None
 
+        # Variable used in training sessions.
+        self._training_session_active = False
+
     @property
     def config(self):
         """
@@ -137,7 +139,9 @@ class SphinxEngine(EngineBase):
             "DECODER_CONFIG", "PYAUDIO_STREAM_KEYWORD_ARGS", "LANGUAGE",
             "NEXT_PART_TIMEOUT", "START_ASLEEP", "WAKE_PHRASE",
             "WAKE_PHRASE_THRESHOLD", "SLEEP_PHRASE", "SLEEP_PHRASE_THRESHOLD",
-            "TRAINING_DATA_DIR"
+            "TRAINING_DATA_DIR", "START_TRAINING_PHRASE",
+            "START_TRAINING_THRESHOLD", "END_TRAINING_PHRASE",
+            "END_TRAINING_THRESHOLD"
         ]
         for attr in attributes:
             assert hasattr(engine_config, attr), "invalid engine configuration: " \
@@ -186,12 +190,14 @@ class SphinxEngine(EngineBase):
         self._decoder.speech_start_callback = speech_start
 
         try:
-            # Check that all words in the wake and sleep keyphrases are in the
+            # Check that all words in configuration keyphrases are in the
             # pronunciation dictionary. An UnknownWordError will be raised if one
             # isn't.
             words = []
             words.extend(self.config.WAKE_PHRASE.split())
             words.extend(self.config.SLEEP_PHRASE.split())
+            words.extend(self.config.START_TRAINING_PHRASE.split())
+            words.extend(self.config.END_TRAINING_PHRASE.split())
             self._validate_words(words, "keyphrase")
 
             # Set up wake phrase search using the engine configuration.
@@ -199,10 +205,24 @@ class SphinxEngine(EngineBase):
                 self.config.WAKE_PHRASE: self.config.WAKE_PHRASE_THRESHOLD
             })
 
-            # Add the sleep keyphrase + threshold to call pause_recognition when heard.
+            # Add the sleep keyphrase + threshold to call pause_recognition when
+            # heard.
             self.set_keyphrase(
                 self.config.SLEEP_PHRASE, self.config.SLEEP_PHRASE_THRESHOLD,
                 self.pause_recognition
+            )
+
+            # Add the start/end training session phrases, thresholds and methods
+            # to call when heard.
+            self.set_keyphrase(
+                self.config.START_TRAINING_PHRASE,
+                self.config.START_TRAINING_THRESHOLD,
+                self.start_training_session
+            )
+            self.set_keyphrase(
+                self.config.END_TRAINING_PHRASE,
+                self.config.END_TRAINING_THRESHOLD,
+                self.end_training_session
             )
         except UnknownWordError as e:
             # Log the error about unknown words.
@@ -240,6 +260,7 @@ class SphinxEngine(EngineBase):
         self._cancel_recognition_next_time = False
         self._current_grammar_wrapper = None
         self._current_dictation_hyp = self._DICTATION_HYP_UNSET
+        self._training_session_active = False
 
         # Close the training data files and discard the writer if necessary.
         if self._training_data_writer:
@@ -282,7 +303,9 @@ class SphinxEngine(EngineBase):
 
     def _validate_words(self, words, search_type):
         unknown_words = []
-        for word in words:
+
+        # Use 'set' to de-duplicate the 'words' list.
+        for word in set(words):
             if not self.check_valid_word(word):
                 unknown_words.append(word)
 
@@ -663,7 +686,10 @@ class SphinxEngine(EngineBase):
             )
 
             if best_state and best_state.wrapper.grammar_active:
-                best_state.process(timed_out=True)
+                best_state.process(
+                    timed_out=True,
+                    notify_only=self._training_session_active
+                )
 
             self._clear_in_progress_states_and_reset()
 
@@ -1078,7 +1104,7 @@ class SphinxEngine(EngineBase):
         # Process the best wrapper
         best_state = self._get_best_processing_state(processing_states)
         if best_state:
-            best_state.process()
+            best_state.process(notify_only=self._training_session_active)
 
             # TODO Handle complete sequence rules that can repeat.
             # if best_state.repeatable_complete_sequence_rules:
@@ -1231,6 +1257,43 @@ class SphinxEngine(EngineBase):
 
     def _get_language(self):
         return self.config.LANGUAGE
+
+    # ---------------------------------------------------------------------
+    # Training session methods
+
+    def start_training_session(self):
+        """
+        Start the training session. This will stop recognition processing
+        until ``end_training_session`` is called.
+
+        This method should be thread safe.
+        """
+        with self._thread_lock:
+            if not self._training_data_writer:
+                self._log.warning(
+                    "Training data will not be recorded! Please call "
+                    "connect() and/or check that engine config "
+                    "'TRAINING_DATA_DIR' is set to a valid path.")
+
+            if not self._training_session_active:
+                self._log.info("Training session has started. No rule "
+                               "actions will be processed. ")
+                self._log.info("Say '%s' to end the session."
+                               % self.config.END_TRAINING_PHRASE)
+                self._training_session_active = True
+
+    def end_training_session(self):
+        """
+        End the training if one is in progress. This will allow recognition
+        processing once again.
+
+        This method should be thread safe.
+        """
+        with self._thread_lock:
+            if self._training_session_active:
+                self._log.info("Ending training session. Rule actions "
+                               "will now be processed normally again.")
+                self._training_session_active = False
 
     # ---------------------------------------------------------------------
     # Recognition loop control methods
