@@ -2,7 +2,6 @@
 #
 
 import sys
-import os
 import os.path
 import re
 
@@ -22,15 +21,17 @@ print("Version:", version, "-- Release:", release)
 
 
 #---------------------------------------------------------------------------
-# Mock libraries that are not available on Read the Docs
+# Mock libraries that are only available on Windows platforms
+# (i.e. not on Read the Docs or *nix platforms)
 
-on_read_the_docs = (os.environ.get("READTHEDOCS", None) == "True")
-if on_read_the_docs:
+not_on_windows = not sys.platform.startswith("win")
+if not_on_windows:
     from mock import MagicMock
+
     class Mock(MagicMock):
         @classmethod
         def __getattr__(cls, name):
-            return Mock()
+            return MagicMock()
     mock_modules = ["ctypes", "ctypes.wintypes", "pythoncom",
                     "pywintypes", "win32api", "win32clipboard",
                     "win32com", "win32com.client",
