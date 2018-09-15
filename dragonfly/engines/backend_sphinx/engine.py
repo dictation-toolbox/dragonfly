@@ -785,6 +785,9 @@ class SphinxEngine(EngineBase):
         compiled = grammar.compile_as_root_grammar()
         name = "_temp"
 
+        # Store the current search name.
+        original = self._decoder.active_search
+
         # Note that there is no need to validate words in this case because each
         # literal in the _temp grammar came from a Pocket Sphinx hypothesis.
         self._decoder.end_utterance()
@@ -796,6 +799,10 @@ class SphinxEngine(EngineBase):
             self._audio_buffers,
             use_callbacks=False
         )
+
+        # Switch back to the previous search.
+        self._decoder.end_utterance()  # just in case
+        self._decoder.active_search = original
 
         if result:
             result = result.hypstr
@@ -940,8 +947,16 @@ class SphinxEngine(EngineBase):
         if not speech:
             return None
 
-        # Strip whitespace. PS seems to add it for kws search hypothesises.
-        speech = speech.strip()
+        # Handle multiple matching key phrases. This appears to be a quirk of how
+        # Pocket Sphinx 'kws' searches work. Get the best match instead if this is
+        # the case.
+        recognised_phrases = speech.split("  ")
+        if len(recognised_phrases) > 1:
+            # Remove trailing space from the last phrase.
+            recognised_phrases[len(recognised_phrases) - 1].rstrip()
+            speech = self._get_best_hypothesis(recognised_phrases)
+        else:
+            speech = speech.rstrip()  # remove trailing whitespace.
 
         # Call the registered function if there was a match and the function
         # is callable.
@@ -951,9 +966,6 @@ class SphinxEngine(EngineBase):
 
         # Return speech if it matched a keyphrase.
         result = speech if speech in self._keyphrase_functions else None
-        if isinstance(result, string_types):
-            # Strip leading/trailing whitespace from keyphrase.
-            result = result.strip()
         return result
 
     def _process_hypothesises(self, speech, mimicking):
