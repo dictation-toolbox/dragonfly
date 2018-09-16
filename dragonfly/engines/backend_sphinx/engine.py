@@ -22,8 +22,11 @@
 Engine class for CMU Pocket Sphinx
 """
 
+import contextlib
 import logging
+import os
 import time
+import wave
 
 from threading import Timer, RLock, current_thread
 
@@ -1133,11 +1136,14 @@ class SphinxEngine(EngineBase):
         # post processing.
         return processing_occurred, speech
 
-    def process_buffer(self, buf):
+    def process_buffer(self, buf, sleep_time=0.1):
         """
-        Process an audio buffer using the internal Pocket Sphinx decoder. This
-        method could be used to process audio from a file or audio stream.
-        :type buf: str
+        Recognise speech from an audio buffer. This method is meant to be called
+        in sequence for multiple buffers.
+
+        :param buf: str
+        :param sleep_time: ``float`` -- time to sleep after processing an audio
+            buffer. Use 0 for no sleep time.
         """
         # Cancel current recognition if it has been requested.
         if self._cancel_recognition_next_time:
@@ -1161,7 +1167,63 @@ class SphinxEngine(EngineBase):
 
         # This improves the performance; we don't need to process as much audio
         # as the device can read, and people don't speak that fast anyway!
-        time.sleep(0.1)
+        time.sleep(sleep_time)
+
+    def process_wave_file(self, path):
+        """
+        Recognise speech from a wave file. This method checks that the wave file is
+        valid. It raises an error if the file doesn't exist, if it can't be read or
+        if the WAV header values do not match those in the engine configuration.
+
+        The wave file must use the same sample width, sample rate and number of
+        channels defined in the engine configuration ``PYAUDIO_STREAM_KEYWORD_ARGS``
+        ``dict``.
+
+        If the file is valid, ``process_buffer`` is then used to process the audio.
+
+        :param path: wave file path
+        :raises: IOError | OSError | ValueError
+        """
+        if not self._decoder:
+            self.connect()
+
+        # This method's implementation has been adapted from the PyAudio play wave
+        # example: http://people.csail.mit.edu/hubert/pyaudio/#play-wave-example
+
+        # Check that path is a valid file.
+        if not os.path.isfile(path):
+            raise IOError("'%s' is not a file. Please use a different file path.")
+
+        # Get required audio configuration from the engine config.
+        p = PyAudio()
+        channels, sample_width, rate, chunk = (
+            self.config.PYAUDIO_STREAM_KEYWORD_ARGS["channels"],
+            p.get_sample_size(
+                self.config.PYAUDIO_STREAM_KEYWORD_ARGS["format"]
+            ),
+            self.config.PYAUDIO_STREAM_KEYWORD_ARGS["rate"],
+            self.config.PYAUDIO_STREAM_KEYWORD_ARGS["frames_per_buffer"]
+        )
+
+        # Open the wave file. Use contextlib to make sure that the file is closed
+        # whether errors are raised or not.
+        with contextlib.closing(wave.open(path, "rb")) as wf:
+            # Validate the wave file's header.
+            if wf.getnchannels() != channels:
+                raise ValueError("WAV file '%s' should use %d channel(s), not %d!"
+                                 % (path, channels, wf.getnchannels()))
+            elif wf.getsampwidth() != sample_width:
+                raise ValueError("WAV file '%s' should use sample width %d, not %d!"
+                                 % (path, sample_width, wf.getsampwidth()))
+            elif wf.getframerate() != rate:
+                raise ValueError("WAV file '%s' should use sample rate %d, not %d!"
+                                 % (path, rate, wf.getframerate()))
+
+            # Use ``process_buffer`` to process each buffer.
+            data = wf.readframes(chunk)
+            while data != "":
+                self.process_buffer(data, 0)  # no sleep time required
+                data = wf.readframes(chunk)
 
     def post_loader_init(self):
         """
