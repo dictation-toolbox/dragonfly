@@ -69,7 +69,7 @@ The code below moves the mouse cursor 25 pixels right and 25 pixels up
 
 The following code scrolls down 4 mouse scroll wheel clicks::
 
-    Mouse("scrolldown:4").execute()
+    Mouse("wheeldown:4").execute()
 
 Mouse specification format
 ............................................................................
@@ -140,8 +140,8 @@ Mouse scroll wheel action:
 
  - *direction* -- Specifies which direction to scroll:
 
-    - ``scrolldown`` -- scroll down
-    - ``scrollup`` -- scroll up
+    - ``wheeldown`` -- scroll down
+    - ``wheelup`` -- scroll up
 
  - *repeat* -- Specifies how many scroll wheel clicks to simulate.
 
@@ -374,8 +374,6 @@ class Mouse(DynStrActionBase):
     # Scroll amounts are multiples of 120, which is WHEEL_DELTA,
     # or one scroll wheel click.
     _scroll_flags = {
-                     "scrolldown":   (win32con.MOUSEEVENTF_WHEEL, -120),
-                     "scrollup":  (win32con.MOUSEEVENTF_WHEEL, 120),
                      "wheeldown":   (win32con.MOUSEEVENTF_WHEEL, -120),
                      "wheelup":  (win32con.MOUSEEVENTF_WHEEL, 120),
                     }
