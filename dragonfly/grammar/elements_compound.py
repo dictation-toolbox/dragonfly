@@ -188,7 +188,7 @@ class _Literal(parser_.Sequence):
     def __init__(self):
         # Use a pattern to allow ascii and Unicode alphanumeric characters plus a
         # few special characters.
-        pattern = re.compile(r"[\w_\-.']", re.UNICODE)
+        pattern = re.compile(r"[\w_\-.',]", re.UNICODE)
         word = parser_.CharacterSeries(None, pattern=pattern)
         whitespace = parser_.Whitespace()
         elements = (
