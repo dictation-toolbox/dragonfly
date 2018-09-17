@@ -21,15 +21,30 @@
 """
     This file implements the ConnectionGrammar class.
 """
+from six import string_types
+
+try:
+    from win32com.client import Dispatch
+    from pywintypes import com_error
+except ImportError as error:
+    import sys
+    if sys.platform.startswith("win"):
+        raise error
+
+    # These modules aren't available on non-Windows platforms, so mock what is used.
+    class COMError(Exception):
+        pass
+
+    com_error = COMError
+
+    class Dispatch(object):
+        def __init__(self, _):
+            pass
+
+from .grammar_base import Grammar
 
 
-from win32com.client import Dispatch
-from pywintypes import com_error
-
-from dragonfly.grammar.grammar_base import Grammar
-
-
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 class ConnectionGrammar(Grammar):
     """
@@ -49,7 +64,7 @@ class ConnectionGrammar(Grammar):
     """
 
     def __init__(self, name, description=None, context=None, app_name=None):
-        assert isinstance(app_name, basestring) or app_name == None
+        assert isinstance(app_name, string_types) or app_name is None
         self._app_name = app_name
         self._application = None
         Grammar.__init__(self, name=name, description=description,
@@ -58,10 +73,11 @@ class ConnectionGrammar(Grammar):
     def __del__(self):
         try:
             self.disconnect()
-        except Exception, error:
-            pass
+        except Exception as e:
+            self._log.warning("Grammar %s: failed to disconnect from "
+                              "%r: %s." % (self, self._app_name, e))
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for context management.
 
     application = property(lambda self: self._application,
@@ -88,7 +104,7 @@ class ConnectionGrammar(Grammar):
             self.connection_up()
         return True
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for managing the application connection.
 
     def connect(self):
@@ -96,7 +112,7 @@ class ConnectionGrammar(Grammar):
             return True
         try:
             self._application = Dispatch(self._app_name)
-        except com_error, e:
+        except com_error as e:
             if self._log_begin:
                 self._log_begin.warning("Grammar %s: failed to"
                                         " connect to %r: %s."

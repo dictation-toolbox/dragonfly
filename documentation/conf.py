@@ -18,7 +18,7 @@ version_string = open(path).readline()
 match = re.match(r"\s*(?P<rel>(?P<ver>\d+\.\d+)(?:\.\S+)*)\s*", version_string)
 version = match.group("ver")
 release = match.group("rel")
-print "Version:", version, "-- Release:", release
+print("Version:", version, "-- Release:", release)
 
 
 #---------------------------------------------------------------------------

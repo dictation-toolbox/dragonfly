@@ -28,7 +28,9 @@ creating grammar element structures based on a simple text format.
 """
 
 
-import string
+import re
+from six import string_types
+
 import dragonfly.grammar.elements_basic as elements_
 import dragonfly.parser as parser_
 import logging
@@ -37,6 +39,7 @@ import logging
 class _Stuff(parser_.Sequence):
 
     def __init__(self):
+        super(_Stuff, self).__init__()
         self._single = None
 
     def initialize(self):
@@ -81,11 +84,12 @@ class _Stuff(parser_.Sequence):
 stuff = _Stuff()
 
 
-
 class _Single(parser_.Sequence):
 
     def __init__(self):
-        pass
+        super(_Single, self).__init__()
+        self._action_identifier = None
+        self._element_identifier = None
 
     def initialize(self):
         self._element_identifier = _ElementRef()
@@ -130,8 +134,10 @@ class _Single(parser_.Sequence):
 class _ElementRef(parser_.Sequence):
 
     def __init__(self):
-        characters = string.letters + string.digits + "_"
-        name = parser_.CharacterSeries(characters)
+        # Use a pattern to allow ascii and Unicode alphanumeric characters plus
+        # underscores.
+        pattern = re.compile(r"\w", re.UNICODE)
+        name = parser_.CharacterSeries(None, pattern=pattern)
         elements = (parser_.String("<"), name, parser_.String(">"))
         parser_.Sequence.__init__(self, elements)
         self._identifiers = None
@@ -154,8 +160,10 @@ class _ElementRef(parser_.Sequence):
 class _ActionRef(parser_.Sequence):
 
     def __init__(self):
-        characters = string.letters + string.digits + "_"
-        name = parser_.CharacterSeries(characters)
+        # Use a pattern to allow ascii and Unicode alphanumeric characters plus
+        # underscores.
+        pattern = re.compile(r"\w", re.UNICODE)
+        name = parser_.CharacterSeries(None, pattern=pattern)
         elements = (parser_.String("{"), name, parser_.String("}"))
         parser_.Sequence.__init__(self, elements)
         self._identifiers = None
@@ -178,8 +186,10 @@ class _ActionRef(parser_.Sequence):
 class _Literal(parser_.Sequence):
 
     def __init__(self):
-        characters = string.letters + string.digits + "_-.'"
-        word = parser_.CharacterSeries(characters)
+        # Use a pattern to allow ascii and Unicode alphanumeric characters plus a
+        # few special characters.
+        pattern = re.compile(r"[\w_\-.']", re.UNICODE)
+        word = parser_.CharacterSeries(None, pattern=pattern)
         whitespace = parser_.Whitespace()
         elements = (
             word,
@@ -276,7 +286,8 @@ class Compound(elements_.Alternative):
 
     def __str__(self):
         arguments = ["%r" % self._spec]
-        if self.name: arguments.append("name=%r" % self.name)
+        if self.name:
+            arguments.append("name=%r" % self.name)
         arguments = ", ".join(arguments)
         return "%s(%s)" % (self.__class__.__name__, arguments)
 
@@ -284,7 +295,7 @@ class Compound(elements_.Alternative):
         if self._value_func is not None:
             # Prepare *extras* dict for passing to value_func().
             extras = {"_node": node}
-            for name, element in self._extras.iteritems():
+            for name, element in self._extras.items():
                 extra_node = node.get_child_by_name(name, shallow=True)
                 if extra_node:
                     extras[name] = extra_node.value()
@@ -292,7 +303,7 @@ class Compound(elements_.Alternative):
                     extras[name] = element.default
             try:
                 value = self._value_func(node, extras)
-            except Exception, e:
+            except Exception as e:
                 self._log.warning("Exception from value_func: %s" % e)
                 raise
             return value
@@ -310,16 +321,16 @@ class Choice(elements_.Alternative):
     def __init__(self, name, choices, extras=None, default=None):
 
         # Argument type checking.
-        assert isinstance(name, basestring) or name is None
+        assert isinstance(name, string_types) or name is None
         assert isinstance(choices, dict)
-        for k, v in choices.iteritems():
-            assert isinstance(k, basestring)
+        for k, v in choices.items():
+            assert isinstance(k, string_types)
 
         # Construct children from the given choice keys and values.
         self._choices = choices
         self._extras = extras
         children = []
-        for k, v in choices.iteritems():
+        for k, v in choices.items():
             child = Compound(spec=k, value=v, extras=extras)
             children.append(child)
 

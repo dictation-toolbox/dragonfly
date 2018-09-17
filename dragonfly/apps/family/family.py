@@ -75,7 +75,7 @@ class CommandFamily(Grammar):
 
     def _build_transition_rules(self, web):
         transition_rules = {}
-        for (pre_state, post_state_transitions_pairs) in web.itervalues():
+        for (pre_state, post_state_transitions_pairs) in web.values():
             for (post_state, transitions) in post_state_transitions_pairs:
                 rule = TransitionsRule(transitions, pre_state, post_state)
                 key = (id(pre_state), id(post_state))
@@ -84,7 +84,7 @@ class CommandFamily(Grammar):
 
     def _build_toplevel_rules(self, web, transition_rules, length):
         toplevel_rules = []
-        for (pre_state, post_state_transitions_pairs) in web.itervalues():
+        for (pre_state, post_state_transitions_pairs) in web.values():
             if not pre_state.toplevel:
                 continue
             tree = self._build_transition_tree(pre_state, web, length)
@@ -185,7 +185,7 @@ class ToplevelRule(Rule):
         path = [iter(node.children)]
         while path:
             try:
-                head = path[-1].next()
+                head = next(path[-1])
             except StopIteration:
                 path.pop()
                 continue

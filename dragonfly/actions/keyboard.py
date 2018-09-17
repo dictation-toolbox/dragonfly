@@ -25,7 +25,10 @@ This file implements a Win32 keyboard interface using sendinput.
 
 
 import time
+from six import text_type, PY2
+
 import win32con
+
 from ctypes import windll, c_char, c_wchar
 from dragonfly.actions.sendinput import (KeyboardInput, make_input_array,
                                          send_input_array)
@@ -46,21 +49,18 @@ class Typeable(object):
     def __str__(self):
         return "%s(%s)" % (self.__class__.__name__, self._name) + repr(self.events())
 
-    def on_events(self, timeout=0.01):
-        """ Returns events for pressing this key down. """
+    def on_events(self, timeout=0):
         events = [(m, True, 0) for m in self._modifiers]
         events.append((self._code, True, timeout))
         return events
 
-    def off_events(self, timeout=0.01):
-        """ Returns events for releasing this key. """
+    def off_events(self, timeout=0):
         events = [(m, False, 0) for m in self._modifiers]
         events.append((self._code, False, timeout))
         events.reverse()
         return events
 
-    def events(self, timeout=0.01):
-        """ Returns events for pressing and then releasing this key. """
+    def events(self, timeout=0):
         events = [(self._code, True, 0), (self._code, False, timeout)]
         for m in self._modifiers[-1::-1]:
             events.insert(0, (m, True, 0))
@@ -107,35 +107,38 @@ class Keyboard(object):
             if timeout: time.sleep(timeout)
 
     @classmethod
-    def xget_virtual_keycode(cls, char):
-        if isinstance(char, str):
-            code = windll.user32.VkKeyScanA(c_char(char))
+    def _get_initial_keycode(cls, char):
+        layout = windll.user32.GetKeyboardLayout(0)
+        if isinstance(char, str) and PY2:
+            code = windll.user32.VkKeyScanExA(c_char(char), layout)
+        elif isinstance(char, text_type):  # unicode for PY2, str for PY3
+            code = windll.user32.VkKeyScanExW(c_wchar(char), layout)
         else:
-            code = windll.user32.VkKeyScanW(c_wchar(char))
+            code = -1
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
+        return code
+
+    @classmethod
+    def xget_virtual_keycode(cls, char):
+        code = cls._get_initial_keycode(char)
 
         # Construct a list of the virtual key code and modifiers.
         codes = [code & 0x00ff]
-        if   code & 0x0100: codes.append(cls.shift_code)
-        elif code & 0x0200: codes.append(cls.ctrl_code)
-        elif code & 0x0400: codes.append(cls.alt_code)
+        if code & 0x0100: codes.append(cls.shift_code)
+        if code & 0x0200: codes.append(cls.ctrl_code)
+        if code & 0x0400: codes.append(cls.alt_code)
         return codes
 
     @classmethod
     def get_keycode_and_modifiers(cls, char):
-        if isinstance(char, str):
-            code = windll.user32.VkKeyScanA(c_char(char))
-        else:
-            code = windll.user32.VkKeyScanW(c_wchar(char))
-        if code == -1:
-            raise ValueError("Unknown char: %r" % char)
+        code = cls._get_initial_keycode(char)
 
         # Construct a list of the virtual key code and modifiers.
         modifiers = []
-        if   code & 0x0100: modifiers.append(cls.shift_code)
-        elif code & 0x0200: modifiers.append(cls.ctrl_code)
-        elif code & 0x0400: modifiers.append(cls.alt_code)
+        if code & 0x0100: modifiers.append(cls.shift_code)
+        if code & 0x0200: modifiers.append(cls.ctrl_code)
+        if code & 0x0400: modifiers.append(cls.alt_code)
         code &= 0x00ff
         return code, modifiers
 

@@ -34,7 +34,7 @@ class AppleRule(CompoundRule):
     spec = "I like apples [<text>]"
     extras = [Dictation("text")]
     def _process_recognition(self, node, extras):
-        print "I like apples!  (%s)" % extras.get("text", "")
+        print("I like apples!  (%s)" % extras.get("text", ""))
         apple_rule.disable()
         banana_rule.enable()
 
@@ -42,7 +42,7 @@ class BananaRule(CompoundRule):
     spec = "I like bananas [<text>]"
     extras = [Dictation("text")]
     def _process_recognition(self, node, extras):
-        print "I like bananas!  (%s)" % extras.get("text", "")
+        print("I like bananas!  (%s)" % extras.get("text", ""))
         banana_rule.disable()
         apple_rule.enable()
 

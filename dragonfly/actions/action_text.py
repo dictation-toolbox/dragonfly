@@ -87,7 +87,7 @@ class Text(DynStrActionBase):
             else:
                 try:
                     typeable = Keyboard.get_typeable(character)
-                except ValueError, e:
+                except ValueError as e:
                     raise ActionError("Keyboard interface cannot type this"
                                       " character: %r (in %r)"
                                       % (character, spec))

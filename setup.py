@@ -23,7 +23,6 @@ use_setuptools()
 
 import os.path
 import re
-import sys
 from setuptools import setup, find_packages
 
 
@@ -44,6 +43,7 @@ release = match.group("rel")
 def read(*names):
     return open(os.path.join(os.path.dirname(__file__), *names)).read()
 
+
 setup(
       name          = "dragonfly",
       version       = release,
@@ -57,14 +57,24 @@ setup(
 
       install_requires=[
                         "setuptools >= 0.6c7",
-                        "pywin32",
+                        "pywin32;platform_system=='Windows'",
+                        "six",
+                        "pyperclip == 1.6.1"
                        ],
+
+      extras_require={
+          "sphinx": [
+                     "sphinxwrapper >= 1.1.1",
+                     "pyjsgf >= 1.2.2",
+                     "pyaudio"
+                    ]
+      },
 
       classifiers=[
                    "Environment :: Win32 (MS Windows)",
                    "Development Status :: 4 - Beta",
                    "License :: OSI Approved :: "
-                       "GNU Library or Lesser General Public License (LGPL)",
+                   "GNU Library or Lesser General Public License (LGPL)",
                    "Operating System :: Microsoft :: Windows",
                    "Programming Language :: Python",
                   ],

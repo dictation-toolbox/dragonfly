@@ -24,8 +24,13 @@
 
 
 import time
-import natlink
 import logging
+
+# Optionally import natlink
+try:
+    import natlink
+except ImportError:
+    natlink = None
 
 
 class _Timer(object):
@@ -35,13 +40,14 @@ class _Timer(object):
             self.function = function
             self.interval = interval
             self.next_time = time.clock() + self.interval
+
         def call(self):
             self.next_time += self.interval
             try:
                 self.function()
-            except Exception, e:
+            except Exception as e:
                 logging.getLogger("timer").exception("Exception during timer callback")
-                print "Exception during timer callback: %s (%r)" % (e, e)
+                print("Exception during timer callback: %s (%r)" % (e, e))
 
     def __init__(self, interval):
         self.interval = interval
@@ -49,19 +55,21 @@ class _Timer(object):
 
     def add_callback(self, function, interval):
         self.callbacks.append(self.Callback(function, interval))
-        if len(self.callbacks) == 1:
+        if len(self.callbacks) == 1 and natlink:
             natlink.setTimerCallback(self.callback, int(self.interval * 1000))
 
     def remove_callback(self, function):
         for c in self.callbacks:
-            if c.function == function: self.callbacks.remove(c)
-        if len(self.callbacks) == 0:
+            if c.function == function:
+                self.callbacks.remove(c)
+        if len(self.callbacks) == 0 and natlink:
             natlink.setTimerCallback(None, 0)
 
     def callback(self):
         now = time.clock()
         for c in self.callbacks:
-            if c.next_time < now: c.call()
+            if c.next_time < now:
+                c.call()
 
 
 timer = _Timer(0.025)

@@ -317,7 +317,7 @@ class Mouse(DynStrActionBase):
                     if handler(self, part, events):
                         handled = True
                         break
-                except Exception, e:
+                except Exception as e:
                     continue
             if not handled:
                 raise ActionError("Invalid mouse spec: %r (in %r)"

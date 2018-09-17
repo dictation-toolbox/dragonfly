@@ -63,9 +63,9 @@ class FoodGroupRule(CompoundRule):
     def _process_recognition(self, node, extras):
         days_ago  = extras["time"]
         foodgroup = extras["food"]
-        print "You ate %s %d days ago." % (foodgroup, days_ago)
+        print("You ate %s %d days ago." % (foodgroup, days_ago))
         if "opinion" in extras:
-            print "You thought it was %s." % (extras["opinion"])
+            print("You thought it was %s." % (extras["opinion"]))
 
 grammar.add_rule(FoodGroupRule())
 

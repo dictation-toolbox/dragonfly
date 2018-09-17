@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
@@ -20,13 +21,13 @@
 
 
 import unittest
-import time
 import string
 
 from dragonfly import parser
-
+from dragonfly import Compound
 
 #===========================================================================
+
 
 class TestParsers(unittest.TestCase):
 
@@ -34,25 +35,87 @@ class TestParsers(unittest.TestCase):
         pass
 
     def test_character_series(self):
-        """ Test CharacterSeries parser class. """
+        """ Test CharacterSeries parser classes. """
 
+        # Test with ascii characters
         self._test_multiple(
-            parser.CharacterSeries(string.letters),
+            parser.CharacterSeries(string.ascii_letters),
             [
                 ("abc", ["abc"]),
             ],
-            must_finish = False)
+            must_finish=False)
+
+        # Test the Letters and Alphanumerics classes with a few inputs and
+        # outputs
+        input_outputs = [
+            # Unicode strings
+            (u"abc", [u"abc"]),
+            # Mix of non-ascii characters
+            (u"éèàâêùôöëäïüû", [u"éèàâêùôöëäïüû"]),
+            (u"touché", [u"touché"]),
+        ]
+        self._test_multiple(
+            parser.Letters(),
+            input_outputs + [(string.digits, [])],
+            must_finish=False
+        )
+        self._test_multiple(
+            parser.Alphanumerics(),
+            input_outputs + [(string.digits, [string.digits])],
+            must_finish=False
+        )
+
+    def test_other_alphabets(self):
+        """ Test that other alphabets also work. """
+        # While the DNS and WSR engines are mostly limited to western
+        # European languages (i.e. windows-1252), that doesn't necessarily
+        # mean the parser needs to be.
+        input_outputs = [
+            (u"йцукенгшщзхъфывапролджэячсмитьбю",
+             [u"йцукенгшщзхъфывапролджэячсмитьбю"]),
+        ]
+        self._test_multiple(
+            parser.Letters(), input_outputs, must_finish=False
+        )
+        self._test_multiple(
+            parser.Alphanumerics(), input_outputs, must_finish=False
+        )
+
+    def test_compound_element(self):
+        """ Test the dragonfly Compound element. """
+        # Compound is the element that the base dragonfly rule classes use.
+        # It uses custom parser elements, so it needs to be tested separately.
+        self.assertEqual(
+            Compound(spec=u"touché").gstring(),
+            u"(touché)"
+        )
+        self.assertEqual(
+            Compound(spec=u"йцукенгшщзхъфывапролджэячсмитьбю").gstring(),
+            u"(йцукенгшщзхъфывапролджэячсмитьбю)"
+        )
 
     def test_repetition(self):
         """ Test repetition parser class. """
-        word = parser.CharacterSeries(string.letters)
-        whitespace = parser.CharacterSeries(string.whitespace)
+        word = parser.Letters()
+        whitespace = parser.Whitespace()
         p = parser.Repetition(parser.Alternative((word, whitespace)))
+
+        # Test with ascii letters
         input_output = (
-            ("abc", ["abc"] ),
+            ("abc", ["abc"]),
             ("abc abc", ["abc", " ", "abc"]),
-            ("abc abc\t\t\n   cba", ["abc", " ", "abc", "\t\t\n   ", "cba"]),
+            ("abc abc\t\t\n   cba", ["abc", " ", "abc", "\t\t\n   ",
+                                     "cba"]),
             )
+        self._test_single(p, input_output)
+
+        # Test with non-ascii letters
+        input_output = (
+            (u"êùö", [u"êùö"]),
+            (u"êùö êùö", [u"êùö", u" ", u"êùö"]),
+            (u"êùö êùö\t\t\n   öùê", [
+                u"êùö", " ", u"êùö", u"\t\t\n   ", u"öùê"]),
+        )
         self._test_single(p, input_output)
 
     def test_optional_greedy(self):
@@ -61,7 +124,7 @@ class TestParsers(unittest.TestCase):
         p = parser.Sequence([
             parser.Sequence([
                 parser.String("a"),
-                parser.Optional(parser.String("b"), greedy = False)
+                parser.Optional(parser.String("b"), greedy=False)
                 ]),
             parser.Sequence([
                 parser.Optional(parser.String("b")),
@@ -73,11 +136,10 @@ class TestParsers(unittest.TestCase):
 
         state = parser.State(input)
         generator = p.parse(state)
-        generator.next()
+        next(generator)
         root = state.build_parse_tree()
         self.assertEqual(root.value(), expected_output_1)
-    
-        generator.next()
+        next(generator)
         root = state.build_parse_tree()
         self.assertEqual(root.value(), expected_output_2)
 
@@ -87,12 +149,12 @@ class TestParsers(unittest.TestCase):
             result = p.parse(input)
             self.assertEqual(result, output)
 
-    def _test_multiple(self, parser_element, input_outputs, must_finish = True):
+    def _test_multiple(self, parser_element, input_outputs, must_finish=True):
         p = parser.Parser(parser_element)
         for input, outputs in input_outputs:
             results = p.parse_multiple(input, must_finish)
             self.assertEqual(len(results), len(outputs))
-            for index, result, output in zip(xrange(len(results)), results, outputs):
+            for index, result, output in zip(list(range(len(results))), results, outputs):
                 if isinstance(result, list): result = tuple(result)
                 if isinstance(output, list): output = tuple(output)
                 self.assertEqual(result, output)

@@ -27,10 +27,14 @@ Logging framework
 import sys
 import os.path
 import logging
-from win32com.shell import shell, shellcon
+try:
+    from win32com.shell import shell, shellcon
+except ImportError:
+    shell = None
+    shellcon = None
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Sane defaults for logger names and associated levels.
 
 _debug     = logging.DEBUG
@@ -65,15 +69,15 @@ default_levels = {
                  }
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Logging filter class which filters out messages of a given name below
 #  a given level.
 
 class NameLevelFilter(logging.Filter):
-
     def __init__(self, name, level):
         self.name = name
         self.level = level
+        super(NameLevelFilter, self).__init__(name)
 
     def filter(self, record):
         if record.name == self.name:
@@ -85,7 +89,7 @@ class NameLevelFilter(logging.Filter):
             return True
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 class DispatchingHandler(logging.Handler):
 
@@ -100,20 +104,21 @@ class DispatchingHandler(logging.Handler):
         self.handler_filter_pairs.append((handler, filter))
 
     def emit(self, record):
-#        print "dispatching", self, self.handler_filter_pairs, record
-#        import traceback; print traceback.extract_stack()
-#        import traceback; traceback.print_stack()
+        # print "dispatching", self, self.handler_filter_pairs, record
+        # import traceback; print traceback.extract_stack()
+        # import traceback; traceback.print_stack()
         for handler, filter in self.handler_filter_pairs:
-            if filter.filter(record):
+            if filter.filter(record) and sys.platform.startswith("win"):
                 handler.handle(record)
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 def _setup_stdout_handler():
     class _OutputStream(object):
         def __init__(self, write):
             self.write = write
+
         def flush(self):
             pass
 
@@ -124,29 +129,33 @@ def _setup_stdout_handler():
     return stdout_handler
 
 _file_handler = None
+
+
 def _setup_file_handler():
     global _file_handler
 #    import traceback; traceback.print_stack()
     if not _file_handler:
         # Lookup path the user's personal folder in which
-        #  to log Dragonfly messages.
-        mydocs_pidl = shell.SHGetFolderLocation(0, shellcon.CSIDL_PERSONAL, 0, 0)
-        mydocs_path = shell.SHGetPathFromIDList(mydocs_pidl)
-        log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
-        _file_handler = logging.FileHandler(log_file_path)
-        formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
-                                  " %(message)s" + repr(_file_handler))
-        _file_handler.setFormatter(formatter)
+        # to log Dragonfly messages.
+        if shell and shellcon:
+            mydocs_pidl = shell.SHGetFolderLocation(0, shellcon.CSIDL_PERSONAL, 0, 0)
+            mydocs_path = shell.SHGetPathFromIDList(mydocs_pidl)
+            log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
+            _file_handler = logging.FileHandler(log_file_path)
+            formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
+                                          " %(message)s" + repr(_file_handler))
+            _file_handler.setFormatter(formatter)
     return _file_handler
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 _stdout_handler = None
-_file_handler = None
 _dispatching_handlers = {}
 _stdout_filters = {}
 _file_filters = {}
+
+
 def setup_log(use_stdout=True, use_file=True):
     """
         Setup Dragonfly's logging infrastructure with sane defaults.
@@ -186,13 +195,13 @@ def setup_log(use_stdout=True, use_file=True):
         logger.propagate = False
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Function for setting up call tracing for low-level debugging.
 
 def setup_tracing(output, limit=None):
     from pkg_resources import resource_filename
     library_prefix = os.path.dirname(resource_filename(__name__, "setup.py"))
-    print "prefix:", library_prefix
+    print("prefix:", library_prefix)
     exclude_filenames = ("parser.py",)
 
     def _tracing_callback(frame, event, arg):
@@ -208,9 +217,9 @@ def setup_tracing(output, limit=None):
         if os.path.basename(filename) in exclude_filenames:
             return
 
+        depth = 0
         if limit is not None:
             # Determine call depth of current frame.
-            depth = 0
             parent_frame = frame
             while parent_frame:
                 parent_frame = parent_frame.f_back
@@ -222,7 +231,7 @@ def setup_tracing(output, limit=None):
         # Write message to output.
         indented_function_name = ("  " * depth) + function_name
         output.write("%2d %-40s %5s %-40s\n" % (depth, indented_function_name,
-                                                 line_number, filename))
+                                                line_number, filename))
         output.flush()
 
     sys.settrace(_tracing_callback)

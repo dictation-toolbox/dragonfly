@@ -98,7 +98,7 @@ class StateBase(object):
                 poststate_mapping[id(poststate)].extend(commands)
                 poststate_id_mapping[id(poststate)] = poststate
         poststate_ref_pairs = []
-        for poststate_id, commands in poststate_mapping.iteritems():
+        for poststate_id, commands in poststate_mapping.items():
             poststate = poststate_id_mapping[poststate_id]
             command_refs = [CommandRef(cmd, self) for cmd in commands]
             command_element = Alternative(command_refs)

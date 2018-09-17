@@ -60,8 +60,9 @@ classes listed above:
 """
 
 
-import types
 import logging
+from six import string_types
+
 from .rule_base  import Rule
 from .list       import ListBase, DictList
 
@@ -287,7 +288,7 @@ class Sequence(ElementBase):
 
     def gstring(self):
         return "(" \
-             + " ".join(map(lambda e: e.gstring(), self._children)) \
+             + " ".join([e.gstring() for e in self._children]) \
              + ")"
 
     #-----------------------------------------------------------------------
@@ -309,7 +310,7 @@ class Sequence(ElementBase):
         path = [self._children[0].decode(state)]
         while path:
             # Allow the last child to attempt decoding.
-            try: path[-1].next()
+            try: next(path[-1])
             except StopIteration:
                 # Last child failed to decode, remove from path to
                 #  allowed the one-before-last child to reattempt.
@@ -467,7 +468,7 @@ class Alternative(ElementBase):
 
     def gstring(self):
         return "(" \
-             + " | ".join(map(lambda e: e.gstring(), self._children)) \
+             + " | ".join([e.gstring() for e in self._children]) \
              + ")"
 
     def dependencies(self, memo):
@@ -562,7 +563,7 @@ class Repetition(Sequence):
         optional_length = self._max - self._min - 1
         if optional_length > 0:
             element = Optional(child)
-            for index in xrange(optional_length):
+            for index in range(optional_length):
                 element = Optional(Sequence([child, element]))
 
             if self._min >= 1:
@@ -575,6 +576,16 @@ class Repetition(Sequence):
             raise ValueError("Repetition not allowed to be empty.")
 
         Sequence.__init__(self, children, name=name, default=default)
+
+    min = property(lambda self: self._min,
+                   doc="The minimum number of times that the child element must be"
+                       "recognized; may be 0. (Read-only)")
+
+    max = property(lambda self: self._max,
+                   doc="The maximum number of times that the child element must be"
+                       "recognized; if *None*, the child element must be "
+                       "recognized exactly *min* times (i.e. *max = min + 1*). "
+                       "(Read-only)")
 
     def dependencies(self, memo):
         if self in memo:
@@ -598,7 +609,7 @@ class Repetition(Sequence):
 
         """
         repetitions = []
-        for index in xrange(self._min):
+        for index in range(self._min):
             element = node.children[index]
             if element.actor != self._child:
                 raise TypeError("Invalid child of %s: %s" \
@@ -646,7 +657,7 @@ class Literal(ElementBase):
         ElementBase.__init__(self, name, default=default)
         self._value = value
 
-        if not isinstance(text, (str, unicode)):
+        if not isinstance(text, string_types):
             raise TypeError("Text of %s object must be a"
                             " string." % self)
         self._words = text.split()
@@ -673,8 +684,15 @@ class Literal(ElementBase):
 
         # Iterate through this element's words.
         # If all match, success.  Else, failure.
-        for i in xrange(len(self._words)):
-            if state.word(i) != self._words[i]:
+        for i in range(len(self._words)):
+            word = state.word(i)
+
+            # If word isn't None, make it lowercase.
+            if word:
+                word = word.lower()
+
+            # If the words are not the same, then this is a decode failure.
+            if word != self._words[i].lower():
                 state.decode_failure(self)
                 return
 
@@ -900,7 +918,7 @@ class Dictation(ElementBase):
     def decode(self, state):
         state.decode_attempt(self)
 
-        # Check that at least one word has been dictated, otherwise feel.
+        # Check that at least one word has been dictated, otherwise fail.
         if state.rule() != "dgndictation":
             state.decode_failure(self)
             return
@@ -912,7 +930,7 @@ class Dictation(ElementBase):
 
         # Yield possible states where the number of dictated words
         # gobbled is decreased by 1 between yields.
-        for i in xrange(count, 0, -1):
+        for i in range(count, 0, -1):
             state.next(i)
             state.decode_success(self)
             yield state

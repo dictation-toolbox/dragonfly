@@ -34,7 +34,8 @@ from .grammar.rule_mapping       import MappingRule
 from .grammar.elements  import (ElementBase, Sequence, Alternative,
                                 Optional, Repetition, Literal,
                                 ListRef, DictListRef, Dictation,
-                                RuleRef, Empty, Compound, Choice)
+                                RuleRef, RuleWrap, Empty, Compound, Choice)
+
 from .grammar.context   import Context, AppContext
 from .grammar.list      import ListBase, List, DictList
 from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
@@ -44,21 +45,26 @@ from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
 #                                Number, NumberRef)
 
 #---------------------------------------------------------------------------
+
 from .actions           import (ActionBase, DynStrActionBase, ActionError,
                                 Repeat, Key, Text, Mouse, Paste, Pause,
                                 Mimic, Playback, WaitWindow, FocusWindow,
-                                Function, StartApp, BringApp, PlaySound)
-from .actions.keyboard  import Typeable, Keyboard
-from .actions.typeables import typeables
-from .actions.sendinput import (KeyboardInput, MouseInput, HardwareInput,
-                                make_input_array, send_input_array)
+                                Function, StartApp, BringApp, PlaySound,
+                                Typeable, Keyboard, typeables,
+                                KeyboardInput, MouseInput, HardwareInput,
+                                make_input_array, send_input_array
+                                )
 
 #---------------------------------------------------------------------------
-from .windows.point     import Point
+
+from .util              import Clipboard
+
+#---------------------------------------------------------------------------
+
 from .windows.rectangle import Rectangle, unit
-from .windows.window    import Window
-from .windows.monitor   import Monitor, monitors
-from .windows.clipboard import Clipboard
+from .windows.point     import Point
+from .windows           import Window
+from .windows           import Monitor, monitors
 
 #---------------------------------------------------------------------------
 from .language          import (Integer, IntegerRef,

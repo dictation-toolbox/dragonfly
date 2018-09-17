@@ -69,6 +69,7 @@ class EngineBase(object):
         dragonfly.engines.register_engine_init(self)
 
         self._grammar_wrappers = {}
+        self._recognition_observer_manager = None
 
 #    def __del__(self):
 #        try:

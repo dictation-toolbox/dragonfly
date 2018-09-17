@@ -105,7 +105,7 @@ class StartApp(ActionBase):
         self._log.debug("Starting app: %r" % (self._args,))
         try:
             Popen(self._args, cwd=self._cwd)
-        except Exception, e:
+        except Exception as e:
             raise ActionError("Failed to start app %s: %s" % (self._str, e))
 
 

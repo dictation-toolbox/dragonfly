@@ -22,11 +22,11 @@ when its callback methods are called::
 
     >>> class RecognitionObserverDemo(RecognitionObserver):
     ...     def on_begin(self):
-    ...         print "on_begin()"
+    ...         print("on_begin()")
     ...     def on_recognition(self, words):
-    ...         print "on_recognition(): %s" % (words,)
+    ...         print("on_recognition(): %s" % (words,))
     ...     def on_failure(self):
-    ...         print "on_failure()"
+    ...         print("on_failure()")
     ...
     >>> recobs_demo = RecognitionObserverDemo()
     >>> recobs_demo.register()

@@ -47,14 +47,12 @@
 #""" % {"class": "list", "function": name})
 #   return "".join(output)
 #print construct_skeleton()
-
+from six import string_types
 
 #===========================================================================
 # Base class for dragonfly list objects.
 
 class ListBase(object):
-
-    _valid_types = (str, unicode)
 
     def __init__(self, name):
         self._name = name
@@ -84,7 +82,7 @@ class ListBase(object):
     # Notify the grammar of a list modification.
 
     def _update(self):
-        invalid = [i for i in self if not isinstance(i, self._valid_types)]
+        invalid = [i for i in self if not isinstance(i, string_types)]
         if invalid:
             raise TypeError("Dragonfly lists can only contain"
                             " string objects; received: %r" % invalid)
@@ -202,7 +200,7 @@ class DictList(ListBase, dict):
     # Accessor for the grammar to retrieve the list items.
 
     def get_list_items(self):
-        return self.keys()
+        return list(self.keys())
 
     #-----------------------------------------------------------------------
     # Custom methods.

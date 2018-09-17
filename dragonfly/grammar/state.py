@@ -25,15 +25,16 @@
 
 
 import logging
-from .grammar_base  import Grammar, GrammarError
-from .rule_base     import Rule
+from six import text_type, PY2
+
+from .grammar_base import GrammarError
 
 
 class State(object):
 
     _log_decode = logging.getLogger("grammar.decode")
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for initialization.
 
     def __init__(self, results, rule_names, engine):
@@ -45,9 +46,13 @@ class State(object):
         self._depth = 0
         self._stack = []
         self.initialize_decoding()
+        self._previous_index = None
 
     def __str__(self):
-        return unicode(self).encode("windows-1252")
+        if PY2:
+            return self.__unicode__().encode("windows-1252")
+        else:
+            return self.__unicode__()
 
     def __unicode__(self):
         words = self.words()
@@ -55,17 +60,17 @@ class State(object):
         after = words[self._index:]
         return u" ".join(before) + u" >> " + u" ".join(after)
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for accessing recognition content.
 
-    def word(self, delta = 0):
+    def word(self, delta=0):
         i = self._index + delta
         if 0 <= i < len(self._results):
             return self._results[i][0]
         else:
             return None
 
-    def rule(self, delta = 0):
+    def rule(self, delta=0):
         i = self._index + delta
         if 0 <= i < len(self._results):
             rule_id = self._results[i][1]
@@ -83,30 +88,33 @@ class State(object):
         else:
             return None
 
-    def word_rule(self, delta = 0):
+    def word_rule(self, delta=0):
         i = self._index + delta
         if 0 <= i < len(self._results):
             return self._results[i][0:2]
         else:
             return None
 
-    def words(self, begin = 0, end = None):
+    def words(self, begin=0, end=None):
         return [w[0] for w in self._results[begin:end]]
 
-    def next(self, delta = 1):
+    def next(self, delta=1):
         self._index += delta
 
     def finished(self):
         return self._index >= len(self._results)
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for tracking decoding of recognition.
 
-    class _Frame(object):
+    class Frame(object):
         __slots__ = ("depth", "actor", "begin", "end")
+
         def __init__(self, depth, actor, begin):
-            self.depth = depth; self.actor = actor
-            self.begin = begin; self.end = None
+            self.depth = depth
+            self.actor = actor
+            self.begin = begin
+            self.end = None
 
     def initialize_decoding(self):
         self._depth = 0
@@ -115,7 +123,7 @@ class State(object):
 
     def decode_attempt(self, element):
         self._depth += 1
-        self._stack.append(State._Frame(self._depth, element, self._index))
+        self._stack.append(State.Frame(self._depth, element, self._index))
         self._log_step(element, "attempt")
 
     def decode_retry(self, element):
@@ -150,30 +158,37 @@ class State(object):
         self._depth -= 1
 
     def _get_frame_from_depth(self):
-        for i in xrange(len(self._stack)-1, -1, -1):
+        for i in range(len(self._stack)-1, -1, -1):
             frame = self._stack[i]
             if frame.depth == self._depth:
                 return frame
         return None
 
     def _get_frame_from_actor(self, actor):
-        for i in xrange(len(self._stack)-1, -1, -1):
+        for i in range(len(self._stack)-1, -1, -1):
             frame = self._stack[i]
             if frame.actor is actor:
                 return frame
         return None
 
     def _log_step(self, parser, message):
-        if not self._log_decode: return
+        if not self._log_decode:
+            return
         indent = u"   " * self._depth
         output = u"%s%s: %s" % (indent, message, parser)
-        self._log_decode.debug(output.encode("utf-8"))
+        if PY2:
+            self._log_decode.debug(output.encode("utf-8"))
+        else:
+            self._log_decode.debug(output)
         if self._index != self._previous_index:
             self._previous_index = self._index
-            output = u"%s -- Decoding State: '%s'" % (indent, unicode(self))
-            self._log_decode.debug(output.encode("utf-8"))
+            output = u"%s -- Decoding State: '%s'" % (indent, text_type(self))
+            if PY2:
+                self._log_decode.debug(output.encode("utf-8"))
+            else:
+                self._log_decode.debug(output)
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for evaluation.
 
     def build_parse_tree(self):
@@ -186,13 +201,15 @@ class State(object):
             parent = node
             node = Node(parent, frame.actor, self._results,
                         frame.begin, frame.end, frame.depth, self._engine)
-            if parent: parent.children.append(node)
-            else: root = node
+            if parent:
+                parent.children.append(node)
+            else:
+                root = node
 
         return root
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 class Node(object):
 
@@ -200,8 +217,12 @@ class Node(object):
                  "begin", "end", "depth", "engine")
 
     def __init__(self, parent, actor, results, begin, end, depth, engine):
-        self.parent = parent; self.actor = actor; self.results = results
-        self.begin = begin; self.end = end; self.depth = depth
+        self.parent = parent
+        self.actor = actor
+        self.results = results
+        self.begin = begin
+        self.end = end
+        self.depth = depth
         self.engine = engine
         self.children = []
 
@@ -217,13 +238,13 @@ class Node(object):
     def value(self):
         return self.actor.value(self)
 
-    def pretty_string(self, indent = ""):
+    def pretty_string(self, indent=""):
         if not self.children:
             return "%s%s -> %r" % (indent, str(self), self.value())
         else:
             return "%s%s -> %r\n" % (indent, str(self), self.value()) \
-                + "\n".join([n  .pretty_string(indent + "  ") \
-                    for n in self.children])
+                + "\n".join([n  .pretty_string(indent + "  ")
+                            for n in self.children])
 
     def _get_name(self):
         return self.actor.name
@@ -232,8 +253,10 @@ class Node(object):
     def has_child_with_name(self, name):
         """True if at least one node below this node has the given name."""
         for child in self.children:
-            if child.name == name: return True
-            if child.has_child_with_name(name): return True
+            if child.name == name:
+                return True
+            if child.has_child_with_name(name):
+                return True
         return False
 
     def get_child_by_name(self, name, shallow=False):
@@ -246,11 +269,14 @@ class Node(object):
                     # If shallow, don't look past named children.
                     continue
             match = child.get_child_by_name(name, shallow)
-            if match: return match
+            if match:
+                return match
         return None
 
     def get_children_by_name(self, name, shallow=False):
-        """Get all nodes below this node with the given name."""
+        """
+        Get all nodes below this node with the given name.
+        """
         matches = []
         for child in self.children:
             if child.name:

@@ -29,10 +29,11 @@ import traceback
 from .base import EngineBase, EngineError, MimicFailure
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 _default_engine = None
 _engines_by_name = {}
+
 
 def get_engine(name=None):
     global _default_engine, _engines_by_name
@@ -55,12 +56,12 @@ def get_engine(name=None):
                 _default_engine = get_specific_engine()
                 _engines_by_name["natlink"] = _default_engine
                 return _default_engine
-        except Exception, e:
+        except Exception as e:
             message = ("Exception while initializing natlink engine:"
                        " %s" % (e,))
             log.exception(message)
             traceback.print_exc()
-            print message
+            print(message)
             if name:
                 raise EngineError(message)
 
@@ -73,12 +74,30 @@ def get_engine(name=None):
                 _default_engine = get_specific_engine()
                 _engines_by_name["sapi5"] = _default_engine
                 return _default_engine
-        except Exception, e:
+        except Exception as e:
             message = ("Exception while initializing sapi5 engine:"
                        " %s" % (e,))
             log.exception(message)
             traceback.print_exc()
-            print message
+            print(message)
+            if name:
+                raise EngineError(message)
+
+    if not name or name == "sphinx":
+        # Attempt to retrieve the CMU Sphinx back-end.
+        try:
+            from .backend_sphinx import is_engine_available
+            from .backend_sphinx import get_engine as get_specific_engine
+            if is_engine_available():
+                _default_engine = get_specific_engine()
+                _engines_by_name["sphinx"] = _default_engine
+                return _default_engine
+        except Exception as e:
+            message = ("Exception while initializing sphinx engine:"
+                       " %s" % (e,))
+            log.exception(message)
+            traceback.print_exc()
+            print(message)
             if name:
                 raise EngineError(message)
 
@@ -88,10 +107,7 @@ def get_engine(name=None):
         raise EngineError("Requested engine %r not available." % (name,))
 
 
-#---------------------------------------------------------------------------
-
-_default_engine = None
-_engines_by_name = {}
+# ---------------------------------------------------------------------------
 
 def register_engine_init(engine):
     """

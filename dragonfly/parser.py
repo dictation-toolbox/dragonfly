@@ -29,10 +29,13 @@ type of input they are meant to process.
 
 """
 
-import string
-
 
 #---------------------------------------------------------------------------
+
+import string
+import re
+from six import string_types, text_type, PY2
+
 
 class ParserError(Exception):
     pass
@@ -49,7 +52,7 @@ class Parser(object):
     def parse(self, input, must_finish=True):
         state = State(input, log=self._log)
         generator = self._parser_element.parse(state)
-        for result in generator:
+        for _ in generator:
             if not must_finish or state.finished():
                 # Parse complete, return result.
                 node = state.build_parse_tree()
@@ -94,7 +97,7 @@ class State(object):
         self._log = log
         self._stack = []
         self._depth = 0
-        self.initialize_decoding()
+        self._previous_index = None
 
     def initialize_decoding(self):
         self._depth = 0
@@ -107,8 +110,8 @@ class State(object):
     #-----------------------------------------------------------------------
     # Methods for accessing recognition content.
 
-    def position_string(self, width = 20, width_before = 6):
-        mark = ">>"; continuation = "."
+    def position_string(self, width=20, width_before=6):
+        mark, continuation = ">>", "."
         width -= 2
 
         # Locate edges.
@@ -183,60 +186,61 @@ class State(object):
         node = Node(parent, frame.actor, self._data,
                     frame.begin, frame.end, frame.depth,
                     frame.value)
-        if parent: parent.add_child(node)
+        if parent:
+            parent.add_child(node)
         index += 1
         while index < len(self._stack):
             if self._stack[index].depth != frame.depth + 1:
                 break
             child, index = self._build_parse_node(index, node)
-        return (node, index)
+        return node, index
 
     #-----------------------------------------------------------------------
     # Methods for tracking parsing of input.
 
     class _Frame(object):
         __slots__ = ("depth", "actor", "begin", "end", "value")
+
         def __init__(self, depth, actor, begin):
-            self.depth = depth; self.actor = actor
-            self.begin = begin
-            self.value = None; self.end = None
+            self.depth, self.actor, self.begin = depth, actor, begin
+            self.value, self.end = None, None
 
     def decode_attempt(self, element):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         self._depth += 1
         self._stack.append(State._Frame(self._depth, element, self._index))
         self._log_step(element, "attempt")
 
     def decode_retry(self, element):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         frame = self._get_frame_from_actor(element)
         self._depth = frame.depth
         self._log_step(element, "retry")
 
     def decode_rollback(self, element):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
-            raise grammar_.GrammarError("Parser decoding stack broken")
+            raise ParserError("Parser decoding stack broken")
         if frame is self._stack[-1]:
             # Last parser on the stack, rollback.
             self._index = frame.begin
         else:
-            raise grammar_.GrammarError("Parser decoding stack broken")
+            raise ParserError("Parser decoding stack broken")
         self._log_step(element, "rollback")
 
     def decode_success(self, element, value=None):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         self._log_step(element, "success")
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
-            raise grammar_.GrammarError("Parser decoding stack broken.")
+            raise ParserError("Parser decoding stack broken.")
         frame.end = self._index
         frame.value = value
         self._depth -= 1
 
     def decode_failure(self, element):
-        assert isinstance(element, ParserElementBase)
+        # assert isinstance(element, ParserElementBase)
         frame = self._stack.pop()
         self._index = frame.begin
         self._depth = frame.depth
@@ -244,21 +248,22 @@ class State(object):
         self._depth -= 1
 
     def _get_frame_from_depth(self):
-        for i in xrange(len(self._stack)-1, -1, -1):
+        for i in range(len(self._stack)-1, -1, -1):
             frame = self._stack[i]
             if frame.depth == self._depth:
                 return frame
         return None
 
     def _get_frame_from_actor(self, actor):
-        for i in xrange(len(self._stack)-1, -1, -1):
+        for i in range(len(self._stack)-1, -1, -1):
             frame = self._stack[i]
             if frame.actor is actor:
                 return frame
         return None
 
     def _log_step(self, parser, message):
-        if not self._log: return
+        if not self._log:
+            return
         indent = "   " * self._depth
         output = "%s%s: %s" % (indent, message, parser)
         self._log.debug(output)
@@ -276,13 +281,17 @@ class Node(object):
                  "data", "begin", "end", "depth", "success_value")
 
     def __init__(self, parent, actor, data, begin, end, depth, value):
-        self.parent = parent; self.actor = actor; self.data = data
-        self.begin = begin; self.end = end; self.depth = depth
+        self.parent, self.actor, self.data = parent, actor, data
+        self.begin, self.end, self.depth = begin, end, depth
         self.success_value = value
         self.children = []
 
     def __str__(self):
-        return "Node: %s, %s" % (self.actor, self.words())
+        if PY2:
+            data = text_type(self.data).encode("utf-8")
+        else:
+            data = text_type(self.data)
+        return "Node: %s, %s" % (self.actor, data)
 
     def add_child(self, child):
         self.children.append(child)
@@ -321,13 +330,13 @@ class Node(object):
                 return result
         return None
 
-    def pretty_string(self, indent = ""):
+    def pretty_string(self, indent=""):
         if not self.children:
             return "%s%s" % (indent, str(self))
         else:
-            return "%s%s\n" % (indent, str(self)) \
-                + "\n".join([n  .pretty_string(indent + "  ") \
-                    for n in self.children])
+            return ("%s%s\n" % (indent, str(self)) +
+                    "\n".join([n  .pretty_string(indent + "  ")
+                               for n in self.children]))
 
 
 #---------------------------------------------------------------------------
@@ -351,7 +360,7 @@ class ParserElementBase(object):
         return self._str("...")
 
     name = property(lambda self: self._name,
-                        doc="Read-only access to name attribute.")
+                    doc="Read-only access to name attribute.")
 
     def _get_children(self):
         return ()
@@ -410,7 +419,8 @@ class Sequence(ParserElementBase):
         path = [self._children[0].parse(state)]
         while path:
             # Allow the last child to attempt decoding.
-            try: path[-1].next()
+            try:
+                next(path[-1])
             except StopIteration:
                 # Last child failed to decode, remove from path to
                 #  allowed the one-before-last child to reattempt.
@@ -469,7 +479,8 @@ class Repetition(ParserElementBase):
         path = [self._child.parse(state)]
         while path:
             # Allow the last child to attempt decoding.
-            try: path[-1].next()
+            try:
+                next(path[-1])
             except StopIteration:
                 # Last child failed to decode, remove from path to
                 #  allow the one-before-last child to reattempt.
@@ -679,12 +690,17 @@ class String(ParserElementBase):
 #---------------------------------------------------------------------------
 
 class CharacterSeries(ParserElementBase):
+    """
+    Class for parsing from a character series or pattern.
+    """
 
-    def __init__(self, set, optional=False, exclude=False, name=None):
+    def __init__(self, set, optional=False, exclude=False, name=None,
+                 pattern=None):
         ParserElementBase.__init__(self, name)
         self._set = set
         self._optional = optional
         self._exclude = exclude
+        self._pattern = pattern
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
@@ -695,17 +711,27 @@ class CharacterSeries(ParserElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime recognition processing.
 
+    def char_matches(self, c):
+        if self._set:
+            return c in self._set
+        elif self._pattern:
+            return bool(self._pattern.match(c))
+        else:
+            return False
+
     def parse(self, state):
         state.decode_attempt(self)
 
         # Gobble as many valid characters as possible.
         count = 0
         if self._exclude:
-            while not state.finished() and state.peek(1) not in self._set:
+            while (not state.finished() and not
+                    self.char_matches(state.peek(1))):
                 state.next(1)
                 count += 1
         else:
-            while not state.finished() and state.peek(1) in self._set:
+            while (not state.finished() and
+                    self.char_matches(state.peek(1))):
                 state.next(1)
                 count += 1
 
@@ -726,7 +752,7 @@ class Choice(Alternative):
         choice_pairs = []
         choice_elements = []
         for key, value in choices.items():
-            if isinstance(key, basestring):
+            if isinstance(key, string_types):
                 element = String(key)
             elif isinstance(key, ParserElementBase):
                 element = key
@@ -767,20 +793,30 @@ class Whitespace(CharacterSeries):
 
 
 class Letters(CharacterSeries):
-
+    """
+    Class for parsing ascii and non-ascii letter characters.
+    """
     def __init__(self, name=None):
-        set = string.letters
-        CharacterSeries.__init__(self, set, name=name)
+        pattern = re.compile(r"\w", re.UNICODE)
+        CharacterSeries.__init__(self, None, name=name, pattern=pattern)
 
     def __str__(self):
         return self._str("")
 
+    def char_matches(self, c):
+        if c.isdigit():
+            return False
+        else:
+            return super(Letters, self).char_matches(c)
+
 
 class Alphanumerics(CharacterSeries):
-
+    """
+    Class for parsing ascii and non-ascii letter and digit characters.
+    """
     def __init__(self, name=None):
-        set = string.letters + string.digits
-        CharacterSeries.__init__(self, set, name=name)
+        pattern = re.compile(r"\w", re.UNICODE)
+        CharacterSeries.__init__(self, None, name=name, pattern=pattern)
 
     def __str__(self):
         return self._str("")
@@ -796,10 +832,24 @@ class QuotedStringContent(ParserElementBase):
                       "n":  "\n",
                       "t":  "\t",
                      }
+    valid_char_pattern = re.compile(r"\w", re.UNICODE)
 
     def __init__(self, delimiter_string, name=None):
         self.delimiter_string = delimiter_string
         ParserElementBase.__init__(self, name)
+
+    def valid_char(self, c):
+        """
+        Check whether a character is a valid. Valid characters include all
+        Unicode alphanumeric characters and any characters in
+        self.valid_chars.
+        :type c: str
+        :rtype: bool
+        """
+        if c in self.valid_chars:
+            return True
+        else:
+            return bool(self.valid_char_pattern.match(c))
 
     def parse(self, state):
         state.decode_attempt(self)
@@ -825,7 +875,7 @@ class QuotedStringContent(ParserElementBase):
                     # The escaped character is not special,
                     #  so simply unescape it.
                     next_char = escaped_char
-                    if next_char not in self.valid_chars:
+                    if not self.valid_char(next_char):
                         break
                 state.next(1)  # Gobble self.escape_char.
 
@@ -834,7 +884,7 @@ class QuotedStringContent(ParserElementBase):
                 break
 
             # If next_char is not acceptable, don't gobble it.
-            elif next_char not in self.valid_chars:
+            elif not self.valid_char(next_char):
                 break
 
             state.next(1)  # Gobble next_char.
@@ -870,7 +920,7 @@ class QuotedString(Alternative):
         in actual code.
         >>> parser.parse(r'"Hello \\"world\\"!"')
         'Hello "world"!'
-        >>> print parser.parse(r'"Hello \\\\ \\"world\\"!\\nGoodbye \\'universe\\'..."')
+        >>> print(parser.parse(r'"Hello \\\\ \\"world\\"!\\nGoodbye \\'universe\\'..."'))
         Hello \ "world"!
         Goodbye 'universe'...
 
@@ -1017,8 +1067,10 @@ class Float(Sequence):
     def value(self, node):
         sign_only_node = node.get_child(name="sign_only")
         if sign_only_node:
-            if sign_only_node > 0:  integer_part = ""
-            else:                   integer_part = "-"
+            if float(sign_only_node.data) >= 0:
+                integer_part = ""
+            else:
+                integer_part = "-"
         else:
             integer_part = node.children[0].value() or 0
         fractional_part = node.children[2].value()
@@ -1027,12 +1079,17 @@ class Float(Sequence):
 
 #---------------------------------------------------------------------------
 
-def print_matches(node, indent = ""):
-    if not indent: print "Nodes:"
-    print indent, "%s: %r %s" % (node.actor.__class__.__name__, node.match(), id(node.parent))
+def print_matches(node, indent=""):
+    if not indent:
+        print("Nodes:")
+    print(indent, "%s: %r %s" % (node.actor.__class__.__name__,
+                                 node.match(), id(node.parent)))
     [print_matches(c, indent + "   ") for c in node.children]
-def print_values(node, indent = ""):
-    if not indent: print "Values:"
-    print indent, "%s: %r %s" % (node.actor.__class__.__name__, node.value(), id(node.parent))
-    [print_values(c, indent + "   ") for c in node.children]
 
+
+def print_values(node, indent=""):
+    if not indent:
+        print("Values:")
+    print(indent, "%s: %r %s" % (node.actor.__class__.__name__, node.value(),
+                                 id(node.parent)))
+    [print_values(c, indent + "   ") for c in node.children]

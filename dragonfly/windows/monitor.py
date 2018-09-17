@@ -22,17 +22,17 @@
     This file offers an interface to the Win32 information about
     available monitors (a.k.a. screens, displays).
 """
+from six import integer_types
 
-
-import win32gui
-import ctypes
-
+import win32api
 import logging
-from .rectangle  import Rectangle
+
+from .rectangle import Rectangle
 
 
 #---------------------------------------------------------------------------
-# List of monitors that will be filled when this module is loaded.
+# List of monitors that will be filled when this module is loaded and
+# updated on calls to `Monitor.update_monitors_list`.
 
 monitors = []
 
@@ -48,7 +48,7 @@ class Monitor(object):
     # Methods for initialization and introspection.
 
     def __init__(self, handle, rectangle):
-        assert isinstance(handle, (int, long))
+        assert isinstance(handle, integer_types)
         self._handle = handle
         assert isinstance(rectangle, Rectangle)
         self._rectangle = rectangle
@@ -56,80 +56,68 @@ class Monitor(object):
     def __str__(self):
         return "%s(%d)" % (self.__class__.__name__, self._handle)
 
+    @staticmethod
+    def update_monitors_list():
+        """
+        Update dragonfly's monitors list with new monitors, delete monitors
+        that aren't found and replace rectangles of monitors that have
+        changed.
+        """
+        # Get an updated list of monitor information and the handles of
+        # monitors in the list at the moment.
+        updated_monitors = win32api.EnumDisplayMonitors()
+        monitor_handles = [m.handle for m in monitors]
+
+        # Update the list with any new or changed monitors.
+        for h1, _, rectangle in updated_monitors:
+            handle = h1.handle
+            x1, x2, dx, dy = rectangle
+
+            # Check if the monitors list already contains this monitor.
+            if handle in monitor_handles:
+                # Replace the rectangle for the monitor if it has changed.
+                i = monitor_handles.index(handle)
+                m = monitors[i]
+                r = Rectangle(x1, x2, dx, dy)
+                if r != m._rectangle:
+                    Monitor._log.debug("Setting %s.rectangle to %s"
+                                       % (m, r))
+                    m.rectangle = r
+            else:
+                # Add the new monitor to the list.
+                m = Monitor(handle, Rectangle(x1, x2, dx, dy))
+                Monitor._log.debug("Adding %s to monitors list" % m)
+                monitors.append(m)
+
+        # Remove any monitors that aren't in the updated list.
+        monitor_handles = [h1.handle for h1, _, _ in updated_monitors]
+        for m in list(monitors):
+            if m.handle not in monitor_handles:
+                Monitor._log.debug("Removing %s from monitors list" % m)
+                monitors.remove(m)
+
     #-----------------------------------------------------------------------
     # Methods that control attribute access.
 
     def _set_handle(self, handle):
-        assert isinstance(handle, (int, long))
+        assert isinstance(handle, integer_types)
         self._handle = handle
     handle = property(fget=lambda self: self._handle,
                       fset=_set_handle,
                       doc="Protected access to handle attribute.")
 
+    def _get_updated_rectangle(self):
+        Monitor.update_monitors_list()
+        return self._rectangle
+
     def _set_rectangle(self, rectangle):
         assert isinstance(rectangle, Rectangle)
-        self._rectangle = rectangle # Should make a copy??
-    rectangle = property(fget=lambda self: self._rectangle,
-                      fset=_set_rectangle,
-                      doc="Protected access to rectangle attribute.")
-
-
-#===========================================================================
-# Monitor info retrieval below lightly inspired by the following recipe:
-#  http://code.activestate.com/recipes/460509/ by Martin Dengler (2005)
-#  More info available here:
-#  http://msdn.microsoft.com/en-us/library/ms534809.aspx
-
-class _rect_t(ctypes.Structure):
-    _fields_ = [
-                ('left',    ctypes.c_long),
-                ('top',     ctypes.c_long),
-                ('right',   ctypes.c_long),
-                ('bottom',  ctypes.c_long)
-               ]
-
-class _monitor_info_t(ctypes.Structure):
-    _fields_ = [
-                ('cbSize',     ctypes.c_ulong),
-                ('rcMonitor',  _rect_t),
-                ('rcWork',     _rect_t),
-                ('dwFlags',    ctypes.c_ulong)
-               ]
-
-callback_t = ctypes.WINFUNCTYPE(
-                                ctypes.c_int,
-                                ctypes.c_ulong,
-                                ctypes.c_ulong,
-                                ctypes.POINTER(_rect_t),
-                                ctypes.c_double
-                               )
-
-def _callback(
-              hMonitor,     # Handle to display monitor
-              hdcMonitor,   # Handle to monitor DC
-              lprcMonitor,  # Intersection rectangle of monitor
-              dwData        # Data
-             ):
-    # Retrieves monitor info.
-    info = _monitor_info_t()
-    info.cbSize     = ctypes.sizeof(_monitor_info_t)
-    info.rcMonitor  = _rect_t()
-    info.rcWork     = _rect_t()
-    res = ctypes.windll.user32.GetMonitorInfoA(hMonitor, ctypes.byref(info))
-
-    # Store monitor info.
-    handle = long(hMonitor)
-    r = info.rcWork
-    rectangle = Rectangle(r.left, r.top, r.right - r.left, r.bottom - r.top)
-    monitor = Monitor(handle, rectangle)
-    Monitor._log.debug("Found monitor %s with geometry %s."
-                       % (monitor, rectangle))
-    monitors.append(monitor)
-
-    # Continue enumerating monitors.
-    return True
+        self._rectangle = rectangle  # Should make a copy??
+    rectangle = property(fget=_get_updated_rectangle,
+                         fset=_set_rectangle,
+                         doc="Protected access to rectangle attribute.")
 
 
 # Enumerate monitors and build Dragonfly's monitor list when this
-#  module is loaded.
-res = ctypes.windll.user32.EnumDisplayMonitors(0, 0, callback_t(_callback), 0)
+# module is loaded.
+Monitor.update_monitors_list()

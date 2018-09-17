@@ -18,17 +18,39 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+import sys
+
+# Import OS-agnostic classes
+from .action_pause        import Pause
+from .action_function     import Function
+from .action_playback     import Playback
 from .action_base         import (ActionBase, DynStrActionBase,
                                   Repeat, ActionError)
-from .action_key          import Key
-from .action_text         import Text
-from .action_mouse        import Mouse
-from .action_paste        import Paste
-from .action_pause        import Pause
 from .action_mimic        import Mimic
-from .action_playback     import Playback
-from .action_function     import Function
-from .action_waitwindow   import WaitWindow
-from .action_focuswindow  import FocusWindow
-from .action_startapp     import StartApp, BringApp
-from .action_playsound    import PlaySound
+
+# Import Windows OS dependent classes only for Windows
+if sys.platform.startswith("win"):
+    from .action_key          import Key
+    from .action_text         import Text
+    from .action_mouse        import Mouse
+    from .action_paste        import Paste
+    from .action_waitwindow   import WaitWindow
+    from .action_focuswindow  import FocusWindow
+    from .action_startapp     import StartApp, BringApp
+    from .action_playsound    import PlaySound
+    from .keyboard import Typeable, Keyboard
+    from .typeables import typeables
+    from .sendinput import (KeyboardInput, MouseInput, HardwareInput,
+                            make_input_array, send_input_array)
+else:
+    from ..os_dependent_mock import Key
+    from ..os_dependent_mock import Text
+    from ..os_dependent_mock import Mouse
+    from ..os_dependent_mock import Paste
+    from ..os_dependent_mock import WaitWindow
+    from ..os_dependent_mock import FocusWindow
+    from ..os_dependent_mock import StartApp, BringApp
+    from ..os_dependent_mock import PlaySound
+    from ..os_dependent_mock import (Typeable, Keyboard, typeables, KeyboardInput,
+                                     MouseInput, HardwareInput, make_input_array,
+                                     send_input_array)

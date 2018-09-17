@@ -27,7 +27,7 @@ class CommandSet(object):
             key = id(command.poststate)
             mapping[key].append(command)
             ids[key] = command.poststate
-        return [(ids[k], cmds) for (k, cmds) in mapping.iteritems()]
+        return [(ids[k], cmds) for (k, cmds) in mapping.items()]
 
     def add_command(self, command):
         self._commands.append(command)
