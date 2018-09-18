@@ -23,7 +23,8 @@ Tests in doctests format:
    test_grammar_list_doctest
    test_recobs_doctest
    test_action_base_doctest
-   test_word_formatting_doctest
+   test_word_formatting_v10_doctest
+   test_word_formatting_v11_doctest
 
 
 Tests based on the unittest framework reside in the :mod:`dragonfly.test`

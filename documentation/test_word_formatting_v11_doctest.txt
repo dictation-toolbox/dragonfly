@@ -153,11 +153,11 @@ in both spoken and written forms::
 
 Certain words, such as numbers, are not formatted according to the
 same rules as "normal" words, i.e. those which specified written and spoken
-forms and formatting info.
+forms and formatting info::
 
-#    >>> format_dictation_dns11("one two three")
-#    u'123'
-#    >>> format_dictation_dns11("one\\number two three four")
-#    u'1234'
-#    >>> format_dictation_dns11("thirty four")
-#    u'34'
+  #    >>> format_dictation_dns11("one two three")
+  #    u'123'
+  #    >>> format_dictation_dns11("one\\number two three four")
+  #    u'1234'
+  #    >>> format_dictation_dns11("thirty four")
+  #    u'34'
