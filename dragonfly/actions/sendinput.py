@@ -37,10 +37,16 @@ class KeyboardInput(Structure):
                 ("time", c_ulong),
                 ("dwExtraInfo", POINTER(c_ulong))]
 
-    # Nasty behavior of Win32 shift-navkey requires the navigation keys
-    #  always to to be treated as extended.  See:
-    #  http://www.xtremevbtalk.com/archive/index.php/t-203863.html
-    #  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/winui/windowsuserinterface/userinput/keyboardinput/aboutkeyboardinput.asp
+    #  From https://docs.microsoft.com/en-us/windows/desktop/inputdev/about-keyboard-input#extended-key-flag
+    #     The extended keys consist of the ALT and CTRL keys
+    #     on the right-hand side of the keyboard; the INS, DEL, HOME,
+    #     END, PAGE UP, PAGE DOWN, and arrow keys in the clusters to
+    #     the left of the numeric keypad; the NUM LOCK key; the BREAK
+    #     (CTRL+PAUSE) key; the PRINT SCRN key; and the divide (/) and
+    #     ENTER keys in the numeric keypad.
+    #
+    #  It's unclear if the Windows keys are also "extended", so they
+    #  have been included for historical reasons.
     extended_keys = (
                      win32con.VK_UP,
                      win32con.VK_DOWN,
@@ -51,7 +57,15 @@ class KeyboardInput(Structure):
                      win32con.VK_PRIOR,
                      win32con.VK_NEXT,
                      win32con.VK_INSERT,
+                     win32con.VK_DELETE,
+                     win32con.VK_NUMLOCK,
+                     win32con.VK_RCONTROL,
+                     win32con.VK_RMENU,
+                     win32con.VK_PAUSE,
+                     win32con.VK_SNAPSHOT,
+                     win32con.VK_DIVIDE,
                      win32con.VK_LWIN,
+                     win32con.VK_RWIN,
                     )
 
     def __init__(self, virtual_keycode, down):

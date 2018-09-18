@@ -115,6 +115,7 @@ class CompoundRule(Rule):
 
         self._name     = name
         self._spec     = spec
+        self.spec = spec
         self._extras   = dict((element.name, element) for element in extras)
         self._defaults = dict(defaults)
 

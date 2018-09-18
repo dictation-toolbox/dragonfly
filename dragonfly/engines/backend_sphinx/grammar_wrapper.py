@@ -2,9 +2,9 @@
 GrammarWrapper class for CMU Pocket Sphinx engine
 """
 import functools
-from six import text_type, u, PY2
+from six import text_type
 
-from jsgf import RuleRef, map_expansion, Literal, find_expansion
+from jsgf import RuleRef, map_expansion, Literal, find_expansion, filter_expansion
 from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion, \
     dictation_in_expansion
 
@@ -70,11 +70,11 @@ class ProcessingState(object):
     def matched_rules(self):
         return self.in_progress_rules + self.complete_rules
 
-    def process(self, timed_out=False):
+    def process(self, timed_out=False, notify_only=False):
         """
         Process this state object by calling the wrapper's process method.
         """
-        self.wrapper.process(self, timed_out)
+        self.wrapper.process(self, timed_out, notify_only)
 
     def add_post_collection_task(self, task):
         """
@@ -145,6 +145,25 @@ class GrammarWrapper(object):
 
         # Set the default value of search_name
         self._search_name = self._default_search_name
+
+    @property
+    def grammar_words(self):
+        """
+        Set of all words used in this grammar.
+
+        :returns: set
+        """
+        words = []
+        for rule in self._jsgf_grammar.rules:
+            rule_literals = filter_expansion(
+                rule.expansion, lambda x: isinstance(x, Literal) and x.text,
+                shallow=True
+            )
+            for literal in rule_literals:
+                words.extend(literal.text.split())
+
+        # Return a set of words with no duplicates.
+        return set(words)
 
     @property
     def dictation_grammar(self):
@@ -234,23 +253,25 @@ class GrammarWrapper(object):
         self._collect_normal_rules(state)
         return state
 
-    def process(self, state, timed_out=False):
+    def process(self, state, timed_out=False, notify_only=False):
         """
         Process a ProcessingState object from `collect_matching_rules`.
-        :type state: ProcessingState
+
+        :param state: ProcessingState
         :param timed_out: used by recognition timeout thread
+        :param notify_only: whether to only notify observers, not process
         """
         complete_seq = state.complete_sequence_rules
         if complete_seq:
             words_list = self._generate_words_list(complete_seq[0], True)
-            self._process_complete_recognition(words_list)
+            self._process_complete_recognition(words_list, notify_only)
 
         elif state.in_progress_rules and not timed_out:
             self._notify_partial_recognition(state.in_progress_rules[0])
 
         elif state.complete_rules:
             words_list = self._generate_words_list(state.complete_rules[0], True)
-            self._process_complete_recognition(words_list)
+            self._process_complete_recognition(words_list, notify_only)
 
     def process_begin(self, fg_window):
         """
@@ -267,10 +288,7 @@ class GrammarWrapper(object):
         self.engine.log.debug("Grammar %s: received recognition %r." %
                               (self.grammar.name, words))
 
-        if PY2:
-            words_rules = tuple((text_type(w), r) for w, r in words)
-        else:
-            words_rules = tuple((text_type(w), r) for w, r in words)
+        words_rules = tuple((text_type(w), r) for w, r in words)
         rule_ids = tuple(r for _, r in words_rules)
         words = tuple(w for w, r in words_rules)
 
@@ -323,20 +341,23 @@ class GrammarWrapper(object):
             self._generate_words_list(rule, False)
         )
 
-    def _process_complete_recognition(self, words_list):
+    def _process_complete_recognition(self, words_list, notify_only):
         """
         Internal method for processing complete recognitions.
         :type words_list: list
+        :param notify_only: whether to only notify observers, not process.
         """
         # Notify recognition observers
         self.engine.observer_manager.notify_recognition(words_list)
 
-        # Begin dragonfly processing
-        try:
-            self._process_results(words_list)
-        except Exception as e:
-            self.engine.log.error("%s: caught Exception while processing "
-                                  "recognised words: %s" % (self, e))
+        # Begin dragonfly processing if appropriate.
+        # notify_only is used by the Sphinx engine's training mode.
+        if not notify_only:
+            try:
+                self._process_results(words_list)
+            except Exception as e:
+                self.engine.log.error("%s: caught Exception while processing "
+                                      "recognised words: %s" % (self, e))
 
         # Clear the in progress list and reset all sequence rules in the grammar.
         self.reset_all_sequence_rules()
@@ -391,7 +412,8 @@ class GrammarWrapper(object):
 
                 # Then add each matchable leaf afterwards. This does what
                 # Expansion.matchable_leaves_after does, except that it only looks
-                # at leaves in this tree, not referenced ones.
+                # at leaves in this tree, not referenced ones. This will not work
+                # with repetition.
                 shallow_leaves = first.root_expansion.collect_leaves(shallow=True)
                 first_reached = False
                 for leaf in shallow_leaves:

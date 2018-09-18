@@ -114,6 +114,10 @@ class ElementTester(Grammar):
         self.engine.mimic(words)
     _mimic_methods["natlink"] = _mimic_natlink
 
+    def _mimic_sphinx(self, words):
+        self.engine.mimic(words)
+    _mimic_methods["sphinx"] = _mimic_sphinx
+
     def _mimic_sapi5(self, words):
         import time
         import win32con
@@ -194,3 +198,4 @@ class ElementTester(Grammar):
                 raise MimicFailure("Mimic failed, nothing happened.")
 
     _mimic_methods["sapi5"] = _mimic_sapi5
+    _mimic_methods["sapi5shared"] = _mimic_sapi5

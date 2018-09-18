@@ -4,17 +4,51 @@ Tests for the CMU Pocket Sphinx engine
 Most engine functionality is tested here, although the tests are done entirely
 via `mimic`, so there are some things which have to be tested manually for the
 moment.
+
+These tests assume the US English pronunciation dictionary, acoustic and language
+models distributed with the `pocketsphinx` Python package are used.
 """
 
 import unittest
 
 import time
+import logging
 
 from sphinxwrapper import DefaultConfig
 
 from dragonfly import *
 from dragonfly import List as DragonflyList, DictList as DragonflyDict
 from dragonfly.engines.backend_sphinx.engine import SphinxEngine
+
+
+class MockLoggingHandler(logging.Handler):
+    """
+    Mock logging handler to check for expected logs.
+    Adapted this from a Stack Overflow answer: https://stackoverflow.com/a/1049375
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.messages = {
+            'debug': [],
+            'info': [],
+            'warning': [],
+            'error': [],
+            'critical': [],
+        }
+        logging.Handler.__init__(self, *args, **kwargs)
+
+    def emit(self, record):
+        self.messages[record.levelname.lower()].append(record.getMessage())
+
+
+class TestContext(Context):
+    def __init__(self, active):
+        super(TestContext, self).__init__()
+        self.active = active
+
+    def matches(self, executable, title, handle):
+        # Ignore the parameters and return self.active.
+        return self.active
 
 
 class SphinxEngineCase(unittest.TestCase):
@@ -25,7 +59,6 @@ class SphinxEngineCase(unittest.TestCase):
         engine = get_engine("sphinx")
         assert isinstance(engine, SphinxEngine)
         assert engine.name == "sphinx"
-        engine.connect()
         self.engine = engine
 
         # Save current config
@@ -35,20 +68,33 @@ class SphinxEngineCase(unittest.TestCase):
         # that break tests. Value of 0 means no timeout at all.
         self.engine.config.NEXT_PART_TIMEOUT = 0
 
+        # Set training data directory to None for the tests.
+        self.engine.config.TRAINING_DATA_DIR = None
+
         # Ensure the relevant default configuration values are used
         self.engine.config.START_ASLEEP = False
         self.engine.config.WAKE_PHRASE = "wake up"
         self.engine.config.SLEEP_PHRASE = "go to sleep"
+        self.engine.config.START_TRAINING_PHRASE = "start training session"
+        self.engine.config.END_TRAINING_PHRASE = "end training session"
         self.engine.config.LANGUAGE = "en"
 
         # Map for test functions
         self.test_map = {}
 
+        # Add a logging handler.
+        self.logging_handler = MockLoggingHandler()
+        self.engine.log.addHandler(self.logging_handler)
+
+        # Connect the engine.
+        engine.connect()
+
     def tearDown(self):
-        # Restore saved config
+        # Restore saved config and do some other things.
         self.engine.config = self.engine_config
         self.engine.disconnect()
         self.test_map.clear()
+        self.engine.log.removeHandler(self.logging_handler)
 
     # ---------------------------------------------------------------------
     # Methods for control-flow assertion.
@@ -144,7 +190,12 @@ class BasicEngineTests(SphinxEngineCase):
             "WAKE_PHRASE",
             "SLEEP_PHRASE",
             "WAKE_PHRASE_THRESHOLD",
-            "SLEEP_PHRASE_THRESHOLD"
+            "SLEEP_PHRASE_THRESHOLD",
+            "TRAINING_DATA_DIR",
+            "START_TRAINING_PHRASE",
+            "START_TRAINING_THRESHOLD",
+            "END_TRAINING_PHRASE",
+            "END_TRAINING_THRESHOLD",
         ]
 
         class TestConfig(object):
@@ -157,6 +208,11 @@ class BasicEngineTests(SphinxEngineCase):
             WAKE_PHRASE_THRESHOLD = 1e-20
             SLEEP_PHRASE = "go to sleep"
             SLEEP_PHRASE_THRESHOLD = 1e-40
+            TRAINING_DATA_DIR = None
+            START_TRAINING_PHRASE = "start training session"
+            START_TRAINING_THRESHOLD = 1e-48
+            END_TRAINING_PHRASE = "end training session"
+            END_TRAINING_THRESHOLD = 1e-45
 
         def set_config(value):
             self.engine.config = value
@@ -404,6 +460,85 @@ class BasicEngineTests(SphinxEngineCase):
         self.assert_mimic_success("hello world")
         self.assert_test_function_called(test, 2)
 
+    def test_rule_contexts(self):
+        # Test that rules with contexts work and that rules with context=None still
+        # work regardless of context.
+        test1, test2 = self.get_test_function(), self.get_test_function()
+        rule1 = MappingRule(name="test1", mapping={"test global": Function(test1)})
+        context = TestContext(True)
+        rule2 = MappingRule(
+            name="test2", mapping={"test context": Function(test2)},
+            context=TestContext(True)
+        )
+
+        # Create and load a grammar.
+        grammar = Grammar("test")
+        grammar.add_rule(rule1)
+        grammar.add_rule(rule2)
+        grammar.load()
+
+        # Test that both rules rules work.
+        self.assert_mimic_success("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 1)
+        self.assert_test_function_called(test2, 1)
+
+        # Go out of context and test both rules again.
+        context.active = False
+        self.assert_mimic_failure("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 2)
+        self.assert_test_function_called(test2, 1)
+
+        # Try again in-context.
+        context.active = True
+        self.assert_mimic_success("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 3)
+        self.assert_test_function_called(test2, 2)
+
+    def test_grammar_contexts(self):
+        # Test that grammars with contexts work and that global contexts still work
+        # regardless of context.
+        test1, test2 = self.get_test_function(), self.get_test_function()
+
+        class TestRule1(MappingRule):
+            mapping = {"test global": Function(test1)}
+
+        class TestRule2(MappingRule):
+            mapping = {"test context": Function(test2)}
+
+        # Create and load a global grammar.
+        grammar1 = Grammar("global")
+        grammar1.add_rule(TestRule1())
+        grammar1.load()
+
+        # Create and load a grammar using a context.
+        context = TestContext(active=True)
+        grammar2 = Grammar("context", context=context)
+        grammar2.add_rule(TestRule2())
+        grammar2.load()
+
+        # Test that rules in both grammars work.
+        self.assert_mimic_success("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 1)
+        self.assert_test_function_called(test2, 1)
+
+        # Go out of context and test both rules again.
+        context.active = False
+        self.assert_mimic_failure("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 2)
+        self.assert_test_function_called(test2, 1)
+
+        # Try again in-context.
+        context.active = True
+        self.assert_mimic_success("test context")
+        self.assert_mimic_success("test global")
+        self.assert_test_function_called(test1, 3)
+        self.assert_test_function_called(test2, 2)
+
     def test_start_asleep(self):
         # config.START_ASLEEP is False for the tests by default, so test that first.
         self.assertFalse(self.engine.recognition_paused)
@@ -477,6 +612,105 @@ class BasicEngineTests(SphinxEngineCase):
         self.assert_test_function_called(test2, 1)  # no change
         self.assert_test_function_called(on_begin_test, 4)
         self.assert_test_function_called(on_failure_test, 2)
+
+    def test_unknown_keyphrase_words(self):
+        # Test that keyphrases with unknown words log appropriate error messages.
+        self.engine.set_keyphrase("notaword", 1e-20, lambda: None)
+        self.assertEqual(
+            self.logging_handler.messages["error"][0],
+            "keyphrase used words not found in the pronunciation dictionary: "
+            "notaword"
+        )
+
+        # Test invalid built-in keyphrases.
+        self.engine.config.WAKE_PHRASE = "wake up unknownword"
+        self.engine.config.SLEEP_PHRASE = "aninvalid sleepphrase"
+        self.engine.config.START_TRAINING_PHRASE = "another invalidphrase"
+        self.engine.config.END_TRAINING_PHRASE = "end trainingsession"
+
+        # Restart the engine manually to verify that an error is logged for the
+        # keyphrases on connect().
+        self.engine.disconnect()
+        self.engine.connect()
+
+        # Check the logged messages. Each of the unknown words in all four
+        # built-in keyphrases should be listed.
+        self.assertEqual(
+            self.logging_handler.messages["error"][1],
+            "keyphrase used words not found in the pronunciation dictionary: "
+            "aninvalid, invalidphrase, sleepphrase, trainingsession, unknownword"
+        )
+
+    def test_unknown_grammar_words(self):
+        # Test that grammars using unknown words log appropriate error messages when
+        # they fail to load.
+        class TestRule1(CompoundRule):
+            spec = "testing unknownword"
+
+        class TestRule2(MappingRule):
+            mapping = {
+                "wordz": ActionBase(),
+                "natlink": ActionBase()
+            }
+
+        g = Grammar("test")
+        g.add_rule(TestRule1())
+        g.add_rule(TestRule2())
+        g.load()
+
+        # Check the logged messages. The words should be in alphabetical order.
+        self.assertEqual(
+            self.logging_handler.messages["error"][0],
+            "grammar 'test' used words not found in the pronunciation dictionary: "
+            "natlink, unknownword, wordz"
+        )
+
+    def test_training_session(self):
+        # Test that no recognition processing is done when a training session is
+        # active.
+
+        # Set up a rule to "train".
+        test = self.get_test_function()
+
+        class TestRule(CompoundRule):
+            spec = "test training"
+            _process_recognition = test
+
+        # Create and load a grammar with the rule.
+        grammar = Grammar("test")
+        grammar.add_rule(TestRule())
+        grammar.load()
+
+        # Set up a custom observer using test methods
+        on_begin_test = self.get_test_function()
+        on_recognition_test = self.get_test_function()
+        on_failure_test = self.get_test_function()
+
+        class TestObserver(RecognitionObserver):
+            on_begin = on_begin_test
+            on_recognition = on_recognition_test
+            on_failure = on_failure_test
+
+        self.engine.register_recognition_observer(TestObserver())
+
+        # Start a training session.
+        self.engine.start_training_session()
+
+        # Test that mimic succeeds, no processing occurs, and the TestObserver
+        # is still notified of events.
+        self.assert_mimic_success("test training")
+        self.assert_test_function_called(test, 0)
+        self.assert_test_function_called(on_begin_test, 1)
+        self.assert_test_function_called(on_recognition_test, 1)
+        self.assert_test_function_called(on_failure_test, 0)
+
+        # End the session and test again.
+        self.engine.end_training_session()
+        self.assert_mimic_success("test training")
+        self.assert_test_function_called(test, 1)
+        self.assert_test_function_called(on_begin_test, 2)
+        self.assert_test_function_called(on_recognition_test, 2)
+        self.assert_test_function_called(on_failure_test, 0)
 
 
 class DictationEngineTests(SphinxEngineCase):
@@ -882,12 +1116,6 @@ class DictationEngineTests(SphinxEngineCase):
             self.assert_test_function_called(test4, 1)
             f("forward one")
             self.assert_test_function_called(test4, 2)
-
-        # TODO Make ambiguous matches work correctly - this is an issue with jsgf.ext.Dictation
-        self.engine.mimic("testing testing testing")
-        self.assert_test_function_called(test2, 2)
-        exec_mimic_action("testing testing testing")
-        self.assert_test_function_called(test2, 3)
 
 
 # ---------------------------------------------------------------------
