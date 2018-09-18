@@ -36,6 +36,19 @@ _engines_by_name = {}
 
 
 def get_engine(name=None):
+    """
+        Get the engine implementation.
+
+        This function will initialize an engine object using the
+        ``get_engine`` and ``is_engine_available`` functions in the engine
+        packages and return an instance of the first available engine. If
+        one has already been initialized, it will be returned instead.
+
+        :param name: optional human-readable name of the engine to return.
+        :type name: str
+        :rtype: EngineBase
+        :raises: EngineError
+    """
     global _default_engine, _engines_by_name
     log = logging.getLogger("engine")
 

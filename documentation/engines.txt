@@ -22,6 +22,9 @@ Dragonfly to be able to interact with a speech recognition engine.
 Engine backends
 ----------------------------------------------------------------------------
 
+.. automodule:: dragonfly.engines
+   :members:
+
 .. automodule:: dragonfly.engines.backend_natlink
    :members:
 
