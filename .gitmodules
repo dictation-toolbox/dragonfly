@@ -1,6 +1,3 @@
-[submodule "pyjsgf"]
-	path = pyjsgf
-	url = https://github.com/Danesprite/pyjsgf
 [submodule "sphinxwrapper"]
 	path = sphinxwrapper
 	url = https://github.com/Danesprite/sphinxwrapper
