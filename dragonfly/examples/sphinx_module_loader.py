@@ -13,7 +13,9 @@ the CMU Pocket Sphinx engine. It scans the directory it's in and loads any
 import os.path
 import logging
 
-from dragonfly import RecognitionObserver
+from dragonfly.engines.backend_sphinx.engine import SphinxEngine
+
+from dragonfly import RecognitionObserver, EngineError
 from dragonfly.engines import get_engine
 
 # --------------------------------------------------------------------------
@@ -157,6 +159,24 @@ def main():
         __file__ = os.path.join(path, "sphinx_module_loader.py")
 
     engine = get_engine("sphinx")
+    assert isinstance(engine, SphinxEngine)
+
+    # Try to import the local engine configuration object first. If there isn't one,
+    # use the default engine configuration.
+    log = logging.getLogger("config")
+    try:
+        import config
+        engine.config = config
+        log.info("Using local engine configuration module 'config.py'")
+    except ImportError:
+        pass
+    except EngineError as e:
+        # Log EngineErrors caught when setting the configuration.
+        log.warning(e.message)
+        log.warning("Falling back to using the default engine configuration "
+                    "instead of 'config.py'")
+
+    # Call connect() now that the engine configuration is set.
     engine.connect()
 
     # Register a recognition observer
@@ -170,7 +190,6 @@ def main():
     # TODO Change script to import all modules before loading the grammars into Pocket Sphinx
 
     # Start the engine's main recognition loop
-    engine.connect()
     engine.recognise_forever()
 
 
