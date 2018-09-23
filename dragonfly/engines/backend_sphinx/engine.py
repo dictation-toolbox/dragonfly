@@ -123,6 +123,11 @@ class SphinxEngine(EngineBase):
     def config(self):
         """
         Python module/object containing engine configuration.
+
+        Setting this property will raise an `EngineError` if the given
+        configuration object doesn't define each configuration option.
+
+        :raises: EngineError
         """
         return self._config
 
@@ -134,10 +139,6 @@ class SphinxEngine(EngineBase):
 
     @staticmethod
     def validate_config(engine_config):
-        """
-        Method for validating engine configuration.
-        :raises: AssertionError
-        """
         attributes = [
             "DECODER_CONFIG", "PYAUDIO_STREAM_KEYWORD_ARGS", "LANGUAGE",
             "NEXT_PART_TIMEOUT", "START_ASLEEP", "WAKE_PHRASE",
@@ -146,9 +147,17 @@ class SphinxEngine(EngineBase):
             "START_TRAINING_THRESHOLD", "END_TRAINING_PHRASE",
             "END_TRAINING_THRESHOLD"
         ]
+        not_preset = []
         for attr in attributes:
-            assert hasattr(engine_config, attr), "invalid engine configuration: " \
-                                                "'%s' not present" % attr
+            if not hasattr(engine_config, attr):
+                not_preset.append(attr)
+
+        if not_preset:
+            # Raise an error with the attributes that weren't set.
+            not_preset.sort()
+            raise EngineError("invalid engine configuration. The following "
+                              "attributes were not present: %s"
+                              % ", ".join(not_preset))
 
     @property
     def observer_manager(self):

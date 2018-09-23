@@ -220,11 +220,11 @@ class BasicEngineTests(SphinxEngineCase):
         # Test with correct attributes
         self.assertIsNone(set_config(TestConfig))
 
-        # Delete each attribute and check that an AssertionError is raised upon
-        # setting the config again
+        # Delete each attribute and check that an EngineError is raised upon
+        # setting the config again.
         for name in required:
             delattr(TestConfig, name)
-            self.assertRaises(AssertionError, set_config, TestConfig)
+            self.assertRaises(EngineError, set_config, TestConfig)
 
     def test_load_unload(self):
         """
