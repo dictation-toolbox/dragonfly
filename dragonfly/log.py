@@ -143,7 +143,7 @@ def _setup_file_handler():
             log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
             _file_handler = logging.FileHandler(log_file_path)
             formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
-                                          " %(message)s" + repr(_file_handler))
+                                          " %(message)s")
             _file_handler.setFormatter(formatter)
     return _file_handler
 
