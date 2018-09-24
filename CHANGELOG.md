@@ -12,9 +12,13 @@ Note: this project had no release versions between [0.6.6b1] and [0.7.0]. Notabl
 - Add MappingRule.specs property to allow retrieval of specs after initialisation.
 - Add checks in Sphinx engine for using unknown words in grammars and keyphrases.
 - Add configurable speech and hypothesis recording to Sphinx engine for model training.
+- Add Sphinx engine documentation page.
 
 ### Changed
 - Update pyjsgf submodule to version 1.5.0.
+- Change Sphinx engine module loader to use local engine config if it exists.
+- Change README to reference the new documentation page on the Sphinx engine.
+- Change documentation/conf.py to allow the docs to be built locally.
 
 ### Fixed
 - Fix a bug with CompoundRule.spec.
@@ -22,7 +26,10 @@ Note: this project had no release versions between [0.6.6b1] and [0.7.0]. Notabl
 - Update virtual keyboard extended key support (thanks [@Versatilus](https://github.com/Versatilus)).
 - Add missing methods for WSR and Sphinx engines in test/element_tester.
 - Fix a few minor problems with the Sphinx engine.
+- Fix bug where newly-constructed rules were not inactivated (thanks [@wolfmanstout](https://github.com/wolfmanstout)).
 
+### Removed
+- Remove Sphinx engine's README now that there is a documentation page.
 
 ## [0.7.0] - 2018-07-10
 ### Added
