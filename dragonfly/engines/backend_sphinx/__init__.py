@@ -23,6 +23,10 @@
 SR back-end package for CMU Pocket Sphinx
 ============================================================================
 
+The main interface to this engine is provided by methods and properties of
+the engine class. Please see the :ref:`CMU Pocket Sphinx engine page
+<RefSphinxEngine>` for more details.
+
 """
 
 import logging

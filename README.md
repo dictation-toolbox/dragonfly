@@ -26,52 +26,19 @@ There is also a gitter channel:
 [![Join the chat at https://gitter.im/sphinx-dragonfly](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sphinx-dragonfly)
 
 
-CMU Sphinx and Installation
+Installation
 ----------------------------------------------------------------------------
 
-This fork of dragonfly has an engine implementation using the open source
-CMU Pocket Sphinx speech recognition engine. You can read more about the
-CMU Sphinx speech recognition projects
-[here](https://cmusphinx.github.io/wiki/).
-
-This version of dragonfly should work normally with the DNS and WSR engines
-and can be installed for that purpose using something like:
+Dragonfly can be installed by cloning this repository and running the
+following (or similar) in the root directory:
 
 ``` Shell
 python setup.py install
 ```
 
-To use the Pocket Sphinx engine you will need to install the
-[sphinxwrapper](https://github.com/Danesprite/sphinxwrapper),
-[pyjsgf](https://github.com/Danesprite/pyjsgf), and
-[pyaudio](http://people.csail.mit.edu/hubert/pyaudio/) Python packages.
-
-You can install *sphinxwrapper* and *pyjsgf* from the git submodules by
-running the following commands:
-``` Shell
-git clone --recursive https://github.com/Danesprite/dragonfly.git
-git submodule foreach python setup.py install
-```
-
-Then install dragonfly with the 'sphinx' extra using `pip`, which will
-install other dependencies:
-``` Shell
-pip install .[sphinx]
-```
-
-Once it's installed, you'll need to copy the *sphinx_module_loader.py*
-script from *dragonfly/examples* into the folder with your grammars and run
-it using:
-``` Shell
-python sphinx_module_loader.py
-```
-
-This is the equivalent to the 'core' directory that NatLink uses to load
-grammar modules.
-
-There is more information on how the engine works, what the limitations 
-are, the to-do list and more
-[here](dragonfly/engines/backend_sphinx/README.md).
+To use the CMU Pocket Sphinx engine, see the
+[relevant documentation page](http://dragonfly2.readthedocs.org/en/latest/sphinx_engine.html)
+on it.
 
 
 Features
@@ -111,7 +78,7 @@ Existing command modules
 
 The related resources page of Dragonfly's documentation has a
 section on
-[command modules](http://dragonfly.readthedocs.org/en/latest/related_resources.html#command-modules)
+[command modules](http://dragonfly2.readthedocs.org/en/latest/related_resources.html#command-modules)
 which lists various sources.
 
 

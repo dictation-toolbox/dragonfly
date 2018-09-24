@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 """
-Default CMU Pocket Sphinx engine class configuration module
+CMU Pocket Sphinx engine configuration module.
 """
 
 from sphinxwrapper import DefaultConfig

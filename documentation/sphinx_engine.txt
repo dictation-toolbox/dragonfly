@@ -1,0 +1,292 @@
+.. _RefSphinxEngine:
+
+CMU Pocket Sphinx dragonfly engine
+============================================================================
+
+This version of dragonfly contains an engine implementation using the open
+source, cross-platform CMU Pocket Sphinx speech recognition engine. You can
+read more about the CMU Sphinx speech recognition projects on the
+`CMU Sphinx wiki`_.
+
+
+Setup
+----------------------------------------------------------------------------
+
+There are three dependencies for using the Pocket Sphinx engine:
+
+- `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_
+- `pyjsgf <https://github.com/Danesprite/pyjsgf>`_
+- `sphinxwrapper <https://github.com/Danesprite/sphinxwrapper>`_
+
+*sphinxwrapper* must be installed manually at the moment. You can install
+it from the git submodule by running the following::
+  
+  git clone --recursive https://github.com/Danesprite/dragonfly.git
+  git submodule foreach python setup.py install
+
+You can install the other packages using::
+
+  pip install pyjsgf pyaudio
+
+Once the dependencies are installed, you'll need to copy the
+`dragonfly/examples/sphinx_module_loader.py`_ script into the folder
+with your grammar modules and run it using::
+
+  python sphinx_module_loader.py
+
+
+This is the equivalent to the 'core' directory that NatLink uses to load
+grammar modules.
+
+
+Cross-platform Engine
+----------------------------------------------------------------------------
+
+Pocket Sphinx runs on most platforms, including on architectures other than
+x86, so it only makes sense that the Pocket Sphinx dragonfly engine
+implementation should work on non-Windows platforms like macOS as well as on
+Linux distributions. To this effect, I've made an effort to mock
+Windows-only functionality for non-Windows platforms for the time being to
+allow the engine components to work correctly regardless of the platform.
+
+Using dragonfly with a non-Windows operating system can already be done with
+`Aenea`_ using the existing *NatLink* engine. Aenea communicates with a
+separate Windows system running *NatLink* and *DNS* over a network
+connection and has server support for Linux (using X11), macOS, and Windows.
+
+
+Engine Configuration
+----------------------------------------------------------------------------
+
+This engine is configurable via the engine configuration module (see the
+`default engine config module`_).
+
+To change the engine configuration, create a *config.py* file in the same
+directory as *sphinx_engine_loader.py* and make your config changes.
+
+The config module should have each of the following attributes defined:
+
+- ``DECODER_CONFIG`` -- configuration object for the Pocket Sphinx decoder.
+- ``LANGUAGE`` -- user language for the engine to use (default: ``"en"``).
+- ``NEXT_PART_TIMEOUT`` -- timeout in seconds for speaking the next part of
+  a rule involving dictation. If set to 0, there will be no timeout.
+- ``PYAUDIO_STREAM_KEYWORD_ARGS`` -- keyword arguments dictionary given to
+  :meth:`PyAudio.open` in :meth:`recognise_forever`. Some values are
+  also used in :meth:`process_wave_file`. The default values
+  assume a 16kHz acoustic model is used.
+- ``START_ASLEEP`` -- boolean value for whether the engine should start in
+  a sleep state (default: ``True``).
+- ``TRAINING_DATA_DIR`` -- directory to store recorded utterances and
+  transcriptions for training (default: ``"training/"``). Relative paths
+  will be interpreted as relative to the module loader's directory. Set to
+  ``None`` to disable training data recording.
+- ``WAKE_PHRASE`` -- the keyphrase to listen for when in sleep mode
+  (default: ``"wake up"``).
+- ``WAKE_PHRASE_THRESHOLD`` -- threshold value* for the wake keyphrase
+  (default: ``1e-20``).
+- ``SLEEP PHRASE`` -- the keyphrase to listen for to enter sleep mode
+  (default: ``"go to sleep"``)
+- ``SLEEP_PHRASE_THRESHOLD`` -- threshold value* for the sleep keyphrase
+  (default: ``1e-40``). 
+- ``START_TRAINING_PHRASE`` -- keyphrase to listen for to start a training
+  session where no processing occurs.
+  (default: ``"start training session"``).
+- ``START_TRAINING_THRESHOLD`` -- threshold value* for the start training
+  keyphrase.
+  (default: ``1e-48``). 
+- ``END_TRAINING_PHRASE`` -- keyphrase to listen for to end a training
+  session if one is in progress.
+  (default: ``"end training session"``).
+- ``END_TRAINING_THRESHOLD`` -- threshold value* for the end training
+  keyphrase.
+  (default: ``1e-45``). 
+  
+\* Threshold values need to be set for each keyphrase. The `CMU Sphinx LM
+tutorial`_ has some advice on keyphrase threshold values.
+
+
+Pocket Sphinx Decoder Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``DECODER_CONFIG`` object initialised in the engine config module can be
+used to set various Pocket Sphinx decoder options. For instance, the
+following line silences the decoder's log output::
+
+  DECODER_CONFIG.set_string("-logfn", os.devnull)
+
+There does not appear to be much documentation on these options outside of
+the `pocketsphinx/cmdln_macro.h`_ and `sphinxbase/fe.h`_ header files.
+If this is incorrect or has changed, feel free to suggest an edit.
+
+Probably the easiest way of seeing the available options and their default
+and current values is to comment the above line in the engine config module
+and examine the decoder log output.
+
+
+Changing Models and Dictionaries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``DECODER_CONFIG`` object can be used to configure the pronunciation
+dictionary as well as the acoustic and language models. To do this, add
+something like the following in the config module::
+
+  DECODER_CONFIG.set_string('-hmm', '/path/to/acoustic-model-folder')
+  DECODER_CONFIG.set_string('-lm', '/path/to/lm-file.lm')
+  DECODER_CONFIG.set_string('-dict', '/path/to/dictionary-file.dict')
+
+The language model, acoustic model and pronunciation dictionary should all
+use the same language or language variant. See the `CMU Sphinx wiki`_ for
+a more detailed explanation of these components.
+
+Engine API
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_sphinx.engine.SphinxEngine
+   :members:
+
+
+
+Improving Speech Recognition Accuracy
+----------------------------------------------------------------------------
+
+CMU Pocket Sphinx can have some trouble recognising what was said
+accurately. To remedy this, you may need to adapt the acoustic model that
+Pocket Sphinx is using. This is similar to how Dragon sometimes requires
+training. The CMU Sphinx `adaption tutorial`_ covers this topic. There is
+also a `YouTube video on model adaption`_.
+
+Adapting your model may not be necessary; there might be other issues with
+your setup. There is more information on tuning the recognition accuracy in
+the CMU Sphinx `tuning tutorial`_.
+
+By default, the engine will record what you say into wave and transcription
+files compatible with the Sphinx accoustic model adaption process. The files
+are placed in the directory specified by the engine's ``TRAINING_DATA_DIR``
+configuration option.
+
+There are built-in key phrases for starting and ending training sessions
+where no grammar rule processing will occur. Key phrases will still be
+processed. See the ``START_TRAINING_PHRASE`` and ``END_TRAINING_PHRASE``
+engine configuration options. One use case for the training mode is training
+commands that take a long time to execute their actions or are dangerous.
+Perhaps such commands keep getting falsely recognised and they need more
+training.
+
+To use the training files, you will need to correct any incorrect phrases
+in the *training.transcription* file and then use the
+`SphinxTrainingHelper`_ bash script to adapt your model. This script makes
+the process considerably easier, although you may still encounter problems.
+You should be able to play the wave files using most media players (e.g.
+VLC, Windows Media Player, aplay) if you need to.
+
+You will want to remove the wave and transcription files after a successful
+adaption without the engine running or with ``TRAINING_DATA_DIR`` set to
+``None``.
+
+
+Limitations
+----------------------------------------------------------------------------
+
+This engine has a few limitations, most notably with the spoken language
+support and dragonfly's :class:`Dictation` functionality. That said, most of
+the grammar functionality will work perfectly.
+
+
+Dictation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Unfortunately, the 'Dictation' support that DNS and WSR provide is difficult
+to reproduce with the CMU Sphinx engines. They don't support speaking grammar
+rules that include :class:`Dictation` elements, although they will work for
+this engine, you'll just have to pause between speaking the grammar and
+dictation parts of rules that use :class:`Dictation` extras.
+
+For those interested, this is done by segmenting rules and using a Pocket
+Sphinx language model search to recognise the dictation parts.
+
+There is a timeout period for the next parts of such rules. If the timeout
+is reached the engine will process any other matched rules or fail to
+recognise altogether. The timeout peroid is set by the
+``NEXT_PART_TIMEOUT`` engine configuration option. If set to 0, the engine
+will wait until speech starts again and process the next part if it is
+spoken.
+
+'Dictation' output also won't have words properly capitalised as they
+are when using DNS, all words will be in lowercase. Additionally,
+punctuation words like "comma" or "apostrophe" won't have special output,
+although such functionality can be added either through grammars or
+processing of the dictation output.
+
+Unknown words
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CMU Pocket Sphinx uses pronunciation dictionaries to lookup phonetic
+representations for words in grammars, language models and key phrases in
+order to recognise them. If you use words in your grammars and/or key
+phrases that are *not* in the dictionary, a message similar to the
+following will be printed:
+
+  *grammar 'name' used words not found in the pronunciation dictionary: 
+  notaword*
+
+If you get a message like this, try changing the words in your grammars/key
+phrases by splitting up the words or using to similar words,
+e.g. changing "natlink" to "nat link".
+
+I hope to eventually have words and phoneme strings dynamically added to the
+current dictionary and language model using the Pocket Sphinx `ps_add_word`_
+function (from Python of course).
+
+Spoken Language Support
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There are a only handful of languages with models and dictionaries
+`available from source forge <https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/>`_,
+although it is possible to build your own language model `using lmtool
+<http://www.speech.cs.cmu.edu/tools/lmtool-new.html>`_ or
+pronunciation dictionary `using lextool
+<http://www.speech.cs.cmu.edu/tools/lextool.html>`_.
+There is also a CMU Sphinx tutorial on `building language models
+<https://cmusphinx.github.io/wiki/tutoriallm/>`_.
+
+
+Dragonfly Lists and DictLists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Dragonfly :class:`Lists` and :class:`DictLists` function as normal, private
+rules for the Pocket Sphinx engine. On updating a dragonfly list or
+dictionary, the grammar they are part of will be reloaded. This is because
+there is unfortunately no JSGF equivalent for lists.
+
+
+Text-to-speech
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This isn't a limitation of CMU Pocket Sphinx; text-to-speech is not a
+project goal for them, although as the natlink and WSR engines both support
+text-to-speech, there might as well be some suggestions if this
+functionality is desired, perhaps utilised by a custom dragonfly action.
+
+The Jasper project contains `a number of Python interface classes
+<https://github.com/jasperproject/jasper-client/blob/master/client/tts.py>`_
+to popular open source text-to-speech software such as `eSpeak`_,
+`Festival`_ and `CMU Flite`_.
+
+
+.. Links.
+.. _Aenea: https://github.com/dictation-toolbox/aenea
+.. _CMU Flite: http://www.festvox.org/flite/
+.. _CMU Pocket Sphinx speech recognition engine: https://github.com/cmusphinx/pocketsphinx/
+.. _CMU Sphinx LM tutorial: https://cmusphinx.github.io/wiki/tutoriallm/#keyword-lists
+.. _CMU Sphinx wiki: https://cmusphinx.github.io/wiki/
+.. _Festival: http://www.cstr.ed.ac.uk/projects/festival/
+.. _SphinxTrainingHelper: https://github.com/ExpandingDev/SphinxTrainingHelper
+.. _YouTube video on model adaption: https://www.youtube.com/watch?v=IAHH6-t9jK0
+.. _adaption tutorial: https://cmusphinx.github.io/wiki/tutorialadapt/
+.. _default engine config module: https://github.com/Danesprite/dragonfly/blob/master/dragonfly/engines/backend_sphinx/config.py
+.. _dragonfly/examples/sphinx_module_loader.py: https://github.com/Danesprite/dragonfly/blob/master/dragonfly/examples/sphinx_module_loader.py
+.. _eSpeak: http://espeak.sourceforge.net/
+.. _pocketsphinx/cmdln_macro.h: https://github.com/cmusphinx/pocketsphinx/blob/master/include/cmdln_macro.h
+.. _ps_add_word: https://cmusphinx.github.io/doc/pocketsphinx/pocketsphinx_8h.html#a5f3c4fcdbef34915c4e785ac9a1c6005
+.. _sphinxbase/fe.h: https://github.com/cmusphinx/sphinxbase/blob/master/include/sphinxbase/fe.h
+.. _tuning tutorial: https://cmusphinx.github.io/wiki/tutorialtuning/
