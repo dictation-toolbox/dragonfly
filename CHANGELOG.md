@@ -20,6 +20,7 @@ Note: this project had no release versions between [0.6.6b1] and [0.7.0]. Notabl
 - Change documentation/conf.py to allow the docs to be built locally.
 - Change package distribution name to *dragonfly2* in order to upload releases to PyPI.org.
 - Update README and documentation/installation.txt with instructions to install via pip.
+- Replace README.md with README.rst because PyPI doesn't easily support markdown any more.
 
 ### Fixed
 - Fix a bug with CompoundRule.spec.
@@ -32,6 +33,7 @@ Note: this project had no release versions between [0.6.6b1] and [0.7.0]. Notabl
 ### Removed
 - Remove pyjsgf submodule as it can be installed via pip now.
 - Remove Sphinx engine's README now that there is a documentation page.
+- Remove ez_setup.py and stop using it in setup.py.
 
 ## [0.7.0] - 2018-07-10
 ### Added

@@ -18,9 +18,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from ez_setup import use_setuptools
-use_setuptools()
-
 import os.path
 import re
 from setuptools import setup, find_packages
@@ -55,7 +52,11 @@ setup(
       license          = "LICENSE.txt",
       url              = "https://github.com/Danesprite/dragonfly",
       zip_safe         = False,  # To unzip documentation files.
-      long_description = read("README.md"),
+      long_description = read("README.rst"),
+
+      package_data={
+                    "": ["*.txt", "*.rst"]
+                   },
 
       install_requires=[
                         "setuptools >= 0.6c7",
