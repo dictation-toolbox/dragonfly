@@ -29,8 +29,27 @@ There is also a gitter channel:
 Installation
 ----------------------------------------------------------------------------
 
-Dragonfly can be installed by cloning this repository and running the
-following (or similar) in the root directory:
+Dragonfly is a Python package. It can be installed as *dragonfly2* using
+pip:
+
+``` Shell
+pip install dragonfly2
+```
+The distribution name has been changed to *dragonfly2* in order to upload
+releases to PyPI.org, but everything can still be imported using
+*dragonfly*.
+
+If you have dragonfly installed under the original *dragonfly* distribution
+name, you'll need to remove the old version using:
+
+``` Shell
+pip uninstall dragonfly
+```
+
+Dragonfly can also be installed by cloning this repository or downloading it
+from [the releases page](https://github.com/Danesprite/dragonfly/releases)
+and running the following (or similar) command in the project's root
+directory:
 
 ``` Shell
 python setup.py install
@@ -107,7 +126,7 @@ grammar.load()                                      # Load the grammar.
 The example above is very basic and doesn't show any of 
 Dragonfly's exciting features, such as dynamic speech elements. 
 To learn more about these, please take a look at
-[Dragonfly's online docs](http://dragonfly.readthedocs.org/en/latest/).
+[Dragonfly's online docs](http://dragonfly2.readthedocs.org/en/latest/).
 
 
 Rationale behind Dragonfly

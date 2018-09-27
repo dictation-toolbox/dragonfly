@@ -18,6 +18,8 @@ Note: this project had no release versions between [0.6.6b1] and [0.7.0]. Notabl
 - Change Sphinx engine module loader to use local engine config if it exists.
 - Change README to reference the new documentation page on the Sphinx engine.
 - Change documentation/conf.py to allow the docs to be built locally.
+- Change package distribution name to *dragonfly2* in order to upload releases to PyPI.org.
+- Update README and documentation/installation.txt with instructions to install via pip.
 
 ### Fixed
 - Fix a bug with CompoundRule.spec.

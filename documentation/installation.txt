@@ -15,31 +15,39 @@ Prerequisites
 
 To be able to use the dragonfly, you will need the following:
 
- * **Python**, *v2.5 or later* -- for example available from
-   `ActiveState
-   <http://www.activestate.com/Products/activepython/index.mhtml>`_.
- * **Win32 extensions for Python** -- already included in
-   ActiveState's Python distribution or available from
-   `Mark Hammond's page
-   <http://python.net/crew/mhammond/win32/Downloads.html>`_.
- * **Natlink** *(only for Dragon NaturallySpeaking users)* --
-   for example available from `SourceForge
+ * **Python**, *v2.7 or later* -- available from the `Python dowloads page
+   <https://www.python.org/downloads/>`_.
+ * **Win32 extensions for Python** *(only for Windows users)* --
+   available from the `pywin32 releases page
+   <https://github.com/mhammond/pywin32/releases>`_.
+ * **Natlink** *(only for Dragon NaturallySpeaking users)* -- latest
+   versions available from `SourceForge
    <https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`_.
 
 
 Installation of Dragonfly
 ----------------------------------------------------------------------------
 
-Dragonfly is a Python package.  A simple installer of the
-*next, next, finish* type is available from the project's
-`download page
-<http://code.google.com/p/dragonfly/downloads/list>`_.
-This installer was created with Python's standard distutils and 
-has been tested on Microsoft Windows XP and Vista.
+Dragonfly is a Python package. It can be installed as *dragonfly2* using
+pip::
 
-Dragonfly's installer will install the library in your Python's 
-local site-packages directory under the ``dragonfly`` 
-subdirectory.
+  pip install dragonfly2
+
+The distribution name has been changed to *dragonfly2* in order to upload
+releases to PyPI.org, but everything can still be imported using
+*dragonfly*.
+
+If you have dragonfly installed under the original *dragonfly* distribution
+name, you'll need to remove the old version using::
+  
+  pip uninstall dragonfly
+
+Dragonfly can also be installed by cloning this repository or downloading it
+from `the releases page <https://github.com/Danesprite/dragonfly/releases>`_
+and running the following (or similar) command in the project's root
+directory::
+
+  python setup.py install
 
 
 Installation for Dragon NaturallySpeaking
@@ -76,6 +84,12 @@ standard COM communication channels.
 If you would like to use Dragonfly command-modules with WSR, 
 then you must run a *loader* program which will load and manage 
 the command-modules.  A simple *loader* is available in the 
-``dragonfly/examples/dragonfly-main.py`` file.  When run, it 
+``dragonfly/examples/dfly-loader-wsr.py`` file.  When run, it 
 will scan the directory it's in for other ``*.py`` files and try 
 to load them as command-modules.
+
+Installation for CMU Pocket Sphinx
+----------------------------------------------------------------------------
+
+Please see the :ref:`Pocket Sphinx engine page <RefSphinxEngine>` for
+installation and usage information.
