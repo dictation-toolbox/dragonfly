@@ -6,7 +6,7 @@ and this project will adhere to [Semantic Versioning](http://semver.org/spec/v2.
 
 Note: this project had no release versions between [0.6.6b1] and [0.7.0]. Notable changes made between these versions are documented in the commit history and will be placed under headings in this file over time.
 
-## [Unreleased]
+## [0.8.0] - 2018-09-27
 ### Added
 - Add EngineBase.grammars property for retrieving loaded grammars.
 - Add MappingRule.specs property to allow retrieval of specs after initialisation.
@@ -87,7 +87,8 @@ TODO
 ## [0.6.1] - 2008-10-18
 This release is the first in the Git version control system.
 
-[Unreleased]: https://github.com/Danesprite/dragonfly/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/Danesprite/dragonfly/compare/0.8.0...HEAD
+[0.8.0]:      https://github.com/Danesprite/dragonfly/compare/0.7.0...0.8.0
 [0.7.0]:      https://github.com/Danesprite/dragonfly/compare/74981c1...0.7.0
 [0.6.6b1]:    https://github.com/Danesprite/dragonfly/compare/0.6.5...0.6.6b1
 [0.6.5]:      https://github.com/Danesprite/dragonfly/compare/0.6.4-rc3...0.6.5
