@@ -30,27 +30,25 @@ import wave
 
 from threading import Timer, RLock, current_thread
 
-from jsgf import GrammarError, RootGrammar, PublicRule, Literal
-from pyaudio import PyAudio
-
 from dragonfly import Grammar, Window
 from dragonfly.engines.backend_sphinx import is_engine_available
-from dragonfly.engines.backend_sphinx.grammar_wrapper import GrammarWrapper,\
-    ProcessingState
 from dragonfly.engines.backend_sphinx.training import TrainingDataWriter
-from dragonfly2jsgf import Translator
 
-from .compiler import SphinxJSGFCompiler
 from .dictation import SphinxDictationContainer
 from .recobs import SphinxRecObsManager
 from ..base import EngineBase, EngineError, MimicFailure
 
 try:
     from sphinxwrapper import *
+    from jsgf import GrammarError, RootGrammar, PublicRule, Literal
+    from pyaudio import PyAudio
+
+    from dragonfly2jsgf import Translator
+    from .compiler import SphinxJSGFCompiler
+    from .grammar_wrapper import GrammarWrapper, ProcessingState
 except ImportError:
-    # This is checked again in is_engine_available(). It's done here purely for
-    # readability:
-    # e.g. using PocketSphinx instead of sphinxwrapper.PocketSphinx
+    # Import a few things here optionally for readability (the engine won't start
+    # without them) and so that autodoc can import this module without them.
     pass
 
 
@@ -76,9 +74,12 @@ class SphinxEngine(EngineBase):
 
         try:
             import sphinxwrapper
+            import jsgf
+            import pyaudio
         except ImportError:
-            self._log.error("%s: failed to import sphinxwrapper module." % self)
-            raise EngineError("Failed to import the sphinxwrapper module.")
+            self._log.error("%s: Failed to import jsgf, pyaudio and/or "
+                            "sphinxwrapper. Are they installed?" % self)
+            raise EngineError("Failed to import Pocket Sphinx engine dependencies.")
 
         # Import and set the default configuration module. This can be changed later
         # using the config property.
