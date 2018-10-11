@@ -2,8 +2,8 @@ import unittest
 
 import jsgf.ext
 
+from dragonfly.engines.backend_sphinx.dragonfly2jsgf import *
 from dragonfly import *
-from dragonfly2jsgf import *
 from dragonfly.parser import ParserError
 from dragonfly import List as DragonflyList, DictList as DragonflyDictList
 

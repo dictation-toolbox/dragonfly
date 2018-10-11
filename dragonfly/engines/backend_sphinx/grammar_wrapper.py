@@ -10,7 +10,7 @@ from jsgf.ext import SequenceRule, DictationGrammar, only_dictation_in_expansion
 
 import dragonfly.grammar.state as state_
 from dragonfly import Grammar
-from dragonfly2jsgf import LinkedRule
+from .dragonfly2jsgf import LinkedRule
 
 
 @functools.total_ordering

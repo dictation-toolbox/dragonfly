@@ -43,7 +43,7 @@ try:
     from jsgf import GrammarError, RootGrammar, PublicRule, Literal
     from pyaudio import PyAudio
 
-    from dragonfly2jsgf import Translator
+    from .dragonfly2jsgf import Translator
     from .compiler import SphinxJSGFCompiler
     from .grammar_wrapper import GrammarWrapper, ProcessingState
 except ImportError:

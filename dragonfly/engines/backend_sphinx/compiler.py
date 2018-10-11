@@ -22,7 +22,7 @@
 This file implements the compiler for CMU Pocket Sphinx speech recognition
 engine.
 """
-from dragonfly2jsgf.dragonfly2jsgf import Translator, TranslationState
+from .dragonfly2jsgf import Translator, TranslationState
 from ..base import CompilerBase
 
 # noinspection PyUnusedLocal
