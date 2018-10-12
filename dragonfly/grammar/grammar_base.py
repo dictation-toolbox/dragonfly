@@ -31,12 +31,7 @@ from ..engines         import get_engine
 from .rule_base        import Rule
 from .list             import ListBase
 from .context          import Context
-
-
-# --------------------------------------------------------------------------
-
-class GrammarError(Exception):
-    pass
+from ..error           import GrammarError
 
 
 # --------------------------------------------------------------------------

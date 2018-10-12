@@ -31,7 +31,7 @@ Detecting sleep mode
 from six import text_type
 
 from ..base        import EngineBase, EngineError, MimicFailure
-from ...grammar.grammar_base import GrammarError
+from ...error import GrammarError
 from .dictation    import NatlinkDictationContainer
 from .recobs       import NatlinkRecObsManager
 from .timer        import NatlinkTimerManager

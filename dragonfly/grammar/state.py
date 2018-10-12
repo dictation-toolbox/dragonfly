@@ -27,7 +27,7 @@
 import logging
 from six import text_type, PY2
 
-from .grammar_base import GrammarError
+from ..error import GrammarError
 
 
 class State(object):

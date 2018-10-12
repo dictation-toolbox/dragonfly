@@ -25,7 +25,9 @@ Rule class
 """
 
 import logging
+
 from .context import Context
+from ..error import GrammarError
 
 
 class Rule(object):
@@ -173,7 +175,9 @@ class Rule(object):
              - *handle* -- window handle to the foreground window
 
         """
-        assert self._grammar
+        if not self.grammar:
+            raise GrammarError("A Dragonfly rule cannot be processed "
+                               "before it is bound to a grammar.")
         if not self._enabled:
             if self._active:
                 self.deactivate()
@@ -193,8 +197,8 @@ class Rule(object):
 
     def activate(self, force=False):
         if not self._grammar:
-            raise TypeError("A Dragonfly rule cannot be activated"
-                            " before it is bound to a grammar.")
+            raise GrammarError("A Dragonfly rule cannot be activated "
+                               "before it is bound to a grammar.")
         if not self._enabled:
             if self._active:
                 self.deactivate()
@@ -205,8 +209,8 @@ class Rule(object):
 
     def deactivate(self):
         if not self._grammar:
-            raise TypeError("A Dragonfly rule cannot be deactivated"
-                            " before it is bound to a grammar.")
+            raise GrammarError("A Dragonfly rule cannot be deactivated "
+                               "before it is bound to a grammar.")
         if self._active:
             try:
                 self._grammar.deactivate_rule(self)

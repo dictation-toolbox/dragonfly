@@ -22,3 +22,7 @@
 
 class DragonflyError(Exception):
     pass
+
+
+class GrammarError(Exception):
+    pass
