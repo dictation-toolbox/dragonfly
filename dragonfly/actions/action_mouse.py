@@ -105,6 +105,16 @@ Mouse button-press action:
     - ``left`` -- left mouse button key
     - ``middle`` -- middle mouse button key
     - ``right`` -- right mouse button key
+    - ``four`` -- fourth mouse button key
+    - ``five`` -- fifth mouse button key
+    - ``wheelup`` -- mouse wheel up
+    - ``stepup`` -- mouse wheel up 1/3
+    - ``wheeldown`` -- mouse wheel down
+    - ``stepdown`` -- mouse wheel down 1/3
+    - ``wheelright`` -- mouse wheel right
+    - ``stepright`` -- mouse wheel right 1/3
+    - ``wheelleft`` -- mouse wheel left
+    - ``stepleft`` -- mouse wheel left 1/3
 
  - *repeat* -- Specifies how many times the button should be clicked:
 
@@ -140,13 +150,17 @@ Mouse class reference
 
 import time
 import win32con
-import win32gui
+
 from ctypes             import windll, pointer, c_long, c_ulong, Structure
 from .sendinput         import MouseInput, make_input_array, send_input_array
 from .action_base       import DynStrActionBase, ActionError
 from ..windows.window   import Window
 from ..windows.monitor  import monitors
 
+
+#---------------------------------------------------------------------------
+
+MOUSEEVENTF_HWHEEL = 0x1000 # taken from https://msdn.microsoft.com/en-us/library/windows/desktop/ms646273(v=vs.85).aspx
 
 #---------------------------------------------------------------------------
 
@@ -244,7 +258,7 @@ class _Button(_EventBase):
 
     def execute(self, window):
         zero = pointer(c_ulong(0))
-        inputs = [MouseInput(0, 0, 0, flag, 0, zero)
+        inputs = [MouseInput(0, 0, flag[1], flag[0], 0, zero)
                   for flag in self._flags]
         array = make_input_array(inputs)
         send_input_array(array)
@@ -333,12 +347,32 @@ class Mouse(DynStrActionBase):
         return True
 
     _button_flags = {
-                     "left":   (win32con.MOUSEEVENTF_LEFTDOWN,
-                                win32con.MOUSEEVENTF_LEFTUP),
-                     "right":  (win32con.MOUSEEVENTF_RIGHTDOWN,
-                                win32con.MOUSEEVENTF_RIGHTUP),
-                     "middle": (win32con.MOUSEEVENTF_MIDDLEDOWN,
-                                win32con.MOUSEEVENTF_MIDDLEUP),
+                     "left":   ((win32con.MOUSEEVENTF_LEFTDOWN, 0),
+                                (win32con.MOUSEEVENTF_LEFTUP, 0)),
+                     "right":  ((win32con.MOUSEEVENTF_RIGHTDOWN, 0),
+                                (win32con.MOUSEEVENTF_RIGHTUP, 0)),
+                     "middle": ((win32con.MOUSEEVENTF_MIDDLEDOWN, 0),
+                                (win32con.MOUSEEVENTF_MIDDLEUP, 0)),
+                     "wheelup": ((win32con.MOUSEEVENTF_WHEEL, 120),
+                                (win32con.MOUSEEVENTF_WHEEL, 0)),
+                     "stepup": ((win32con.MOUSEEVENTF_WHEEL, 40),
+                                (win32con.MOUSEEVENTF_WHEEL, 0)),
+                     "wheeldown": ((win32con.MOUSEEVENTF_WHEEL, -120),
+                                (win32con.MOUSEEVENTF_WHEEL, 0)),
+                     "stepdown": ((win32con.MOUSEEVENTF_WHEEL, -40),
+                                (win32con.MOUSEEVENTF_WHEEL, 0)),
+                     "wheelright": ((MOUSEEVENTF_HWHEEL, 120),
+                                (MOUSEEVENTF_HWHEEL, 0)),
+                     "stepright": ((MOUSEEVENTF_HWHEEL, 40),
+                                (MOUSEEVENTF_HWHEEL, 0)),
+                     "wheelleft": ((MOUSEEVENTF_HWHEEL, -120),
+                                (MOUSEEVENTF_HWHEEL, 0)),
+                     "stepleft": ((MOUSEEVENTF_HWHEEL, -40),
+                                (MOUSEEVENTF_HWHEEL, 0)),
+                     "four": ((win32con.MOUSEEVENTF_XDOWN, 1),
+                                (win32con.MOUSEEVENTF_XUP, 1)),
+                     "five": ((win32con.MOUSEEVENTF_XDOWN, 2),
+                                (win32con.MOUSEEVENTF_XUP, 2)),
                     }
 
     def _process_button(self, spec, events):
