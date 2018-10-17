@@ -385,7 +385,10 @@ class Mouse(DynStrActionBase):
             return False
         flag_down, flag_up = self._button_flags[button]
 
-        if special == "down":
+        # Disallow ':up' and ':down' for scroll events.
+        if special in ("up", "down") and ("wheel" in button or "step" in button):
+            return False
+        elif special == "down":
             event = _Button(flag_down)
         elif special == "up":
             event = _Button(flag_up)
