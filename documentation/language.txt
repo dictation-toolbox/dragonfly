@@ -1,0 +1,26 @@
+
+Language Support
+============================================================================
+
+Dragonfly supports multiple spoken languages for its :class:`Integer`,
+:class:`IntegerRef` and :class:`Digits` classes. Each supported language has
+a sub-package under ``dragonfly.language``, although the current engine
+language will be automatically loaded by checking the ``engine.language``
+`ISO 639-1 code <https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>`_
+(e.g. "en").
+
+The following languages should be fully supported:
+
+* English (all variants) - "en"
+* German - "de"
+* Dutch - "nl"
+
+There are also language implementations for Arabic, Indonesian and Malaysian
+in ``dragonfly.language.other``, but they are not automatically loaded at
+the moment.
+
+Supported languages for Dragon NaturallySpeaking 15 are `listed here <https://nuance.custhelp.com/app/answers/detail/a_id/6280/kw/Dragon%20NaturallySpeaking%20languages%20supported/related/1>`_
+and the supported languages for Windows Speech are listed on
+`its Wikipedia page <https://en.wikipedia.org/wiki/Windows_Speech_Recognition#Overview_and_features>`_.
+
+The Pocket Sphinx engine documentation has a `section on language support <https://dragonfly2.readthedocs.io/en/latest/sphinx_engine.html?highlight=language#spoken-language-support>`_.

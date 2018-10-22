@@ -5,6 +5,6 @@ Miscellaneous topics
 Contents:
 
 .. toctree::
-
-    windows
-    config
+   config
+   language
+   windows
