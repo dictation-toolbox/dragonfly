@@ -27,10 +27,6 @@ and should work on Windows, Mac OS and Linux-based operating systems.
 from six import text_type
 import pyperclip
 
-# This can be removed once pyperclip issue #129 is resolved.
-import pkg_resources
-pkg_resources.require("pyperclip == 1.6.1")
-
 
 class BaseClipboard(object):
     @classmethod
