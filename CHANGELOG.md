@@ -20,7 +20,7 @@ Note: this project had no release versions between [0.6.6b1] and [0.7.0]. Notabl
 - Normalise all file line endings to Unix-style line feeds.
 
 ### Fixed
-- Fix a few problems with Sphinx auto-doc.
+- Make Read the Docs generate documentation from Python modules again.
 
 ## [0.8.0] - 2018-09-27
 ### Added
