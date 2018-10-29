@@ -11,24 +11,25 @@ Preparation
 
     #.  Determine the appropriate version number for this release,
         according to :ref:`RefReleaseVersioning`.
-    #.  Create the new release branch, named ``release-X.Y.Z``
     #.  Update the :file:`version.txt` file to contain the new version
         number.
 
 #.  Tickets
 
     #.  Update ticket status for this release, where relevant:
-        https://github.com/t4ngo/dragonfly/issues
+        https://github.com/Danesprite/dragonfly/issues
 
 #.  Release files
 
-    #.  Verify that :file:`CHANGES.txt` includes the change log for this
+    #.  Verify that :file:`CHANGELOG.rst` includes the change log for this
         release.
     #.  Verify that :file:`AUTHORS.txt` is up to date with recent
         contributors.
     #.  Verify that :file:`setup.py` specifies all required
         dependencies, including their versions, e.g. with the
         ``install_requires`` and ``test_requires`` parameters.
+    #.  Verify that :file:`documentation/requirements.txt` specifies all
+        required dependencies for building the documentation.
     #.  Verify that :file:`MANIFEST.in` includes all necessary
         data files.
 
@@ -46,7 +47,7 @@ Build and test
 
 #.  Test installation of distributions
 
-#.  Test on PyPI test server
+#.  Test on PyPI test server (`test.pypi.org <http://test.pypi.org/>`__)
 
     #.  Upload distributions to PyPI test server
     #.  Test installation from PyPI test server
@@ -54,7 +55,7 @@ Build and test
 
 #.  Tag release
 
-    #.  Tag git revision
+    #.  Tag git revision as ``X.Y.Z``
     #.  Push to GitHub
 
 Release
@@ -63,13 +64,13 @@ Release
 #.  Upload to GitHub
 
     #.  Upload distributions to GitHub:
-        https://github.com/t4ngo/dragonfly/releases
+        https://github.com/Danesprite/dragonfly/releases
 
 #.  Trigger building of documentation on Read the Docs
 
     #.  Check whether documentation was built automatically, and if not
         trigger it:
-        https://readthedocs.org/builds/dragonfly/
+        https://readthedocs.org/builds/dragonfly2/
 
 #.  Upload to PyPI server
 
@@ -84,3 +85,4 @@ Post-release
 
     #.  Website
     #.  Mailing list
+    #.  Gitter channel
