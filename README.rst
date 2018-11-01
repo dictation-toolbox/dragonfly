@@ -15,8 +15,10 @@ It currently supports the following speech recognition engines:
 -  *CMU Pocket Sphinx* (with caveats)
 
 Dragonfly's documentation is available online at `Read the
-Docs <http://dragonfly2.readthedocs.org/en/latest/>`__. Dragonfly's FAQ
-is available at
+Docs <http://dragonfly2.readthedocs.org/en/latest/>`__. The changes in
+each release are listed in the project's `CHANGELOG
+file <https://github.com/Danesprite/dragonfly/blob/master/CHANGELOG.md>`__.
+Dragonfly's FAQ is available at
 `Stackoverflow <http://stackoverflow.com/questions/tagged/python-dragonfly>`__.
 Dragonfly's mailing list/discussion group is available at `Google
 Groups <https://groups.google.com/forum/#!forum/dragonflyspeech>`__.
