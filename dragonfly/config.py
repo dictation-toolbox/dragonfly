@@ -47,7 +47,7 @@ Usage example
 The main program using Dragonfly's configuration toolkit would
 normally look something like this: ::
 
-    from dragonfly.all import Config, Section, Item
+    from dragonfly import Config, Section, Item
     
     # *Setup* phase.
     # This defines a configuration object with the name "Example

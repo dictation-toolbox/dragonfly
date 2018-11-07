@@ -52,7 +52,7 @@ A very simple example of Dragonfly usage is to create a static
 voice command with a callback that will be called when the 
 command is spoken.  This is done as follows: ::
 
-   from dragonfly.all import Grammar, CompoundRule
+   from dragonfly import Grammar, CompoundRule
 
    # Voice command rule combining spoken form and recognition processing.
    class ExampleRule(CompoundRule):

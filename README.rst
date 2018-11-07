@@ -109,7 +109,7 @@ This is done as follows:
 
 .. code-block:: python
 
-    from dragonfly.all import Grammar, CompoundRule
+    from dragonfly import Grammar, CompoundRule
 
     # Voice command rule combining spoken form and recognition processing.
     class ExampleRule(CompoundRule):
