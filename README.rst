@@ -39,7 +39,10 @@ pip:
 
 The distribution name has been changed to *dragonfly2* in order to
 upload releases to PyPI.org, but everything can still be imported using
-*dragonfly*.
+*dragonfly*. If you use any grammar modules that include something like
+:code:`pkg_resources.require("dragonfly >= 0.6.5")`, you will need to either
+replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
+altogether.
 
 If you have dragonfly installed under the original *dragonfly*
 distribution name, you'll need to remove the old version using:

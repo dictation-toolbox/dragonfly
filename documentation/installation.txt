@@ -27,27 +27,35 @@ To be able to use the dragonfly, you will need the following:
 
 Installation of Dragonfly
 ----------------------------------------------------------------------------
-
 Dragonfly is a Python package. It can be installed as *dragonfly2* using
-pip::
+pip:
 
-  pip install dragonfly2
+.. code:: shell
 
-The distribution name has been changed to *dragonfly2* in order to upload
-releases to PyPI.org, but everything can still be imported using
-*dragonfly*.
+    pip install dragonfly2
 
-If you have dragonfly installed under the original *dragonfly* distribution
-name, you'll need to remove the old version using::
-  
-  pip uninstall dragonfly
+The distribution name has been changed to *dragonfly2* in order to
+upload releases to PyPI.org, but everything can still be imported using
+*dragonfly*. If you use any grammar modules that include something like
+:code:`pkg_resources.require("dragonfly >= 0.6.5")`, you will need to either
+replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
+altogether.
 
-Dragonfly can also be installed by cloning this repository or downloading it
-from `the releases page <https://github.com/Danesprite/dragonfly/releases>`_
-and running the following (or similar) command in the project's root
-directory::
+If you have dragonfly installed under the original *dragonfly*
+distribution name, you'll need to remove the old version using:
 
-  python setup.py install
+.. code:: shell
+
+    pip uninstall dragonfly
+
+Dragonfly can also be installed by cloning this repository or
+downloading it from `the releases
+page <https://github.com/Danesprite/dragonfly/releases>`__ and running
+the following (or similar) command in the project's root directory:
+
+.. code:: shell
+
+    python setup.py install
 
 
 Installation for Dragon NaturallySpeaking
