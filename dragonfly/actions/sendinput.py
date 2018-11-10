@@ -19,8 +19,10 @@
 #
 
 """
-    This file implements an interface to the Win32 SendInput function
-    for simulating keyboard and mouse events.
+Win32 input wrapper functions.
+
+This file implements an interface to the Win32 SendInput function
+for simulating keyboard and mouse events.
 """
 
 
@@ -29,14 +31,29 @@ from ctypes import (c_short, c_long, c_ushort, c_ulong, sizeof,
 import win32con
 import win32api
 
+# These virtual keys don't have corresponding scancodes.
+# The list was found experimentally and is open to improvement.
+SOFT_KEYS = [x for x in range(0xc1, 0xdb)]
+SOFT_KEYS += [x for x in range(0x15, 0x1b)]
+SOFT_KEYS += [x for x in range(0x1c, 0x20)]
+SOFT_KEYS += [x for x in range(0x3a, 0x41)]
+SOFT_KEYS += [x for x in range(0x88, 0x90)]
+SOFT_KEYS += [x for x in range(0xa6, 0xba)]
+SOFT_KEYS += [
+    0xe0, 0xe5, 0xe7, 0xe8, 0xfc, 0x01, 0x02, 0x4, 0x5, 0x6, 0x7, 0x0a, 0x0b,
+    0x0e, 0x0f, 0x5d, 0x5e, 0x5f
+]
+
 
 class KeyboardInput(Structure):
+    """Win32 KEYBDINPUT wrapper."""
+
     _fields_ = [("wVk", c_ushort),
                 ("wScan", c_ushort),
                 ("dwFlags", c_ulong),
                 ("time", c_ulong),
                 ("dwExtraInfo", POINTER(c_ulong))]
-
+    soft_keys = tuple(SOFT_KEYS)
     #  From https://docs.microsoft.com/en-us/windows/desktop/inputdev/about-keyboard-input#extended-key-flag
     #     The extended keys consist of the ALT and CTRL keys
     #     on the right-hand side of the keyboard; the INS, DEL, HOME,
@@ -68,10 +85,16 @@ class KeyboardInput(Structure):
                      win32con.VK_RWIN,
                     )
 
-    def __init__(self, virtual_keycode, down):
-        scancode = windll.user32.MapVirtualKeyA(virtual_keycode, 0)
+    def __init__(self, virtual_keycode, down, scancode=-1):
+        """Initialize structure based on key type."""
+        if scancode == -1:
+            scancode = windll.user32.MapVirtualKeyW(virtual_keycode, 0)
 
         flags = 0
+        if virtual_keycode is 0:
+            flags |= 4  # KEYEVENTF_UNICODE
+        elif virtual_keycode not in self.soft_keys:
+            flags |= 8  # KEYEVENTF_SCANCODE
         if not down:
             flags |= win32con.KEYEVENTF_KEYUP
         if virtual_keycode in self.extended_keys:
