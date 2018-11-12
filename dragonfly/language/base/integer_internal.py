@@ -112,8 +112,8 @@ class MagnitudeIntBuilder(IntBuilderBase):
         if min >= max: return None
 
         # Calculate ranges of multipliers and remainders.
-        first_multiplier = min / self._factor
-        last_multiplier  = (max - 1) / self._factor + 1
+        first_multiplier = int(min / self._factor)
+        last_multiplier  = int((max - 1) / self._factor + 1)
         first_remainder  = min % self._factor
         last_remainder   = max % self._factor
         if last_remainder == 0:
