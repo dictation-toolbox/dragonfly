@@ -246,7 +246,7 @@ class SphinxEngine(EngineBase):
             )
         except UnknownWordError as e:
             # Log the error about unknown words.
-            self._log.error(e.message)
+            self._log.error(e)
 
         # Initialise a TrainingDataWriter instance if specified.
         if self.config.TRAINING_DATA_DIR:
@@ -447,7 +447,7 @@ class SphinxEngine(EngineBase):
             self._validate_words(keyphrase.split(), "keyphrase")
         except UnknownWordError as e:
             # Log an error and return early.
-            self._log.error(e.message)
+            self._log.error(e)
             return
 
         # Add parameters to the relevant dictionaries.
@@ -498,7 +498,7 @@ class SphinxEngine(EngineBase):
         except UnknownWordError as e:
             # Unknown words should be logged as plain error messages, not
             # exception stack traces.
-            self._log.error(e.message)
+            self._log.error(e)
         except Exception as e:
             self._log.exception("Failed to load grammar %s: %s."
                                 % (grammar, e))
@@ -540,6 +540,8 @@ class SphinxEngine(EngineBase):
             wrapper.dictation_grammar.enable_rule(rule.name)
             self.unset_search(wrapper.search_name)
             self.set_grammar(wrapper)
+        except UnknownWordError as e:
+            self._log.error(e)
         except Exception as e:
             self._log.exception("Failed to activate grammar %s: %s."
                                 % (grammar, e))
@@ -553,6 +555,8 @@ class SphinxEngine(EngineBase):
             wrapper.dictation_grammar.disable_rule(rule.name)
             self.unset_search(wrapper.search_name)
             self.set_grammar(wrapper)
+        except UnknownWordError as e:
+            self._log.error(e)
         except Exception as e:
             self._log.exception("Failed to activate grammar %s: %s."
                                 % (grammar, e))
