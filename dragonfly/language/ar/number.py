@@ -20,7 +20,7 @@
 #
 
 """
-Arabic language implementations of Integer and Digits classes
+Arabic (ar) language implementations of Integer and Digits classes
 ============================================================================
 
 """

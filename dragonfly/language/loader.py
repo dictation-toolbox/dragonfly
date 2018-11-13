@@ -53,8 +53,11 @@ class LanguageSpecificLoader(object):
     #  speaker language.
 
     language_map = {
+                    "ar":  "dragonfly.language.ar",
                     "de":  "dragonfly.language.de",
                     "en":  "dragonfly.language.en",
+                    "id":  "dragonfly.language.id",
+                    "ms":  "dragonfly.language.ms",
                     "nl":  "dragonfly.language.nl",
                    }
 

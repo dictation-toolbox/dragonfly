@@ -22,7 +22,7 @@
 #   multiple pronunciations.
 
 """
-Maylaysian (ms) language implementations of Integer and Digits classes
+Malaysian (ms) language implementations of Integer and Digits classes
 ============================================================================
 
 """
