@@ -43,19 +43,26 @@ def is_engine_available():
     # Attempt to import win32 package required for COM.
     try:
         from win32com.client import Dispatch
+    except ImportError as e:
+        _log.info("Failed to import from win32com package: %s. Is it "
+                   "installed?" % e)
+        return False
+
+    try:
         from pywintypes import com_error
-    except Exception as e:
-        _log.exception("COM error during dispatch: %s" % (e,))
+    except ImportError as e:
+        _log.info("Failed to import from the pywintypes package: %s. Is it "
+                   "installed?" % e)
         return False
 
     # Attempt to connect to SAPI.
     try:
         Dispatch("SAPI.SpSharedRecognizer")
     except com_error as e:
-        _log.exception("COM error during dispatch: %s" % (e,))
+        _log.exception("COM error during dispatch: %s" % e)
         return False
     except Exception as e:
-        _log.exception("Exception during Sapi5.isNatSpeakRunning(): %s" % (e,))
+        _log.exception("Exception during Sapi5.isNatSpeakRunning(): %s" % e)
         return False
     return True
 
