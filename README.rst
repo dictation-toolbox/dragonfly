@@ -2,6 +2,7 @@ Dragonfly
 =========
 
 |Build Status|
+|Docs Status|
 
 Dragonfly is a speech recognition framework. It is a Python package
 which offers a high-level object model and allows its users to easily
@@ -152,5 +153,7 @@ compared to Dragonfly as follows:
 
 .. |Build Status| image:: https://travis-ci.org/Danesprite/dragonfly.svg?branch=master
    :target: https://travis-ci.org/Danesprite/dragonfly
+.. |Docs Status| image:: https://readthedocs.org/projects/dragonfly2/badge/?version=latest&style=flat
+   :target: https://dragonfly2.readthedocs.io
 .. |Join the chat at https://gitter.im/sphinx-dragonfly| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/sphinx-dragonfly
