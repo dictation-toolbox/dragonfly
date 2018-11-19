@@ -6,5 +6,6 @@ Contents:
 
 .. toctree::
    config
+   ccr
    language
    windows

@@ -1,0 +1,37 @@
+
+.. _RefCCR:
+
+Continous Command Recognition (CCR)
+============================================================================
+
+One of dragonfly's most powerful features is continuous command recognition
+(CCR), that is commands that can be spoken together without pausing. This is
+done through use of a :class:`dragonfly.grammar.element_basic.Repetition`
+rule element. There is a mini-demo of continuous command recognition
+`on YouTube <https://www.youtube.com/watch?v=g3c5H7sAbBQ>`__. There are also
+a few projects using dragonfly which make writing CCR rules easier:
+
+- `Caster <https://github.com/synkarius/caster/>`__
+  (`documentation <https://caster.readthedocs.io>`__)
+  --- Caster has out-of-the-box support for CCR, with commands for typing
+  alphanumeric and common punctuation characters as well as some useful
+  navigation commands. You can also add custom CCR rules using the
+  :class:`MergeRule` class. There is more information on how to do that in
+  the documentation.
+
+- `dragonfluid <https://github.com/chajadan/dragonfluid>`__
+  (`documentation <https://dragonfluid.readthedocs.io>`__)
+  --- dragonfluid has drop-in replacements for dragonfly's element, grammar
+  and rule classes that support CCR. The documentation has more information
+  on this. You should be able to use `dragonfluid` with `dragonfly2` by
+  installing it without dependencies:
+
+  .. code:: shell
+
+     pip install --no-deps dragonfluid
+
+- `dragonfly-scripts
+  <https://github.com/dictation-toolbox/dragonfly-scripts/>`__
+  --- The dragonfly-scripts project uses a :class:`SeriesMappingRule` class
+  in many grammar files to allow commands in a :class:`MappingRule` to be
+  recognised continuously without pauses.
