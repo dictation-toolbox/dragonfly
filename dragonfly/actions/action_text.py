@@ -33,23 +33,67 @@ arrow-keys are not part of a text and so cannot be typed using the
 
 """
 
+
+from six import text_type
+
 from ..engines import get_engine
 from ..windows.clipboard import Clipboard
+from ..windows.window import Window
 from .action_base import ActionError, DynStrActionBase
 from .action_key import Key
 from .keyboard import Keyboard
 from .typeables import typeables
-from six import text_type
 
 # ---------------------------------------------------------------------------
 
-USE_UNICODE = True
+UNICODE_KEYBOARD = True
+HARDWARE_APPS = [
+            "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
+        ]
+
+
+def load_configuration():
+    """Locate and load configuration."""
+    import io
+    import os
+    try:
+        import configparser
+    except ImportError:
+        import ConfigParser as configparser
+
+    global UNICODE_KEYBOARD
+    global HARDWARE_APPS
+
+    home = os.path.expanduser("~")
+    config_folder = os.path.join(home, ".dragonfly2-speech")
+    config_file = "settings.cfg"
+    config_path = os.path.join(config_folder, config_file)
+
+    if not os.path.exists(config_folder):
+        os.mkdir(config_folder)
+    if not os.path.exists(config_path):
+        with io.open(config_path, "w") as f:
+            f.write(u'[Text]\nhardware_apps = '
+                    u'tvnviewer.exe|vncviewer.exe|mstsc.exe|virtualbox.exe\n'
+                    u'unicode_keyboard = true\n')
+
+    parser = configparser.ConfigParser()
+    parser.read(config_path)
+    if parser.has_option("Text", "hardware_apps"):
+        HARDWARE_APPS = parser.get("Text", "hardware_apps").lower().split("|")
+    if parser.has_option("Text", "unicode_keyboard"):
+        UNICODE_KEYBOARD = parser.getboolean("Text", "unicode_keyboard")
+
+
+load_configuration()
 
 
 def require_hardware_emulation():
     """Return `True` if the current context requires hardware emulation."""
-    global USE_UNICODE
-    return not USE_UNICODE
+    from os.path import basename
+    foreground_executable = basename(Window.get_foreground()
+                                     .executable.lower())
+    return (not UNICODE_KEYBOARD) or (foreground_executable in HARDWARE_APPS)
 
 
 class Text(DynStrActionBase):

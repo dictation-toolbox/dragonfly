@@ -86,7 +86,7 @@ class NatlinkEngine(EngineBase):
         """ Disconnect from natlink. """
         self.natlink.natDisconnect()
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for working with grammars.
 
     def _load_grammar(self, grammar):
@@ -111,11 +111,8 @@ class NatlinkEngine(EngineBase):
         (compiled_grammar, rule_names) = c.compile_grammar(grammar)
         grammar._rule_names = rule_names
 
-        if (hasattr(grammar, "process_recognition_other")
-            or hasattr(grammar, "process_recognition_failure")):
-            all_results = True
-        else:
-            all_results = False
+        all_results = (hasattr(grammar, "process_recognition_other")
+                       or hasattr(grammar, "process_recognition_failure"))
         hypothesis = False
 
         attempt_connect = False
