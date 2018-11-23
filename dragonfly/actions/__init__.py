@@ -27,6 +27,7 @@ from .action_playback     import Playback
 from .action_base         import (ActionBase, DynStrActionBase,
                                   Repeat, ActionError)
 from .action_mimic        import Mimic
+from .action_cmd          import RunCommand
 
 # Import Windows OS dependent classes only for Windows
 if sys.platform.startswith("win"):
