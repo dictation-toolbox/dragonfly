@@ -110,13 +110,12 @@ class ElementTester(Grammar):
 
     _mimic_methods = {}
 
-    def _mimic_natlink(self, words):
+    def _mimic_words(self, words):
         self.engine.mimic(words)
-    _mimic_methods["natlink"] = _mimic_natlink
 
-    def _mimic_sphinx(self, words):
-        self.engine.mimic(words)
-    _mimic_methods["sphinx"] = _mimic_sphinx
+    _mimic_methods["natlink"] = _mimic_words
+    _mimic_methods["sphinx"] = _mimic_words
+    _mimic_methods["text"] = _mimic_words
 
     def _mimic_sapi5(self, words):
         import time
