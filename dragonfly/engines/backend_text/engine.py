@@ -18,7 +18,10 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from six import string_types
+from six import string_types, text_type
+
+import dragonfly.grammar.state as state_
+from dragonfly import Window
 
 from .dictation import TextDictationContainer
 from .recobs import TextRecobsManager
@@ -42,7 +45,8 @@ class TextInputEngine(EngineBase):
         pass
 
     def disconnect(self):
-        pass
+        # Clear grammar wrappers on disconnect()
+        self._grammar_wrappers.clear()
 
     # -----------------------------------------------------------------------
     # Methods for working with grammars.
@@ -95,8 +99,20 @@ class TextInputEngine(EngineBase):
     # Miscellaneous methods.
 
     def mimic(self, words):
-        # TODO Implement mimic with fake speech start and hypothesis methods
-        pass
+        # Call process_begin and process_results for all grammar wrappers,
+        # stopping early if processing occurred.
+        fg_window = Window.get_foreground()
+        processing_occurred = False
+        for wrapper in self._grammar_wrappers.values():
+            wrapper.process_begin(fg_window)
+            processing_occurred = wrapper.process_words(words)
+            if processing_occurred:
+                break
+
+        # If no processing occurred, then the mimic failed.
+        if not processing_occurred:
+            raise MimicFailure("No matching rule found for words %r."
+                               % (words,))
 
     def speak(self, text):
         raise NotImplementedError("text-to-speech is not implemented for "
@@ -126,3 +142,55 @@ class GrammarWrapper(object):
     def __init__(self, grammar, engine):
         self.grammar = grammar
         self.engine = engine
+
+    def process_begin(self, fg_window):
+        self.grammar.process_begin(fg_window.executable, fg_window.title,
+                                   fg_window.handle)
+
+    def process_words(self, words):
+        TextInputEngine._log.debug("Grammar %s: received recognition %r."
+                                   % (self.grammar.name, words))
+        if words == "other":
+            func = getattr(self.grammar, "process_recognition_other", None)
+            if func:
+                func(words)
+            return
+        elif words == "reject":
+            func = getattr(self.grammar, "process_recognition_failure", None)
+            if func:
+                func()
+            return
+
+        # If the words argument was not "other" or "reject", then t is a
+        # sequence of (word, rule_id) 2-tuples. Convert words to Unicode.
+        # TODO Determine which words are from grammar rules and are which from dictation.
+        #      pyjsgf's extension Dictation class can do this efficiently.
+        # TODO Use the correct rule ID for grammar rules and dictation.
+        #      grammar rule IDs should be indices of grammar.rule_names
+        #      the rule ID for dictation is 1000000
+        words_rules = tuple((text_type(w), 1000000) for w in words)
+
+        # Call the grammar's general process_recognition method, if present.
+        func = getattr(self.grammar, "process_recognition", None)
+        if func:
+            if not func(words):
+                return
+
+        # Iterates through this grammar's rules, attempting to decode each.
+        # If successful, call that rule's method for processing the
+        # recognition and return.
+        s = state_.State(words_rules, self.grammar.rule_names, self.engine)
+        for r in self.grammar.rules:
+            if not r.active:
+                continue
+            s.initialize_decoding()
+            for _ in r.decode(s):
+                if s.finished():
+                    root = s.build_parse_tree()
+                    r.process_recognition(root)
+                    return True
+
+        TextInputEngine._log.warning("Grammar %s: failed to decode "
+                                     "recognition %r."
+                                     % (self.grammar.name, words))
+        return False
