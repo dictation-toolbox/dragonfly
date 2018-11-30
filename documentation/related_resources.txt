@@ -55,6 +55,10 @@ Applications
 
 The following applications integrate Dragonfly for speech recognition:
 
+ * `Caster <https://github.com/synkarius/caster/>`_
+   --- A collection of Dragonfly-based tools aimed at enabling programming
+   entirely by voice
+
  * `Damselfly <https://github.com/TristenHayfield/damselfly>`_
    --- Tristen Hayfield's system for using Dragonfly voice commands to
    control Linux apps
@@ -66,6 +70,11 @@ The following applications integrate Dragonfly for speech recognition:
      --- A client-server library for using voice commands from a
      Windows system running Dragonfly to one or more other systems,
      e.g. running Linux
+
+ * `Dragonfluid <https://github.com/chajadan/dragonfluid>`_
+   --- A Dragonfly extension to allow voice commands to be spoken together
+   without pausing. Supports Dragon NaturallySpeaking and Windows Speech
+   Recognition
 
  * `Pyrson <https://github.com/kevlened/pyrson>`_
    --- Len Boyette's Digital Life Assistant (DLA) linking several Python

@@ -172,7 +172,7 @@ def main():
         pass
     except EngineError as e:
         # Log EngineErrors caught when setting the configuration.
-        log.warning(e.message)
+        log.warning(e)
         log.warning("Falling back to using the default engine configuration "
                     "instead of 'config.py'")
 
@@ -190,7 +190,10 @@ def main():
     # TODO Change script to import all modules before loading the grammars into Pocket Sphinx
 
     # Start the engine's main recognition loop
-    engine.recognise_forever()
+    try:
+        engine.recognise_forever()
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":

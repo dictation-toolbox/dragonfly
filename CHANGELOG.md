@@ -6,6 +6,18 @@ and this project will adhere to [Semantic Versioning](http://semver.org/spec/v2.
 
 Note: this project had no release versions between [0.6.6b1] and [0.7.0]. Notable changes made between these versions are documented in the commit history and will be placed under headings in this file over time.
 
+## [0.9.1]
+### Changed
+- Various changes to documentation.
+- Make Arabic, Indonesian and Malaysian languages automatically load if required.
+
+### Fixed
+- Fix a bug with dragonfly's MagnitudeIntBuilder class specific to Python 3.x.
+- Replace all imports using 'dragonfly.all' with just 'dragonfly'.
+- Fix a bug where mouse wheel scrolling fails with high repeat values (thanks [@wolfmanstout](https://github.com/wolfmanstout)).
+- Fix a few minor problems with the Pocket Sphinx engine.
+- Fix error handling and logging when initialising the WSR/SAPI5 engine.
+
 ## [0.9.0] - 2018-10-28
 ### Added
 - Add default VAD decoder config options to Pocket Sphinx engine config module.
@@ -103,7 +115,8 @@ TODO
 ## [0.6.1] - 2008-10-18
 This release is the first in the Git version control system.
 
-[Unreleased]: https://github.com/Danesprite/dragonfly/compare/0.9.0...HEAD
+[Unreleased]: https://github.com/Danesprite/dragonfly/compare/0.9.1...HEAD
+[0.9.1]:      https://github.com/Danesprite/dragonfly/compare/0.9.0...0.9.1
 [0.9.0]:      https://github.com/Danesprite/dragonfly/compare/0.8.0...0.9.0
 [0.8.0]:      https://github.com/Danesprite/dragonfly/compare/0.7.0...0.8.0
 [0.7.0]:      https://github.com/Danesprite/dragonfly/compare/74981c1...0.7.0

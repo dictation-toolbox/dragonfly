@@ -50,7 +50,7 @@ achieved as follows: ::
    >>> print temporary
    Clipboard(unicode=u'custom content')
    >>> temporary.copy_to_system()
-   >>> from dragonfly.all import Key
+   >>> from dragonfly import Key
    >>> Key("c-v").execute()
 
    >>> # Restore original system clipboard content.

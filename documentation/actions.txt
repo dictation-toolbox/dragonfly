@@ -34,7 +34,7 @@ can be created, combined, executed, etc.
 
 .. code-block:: python
 
-   from dragonfly.all import Key, Text
+   from dragonfly import Key, Text
 
    a1 = Key("up, left, down, right")   # Define action a1.
    a1.execute()                        # Send the keystrokes.

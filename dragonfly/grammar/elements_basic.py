@@ -52,10 +52,10 @@ classes listed above:
    and includes facilities for formatting the spoken words with correct
    spacing and capitalization
  - :class:`DictListRef` --
-   reference to a :class:`dragonfly.all.DictList` object; this element is 
-   similar to the :class:`dragonfly.all.ListRef` element, except that it 
-   returns the value associated with the spoken words instead of the 
-   spoken words themselves
+   reference to a :class:`dragonfly.DictList` object; this element is
+   similar to the :class:`dragonfly.ListRef` element, except that it returns
+   the value associated with the spoken words instead of the spoken words
+   themselves.
 
 """
 

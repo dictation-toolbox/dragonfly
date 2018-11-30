@@ -353,27 +353,22 @@ class Mouse(DynStrActionBase):
                                 (win32con.MOUSEEVENTF_RIGHTUP, 0)),
                      "middle": ((win32con.MOUSEEVENTF_MIDDLEDOWN, 0),
                                 (win32con.MOUSEEVENTF_MIDDLEUP, 0)),
-                     "wheelup": ((win32con.MOUSEEVENTF_WHEEL, 120),
-                                (win32con.MOUSEEVENTF_WHEEL, 0)),
-                     "stepup": ((win32con.MOUSEEVENTF_WHEEL, 40),
-                                (win32con.MOUSEEVENTF_WHEEL, 0)),
-                     "wheeldown": ((win32con.MOUSEEVENTF_WHEEL, -120),
-                                (win32con.MOUSEEVENTF_WHEEL, 0)),
-                     "stepdown": ((win32con.MOUSEEVENTF_WHEEL, -40),
-                                (win32con.MOUSEEVENTF_WHEEL, 0)),
-                     "wheelright": ((MOUSEEVENTF_HWHEEL, 120),
-                                (MOUSEEVENTF_HWHEEL, 0)),
-                     "stepright": ((MOUSEEVENTF_HWHEEL, 40),
-                                (MOUSEEVENTF_HWHEEL, 0)),
-                     "wheelleft": ((MOUSEEVENTF_HWHEEL, -120),
-                                (MOUSEEVENTF_HWHEEL, 0)),
-                     "stepleft": ((MOUSEEVENTF_HWHEEL, -40),
-                                (MOUSEEVENTF_HWHEEL, 0)),
                      "four": ((win32con.MOUSEEVENTF_XDOWN, 1),
                                 (win32con.MOUSEEVENTF_XUP, 1)),
                      "five": ((win32con.MOUSEEVENTF_XDOWN, 2),
                                 (win32con.MOUSEEVENTF_XUP, 2)),
                     }
+
+    _wheel_flags = {
+                    "wheelup": (win32con.MOUSEEVENTF_WHEEL, 120),
+                    "stepup": (win32con.MOUSEEVENTF_WHEEL, 40),
+                    "wheeldown": (win32con.MOUSEEVENTF_WHEEL, -120),
+                    "stepdown": (win32con.MOUSEEVENTF_WHEEL, -40),
+                    "wheelright": (MOUSEEVENTF_HWHEEL, 120),
+                    "stepright": (MOUSEEVENTF_HWHEEL, 40),
+                    "wheelleft": (MOUSEEVENTF_HWHEEL, -120),
+                    "stepleft": (MOUSEEVENTF_HWHEEL, -40),
+                   }
 
     def _process_button(self, spec, events):
         parts = spec.split(":", 1)
@@ -381,24 +376,30 @@ class Mouse(DynStrActionBase):
         if len(parts) == 1:  special = 1
         else:                special = parts[1].strip()
 
-        if button not in self._button_flags:
-            return False
-        flag_down, flag_up = self._button_flags[button]
+        if button in self._button_flags:
+            flag_down, flag_up = self._button_flags[button]
 
-        # Disallow ':up' and ':down' for scroll events.
-        if special in ("up", "down") and ("wheel" in button or "step" in button):
-            return False
-        elif special == "down":
-            event = _Button(flag_down)
-        elif special == "up":
-            event = _Button(flag_up)
-        else:
+            if special == "down":
+                event = _Button(flag_down)
+            elif special == "up":
+                event = _Button(flag_up)
+            else:
+                try:
+                    repeat = int(special)
+                except ValueError:
+                    return False
+                flag_series = (flag_down, flag_up) * repeat
+                event = _Button(*flag_series)
+        elif button in self._wheel_flags:
+            flag = self._wheel_flags[button]
             try:
                 repeat = int(special)
             except ValueError:
                 return False
-            flag_series = (flag_down, flag_up) * repeat
-            event = _Button(*flag_series)
+            flag = (flag[0], repeat * flag[1])
+            event = _Button(flag)
+        else:
+            return False
 
         events.append(event)
         return True
