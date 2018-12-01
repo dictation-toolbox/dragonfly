@@ -28,6 +28,31 @@ subprocess.
 
 This action should work correctly on Windows and other platforms.
 
+Example using the optional function parameter::
+
+    from dragonfly import RunCommand
+
+    def func(proc):
+        # Read lines from the process.
+        for line in iter(proc.stdout.readline, b''):
+            print(line)
+
+    RunCommand('ping localhost', func).execute()
+
+
+Example using a subclass::
+
+    from dragonfly import RunCommand
+
+    class Ping(RunCommand):
+        command = "ping localhost"
+        def process_command(self, proc):
+            # Read lines from the process.
+            for line in iter(proc.stdout.readline, b''):
+                print(line)
+
+    Ping().execute()
+
 
 Class reference
 ----------------------------------------------------------------------------
