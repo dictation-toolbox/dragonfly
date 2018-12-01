@@ -70,3 +70,7 @@ from .windows           import Monitor, monitors
 from .language          import (Integer, IntegerRef,
                                 Digits, DigitsRef,
                                 Number, NumberRef)
+
+#---------------------------------------------------------------------------
+from .accessibility     import (CursorPosition, TextQuery,
+                                get_accessibility_controller)
