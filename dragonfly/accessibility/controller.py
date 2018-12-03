@@ -13,6 +13,12 @@ class AccessibilityController(object):
 
     def __init__(self, os_controller):
         self.os_controller = os_controller
+        self.os_controller.start()
+        self.stopped = False
+
+    def stop(self):
+        self.os_controller.stop()
+        self.stopped = True
 
     def is_editable_focused(self):
         return utils.is_editable_focused(self.os_controller)
@@ -50,9 +56,13 @@ class AccessibilityController(object):
                 # TODO Add escaping.
                 Text(replacement).execute()
             else:
-                # Simulate backspace twice: once to delete the selected words, and
-                # again to delete the preceding whitespace.
-                Key("backspace:2").execute()
+                # Delete the selected text with a single backspace. Note that
+                # the user may want to delete the preceding whitespace as well,
+                # and in order to do that they should simply include that
+                # ("space bar") in the text they dictate. The problem is that
+                # some editors (e.g. Google Docs) do this automatically, so we
+                # can't simply always use 2 backspaces when a word is deleted.
+                Key("backspace").execute()
 
             # Restore cursor position.
             if saved_cursor is not None:

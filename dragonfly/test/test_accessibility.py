@@ -26,9 +26,9 @@ class AccessibilityTestCase(unittest.TestCase):
         self.assert_found_text("elephant ",
                                utils.TextQuery(end_phrase="elephant "),
                                "dog elephant tiger")
-        self.assert_found_text("elephant.  ",
+        self.assert_found_text("elephant. ",
                                utils.TextQuery(end_phrase="elephant. "),
-                               "dog elephant.  tiger")
+                               "dog elephant. tiger")
         self.assert_found_text(" elephant",
                                utils.TextQuery(end_phrase=" elephant"),
                                "dog elephant tiger")
@@ -44,6 +44,12 @@ class AccessibilityTestCase(unittest.TestCase):
         self.assert_found_text(" ",
                                utils.TextQuery(end_phrase=" ", end_relative_position=utils.CursorPosition.BEFORE, end_relative_phrase="elephant"),
                                "dog elephant tiger")
+        self.assert_found_text(".word",
+                               utils.TextQuery(end_phrase=".word"),
+                               "..word..")
+        self.assert_found_text("word.",
+                               utils.TextQuery(end_phrase="word."),
+                               "..word..")
 
         # Selecting a range.
         self.assert_found_text("dog elephant tiger",

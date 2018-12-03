@@ -68,14 +68,17 @@ def _phrase_to_regex(phrase):
     # Treat whitespace between words as meaning anything other than alphanumeric
     # characters.
     regex = r"[^A-Za-z0-9]+".join(re.escape(word) for word in phrase.split())
-    # Explicitly match whitespace at the beginning and end of the phrase.
+    # Explicitly match spaces at the beginning and end of the phrase.
+    # TODO Support newlines. Note that these are frequently implemented as
+    # separate text nodes in the accessibility tree, so the obvious
+    # implementation would not work well.
     if phrase == " ":
-        regex = r"\s+"
+        regex = r" "
     else:
         if phrase.startswith(" "):
-            regex = r"\s+" + regex
+            regex = r" " + regex
         if phrase.endswith(" "):
-            regex = regex + r"\s+"
+            regex = regex + r" "
     # Only match at boundaries of alphanumeric sequences if the phrase ends
     # are alphanumeric.
     if re.search(r"^[A-Za-z0-9]", phrase):

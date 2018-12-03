@@ -104,6 +104,9 @@ class Controller(object):
                     traceback.print_exc()
                 capture.done_event.set()
 
+        # Deregister event listeners.
+        pyia2.Registry.clearListeners()
+
     def start(self):
         self.shutdown_event = threading.Event()
         thread = threading.Thread(target=self._start_blocking)

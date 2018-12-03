@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import sys
 
 from . import controller
@@ -18,8 +19,12 @@ def get_accessibility_controller():
     accessibility functionality."""
 
     global controller_instance
-    if not controller_instance:
+    if not controller_instance or controller_instance.stopped:
         os_controller = os_controller_class()
-        os_controller.start()
         controller_instance = controller.AccessibilityController(os_controller)
     return controller_instance
+
+@contextmanager
+def get_stopping_accessibility_controller():
+    yield get_accessibility_controller()
+    controller_instance.stop()
