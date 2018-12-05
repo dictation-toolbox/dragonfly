@@ -126,5 +126,8 @@ Action class reference
 .. automodule:: dragonfly.actions.action_startapp
    :members:
 
+.. automodule:: dragonfly.actions.action_cmd
+   :members:
+
 .. automodule:: dragonfly.actions.action_pause
    :members:
