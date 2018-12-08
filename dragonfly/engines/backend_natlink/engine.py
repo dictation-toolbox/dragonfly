@@ -28,6 +28,7 @@ Detecting sleep mode
  - http://blogs.msdn.com/b/tsfaware/archive/2010/03/22/detecting-sleep-mode-in-sapi.aspx
 
 """
+from locale import getpreferredencoding
 from six import text_type, binary_type
 
 from ..base        import EngineBase, EngineError, MimicFailure
@@ -41,12 +42,12 @@ import dragonfly.grammar.state as state_
 
 # ---------------------------------------------------------------------------
 
-def map_word(word, encoding="windows-1252"):
+def map_word(word, encoding=getpreferredencoding(do_setlocale=False)):
     """
     Wraps output from Dragon.
 
     This wrapper ensures text output from the engine is Unicode. It assumes the
-    encoding of byte streams is Windows-1252 by default.
+    encoding of byte streams is the current locale's preferred encoding by default.
     """
     if isinstance(word, text_type):
         return word
