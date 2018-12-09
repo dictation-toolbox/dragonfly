@@ -54,7 +54,7 @@ class Paste(DynStrActionBase):
         This action inserts the given *contents* into the Windows system 
         clipboard, and then performs the *paste* action to paste it into 
         the foreground application.  By default, the *paste* action is the 
-        :kbd:`Control-v` keystroke.  The default clipboard format to use 
+        :kbd:`Shift-insert` keystroke. The default clipboard format to use
         is the *Unicode* text format.
 
     """
@@ -62,7 +62,7 @@ class Paste(DynStrActionBase):
     _default_format = CF_UNICODETEXT
 
     # Default paste action.
-    _default_paste = Key("c-v/20")
+    _default_paste = Key("s-insert/20")
 
     def __init__(self, contents, format=None, paste=None, static=False):
         if not format:
