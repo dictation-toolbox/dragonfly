@@ -60,3 +60,18 @@ target/
 
 # Backup files
 *~
+
+# Emacs
+*\#
+
+# Rope
+.ropeproject/
+
+# Visual Studio (Code)
+.vs/
+.vscode/
+
+# Eclipse/Pydev Files
+.project
+.pydevproject
+.settings
