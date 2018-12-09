@@ -22,198 +22,213 @@
     This file builds the mapping from key-name to Typeable instances.
 """
 
-
+import logging
 import win32con
 from dragonfly.actions.keyboard import keyboard, Typeable
 
+logging.basicConfig()
+_log = logging.getLogger("actions.typeables")
 
-#---------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
 # Mapping of name -> typeable.
 
-typeables = {
-    # Lowercase letter keys
-    "a":                keyboard.get_typeable(char='a'),
-    "alpha":            keyboard.get_typeable(char='a'),
-    "b":                keyboard.get_typeable(char='b'),
-    "bravo":            keyboard.get_typeable(char='b'),
-    "c":                keyboard.get_typeable(char='c'),
-    "charlie":          keyboard.get_typeable(char='c'),
-    "d":                keyboard.get_typeable(char='d'),
-    "delta":            keyboard.get_typeable(char='d'),
-    "e":                keyboard.get_typeable(char='e'),
-    "echo":             keyboard.get_typeable(char='e'),
-    "f":                keyboard.get_typeable(char='f'),
-    "foxtrot":          keyboard.get_typeable(char='f'),
-    "g":                keyboard.get_typeable(char='g'),
-    "golf":             keyboard.get_typeable(char='g'),
-    "h":                keyboard.get_typeable(char='h'),
-    "hotel":            keyboard.get_typeable(char='h'),
-    "i":                keyboard.get_typeable(char='i'),
-    "india":            keyboard.get_typeable(char='i'),
-    "j":                keyboard.get_typeable(char='j'),
-    "juliet":           keyboard.get_typeable(char='j'),
-    "k":                keyboard.get_typeable(char='k'),
-    "kilo":             keyboard.get_typeable(char='k'),
-    "l":                keyboard.get_typeable(char='l'),
-    "lima":             keyboard.get_typeable(char='l'),
-    "m":                keyboard.get_typeable(char='m'),
-    "mike":             keyboard.get_typeable(char='m'),
-    "n":                keyboard.get_typeable(char='n'),
-    "november":         keyboard.get_typeable(char='n'),
-    "o":                keyboard.get_typeable(char='o'),
-    "oscar":            keyboard.get_typeable(char='o'),
-    "p":                keyboard.get_typeable(char='p'),
-    "papa":             keyboard.get_typeable(char='p'),
-    "q":                keyboard.get_typeable(char='q'),
-    "quebec":           keyboard.get_typeable(char='q'),
-    "r":                keyboard.get_typeable(char='r'),
-    "romeo":            keyboard.get_typeable(char='r'),
-    "s":                keyboard.get_typeable(char='s'),
-    "sierra":           keyboard.get_typeable(char='s'),
-    "t":                keyboard.get_typeable(char='t'),
-    "tango":            keyboard.get_typeable(char='t'),
-    "u":                keyboard.get_typeable(char='u'),
-    "uniform":          keyboard.get_typeable(char='u'),
-    "v":                keyboard.get_typeable(char='v'),
-    "victor":           keyboard.get_typeable(char='v'),
-    "w":                keyboard.get_typeable(char='w'),
-    "whisky":           keyboard.get_typeable(char='w'),
-    "x":                keyboard.get_typeable(char='x'),
-    "xray":             keyboard.get_typeable(char='x'),
-    "y":                keyboard.get_typeable(char='y'),
-    "yankee":           keyboard.get_typeable(char='y'),
-    "z":                keyboard.get_typeable(char='z'),
-    "zulu":             keyboard.get_typeable(char='z'),
+typeables = {}
 
-    # Uppercase letter keys
-    "A":                keyboard.get_typeable(char='A'),
-    "Alpha":            keyboard.get_typeable(char='A'),
-    "B":                keyboard.get_typeable(char='B'),
-    "Bravo":            keyboard.get_typeable(char='B'),
-    "C":                keyboard.get_typeable(char='C'),
-    "Charlie":          keyboard.get_typeable(char='C'),
-    "D":                keyboard.get_typeable(char='D'),
-    "Delta":            keyboard.get_typeable(char='D'),
-    "E":                keyboard.get_typeable(char='E'),
-    "Echo":             keyboard.get_typeable(char='E'),
-    "F":                keyboard.get_typeable(char='F'),
-    "Foxtrot":          keyboard.get_typeable(char='F'),
-    "G":                keyboard.get_typeable(char='G'),
-    "Golf":             keyboard.get_typeable(char='G'),
-    "H":                keyboard.get_typeable(char='H'),
-    "Hotel":            keyboard.get_typeable(char='H'),
-    "I":                keyboard.get_typeable(char='I'),
-    "India":            keyboard.get_typeable(char='I'),
-    "J":                keyboard.get_typeable(char='J'),
-    "Juliet":           keyboard.get_typeable(char='J'),
-    "K":                keyboard.get_typeable(char='K'),
-    "Kilo":             keyboard.get_typeable(char='K'),
-    "L":                keyboard.get_typeable(char='L'),
-    "Lima":             keyboard.get_typeable(char='L'),
-    "M":                keyboard.get_typeable(char='M'),
-    "Mike":             keyboard.get_typeable(char='M'),
-    "N":                keyboard.get_typeable(char='N'),
-    "November":         keyboard.get_typeable(char='N'),
-    "O":                keyboard.get_typeable(char='O'),
-    "Oscar":            keyboard.get_typeable(char='O'),
-    "P":                keyboard.get_typeable(char='P'),
-    "Papa":             keyboard.get_typeable(char='P'),
-    "Q":                keyboard.get_typeable(char='Q'),
-    "Quebec":           keyboard.get_typeable(char='Q'),
-    "R":                keyboard.get_typeable(char='R'),
-    "Romeo":            keyboard.get_typeable(char='R'),
-    "S":                keyboard.get_typeable(char='S'),
-    "Sierra":           keyboard.get_typeable(char='S'),
-    "T":                keyboard.get_typeable(char='T'),
-    "Tango":            keyboard.get_typeable(char='T'),
-    "U":                keyboard.get_typeable(char='U'),
-    "Uniform":          keyboard.get_typeable(char='U'),
-    "V":                keyboard.get_typeable(char='V'),
-    "Victor":           keyboard.get_typeable(char='V'),
-    "W":                keyboard.get_typeable(char='W'),
-    "Whisky":           keyboard.get_typeable(char='W'),
-    "X":                keyboard.get_typeable(char='X'),
-    "Xray":             keyboard.get_typeable(char='X'),
-    "Y":                keyboard.get_typeable(char='Y'),
-    "Yankee":           keyboard.get_typeable(char='Y'),
-    "Z":                keyboard.get_typeable(char='Z'),
-    "Zulu":             keyboard.get_typeable(char='Z'),
 
-    # Number keys
-    "0":                keyboard.get_typeable(char='0'),
-    "zero":             keyboard.get_typeable(char='0'),
-    "1":                keyboard.get_typeable(char='1'),
-    "one":              keyboard.get_typeable(char='1'),
-    "2":                keyboard.get_typeable(char='2'),
-    "two":              keyboard.get_typeable(char='2'),
-    "3":                keyboard.get_typeable(char='3'),
-    "three":            keyboard.get_typeable(char='3'),
-    "4":                keyboard.get_typeable(char='4'),
-    "four":             keyboard.get_typeable(char='4'),
-    "5":                keyboard.get_typeable(char='5'),
-    "five":             keyboard.get_typeable(char='5'),
-    "6":                keyboard.get_typeable(char='6'),
-    "six":              keyboard.get_typeable(char='6'),
-    "7":                keyboard.get_typeable(char='7'),
-    "seven":            keyboard.get_typeable(char='7'),
-    "8":                keyboard.get_typeable(char='8'),
-    "eight":            keyboard.get_typeable(char='8'),
-    "9":                keyboard.get_typeable(char='9'),
-    "nine":             keyboard.get_typeable(char='9'),
+def _add_typeable(name, char):
+    # Add a character to the typeables dictionary if it is typeable with
+    # the current keyboard layout or log an error if it isn't.
+    try:
+        typeables[name] = keyboard.get_typeable(char)
+    except ValueError as e:
+        _log.error(e)
 
-    # Symbol keys
-    "bang":             keyboard.get_typeable(char='!'),
-    "exclamation":      keyboard.get_typeable(char='!'),
-    "at":               keyboard.get_typeable(char='@'),
-    "hash":             keyboard.get_typeable(char='#'),
-    "dollar":           keyboard.get_typeable(char='$'),
-    "percent":          keyboard.get_typeable(char='%'),
-    "caret":            keyboard.get_typeable(char='^'),
-    "and":              keyboard.get_typeable(char='&'),
-    "ampersand":        keyboard.get_typeable(char='&'),
-    "star":             keyboard.get_typeable(char='*'),
-    "asterisk":         keyboard.get_typeable(char='*'),
-    "leftparen":        keyboard.get_typeable(char='('),
-    "lparen":           keyboard.get_typeable(char='('),
-    "rightparen":       keyboard.get_typeable(char=')'),
-    "rparen":           keyboard.get_typeable(char=')'),
-    "minus":            keyboard.get_typeable(char='-'),
-    "hyphen":           keyboard.get_typeable(char='-'),
-    "underscore":       keyboard.get_typeable(char='_'),
-    "plus":             keyboard.get_typeable(char='+'),
-    "backtick":         keyboard.get_typeable(char='`'),
-    "tilde":            keyboard.get_typeable(char='~'),
-    "leftbracket":      keyboard.get_typeable(char='['),
-    "lbracket":         keyboard.get_typeable(char='['),
-    "rightbracket":     keyboard.get_typeable(char=']'),
-    "rbracket":         keyboard.get_typeable(char=']'),
-    "leftbrace":        keyboard.get_typeable(char='{'),
-    "lbrace":           keyboard.get_typeable(char='{'),
-    "rightbrace":       keyboard.get_typeable(char='}'),
-    "rbrace":           keyboard.get_typeable(char='}'),
-    "backslash":        keyboard.get_typeable(char='\\'),
-    "bar":              keyboard.get_typeable(char='|'),
-    "colon":            keyboard.get_typeable(char=':'),
-    "semicolon":        keyboard.get_typeable(char=';'),
-    "apostrophe":       keyboard.get_typeable(char="'"),
-    "singlequote":      keyboard.get_typeable(char="'"),
-    "squote":           keyboard.get_typeable(char="'"),
-    "quote":            keyboard.get_typeable(char='"'),
-    "doublequote":      keyboard.get_typeable(char='"'),
-    "dquote":           keyboard.get_typeable(char='"'),
-    "comma":            keyboard.get_typeable(char=','),
-    "dot":              keyboard.get_typeable(char='.'),
-    "slash":            keyboard.get_typeable(char='/'),
-    "lessthan":         keyboard.get_typeable(char='<'),
-    "leftangle":        keyboard.get_typeable(char='<'),
-    "langle":           keyboard.get_typeable(char='<'),
-    "greaterthan":      keyboard.get_typeable(char='>'),
-    "rightangle":       keyboard.get_typeable(char='>'),
-    "rangle":           keyboard.get_typeable(char='>'),
-    "question":         keyboard.get_typeable(char='?'),
-    "equal":            keyboard.get_typeable(char='='),
-    "equals":           keyboard.get_typeable(char='='),
 
+# Lowercase letter keys
+_add_typeable(name="a", char='a')
+_add_typeable(name="alpha", char='a')
+_add_typeable(name="b", char='b')
+_add_typeable(name="bravo", char='b')
+_add_typeable(name="c", char='c')
+_add_typeable(name="charlie", char='c')
+_add_typeable(name="d", char='d')
+_add_typeable(name="delta", char='d')
+_add_typeable(name="e", char='e')
+_add_typeable(name="echo", char='e')
+_add_typeable(name="f", char='f')
+_add_typeable(name="foxtrot", char='f')
+_add_typeable(name="g", char='g')
+_add_typeable(name="golf", char='g')
+_add_typeable(name="h", char='h')
+_add_typeable(name="hotel", char='h')
+_add_typeable(name="i", char='i')
+_add_typeable(name="india", char='i')
+_add_typeable(name="j", char='j')
+_add_typeable(name="juliet", char='j')
+_add_typeable(name="k", char='k')
+_add_typeable(name="kilo", char='k')
+_add_typeable(name="l", char='l')
+_add_typeable(name="lima", char='l')
+_add_typeable(name="m", char='m')
+_add_typeable(name="mike", char='m')
+_add_typeable(name="n", char='n')
+_add_typeable(name="november", char='n')
+_add_typeable(name="o", char='o')
+_add_typeable(name="oscar", char='o')
+_add_typeable(name="p", char='p')
+_add_typeable(name="papa", char='p')
+_add_typeable(name="q", char='q')
+_add_typeable(name="quebec", char='q')
+_add_typeable(name="r", char='r')
+_add_typeable(name="romeo", char='r')
+_add_typeable(name="s", char='s')
+_add_typeable(name="sierra", char='s')
+_add_typeable(name="t", char='t')
+_add_typeable(name="tango", char='t')
+_add_typeable(name="u", char='u')
+_add_typeable(name="uniform", char='u')
+_add_typeable(name="v", char='v')
+_add_typeable(name="victor", char='v')
+_add_typeable(name="w", char='w')
+_add_typeable(name="whisky", char='w')
+_add_typeable(name="x", char='x')
+_add_typeable(name="xray", char='x')
+_add_typeable(name="y", char='y')
+_add_typeable(name="yankee", char='y')
+_add_typeable(name="z", char='z')
+_add_typeable(name="zulu", char='z')
+
+# Uppercase letter keys
+_add_typeable(name="A", char='A')
+_add_typeable(name="Alpha", char='A')
+_add_typeable(name="B", char='B')
+_add_typeable(name="Bravo", char='B')
+_add_typeable(name="C", char='C')
+_add_typeable(name="Charlie", char='C')
+_add_typeable(name="D", char='D')
+_add_typeable(name="Delta", char='D')
+_add_typeable(name="E", char='E')
+_add_typeable(name="Echo", char='E')
+_add_typeable(name="F", char='F')
+_add_typeable(name="Foxtrot", char='F')
+_add_typeable(name="G", char='G')
+_add_typeable(name="Golf", char='G')
+_add_typeable(name="H", char='H')
+_add_typeable(name="Hotel", char='H')
+_add_typeable(name="I", char='I')
+_add_typeable(name="India", char='I')
+_add_typeable(name="J", char='J')
+_add_typeable(name="Juliet", char='J')
+_add_typeable(name="K", char='K')
+_add_typeable(name="Kilo", char='K')
+_add_typeable(name="L", char='L')
+_add_typeable(name="Lima", char='L')
+_add_typeable(name="M", char='M')
+_add_typeable(name="Mike", char='M')
+_add_typeable(name="N", char='N')
+_add_typeable(name="November", char='N')
+_add_typeable(name="O", char='O')
+_add_typeable(name="Oscar", char='O')
+_add_typeable(name="P", char='P')
+_add_typeable(name="Papa", char='P')
+_add_typeable(name="Q", char='Q')
+_add_typeable(name="Quebec", char='Q')
+_add_typeable(name="R", char='R')
+_add_typeable(name="Romeo", char='R')
+_add_typeable(name="S", char='S')
+_add_typeable(name="Sierra", char='S')
+_add_typeable(name="T", char='T')
+_add_typeable(name="Tango", char='T')
+_add_typeable(name="U", char='U')
+_add_typeable(name="Uniform", char='U')
+_add_typeable(name="V", char='V')
+_add_typeable(name="Victor", char='V')
+_add_typeable(name="W", char='W')
+_add_typeable(name="Whisky", char='W')
+_add_typeable(name="X", char='X')
+_add_typeable(name="Xray", char='X')
+_add_typeable(name="Y", char='Y')
+_add_typeable(name="Yankee", char='Y')
+_add_typeable(name="Z", char='Z')
+_add_typeable(name="Zulu", char='Z')
+
+# Number keys
+_add_typeable(name="0", char='0')
+_add_typeable(name="zero", char='0')
+_add_typeable(name="1", char='1')
+_add_typeable(name="one", char='1')
+_add_typeable(name="2", char='2')
+_add_typeable(name="two", char='2')
+_add_typeable(name="3", char='3')
+_add_typeable(name="three", char='3')
+_add_typeable(name="4", char='4')
+_add_typeable(name="four", char='4')
+_add_typeable(name="5", char='5')
+_add_typeable(name="five", char='5')
+_add_typeable(name="6", char='6')
+_add_typeable(name="six", char='6')
+_add_typeable(name="7", char='7')
+_add_typeable(name="seven", char='7')
+_add_typeable(name="8", char='8')
+_add_typeable(name="eight", char='8')
+_add_typeable(name="9", char='9')
+_add_typeable(name="nine", char='9')
+
+# Symbol keys
+_add_typeable(name="bang", char='!')
+_add_typeable(name="exclamation", char='!')
+_add_typeable(name="at", char='@')
+_add_typeable(name="hash", char='#')
+_add_typeable(name="dollar", char='$')
+_add_typeable(name="percent", char='%')
+_add_typeable(name="caret", char='^')
+_add_typeable(name="and", char='&')
+_add_typeable(name="ampersand", char='&')
+_add_typeable(name="star", char='*')
+_add_typeable(name="asterisk", char='*')
+_add_typeable(name="leftparen", char='(')
+_add_typeable(name="lparen", char='(')
+_add_typeable(name="rightparen", char=')')
+_add_typeable(name="rparen", char=')')
+_add_typeable(name="minus", char='-')
+_add_typeable(name="hyphen", char='-')
+_add_typeable(name="underscore", char='_')
+_add_typeable(name="plus", char='+')
+_add_typeable(name="backtick", char='`')
+_add_typeable(name="tilde", char='~')
+_add_typeable(name="leftbracket", char='[')
+_add_typeable(name="lbracket", char='[')
+_add_typeable(name="rightbracket", char=']')
+_add_typeable(name="rbracket", char=']')
+_add_typeable(name="leftbrace", char='{')
+_add_typeable(name="lbrace", char='{')
+_add_typeable(name="rightbrace", char='}')
+_add_typeable(name="rbrace", char='}')
+_add_typeable(name="backslash", char='\\')
+_add_typeable(name="bar", char='|')
+_add_typeable(name="colon", char=':')
+_add_typeable(name="semicolon", char=';')
+_add_typeable(name="apostrophe", char="'")
+_add_typeable(name="singlequote", char="'")
+_add_typeable(name="squote", char="'")
+_add_typeable(name="quote", char='"')
+_add_typeable(name="doublequote", char='"')
+_add_typeable(name="dquote", char='"')
+_add_typeable(name="comma", char=',')
+_add_typeable(name="dot", char='.')
+_add_typeable(name="slash", char='/')
+_add_typeable(name="lessthan", char='<')
+_add_typeable(name="leftangle", char='<')
+_add_typeable(name="langle", char='<')
+_add_typeable(name="greaterthan", char='>')
+_add_typeable(name="rightangle", char='>')
+_add_typeable(name="rangle", char='>')
+_add_typeable(name="question", char='?')
+_add_typeable(name="equal", char='=')
+_add_typeable(name="equals", char='=')
+
+typeables.update({
     # Whitespace and editing keys
     "enter":            Typeable(code=win32con.VK_RETURN, name='enter'),
     "tab":              Typeable(code=win32con.VK_TAB, name='tab'),
@@ -330,4 +345,4 @@ typeables = {
     "playpause":        Typeable(code=win32con.VK_MEDIA_PLAY_PAUSE, name='playpause'),
     "browserback":      Typeable(code=win32con.VK_BROWSER_BACK, name='browserback'),
     "browserforward":   Typeable(code=win32con.VK_BROWSER_FORWARD, name='browserforward'),
-    }
+})
