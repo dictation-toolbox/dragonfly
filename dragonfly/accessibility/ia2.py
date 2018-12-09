@@ -4,10 +4,11 @@ implementation for Windows.
 
 
 import logging
-import Queue
 import threading
 import traceback
 import time
+
+from six.moves import queue
 
 from . import base
 
@@ -28,7 +29,7 @@ class Controller(object):
     def __init__(self):
         self._context = Context()
         # TODO Replace with a completely synchronous queue (size 0).
-        self._closure_queue = Queue.Queue(1)
+        self._closure_queue = queue.Queue(1)
         self._focus_queue = []
 
     def _update_focus(self, event):
@@ -90,7 +91,7 @@ class Controller(object):
             while True:
                 try:
                     capture = self._closure_queue.get_nowait()
-                except Queue.Empty:
+                except queue.Empty:
                     break
                 try:
                     capture.return_value = capture.closure(self._context)
