@@ -44,6 +44,10 @@ class AccessibilityTestCase(unittest.TestCase):
         self.assert_found_text(" ",
                                utils.TextQuery(end_phrase=" ", end_relative_position=utils.CursorPosition.BEFORE, end_relative_phrase="elephant"),
                                "dog elephant tiger")
+        # Test matching against non-breaking space.
+        self.assert_found_text(u"\u00a0",
+                               utils.TextQuery(end_phrase=" ", end_relative_position=utils.CursorPosition.BEFORE, end_relative_phrase="elephant"),
+                               u"dog\u00a0elephant tiger")
         self.assert_found_text(".word",
                                utils.TextQuery(end_phrase=".word"),
                                "..word..")
@@ -73,6 +77,11 @@ class AccessibilityTestCase(unittest.TestCase):
         self.assert_found_text("dog elephant tigers ",
                                utils.TextQuery(start_phrase="dog", through=True, end_relative_position=utils.CursorPosition.BEFORE, end_relative_phrase="tiger"),
                                "dog elephant tigers tiger")
+        # Test that we find the nearest overlapping match.
+        self.assert_found_text("dog elephant",
+                               utils.TextQuery(start_phrase="dog", through=True, end_phrase="elephant"),
+                               "dog dog elephant",
+                               cursor_offset=-1)
 
         # Selecting from the cursor position.
         self.assert_found_text("dog elephant",

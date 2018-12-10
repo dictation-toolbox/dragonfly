@@ -6,7 +6,7 @@ library independent of Dragonfly.
 """
 
 
-import re
+import regex
 import enum
 import logging
 
@@ -67,25 +67,27 @@ class TextInfo(object):
 def _phrase_to_regex(phrase):
     # Treat whitespace between words as meaning anything other than alphanumeric
     # characters.
-    regex = r"[^A-Za-z0-9]+".join(re.escape(word) for word in phrase.split())
-    # Explicitly match spaces at the beginning and end of the phrase.
+    pattern = r"[^\w--_]+".join(regex.escape(word) for word in phrase.split())
+    # Treat spaces at the beginning or end of the phrase as matching any
+    # whitespace character. This makes it easy to select stuff like non-breaking
+    # space, which occurs frequently in browsers.
     # TODO Support newlines. Note that these are frequently implemented as
     # separate text nodes in the accessibility tree, so the obvious
     # implementation would not work well.
     if phrase == " ":
-        regex = r" "
+        pattern = r"\s"
     else:
         if phrase.startswith(" "):
-            regex = r" " + regex
+            pattern = r"\s" + pattern
         if phrase.endswith(" "):
-            regex = regex + r" "
+            pattern = pattern + r"\s"
     # Only match at boundaries of alphanumeric sequences if the phrase ends
     # are alphanumeric.
-    if re.search(r"^[A-Za-z0-9]", phrase):
-        regex = r"(?<![A-Za-z0-9])" + regex
-    if re.search(r"[A-Za-z0-9]$", phrase):
-        regex = regex + r"(?![A-Za-z0-9])"
-    return regex
+    if regex.search(r"^[\w--_]", phrase, regex.VERSION1 | regex.UNICODE):
+        pattern = r"(?<![\w--_])" + pattern
+    if regex.search(r"[\w--_]$", phrase, regex.VERSION1 | regex.UNICODE):
+        pattern = pattern + r"(?![\w--_])"
+    return pattern
 
 
 def _find_text(query, expanded_text, cursor_offset):
@@ -94,37 +96,40 @@ def _find_text(query, expanded_text, cursor_offset):
     # lookahead regular expressions must be fixed-width, so we have to limit
     # their usage and use a matching group instead, which requires matching up
     # the parens surrounding the group.
-    regex = ""
+    pattern = r""
 
     # Add the start phrases, if present. 
     if query.start_phrase or query.start_relative_phrase:
         if query.start_relative_phrase and query.start_relative_position == CursorPosition.AFTER:
-            regex += _phrase_to_regex(query.start_relative_phrase)
+            pattern += _phrase_to_regex(query.start_relative_phrase)
             if query.start_phrase:
-                regex += r"[^A-Za-z0-9]*"
-        regex += r"(" + _phrase_to_regex(query.start_phrase)
+                pattern += r"[^\w--_]*"
+        pattern += r"(" + _phrase_to_regex(query.start_phrase)
         if query.start_relative_phrase and query.start_relative_position == CursorPosition.BEFORE:
             if query.start_phrase:
-                regex += r"[^A-Za-z0-9]*"
-            regex += _phrase_to_regex(query.start_relative_phrase)
-        regex += ".*?"
+                pattern += r"[^\w--_]*"
+            pattern += _phrase_to_regex(query.start_relative_phrase)
+        pattern += r".*?"
 
     # Add the end phrases.
     if query.end_relative_phrase and query.end_relative_position == CursorPosition.AFTER:
-        regex += _phrase_to_regex(query.end_relative_phrase)
+        pattern += _phrase_to_regex(query.end_relative_phrase)
         if query.end_phrase:
-            regex += r"[^A-Za-z0-9]*"
+            pattern += r"[^\w--_]*"
     # Add the initial "(" if we haven't already.
     if not (query.start_phrase or query.start_relative_phrase):
-        regex += "("
-    regex += _phrase_to_regex(query.end_phrase) + ")"
+        pattern += r"("
+    pattern += _phrase_to_regex(query.end_phrase) + r")"
     if query.end_relative_phrase and query.end_relative_position == CursorPosition.BEFORE:
         if query.end_phrase:
-            regex += r"[^A-Za-z0-9]*"
-        regex += _phrase_to_regex(query.end_relative_phrase)
+            pattern += r"[^\w--_]*"
+        pattern += _phrase_to_regex(query.end_relative_phrase)
 
     # Find all matches.
-    matches = re.finditer(regex, expanded_text, re.IGNORECASE)
+    matches = regex.finditer(pattern,
+                             expanded_text,
+                             regex.IGNORECASE | regex.VERSION1 | regex.UNICODE,
+                             overlapped=True)
     ranges = [(match.start(1), match.end(1)) for match in matches]
     if not ranges:
         _log.warning("Not found: %s" % query)
