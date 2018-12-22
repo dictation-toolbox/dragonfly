@@ -108,6 +108,16 @@ class TextInputEngine(EngineBase):
     # Miscellaneous methods.
 
     def mimic(self, words):
+        """ Mimic a recognition of the given *words*. """
+        # Handle string input.
+        if isinstance(words, string_types):
+            words = words.split()
+
+        # Don't allow non-iterable objects.
+        if not iter(words):
+            raise TypeError("%r is not a string or other iterable object"
+                            % words)
+
         # Call process_begin and process_words for all grammar wrappers,
         # stopping early if processing occurred.
         fg_window = Window.get_foreground()
@@ -210,7 +220,7 @@ class GrammarWrapper(object):
                     r.process_recognition(root)
                     return True
 
-        TextInputEngine._log.warning("Grammar %s: failed to decode "
-                                     "recognition %r."
-                                     % (self.grammar.name, words))
+        TextInputEngine._log.debug("Grammar %s: failed to decode "
+                                   "recognition %r."
+                                   % (self.grammar.name, words))
         return False
