@@ -93,13 +93,22 @@ class TextInputEngine(EngineBase):
         pass
 
     def set_exclusiveness(self, grammar, exclusive):
-        pass
+        # Disable/enable each grammar.
+        for g in self.grammars:
+            if exclusive:
+                g.disable()
+            else:
+                g.enable()
+
+        # Enable the specified grammar if it was supposed to be exclusive.
+        if exclusive:
+            grammar.enable()
 
     # -----------------------------------------------------------------------
     # Miscellaneous methods.
 
     def mimic(self, words):
-        # Call process_begin and process_results for all grammar wrappers,
+        # Call process_begin and process_words for all grammar wrappers,
         # stopping early if processing occurred.
         fg_window = Window.get_foreground()
         processing_occurred = False
@@ -148,6 +157,11 @@ class GrammarWrapper(object):
                                    fg_window.handle)
 
     def process_words(self, words):
+        # Return early if the grammar is disabled or if there are no active
+        # rules.
+        if not (self.grammar.enabled and self.grammar.active_rules):
+            return
+
         TextInputEngine._log.debug("Grammar %s: received recognition %r."
                                    % (self.grammar.name, words))
         if words == "other":
@@ -161,14 +175,20 @@ class GrammarWrapper(object):
                 func()
             return
 
-        # If the words argument was not "other" or "reject", then t is a
-        # sequence of (word, rule_id) 2-tuples. Convert words to Unicode.
-        # TODO Determine which words are from grammar rules and are which from dictation.
-        #      pyjsgf's extension Dictation class can do this efficiently.
-        # TODO Use the correct rule ID for grammar rules and dictation.
-        #      grammar rule IDs should be indices of grammar.rule_names
-        #      the rule ID for dictation is 1000000
-        words_rules = tuple((text_type(w), 1000000) for w in words)
+        # If the words argument was not "other" or "reject", then words is a
+        # sequence of (word, rule_id) 2-tuples. Convert words to Unicode,
+        # treat all uppercase words as dictation words and other words as
+        # grammar words.
+        # Minor note: this won't work for languages without capitalisation.
+        def map_word(word):
+            word = text_type(word)
+            if word.isupper():
+                # Convert dictation words to lowercase for consistent output.
+                return word.lower(), 1000000
+            else:
+                return word, 0
+
+        words_rules = tuple(map(map_word, words))
 
         # Call the grammar's general process_recognition method, if present.
         func = getattr(self.grammar, "process_recognition", None)

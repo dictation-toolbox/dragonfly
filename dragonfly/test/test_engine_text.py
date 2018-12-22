@@ -21,13 +21,16 @@
 
 import unittest
 
-from dragonfly.engines import get_engine, EngineBase, EngineError
-from dragonfly import Literal, Dictation, Sequence, Repetition
+from dragonfly.engines import EngineBase
+from dragonfly import (Literal, Dictation, Sequence, Repetition,
+                       CompoundRule, MimicFailure, get_engine, List,
+                       DictList, ListRef, DictListRef, Rule)
 from dragonfly.engines.backend_text.dictation import TextDictationContainer
-from dragonfly.test import ElementTester, RecognitionFailure
+from dragonfly.test import (ElementTester, RecognitionFailure, RuleTestCase,
+                            TestContext, RuleTestGrammar)
 
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 class TestEngineText(unittest.TestCase):
 
@@ -54,7 +57,7 @@ class TestEngineText(unittest.TestCase):
     def test_dictation(self):
         """ Verify that the text engine can mimic dictation. """
         tester = ElementTester(Dictation("text"))
-        results = tester.recognize("hello world")
+        results = tester.recognize("HELLO WORLD")
         assert isinstance(results, TextDictationContainer)
         assert results.format() == "hello world"
 
@@ -67,7 +70,7 @@ class TestEngineText(unittest.TestCase):
             Literal elements. """
         seq = Sequence([Literal("hello"), Dictation("text")])
         tester = ElementTester(seq)
-        results = tester.recognize("hello world")
+        results = tester.recognize("hello WORLD")
         assert results[0] == "hello"
         assert isinstance(results[1], TextDictationContainer)
         assert results[1].format() == "world"
@@ -91,18 +94,21 @@ class TestEngineText(unittest.TestCase):
         assert results is RecognitionFailure
 
     def test_repetition(self):
-        rep = Repetition(Sequence([Literal("hello"), Dictation("text")]))
+        """ Verify that the text engine can mimic a rule using a Repetition
+            element. """
+        rep = Repetition(Sequence([Literal("hello"), Dictation("text")]),
+                         min=1, max=16)
         tester = ElementTester(rep)
 
         # Test with one repetition.
-        results = tester.recognize("hello world")
+        results = tester.recognize("hello WORLD")
         assert len(results) == 1
         assert results[0][0] == "hello"
         assert isinstance(results[0][1], TextDictationContainer)
         assert results[0][1].format() == "world"
 
         # Test with two repetitions.
-        results = tester.recognize("hello world hello testing")
+        results = tester.recognize("hello WORLD hello TESTING")
         assert len(results) == 2
         assert results[0][0] == "hello"
         assert isinstance(results[0][1], TextDictationContainer)
@@ -115,5 +121,119 @@ class TestEngineText(unittest.TestCase):
         # failure.
         results = tester.recognize("hello")
         assert results is RecognitionFailure
-        results = tester.recognize("hello world hello")
+        results = tester.recognize("hello world")
         assert results is RecognitionFailure
+        results = tester.recognize("hello WORLD hello")
+        assert results is RecognitionFailure
+
+
+class TestRules(RuleTestCase):
+    def test_multiple_rules(self):
+        """ Verify that the text engine successfully mimics each rule in a
+            grammar with multiple rules. """
+        self.add_rule(CompoundRule(name="r1", spec="hello"))
+        self.add_rule(CompoundRule(name="r2", spec="see you"))
+        assert self.recognize_node("hello").words() == ["hello"]
+        assert self.recognize_node("see you").words() == ["see", "you"]
+
+    def test_list(self):
+        """ Verify that the text engine can mimic a rule using a ListRef
+            element. """
+        lst = List("fruit")
+        lst.append("apple")
+        self.grammar.add_list(lst)
+        self.add_rule(Rule("fav_fruit", ListRef("fruit_ref", lst),
+                           exported=True))
+
+        # Test that the list item "apple" can be recognized.
+        assert self.recognize_node("apple").words() == ["apple"]
+
+        # Update the list and try again.
+        lst.append("banana")
+
+        # If recognition fails, then the list wasn't updated correctly.
+        assert self.recognize_node("banana").words() == ["banana"]
+
+    def test_dict_list(self):
+        """ Verify that the text engine can mimic a rule using a DictListRef
+            element. """
+        lst = DictList("fruit")
+        lst["mango"] = False
+        self.grammar.add_list(lst)
+        self.add_rule(Rule("fav_fruit", DictListRef("fruit_ref", lst),
+                           exported=True))
+
+        # Test that the list item "mango" can be recognized.
+        assert self.recognize_node("mango").words() == ["mango"]
+
+        # Update the list and try again.
+        lst["mandarin"] = True
+
+        # If recognition fails, then the list wasn't updated correctly.
+        assert self.recognize_node("mandarin").words() == ["mandarin"]
+
+    def test_rule_context(self):
+        """ Verify that the text engine works correctly with rule
+            contexts."""
+        context = TestContext(True)
+        self.add_rule(CompoundRule(name="r1", spec="test context",
+                                   context=context))
+
+        # Test that the rule matches when in-context.
+        results = self.recognize_node("test context").words()
+        assert results == ["test", "context"]
+
+        # Go out of context and test again.
+        # Use the engine's mimic method because recognize_node won't return
+        # RecognitionFailure like ElementTester.recognize does.
+        context.active = False
+        self.assertRaises(MimicFailure, self.engine.mimic, "test context")
+
+        # Test again after going back into context.
+        context.active = True
+        results = self.recognize_node("test context").words()
+        assert results == ["test", "context"]
+
+    def test_grammar_context(self):
+        """ Verify that the text engine works correctly with grammar
+            contexts."""
+        # Recreate the RuleTestGrammar using a context and add a rule.
+        context = TestContext(True)
+        self.grammar = RuleTestGrammar(context=context)
+        self.add_rule(CompoundRule(name="r1", spec="test context"))
+
+        # Test that the rule matches when in-context.
+        results = self.recognize_node("test context").words()
+        assert results == ["test", "context"]
+
+        # Go out of context and test again.
+        context.active = False
+        self.assertRaises(MimicFailure, self.engine.mimic, "test context")
+
+        # Test again after going back into context.
+        context.active = True
+        results = self.recognize_node("test context").words()
+        assert results == ["test", "context"]
+
+    def test_exclusive_grammars(self):
+        """ Verify that the text engine supports exclusive grammars. """
+        # Set up two grammars to test with.
+        grammar1 = self.grammar
+        grammar1.add_rule(CompoundRule(spec="grammar one"))
+        grammar2 = RuleTestGrammar(name="Grammar2")
+        grammar2.add_rule(CompoundRule(spec="grammar two"))
+        grammar1.load()
+        grammar2.load()
+
+        # Set grammar1 as exclusive and make some assertions.
+        grammar1.set_exclusiveness(True)
+        results = grammar1.recognize_node("grammar one").words()
+        assert results == ["grammar", "one"]
+        self.assertRaises(MimicFailure, self.engine.mimic, "grammar two")
+
+        # Set grammar1 as no longer exclusive and make some assertions.
+        grammar1.set_exclusiveness(False)
+        results = grammar1.recognize_node("grammar one").words()
+        assert results == ["grammar", "one"]
+        results = grammar2.recognize_node("grammar two").words()
+        assert results == ["grammar", "two"]
