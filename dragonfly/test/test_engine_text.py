@@ -24,7 +24,8 @@ import unittest
 from dragonfly.engines import EngineBase
 from dragonfly import (Literal, Dictation, Sequence, Repetition,
                        CompoundRule, MimicFailure, get_engine, List,
-                       DictList, ListRef, DictListRef, Rule)
+                       DictList, ListRef, DictListRef, RecognitionHistory,
+                       Rule)
 from dragonfly.engines.backend_text.dictation import TextDictationContainer
 from dragonfly.test import (ElementTester, RecognitionFailure, RuleTestCase,
                             TestContext, RuleTestGrammar)
@@ -237,3 +238,38 @@ class TestRules(RuleTestCase):
         assert results == ["grammar", "one"]
         results = grammar2.recognize_node("grammar two").words()
         assert results == ["grammar", "two"]
+
+    def test_recognition_observers(self):
+        """ Verify that the text engine notifies recognition observers
+            correctly. """
+        class TestRecognitionHistory(RecognitionHistory):
+            def __init__(self, length=10):
+                super(TestRecognitionHistory, self).__init__(length)
+                self.begins = 0
+                self.failures = 0
+
+            def on_begin(self):
+                super(TestRecognitionHistory, self).on_begin()
+                self.begins += 1
+
+            def on_failure(self):
+                self.failures += 1
+
+        history = TestRecognitionHistory()
+        history.register()
+        self.add_rule(CompoundRule(name="r1", spec="hello"))
+        self.add_rule(CompoundRule(name="r2", spec="see you"))
+
+        # Mimic twice and check that history received the words.
+        assert self.recognize_node("hello").words() == ["hello"]
+        assert self.recognize_node("see you").words() == ["see", "you"]
+        assert history == [["hello"], ["see", "you"]]
+
+        # Check that on_begin() was called twice.
+        assert history.begins == 2
+
+        # Check that on_begin() and on_failure() get called for failed
+        # recognitions.
+        self.assertRaises(MimicFailure, self.engine.mimic, "test failure")
+        assert history.begins == 3
+        assert history.failures == 1

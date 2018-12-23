@@ -28,6 +28,15 @@ from .recobs import TextRecobsManager
 from ..base import EngineBase, EngineError, MimicFailure
 
 
+def _map_word(word):
+    word = text_type(word)
+    if word.isupper():
+        # Convert dictation words to lowercase for consistent output.
+        return word.lower(), 1000000
+    else:
+        return word, 0
+
+
 class TextInputEngine(EngineBase):
     """Text-input Engine class. """
 
@@ -107,6 +116,13 @@ class TextInputEngine(EngineBase):
     # -----------------------------------------------------------------------
     # Miscellaneous methods.
 
+    @classmethod
+    def generate_words_rules(cls, words):
+        # Convert words to Unicode, treat all uppercase words as dictation
+        # words and other words as grammar words.
+        # Minor note: this won't work for languages without capitalisation.
+        return tuple(map(_map_word, words))
+
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
         # Handle string input.
@@ -118,18 +134,29 @@ class TextInputEngine(EngineBase):
             raise TypeError("%r is not a string or other iterable object"
                             % words)
 
+        # Notify observers that a recognition has begun.
+        self._recognition_observer_manager.notify_begin()
+
+        # Generate the input for process_words.
+        words_rules = self.generate_words_rules(words)
+
         # Call process_begin and process_words for all grammar wrappers,
         # stopping early if processing occurred.
         fg_window = Window.get_foreground()
         processing_occurred = False
         for wrapper in self._grammar_wrappers.values():
             wrapper.process_begin(fg_window)
-            processing_occurred = wrapper.process_words(words)
+            processing_occurred = wrapper.process_words(words_rules)
             if processing_occurred:
+                # Notify observers of the recognition.
+                self._recognition_observer_manager.notify_recognition(
+                    [word for word, _ in words_rules]
+                )
                 break
 
         # If no processing occurred, then the mimic failed.
         if not processing_occurred:
+            self._recognition_observer_manager.notify_failure()
             raise MimicFailure("No matching rule found for words %r."
                                % (words,))
 
@@ -185,31 +212,18 @@ class GrammarWrapper(object):
                 func()
             return
 
-        # If the words argument was not "other" or "reject", then words is a
-        # sequence of (word, rule_id) 2-tuples. Convert words to Unicode,
-        # treat all uppercase words as dictation words and other words as
-        # grammar words.
-        # Minor note: this won't work for languages without capitalisation.
-        def map_word(word):
-            word = text_type(word)
-            if word.isupper():
-                # Convert dictation words to lowercase for consistent output.
-                return word.lower(), 1000000
-            else:
-                return word, 0
-
-        words_rules = tuple(map(map_word, words))
-
+        # If the words argument was not "other" or "reject", then it is a
+        # sequence of (word, rule_id) 2-tuples.
         # Call the grammar's general process_recognition method, if present.
         func = getattr(self.grammar, "process_recognition", None)
         if func:
             if not func(words):
                 return
 
-        # Iterates through this grammar's rules, attempting to decode each.
+        # Iterate through this grammar's rules, attempting to decode each.
         # If successful, call that rule's method for processing the
         # recognition and return.
-        s = state_.State(words_rules, self.grammar.rule_names, self.engine)
+        s = state_.State(words, self.grammar.rule_names, self.engine)
         for r in self.grammar.rules:
             if not r.active:
                 continue
