@@ -3,109 +3,178 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
-
 """
 Text action
 ============================================================================
 
-This section describes the :class:`Text` action object. This type of 
+This section describes the :class:`Text` action object. This type of
 action is used for typing text into the foreground application.
 
-It differs from the :class:`Key` action in that :class:`Text` is used for 
-typing literal text, while :class:`dragonfly.actions.action_key.Key` 
-emulates pressing keys on the keyboard.  An example of this is that the 
-arrow-keys are not part of a text and so cannot be typed using the 
-:class:`Text` action, but can be sent by the 
+It differs from the :class:`Key` action in that :class:`Text` is used for
+typing literal text, while :class:`dragonfly.actions.action_key.Key`
+emulates pressing keys on the keyboard.  An example of this is that the
+arrow-keys are not part of a text and so cannot be typed using the
+:class:`Text` action, but can be sent by the
 :class:`dragonfly.actions.action_key.Key` action.
 
 """
 
 
-from .action_base           import DynStrActionBase, ActionError
-from .typeables             import typeables
-from .keyboard              import Keyboard
-from .action_key            import Key
-from ..windows.clipboard    import Clipboard
-from ..engines              import get_engine
+from six import text_type
+
+from ..engines import get_engine
+from ..windows.clipboard import Clipboard
+from ..windows.window import Window
+from .action_base import ActionError, DynStrActionBase
+from .action_key import Key
+from .keyboard import Keyboard
+from .typeables import typeables
+
+# ---------------------------------------------------------------------------
+
+UNICODE_KEYBOARD = True
+HARDWARE_APPS = [
+            "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
+        ]
 
 
-#---------------------------------------------------------------------------
+def load_configuration():
+    """Locate and load configuration."""
+    import io
+    import os
+    try:
+        import configparser
+    except ImportError:
+        import ConfigParser as configparser
+
+    global UNICODE_KEYBOARD
+    global HARDWARE_APPS
+
+    home = os.path.expanduser("~")
+    config_folder = os.path.join(home, ".dragonfly2-speech")
+    config_file = "settings.cfg"
+    config_path = os.path.join(config_folder, config_file)
+
+    if not os.path.exists(config_folder):
+        os.mkdir(config_folder)
+    if not os.path.exists(config_path):
+        with io.open(config_path, "w") as f:
+            f.write(u'[Text]\nhardware_apps = '
+                    u'tvnviewer.exe|vncviewer.exe|mstsc.exe|virtualbox.exe\n'
+                    u'unicode_keyboard = true\n')
+
+    parser = configparser.ConfigParser()
+    parser.read(config_path)
+    if parser.has_option("Text", "hardware_apps"):
+        HARDWARE_APPS = parser.get("Text", "hardware_apps").lower().split("|")
+    if parser.has_option("Text", "unicode_keyboard"):
+        UNICODE_KEYBOARD = parser.getboolean("Text", "unicode_keyboard")
+
+
+load_configuration()
+
+
+def require_hardware_emulation():
+    """Return `True` if the current context requires hardware emulation."""
+    from os.path import basename
+    foreground_executable = basename(Window.get_foreground()
+                                     .executable.lower())
+    return (not UNICODE_KEYBOARD) or (foreground_executable in HARDWARE_APPS)
+
 
 class Text(DynStrActionBase):
     """
-        Action that sends keyboard events to type text.
+    `Action` that sends keyboard events to type text.
 
-        Arguments:
-         - *spec* (*str*) -- the text to type
-         - *static* (boolean) --
-           if *True*, do not dynamically interpret *spec*
-           when executing this action
-         - *pause* (*float*) --
-           the time to pause between each keystroke, given
-           in seconds
-         - *autofmt* (boolean) --
-           if *True*, attempt to format the text with correct
-           spacing and capitalization.  This is done by first mimicking
-           a word recognition and then analyzing its spacing and
-           capitalization and applying the same formatting to the text.
-
+    Arguments:
+     - *spec* (*str*) -- the text to type
+     - *static* (boolean) --
+       if *True*, do not dynamically interpret *spec*
+       when executing this action
+     - *pause* (*float*) --
+       the time to pause between each keystroke, given
+       in seconds
+     - *autofmt* (boolean) --
+       if *True*, attempt to format the text with correct
+       spacing and capitalization.  This is done by first mimicking
+       a word recognition and then analyzing its spacing and
+       capitalization and applying the same formatting to the text.
     """
 
     _pause_default = 0.02
     _keyboard = Keyboard()
     _specials = {
-                 "\n":   typeables["enter"],
-                 "\t":   typeables["tab"],
+                 "\n": typeables["enter"],
+                 "\t": typeables["tab"],
                 }
 
     def __init__(self, spec=None, static=False, pause=_pause_default,
-                 autofmt=False):
+                 autofmt=False, use_hardware=False):
         self._pause = pause
         self._autofmt = autofmt
+        self._use_hardware = use_hardware
         DynStrActionBase.__init__(self, spec=spec, static=static)
 
     def _parse_spec(self, spec):
-        """ Convert the given *spec* to keyboard events. """
+        """Convert the given *spec* to keyboard events."""
+        from struct import unpack
         events = []
-        for character in spec:
-            if character in self._specials:
-                typeable = self._specials[character]
-            else:
-                try:
-                    typeable = Keyboard.get_typeable(character)
-                except ValueError as e:
-                    raise ActionError("Keyboard interface cannot type this"
-                                      " character: %r (in %r)"
-                                      % (character, spec))
-            events.extend(typeable.events(self._pause))
+        if self._use_hardware or require_hardware_emulation():
+            for character in spec:
+                if character in self._specials:
+                    typeable = self._specials[character]
+                    events.extend(typeable.events(self._pause))
+                else:
+                    try:
+                        typeable = Keyboard.get_typeable(character)
+                        events.extend(typeable.events(self._pause))
+                    except ValueError:
+                        raise ActionError("Keyboard interface cannot type this"
+                                          " character: %r (in %r)"
+                                          % (character, spec))
+        else:
+            for character in text_type(spec):
+                if character in self._specials:
+                    typeable = self._specials[character]
+                    events.extend(typeable.events(self._pause))
+                else:
+                    byte_stream = character.encode("utf-16-le")
+                    for short in unpack("<" + str(len(byte_stream) // 2) + "H",
+                                        byte_stream):
+                        try:
+                            typeable = Keyboard.get_typeable(short,
+                                                             is_text=True)
+                            events.extend(typeable.events(self._pause * 0.5))
+                        except ValueError:
+                            raise ActionError("Keyboard interface cannot type "
+                                              "this character: %r (in %r)" %
+                                              (character, spec))
         return events
 
     def _execute_events(self, events):
         """
-            Send keyboard events.
+        Send keyboard events.
 
-            If instance was initialized with *autofmt* True,
-            then this method will mimic a word recognition
-            and analyze its formatting so as to autoformat
-            the text's spacing and capitalization before
-            sending it as keyboard events.
-
+        If instance was initialized with *autofmt* True,
+        then this method will mimic a word recognition
+        and analyze its formatting so as to autoformat
+        the text's spacing and capitalization before
+        sending it as keyboard events.
         """
-
         if self._autofmt:
             # Mimic a word, select and copy it to retrieve capitalization.
             get_engine().mimic("test")

@@ -28,7 +28,8 @@ Detecting sleep mode
  - http://blogs.msdn.com/b/tsfaware/archive/2010/03/22/detecting-sleep-mode-in-sapi.aspx
 
 """
-from six import text_type
+from locale import getpreferredencoding
+from six import text_type, binary_type
 
 from ..base        import EngineBase, EngineError, MimicFailure
 from ...error import GrammarError
@@ -39,7 +40,21 @@ from .compiler     import NatlinkCompiler
 import dragonfly.grammar.state as state_
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+
+def map_word(word, encoding=getpreferredencoding(do_setlocale=False)):
+    """
+    Wraps output from Dragon.
+
+    This wrapper ensures text output from the engine is Unicode. It assumes the
+    encoding of byte streams is the current locale's preferred encoding by default.
+    """
+    if isinstance(word, text_type):
+        return word
+    elif isinstance(word, binary_type):
+        return word.decode(encoding)
+    return word
+
 
 class NatlinkEngine(EngineBase):
     """ Speech recognition engine back-end for Natlink and DNS. """
@@ -72,7 +87,7 @@ class NatlinkEngine(EngineBase):
         """ Disconnect from natlink. """
         self.natlink.natDisconnect()
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # Methods for working with grammars.
 
     def _load_grammar(self, grammar):
@@ -97,11 +112,8 @@ class NatlinkEngine(EngineBase):
         (compiled_grammar, rule_names) = c.compile_grammar(grammar)
         grammar._rule_names = rule_names
 
-        if (hasattr(grammar, "process_recognition_other")
-            or hasattr(grammar, "process_recognition_failure")):
-            all_results = True
-        else:
-            all_results = False
+        all_results = (hasattr(grammar, "process_recognition_other")
+                       or hasattr(grammar, "process_recognition_failure"))
         hypothesis = False
 
         attempt_connect = False
@@ -250,6 +262,7 @@ class NatlinkEngine(EngineBase):
 
 #---------------------------------------------------------------------------
 
+
 class GrammarWrapper(object):
 
     def __init__(self, grammar, grammar_object, engine):
@@ -258,7 +271,8 @@ class GrammarWrapper(object):
         self.engine = engine
 
     def begin_callback(self, module_info):
-        executable, title, handle = module_info
+        executable, title, handle = tuple(map_word(word)
+                                          for word in module_info)
         self.grammar.process_begin(executable, title, handle)
 
     def results_callback(self, words, results):
@@ -268,7 +282,7 @@ class GrammarWrapper(object):
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
             if func:
-                words = tuple(text_type(w).encode("windows-1252")
+                words = tuple(map_word(w)
                               for w in results.getWords(0))
                 func(words)
             return
@@ -281,11 +295,6 @@ class GrammarWrapper(object):
         # If the words argument was not "other" or "reject", then
         #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
         #  into a tuple of unicode objects.
-        def map_word(w):
-            if isinstance(w, text_type):
-                return w
-            else:
-                return w.decode("windows-1252")
 
         words_rules = tuple((map_word(w), r) for w, r in words)
         words = tuple(w for w, r in words_rules)
