@@ -1,0 +1,28 @@
+
+Accessibility API
+============================================================================
+
+The accessibility API enables text selection and editing more powerful than what
+Dragon provides natively, to a wider range of applications (e.g. Google Chrome
+and Mozilla Firefox). It is currently in Beta and the API may change at any
+time. To use this API on Windows, install `pyia2
+<https://github.com/illinois-dres-aitg/pyia2>`__ (currently needs to be cloned
+and added to PYTHONPATH; I have a pending pull request to fix this). To use this
+with Chrome, you may also need an additional 64-bit IAccessible2 DLL which can
+be obtained `here
+<https://github.com/ThePacielloGroup/aviewer/blob/Develop/package/IAccessible2Proxy64bit.dll>`__.
+
+Entry points
+----------------------------------------------------------------------------
+.. automodule:: dragonfly.accessibility
+   :members:
+
+Controller class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.accessibility.controller.AccessibilityController
+   :members:
+
+TextQuery class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.accessibility.utils.TextQuery
+   :members:

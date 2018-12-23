@@ -17,16 +17,24 @@ class AccessibilityController(object):
         self.stopped = False
 
     def stop(self):
+        """Stops the controller (otherwise process exit may be blocked)."""
+
         self.os_controller.stop()
         self.stopped = True
 
     def is_editable_focused(self):
+        """True if an editable text field is focused."""
+
         return utils.is_editable_focused(self.os_controller)
 
     def move_cursor(self, text_query, position):
+        """Moves the cursor before or after text that matches the provided query."""
+
         return utils.move_cursor(self.os_controller, text_query, position)
 
     def select_text(self, text_query):
+        """Selects text which matches the provided query."""
+
         try:
             return utils.select_text(self.os_controller, text_query)
         except base.UnsupportedSelectionError:
@@ -40,6 +48,8 @@ class AccessibilityController(object):
                 return False
 
     def replace_text(self, text_query, replacement):
+        """Replaces text which matches the provided query."""
+
         saved_cursor = utils.get_cursor_offset(self.os_controller)
         text_info = utils.get_text_info(self.os_controller, text_query)
         if not text_info:
@@ -49,9 +59,9 @@ class AccessibilityController(object):
             # Replace text.
             if replacement:
                 replacement = str(replacement).lower()
-                if text_info.text.isupper():
+                if text_info.text and text_info.text.isupper():
                     replacement = replacement.upper()
-                elif text_info.text[0].isupper():
+                elif text_info.text and text_info.text[0].isupper():
                     replacement = replacement.capitalize()
                 # TODO Add escaping.
                 Text(replacement).execute()

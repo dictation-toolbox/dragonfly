@@ -26,5 +26,8 @@ def get_accessibility_controller():
 
 @contextmanager
 def get_stopping_accessibility_controller():
+    """Same as :func:`get_accessibility_controller`, but automatically stops when
+    used in a `with` context."""
+
     yield get_accessibility_controller()
     controller_instance.stop()
