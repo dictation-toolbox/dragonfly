@@ -84,6 +84,9 @@ class Controller(object):
             # Process events.
             try:
                 self._process_focus_events()
+            except comtypes.COMError:
+                # Commonly occurs when the focus event no longer matches an active object.
+                pass
             except Exception:
                 traceback.print_exc()
 
@@ -141,9 +144,9 @@ class Accessible(object):
     def as_text(self):
         try:
             text = self._accessible.QueryInterface(pyia2.IA2Lib.IAccessibleText)
+            return AccessibleTextNode(text)
         except comtypes.COMError:
             return None
-        return AccessibleTextNode(text)
 
     def is_editable(self):
         return pyia2.IA2_STATE_EDITABLE & self._accessible.states

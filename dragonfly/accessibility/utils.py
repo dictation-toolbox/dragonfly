@@ -18,7 +18,10 @@ class CursorPosition(enum.Enum):
     """The cursor position relative to a range of text."""
 
     BEFORE = 1
+    """The position before the text."""
+
     AFTER = 2
+    """The position after the text."""
 
 
 class TextQuery(object):

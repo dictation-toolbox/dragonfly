@@ -26,3 +26,8 @@ TextQuery class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.accessibility.utils.TextQuery
    :members:
+
+CursorPosition class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.accessibility.utils.CursorPosition
+   :members:
