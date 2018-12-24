@@ -39,6 +39,7 @@ common_names   = [
                   ".test_language_en_number",
                   ".test_language_de_number",
                   ".test_language_nl_number",
+                  ".test_accessibility",
                   "doc:documentation/test_action_base_doctest.txt",
                   "doc:documentation/test_grammar_elements_basic_doctest.txt",
                   "doc:documentation/test_grammar_elements_compound_doctest.txt",

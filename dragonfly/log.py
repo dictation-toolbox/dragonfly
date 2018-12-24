@@ -66,6 +66,7 @@ default_levels = {
                   "config":               (_warning, _info),
                   "monitor.init":         (_warning, _info),
                   "dfly.test":            (_debug, _debug),
+                  "accessibility":        (_info, _info),
                  }
 
 

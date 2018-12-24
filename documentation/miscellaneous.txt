@@ -9,3 +9,4 @@ Contents:
    ccr
    language
    windows
+   accessibility
