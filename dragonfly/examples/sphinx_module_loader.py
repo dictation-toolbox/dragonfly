@@ -13,104 +13,17 @@ the CMU Pocket Sphinx engine. It scans the directory it's in and loads any
 import os.path
 import logging
 
-from dragonfly.engines.backend_sphinx.engine import SphinxEngine
 
 from dragonfly import RecognitionObserver, EngineError
 from dragonfly.engines import get_engine
+from dragonfly.engines.backend_sphinx.engine import SphinxEngine
+from dragonfly.loader import CommandModuleDirectory
 
 # --------------------------------------------------------------------------
 # Set up basic logging.
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("compound.parse").setLevel(logging.INFO)
-
-
-# --------------------------------------------------------------------------
-# Command module class; wraps a single command-module.
-
-class CommandModule(object):
-
-    _log = logging.getLogger("module")
-
-    def __init__(self, path):
-        self._path = os.path.abspath(path)
-        self._namespace = None
-        self._loaded = False
-
-    def __str__(self):
-        return "%s(%r)" % (self.__class__.__name__,
-                           os.path.basename(self._path))
-
-    def load(self):
-        self._log.info("%s: Loading module: '%s'" % (self, self._path))
-
-        # Prepare namespace in which to execute the 
-        namespace = {"__file__": self._path}
-
-        # Attempt to execute the module; handle any exceptions.
-        try:
-            exec(compile(open(self._path).read(), self._path, 'exec'), namespace)
-        except Exception as e:
-            self._log.error("%s: Error loading module: %s" % (self, e))
-            self._loaded = False
-            return
-
-        self._loaded = True
-        self._namespace = namespace
-
-    def unload(self):
-        self._log.info("%s: Unloading module: '%s'" % (self, self._path))
-
-    def check_freshness(self):
-        pass
-
-
-# --------------------------------------------------------------------------
-# Command module directory class.
-
-class CommandModuleDirectory(object):
-
-    _log = logging.getLogger("directory")
-
-    def __init__(self, path, excludes=None):
-        self._path = os.path.abspath(path)
-        self._excludes = excludes
-        self._modules = {}
-
-    def load(self):
-        valid_paths = self._get_valid_paths()
-
-        # Remove any deleted modules.
-        for path, module_ in self._modules.items():
-            if path not in valid_paths:
-                del self._modules[path]
-                module_.unload()
-
-        # Add any new modules.
-        for path in valid_paths:
-            if path not in self._modules:
-                module_ = CommandModule(path)
-                module_.load()
-                self._modules[path] = module_
-            else:
-                module_ = self._modules[path]
-                module_.check_freshness()
-
-    def _get_valid_paths(self):
-        self._log.info("Looking for command modules here: %s" % (self._path,))
-        valid_paths = []
-        for filename in os.listdir(self._path):
-            path = os.path.abspath(os.path.join(self._path, filename))
-            if not os.path.isfile(path):
-                continue
-            if not (os.path.basename(path).startswith("_") and
-                    os.path.splitext(path)[1] == ".py"):
-                continue
-            if path in self._excludes:
-                continue
-            valid_paths.append(path)
-        self._log.info("Valid paths: %s" % (", ".join(valid_paths),))
-        return valid_paths
 
 
 # --------------------------------------------------------------------------
