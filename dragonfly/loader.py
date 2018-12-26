@@ -44,6 +44,10 @@ class CommandModule(object):
         return "%s(%r)" % (self.__class__.__name__,
                            os.path.basename(self._path))
 
+    @property
+    def loaded(self):
+        return self._loaded
+
     def load(self):
         self._log.info("%s: Loading module: '%s'" % (self, self._path))
 
@@ -52,9 +56,10 @@ class CommandModule(object):
 
         # Attempt to execute the module; handle any exceptions.
         try:
-            exec(compile(open(self._path).read(), self._path, 'exec'), namespace)
+            exec(compile(open(self._path).read(), self._path, 'exec'),
+                 namespace)
         except Exception as e:
-            self._log.error("%s: Error loading module: %s" % (self, e))
+            self._log.exception("%s: Error loading module: %s" % (self, e))
             self._loaded = False
             return
 
