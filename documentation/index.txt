@@ -38,6 +38,7 @@ Besides this page, the following documentation is also available:
     miscellaneous
     project
     tests
+    changelog
 
 Direct links within this documentation to help you get started:
 
