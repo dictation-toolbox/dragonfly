@@ -45,7 +45,7 @@ if not_on_windows:
 #---------------------------------------------------------------------------
 # General configuration
 
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode", "sphinxarg.ext"]
 templates_path = ["templates"]
 source_suffix = ".txt"
 master_doc = "index"

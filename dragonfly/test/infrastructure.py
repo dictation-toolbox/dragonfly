@@ -20,15 +20,16 @@
 
 """
 """
+from dragonfly import Context
 
+# ==========================================================================
 
-#===========================================================================
 
 class TestError(Exception):
     pass
 
 
-#===========================================================================
+# ==========================================================================
 
 class Unique(object): 
     """ Token class representing a unique identity. """
@@ -43,3 +44,17 @@ class Unique(object):
 
 
 RecognitionFailure = Unique("RecognitionFailure")
+
+
+# ==========================================================================
+
+
+class TestContext(Context):
+    """ Simple context class used to test rule and grammar contexts. """
+    def __init__(self, active):
+        super(TestContext, self).__init__()
+        self.active = active
+
+    def matches(self, executable, title, handle):
+        # Ignore the parameters and return self.active.
+        return self.active

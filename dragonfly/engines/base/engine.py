@@ -156,6 +156,22 @@ class EngineBase(object):
         raise NotImplementedError("Virtual method not implemented for"
                                   " engine %s." % self)
 
+    def activate_grammar(self, grammar):
+        raise NotImplementedError("Virtual method not implemented for"
+                                  " engine %s." % self)
+
+    def deactivate_grammar(self, grammar):
+        raise NotImplementedError("Virtual method not implemented for"
+                                  " engine %s." % self)
+
+    def activate_rule(self, rule, grammar):
+        raise NotImplementedError("Virtual method not implemented for"
+                                  " engine %s." % self)
+
+    def deactivate_rule(self, rule, grammar):
+        raise NotImplementedError("Virtual method not implemented for"
+                                  " engine %s." % self)
+
     def set_exclusiveness(self, grammar, exclusive):
         raise NotImplementedError("Virtual method not implemented for"
                                   " engine %s." % self)

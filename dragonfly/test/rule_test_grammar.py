@@ -38,8 +38,10 @@ class RuleTestGrammar(Grammar):
 
     #-----------------------------------------------------------------------
 
-    def __init__(self, engine=None):
-        Grammar.__init__(self, self.__class__.__name__, engine=engine)
+    def __init__(self, name=None, engine=None, context=None):
+        if name is None:
+            name = self.__class__.__name__
+        Grammar.__init__(self, name=name, engine=engine, context=context)
 
     def recognize(self, words):
         if isinstance(words, string_types):
@@ -187,6 +189,10 @@ class RuleTestGrammar(Grammar):
 
     _mimic_methods = {}
 
-    def _mimic_natlink(self, words):
+    def _mimic_words(self, words):
         self.engine.mimic(words)
-    _mimic_methods["natlink"] = _mimic_natlink
+
+    _mimic_methods["natlink"] = _mimic_words
+    _mimic_methods["sphinx"] = _mimic_words
+    _mimic_methods["text"] = _mimic_words
+

@@ -12,4 +12,5 @@ script:
   # Run a selection of doctests and unit tests
   - pytest --doctest-modules dragonfly/parser.py
   - pytest dragonfly/test/test_parser.py
+  - pytest dragonfly/test/test_engine_text.py
 

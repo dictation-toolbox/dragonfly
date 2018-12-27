@@ -114,6 +114,27 @@ def get_engine(name=None):
             if name:
                 raise EngineError(message)
 
+    # Only retrieve the text input engine if explicitly specified; it is not
+    # an actual SR engine implementation and is mostly intended to be used
+    # for testing.
+    if name == "text":
+        # Attempt to retrieve the TextInput engine instance.
+        try:
+            from .backend_text import is_engine_available
+            from .backend_text import get_engine as get_specific_engine
+            if is_engine_available():
+                _default_engine = get_specific_engine()
+                _engines_by_name["text"] = _default_engine
+                return _default_engine
+        except Exception as e:
+            message = ("Exception while initializing text-input engine:"
+                       " %s" % (e,))
+            log.exception(message)
+            traceback.print_exc()
+            print(message)
+            if name:
+                raise EngineError(message)
+
     if not name:
         raise EngineError("No usable engines found.")
     else:

@@ -1,0 +1,32 @@
+
+.. _RefCLI:
+
+Command-line Interface (CLI)
+============================================================================
+
+.. argparse::
+   :module: dragonfly.__main__
+   :func: make_arg_parser
+
+
+Usage Examples
+----------------------------------------------------------------------------
+Below are some examples using the *test* sub-command. All of them should
+work in Bash.
+
+.. code:: shell
+
+   # Load a command module and mimic two commands separately.
+   echo "command one\n command two" | python -m dragonfly test module.py
+
+   # Same test without the pipe.
+   python -m dragonfly test module.py
+   command one
+   command two
+
+   # Same test with quieter output.
+   echo "command one\n command two" | python -m dragonfly test -q module.py
+
+   # Test loading two modules with the sphinx engine and exit without
+   # checking input.
+   python -m dragonfly test -e sphinx --no-input module1.py module2.py

@@ -19,6 +19,7 @@ from sphinxwrapper import DefaultConfig
 from dragonfly import *
 from dragonfly import List as DragonflyList, DictList as DragonflyDict
 from dragonfly.engines.backend_sphinx.engine import SphinxEngine
+from dragonfly.test import TestContext
 
 
 class MockLoggingHandler(logging.Handler):
@@ -39,16 +40,6 @@ class MockLoggingHandler(logging.Handler):
 
     def emit(self, record):
         self.messages[record.levelname.lower()].append(record.getMessage())
-
-
-class TestContext(Context):
-    def __init__(self, active):
-        super(TestContext, self).__init__()
-        self.active = active
-
-    def matches(self, executable, title, handle):
-        # Ignore the parameters and return self.active.
-        return self.active
 
 
 class SphinxEngineCase(unittest.TestCase):

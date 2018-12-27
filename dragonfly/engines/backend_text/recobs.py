@@ -1,6 +1,6 @@
-#
+﻿#
 # This file is part of Dragonfly.
-# (c) Copyright 2007, 2008 by Christo Butcher
+# (c) Copyright 2018 by Dane Finlay
 # Licensed under the LGPL.
 #
 #   Dragonfly is free software: you can redistribute it and/or modify it 
@@ -18,10 +18,26 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-# --------------------------------------------------------------------------
+"""
+Recognition observer class for the text input engine
+============================================================================
 
-from .infrastructure     import TestError, RecognitionFailure, TestContext
-from .element_testcase   import ElementTestCase
-from .element_tester     import ElementTester
-from .rule_test_grammar  import RuleTestGrammar
-from .rule_testcase      import RuleTestCase
+"""
+
+from ..base import RecObsManagerBase
+
+
+class TextRecobsManager(RecObsManagerBase):
+    """
+    This class's methods are called by the engine directly, rather than through a
+    grammar.
+    """
+    def __init__(self, engine):
+        RecObsManagerBase.__init__(self, engine)
+
+    # The following methods must be implemented by RecObsManagers.
+    def _activate(self):
+        pass
+
+    def _deactivate(self):
+        pass

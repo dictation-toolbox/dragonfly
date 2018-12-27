@@ -41,6 +41,9 @@ Engine backends
 .. automodule:: dragonfly.engines.backend_sphinx
    :members:
 
+.. automodule:: dragonfly.engines.backend_text
+   :members:
+
 
 Dictation container classes
 ----------------------------------------------------------------------------
