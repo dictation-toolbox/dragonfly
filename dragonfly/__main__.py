@@ -21,6 +21,8 @@ def test_with_engine(args):
         return 1
 
     # Set the logging level of the root logger.
+    if args.quiet:
+        args.log_level = "WARNING"
     logging.root.setLevel(getattr(logging, args.log_level))
 
     # Connect to the engine, load grammar modules, take input from stdin and
@@ -74,7 +76,7 @@ _command_map = {
 }
 
 
-def main():
+def make_arg_parser():
     parser = argparse.ArgumentParser(
         prog="python -m dragonfly",
         description="Command-line interface to the Dragonfly speech "
@@ -85,9 +87,9 @@ def main():
     # Create the parser for the "test" command.
     parser_test = subparsers.add_parser(
         "test",
-        help="""Load grammars from Python files for testing with a 
-        dragonfly engine. By default input from stdin is passed to 
-        engine.mimic() after command modules are loaded."""
+        help="Load grammars from Python files for testing with a "
+        "dragonfly engine. By default input from stdin is passed to "
+        "engine.mimic() after command modules are loaded."
     )
     parser_test.add_argument(
         "files", metavar="file", nargs="+", type=argparse.FileType("r"),
@@ -95,12 +97,12 @@ def main():
     )
     parser_test.add_argument(
         "-e", "--engine", default="text",
-        help="Name of the engine to use for testing. (default: text)"
+        help="Name of the engine to use for testing."
     )
     parser_test.add_argument(
         "-l", "--log-level", default="INFO",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        help="Log level to use. (default: WARNING)"
+        help="Log level to use."
     )
     parser_test.add_argument(
         "-n", "--no-input", default=False, action="store_true",
@@ -112,12 +114,13 @@ def main():
         help="Equivalent to '-l WARNING' -- suppresses INFO and DEBUG "
              "logging."
     )
+    return parser
 
+
+def main():
     # Parse the arguments and get the relevant function. Exit if the command
     # is not implemented.
-    args = parser.parse_args()
-    if args.quiet:
-        args.log_level = "WARNING"
+    args = make_arg_parser().parse_args()
 
     def not_implemented(_):
         print("Command '%s' is not implemented" % args.subparser_name)
@@ -130,4 +133,5 @@ def main():
     exit(return_code)
 
 
-main()
+if __name__ == '__main__':
+    main()

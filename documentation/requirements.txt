@@ -1,3 +1,4 @@
 mock
 pyperclip>=1.7.0
 six
+sphinx-argparse

@@ -22,6 +22,24 @@
 SR back-end package for the text input engine
 ============================================================================
 
+The text input engine is a convenient, always available implementation
+designed to be used via the :meth:`engine.mimic` method.
+
+To initialise the text input engine, do the following::
+
+    get_engine("text")
+
+Note that :meth:`dragonfly.engines.get_engine` called without ``"text"``
+will **never** initialise the text input engine. This is because real speech
+recognition backends should be returned from the function by default.
+
+All dragonfly elements and rule classes should be supported. Use all
+uppercase words to mimic input for :class:`Dictation` elements, e.g.
+`"find SOME TEXT"` to match the dragonfly spec `"find <text>"`.
+
+Dragonfly's command-line interface can be used to test command modules with
+the text input engine. See the :ref:`CLI page <RefCLI>` for more details.
+
 """
 
 import logging
