@@ -4,20 +4,21 @@ Language Support
 
 Dragonfly supports multiple spoken languages for its :class:`Integer`,
 :class:`IntegerRef` and :class:`Digits` classes. Each supported language has
-a sub-package under ``dragonfly.language``, although the current engine
-language will be automatically loaded by checking the ``engine.language``
+a sub-package under :attr:`dragonfly.language`. The current engine language
+will be automatically loaded by checking :attr:`engine.language`, an
 `ISO 639-1 code <https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>`_
 (e.g. "en").
 
-The following languages should be fully supported:
+The following languages are supported:
 
+* Arabic - "ar"
+* Dutch - "nl"
 * English (all variants) - "en"
 * German - "de"
-* Dutch - "nl"
+* Indonesian - "id"
+* Malaysian - "ms"
 
-There are also language implementations for Arabic, Indonesian and Malaysian
-in ``dragonfly.language.other``, but they are not automatically loaded at
-the moment.
+English has additional time, date and character related classes.
 
 Supported languages for Dragon NaturallySpeaking 15 are `listed here <https://nuance.custhelp.com/app/answers/detail/a_id/6280/kw/Dragon%20NaturallySpeaking%20languages%20supported/related/1>`_
 and the supported languages for Windows Speech are listed on
