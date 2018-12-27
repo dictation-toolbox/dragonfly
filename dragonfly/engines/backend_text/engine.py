@@ -161,8 +161,10 @@ class TextInputEngine(EngineBase):
                                % (words,))
 
     def speak(self, text):
-        raise NotImplementedError("text-to-speech is not implemented for "
-                                  "this engine")
+        self._log.warning("text-to-speech is not implemented for this "
+                          "engine.")
+        self._log.warning("Printing text instead.")
+        print(text)
 
     @property
     def language(self):
