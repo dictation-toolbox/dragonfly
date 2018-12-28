@@ -3,17 +3,43 @@ Changelog
 
 All notable changes to this project will be documented in this file.
 
-The format is based on `Keep a Changelog`_, using the
+The format is based on `Keep a Changelog`_ using the
 `reStructuredText format`_ instead of Markdown. This project adheres to
-`Semantic Versioning`_ as of version 0.7.0.
+`Semantic Versioning`_ as of version 0.7.0_.
 
 Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
 
-0.9.1_
-------
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add configurable Windows Unicode keyboard support to the :class:`Text`
+  action (thanks `@Versatilus`_).
+* Add Windows accessibility API support to Dragonfly (thanks
+  `@wolfmanstout`_).
+* Add a command-line interface for Dragonfly with a "test" command.
+* Add multi-platform RunCommand action.
+* Add text input engine backend.
+
+Changed
+~~~~~~~
+* Change default paste key for the Paste action to Shift+insert.
+* Change typeables.py to log errors for untypeable characters.
+* Move TestContext class from Pocket Sphinx engine tests into
+  test/infrastructure.py.
+* Move command module classes from loader scripts into
+  dragonfly/loader.py.
+
+Fixed
+~~~~~
+* Fix various Unicode and encoding issues (thanks `@Versatilus`_).
+
+0.9.1_ - 2018-11-22
+-------------------
 
 Changed
 ~~~~~~~
