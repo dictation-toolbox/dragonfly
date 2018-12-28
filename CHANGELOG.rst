@@ -12,8 +12,8 @@ Note: this project had no release versions between 0.6.6b1_ and
 commit history and will be placed under headings in this file over time.
 
 
-Unreleased_
------------
+0.10.0_ - 2018-12-28
+--------------------
 
 Added
 ~~~~~
@@ -215,7 +215,8 @@ This release is the first in the Git version control system.
 
 
 .. Release links.
-.. _Unreleased:  https://github.com/Danesprite/dragonfly/compare/0.9.1...HEAD
+.. _Unreleased:  https://github.com/Danesprite/dragonfly/compare/0.10.0...HEAD
+.. _0.10.0:      https://github.com/Danesprite/dragonfly/compare/0.9.1...0.10.0
 .. _0.9.1:       https://github.com/Danesprite/dragonfly/compare/0.9.0...0.9.1
 .. _0.9.0:       https://github.com/Danesprite/dragonfly/compare/0.8.0...0.9.0
 .. _0.8.0:       https://github.com/Danesprite/dragonfly/compare/0.7.0...0.8.0
