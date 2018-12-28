@@ -27,25 +27,23 @@ def test_with_engine(args):
 
     # Connect to the engine, load grammar modules, take input from stdin and
     # disconnect from the engine if interrupted or if EOF is received.
-    with EngineContext(engine):
+    with engine.connection():
         # Load each module. Errors during loading will be caught and logged.
-        failed_loads = 0
+        # Use the overall success of module loading and/or mimic calls as
+        # the return code.
+        return_code = 0
         for f in args.files:
             module_ = CommandModule(f.name)
             module_.load()
 
             if not module_.loaded:
-                failed_loads += 1
+                return_code = 1
 
             # Also close each file object created by argparse.
             f.close()
 
         # Read lines from stdin and pass them to engine.mimic. Strip excess
         # white space from each line. Report any mimic failures.
-        # Use the success of the last call to engine.mimic as the return
-        # code. If there were no non-empty lines from stdin, the overall
-        # success of module loading will be used instead.
-        return_code = 1 if failed_loads else 0
         if args.no_input:
             # Return early if --no-input was specified.
             return return_code
@@ -61,7 +59,6 @@ def test_with_engine(args):
                 try:
                     engine.mimic(line.split())
                     _log.info("Mimic success for words: %s" % line)
-                    return_code = 0
                 except MimicFailure:
                     _log.error("Mimic failure for words: %s" % line)
                     return_code = 1
