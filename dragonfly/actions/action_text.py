@@ -113,6 +113,10 @@ class Text(DynStrActionBase):
        spacing and capitalization.  This is done by first mimicking
        a word recognition and then analyzing its spacing and
        capitalization and applying the same formatting to the text.
+     - *use_hardware* (boolean) --
+       if *True*, send keyboard events using hardware emulation instead of
+       as Unicode text. This will respect the up/down status of modifier
+       keys.
     """
 
     _pause_default = 0.02

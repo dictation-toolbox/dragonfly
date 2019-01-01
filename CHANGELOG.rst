@@ -29,6 +29,8 @@ Changed
 ~~~~~~~
 * Change default paste key for the Paste action to Shift+insert.
 * Change typeables.py to log errors for untypeable characters.
+* Make **backwards-incompatible** change to the :class:`Text` class where
+  it no longer respects modifier keys being held down by default.
 * Move TestContext class from Pocket Sphinx engine tests into
   test/infrastructure.py.
 * Move command module classes from loader scripts into
