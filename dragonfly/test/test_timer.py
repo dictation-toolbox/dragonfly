@@ -44,7 +44,7 @@ class TestTimer(unittest.TestCase):
     def setUp(self):
         self.log_capture = CapturingHandler()
         logging.getLogger("engine.timer").addHandler(self.log_capture)
-        self.engine = get_engine()
+        self.engine = get_engine("text")
 
     def test_timer_callback_exception(self):
         """ Test handling of exceptions during timer callback. """
@@ -57,6 +57,7 @@ class TestTimer(unittest.TestCase):
         interval = 0.01
         timer = self.engine.create_timer(callback, interval)
         timer.manager.main_callback()
+        self.assertEqual(callback_called, [0])
         time.sleep(0.02)
         timer.manager.main_callback()
 

@@ -47,7 +47,7 @@ class Timer(object):
             return
         self.manager.add_timer(self)
         self.active = True
-        self.next_time = time.clock() + self.interval
+        self.next_time = time.time() + self.interval
 
     def stop(self):
         if not self.active:
@@ -93,7 +93,7 @@ class TimerManagerBase(object):
             self._deactivate_main_callback()
 
     def main_callback(self):
-        now = time.clock()
+        now = time.time()
         for c in self.timers:
             if c.next_time < now:
                 try:
