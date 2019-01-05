@@ -29,7 +29,6 @@ import logging
 import logging.handlers
 import unittest
 import dragonfly.log as log
-from dragonfly import *
 
 
 #===========================================================================
