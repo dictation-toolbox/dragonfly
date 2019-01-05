@@ -46,7 +46,7 @@ from .typeables import typeables
 
 # ---------------------------------------------------------------------------
 
-UNICODE_KEYBOARD = True
+UNICODE_KEYBOARD = False
 HARDWARE_APPS = [
             "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
         ]
@@ -127,7 +127,7 @@ class Text(DynStrActionBase):
                 }
 
     def __init__(self, spec=None, static=False, pause=_pause_default,
-                 autofmt=False, use_hardware=False):
+                 autofmt=False, use_hardware=True):
         self._pause = pause
         self._autofmt = autofmt
         self._use_hardware = use_hardware
