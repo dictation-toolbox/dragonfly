@@ -94,38 +94,38 @@ key_map = (
         (lookup, "8",                              "8 eight"),
         (lookup, "9",                              "9 nine")]),
     ("Symbol keys", [
-        (lookup, "!",                              "bang exclamation"),
-        (lookup, "@",                              "at"),
-        (lookup, "#",                              "hash"),
-        (lookup, "$",                              "dollar"),
-        (lookup, "%",                              "percent"),
-        (lookup, "^",                              "caret"),
-        (lookup, "&",                              "and ampersand"),
-        (lookup, "*",                              "star asterisk"),
-        (lookup, "(",                              "leftparen lparen"),
-        (lookup, ")",                              "rightparen rparen"),
+        (lookup, "!",                              "! bang exclamation"),
+        (lookup, "@",                              "@ at"),
+        (lookup, "#",                              "# hash"),
+        (lookup, "$",                              "$ dollar"),
+        (lookup, "%",                              "% percent"),
+        (lookup, "^",                              "^ caret"),
+        (lookup, "&",                              "& and ampersand"),
+        (lookup, "*",                              "* star asterisk"),
+        (lookup, "(",                              "( leftparen lparen"),
+        (lookup, ")",                              ") rightparen rparen"),
         (lookup, "-",                              "minus hyphen"),
-        (lookup, "_",                              "underscore"),
-        (lookup, "+",                              "plus"),
-        (lookup, "`",                              "backtick"),
-        (lookup, "~",                              "tilde"),
-        (lookup, "[",                              "leftbracket lbracket"),
-        (lookup, "]",                              "rightbracket rbracket"),
-        (lookup, "{",                              "leftbrace lbrace"),
-        (lookup, "}",                              "rightbrace rbrace"),
-        (lookup, "\\",                             "backslash"),
-        (lookup, "|",                              "bar"),
+        (lookup, "_",                              "_ underscore"),
+        (lookup, "+",                              "+ plus"),
+        (lookup, "`",                              "` backtick"),
+        (lookup, "~",                              "~ tilde"),
+        (lookup, "[",                              "[ leftbracket lbracket"),
+        (lookup, "]",                              "] rightbracket rbracket"),
+        (lookup, "{",                              "{ leftbrace lbrace"),
+        (lookup, "}",                              "} rightbrace rbrace"),
+        (lookup, "\\",                             "\\ backslash"),
+        (lookup, "|",                              "| bar"),
         (lookup, ":",                              "colon"),
-        (lookup, ";",                              "semicolon"),
-        (lookup, "'",                              "apostrophe singlequote squote"),
-        (lookup, '"',                              "quote doublequote dquote"),
+        (lookup, ";",                              "; semicolon"),
+        (lookup, "'",                              "' apostrophe singlequote squote"),
+        (lookup, '"',                              "\" quote doublequote dquote"),
         (lookup, ",",                              "comma"),
-        (lookup, ".",                              "dot"),
+        (lookup, ".",                              ". dot"),
         (lookup, "/",                              "slash"),
-        (lookup, "<",                              "lessthan leftangle langle"),
-        (lookup, ">",                              "greaterthan rightangle rangle"),
-        (lookup, "?",                              "question"),
-        (lookup, "=",                              "equal equals")]),
+        (lookup, "<",                              "< lessthan leftangle langle"),
+        (lookup, ">",                              "> greaterthan rightangle rangle"),
+        (lookup, "?",                              "? question"),
+        (lookup, "=",                              "= equal equals")]),
     ("Whitespace and editing keys", [
         (vkey,   "win32con.VK_RETURN",             "enter"),
         (vkey,   "win32con.VK_TAB",                "tab"),
@@ -210,15 +210,15 @@ for group_name, group_map in key_map:
     for key_type, key_value, key_names in group_map:
         for key_name in key_names.split():
             if key_type == lookup:
-                value_code = "keyboard.get_typeable(char=%r)" % key_value
+                print('_add_typeable(name="%s", char='%s')' % (key_name, key_value))
             elif key_type == vkey:
                 value_code = ("Typeable(code=%s, name=%r)"
                               % (key_value, key_name))
+                print(('    "%s": %s%s,'
+                       % (key_name, " " * (16-len(key_name)), value_code)))
             else:
                 raise Exception("Invalid key type: {0!r} (for {1!r} {2!r})"
                                 .format(key_type, key_value, key_names))
-            print(('    "%s": %s%s,'
-                   % (key_name, " " * (16-len(key_name)), value_code)))
     print("")
 
 print("---- Code for documentation in action_key.py")
