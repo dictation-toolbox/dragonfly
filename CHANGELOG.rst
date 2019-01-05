@@ -11,6 +11,16 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+0.10.1_ - 2019-01-05
+--------------------
+
+Fixed
+~~~~~
+* Disable **backwards-incompatible** Unicode keyboard functionality by
+  default for the :class:`Text` action. Restoring the old behaviour
+  requires deleting/modifying the `~/.dragonfly2-speech/settings.cfg`
+  file.
+
 
 0.10.0_ - 2018-12-28
 --------------------
@@ -217,7 +227,8 @@ This release is the first in the Git version control system.
 
 
 .. Release links.
-.. _Unreleased:  https://github.com/Danesprite/dragonfly/compare/0.10.0...HEAD
+.. _Unreleased:  https://github.com/Danesprite/dragonfly/compare/0.10.1...HEAD
+.. _0.10.1:      https://github.com/Danesprite/dragonfly/compare/0.10.0...0.10.1
 .. _0.10.0:      https://github.com/Danesprite/dragonfly/compare/0.9.1...0.10.0
 .. _0.9.1:       https://github.com/Danesprite/dragonfly/compare/0.9.0...0.9.1
 .. _0.9.0:       https://github.com/Danesprite/dragonfly/compare/0.8.0...0.9.0
