@@ -73,9 +73,10 @@ def load_configuration():
         os.mkdir(config_folder)
     if not os.path.exists(config_path):
         with io.open(config_path, "w") as f:
-            f.write(u'[Text]\nhardware_apps = '
-                    u'tvnviewer.exe|vncviewer.exe|mstsc.exe|virtualbox.exe\n'
-                    u'unicode_keyboard = true\n')
+            # Write the default values to the config file.
+            f.write(u'[Text]\n')
+            f.write(u'hardware_apps = %s\n' % "|".join(HARDWARE_APPS))
+            f.write(u'unicode_keyboard = %s\n' % UNICODE_KEYBOARD)
 
     parser = configparser.ConfigParser()
     parser.read(config_path)
