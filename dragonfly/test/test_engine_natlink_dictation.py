@@ -29,9 +29,9 @@ import unittest
 from six import string_types, text_type
 
 from dragonfly import *
-from ..test import TestError, RecognitionFailure, ElementTester
-from ..engines.base import DictationContainerBase
-from ..engines.backend_natlink.dictation import NatlinkDictationContainer
+from dragonfly.test import TestError, RecognitionFailure, ElementTester
+from dragonfly.engines.base import DictationContainerBase
+from dragonfly.engines.backend_natlink.dictation import NatlinkDictationContainer
 
 
 #===========================================================================

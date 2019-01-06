@@ -87,5 +87,5 @@ setup(
 
       packages=find_packages(),
 
-      test_suite="dragonfly.test.suites.natlink_suite",
+      test_suite="dragonfly.test.suites.text_suite",
      )

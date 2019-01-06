@@ -25,7 +25,6 @@ from six import string_types, text_type
 
 from dragonfly.engines.base.dictation   import DictationContainerBase
 from dragonfly.grammar.elements         import Compound, Dictation
-from dragonfly.test.infrastructure      import RecognitionFailure
 from dragonfly.test.element_testcase    import ElementTestCase
 from dragonfly.test.element_tester      import ElementTester
 
