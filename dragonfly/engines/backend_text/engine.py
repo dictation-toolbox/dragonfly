@@ -18,7 +18,7 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from six import string_types, text_type
+from six import string_types, text_type, PY2
 
 import dragonfly.grammar.state as state_
 from dragonfly import Window
@@ -30,7 +30,8 @@ from ..base import EngineBase, EngineError, MimicFailure
 
 
 def _map_word(word):
-    word = text_type(word)
+    if PY2 and isinstance(word, str):
+        word = text_type(word, encoding="utf-8")
     if word.isupper():
         # Convert dictation words to lowercase for consistent output.
         return word.lower(), 1000000
@@ -176,7 +177,7 @@ class TextInputEngine(EngineBase):
             if processing_occurred:
                 # Notify observers of the recognition.
                 self._recognition_observer_manager.notify_recognition(
-                    [word for word, _ in words_rules]
+                    tuple([word for word, _ in words_rules])
                 )
                 break
 
