@@ -4,17 +4,58 @@
 Doctests for the fundamental element classes
 ****************************************************************************
 
-Sequence element class
-==========================================================================
-
 Test fixture initialization::
 
     >>> from dragonfly import *
     >>> from dragonfly.test import ElementTester
 
 
-Sequence
-----------------------------------------------------------------------------
+Alternative element class
+============================================================================
+
+Usage::
+
+    >>> alt = Alternative([Literal("hello"), Literal("goodbye")])
+    >>> test_alt = ElementTester(alt)
+    >>> test_alt.recognize("hello")
+    u'hello'
+    >>> test_alt.recognize("goodbye")
+    u'goodbye'
+    >>> test_alt.recognize("hi")
+    RecognitionFailure
+
+
+Literal element class
+============================================================================
+
+Usage::
+
+    >>> literal = Literal("hello")
+    >>> test_literal = ElementTester(literal)
+    >>> test_literal.recognize("hello")
+    u'hello'
+    >>> test_literal.recognize("goodbye")
+    RecognitionFailure
+
+
+Optional element class
+============================================================================
+
+Usage::
+
+    >>> seq = Sequence([Literal("hello"), Optional(Literal("there"))])
+    >>> test_seq = ElementTester(seq)
+    >>> # Optional parts of the sequence can be left out.
+    >>> test_seq.recognize("hello")
+    [u'hello', None]
+    >>> test_seq.recognize("hello there")
+    [u'hello', u'there']
+    >>> test_seq.recognize("goodbye")
+    RecognitionFailure
+
+
+Sequence element class
+============================================================================
 
 Basic usage::
 
@@ -38,3 +79,42 @@ Constructor arguments::
     Traceback (most recent call last):
       ...
     TypeError: children object must contain only <class 'dragonfly.grammar.elements_basic.ElementBase'> types.  (Received ('i', 'n', 'v', 'a', 'l', 'i', 'd', '_', 'c', 'h', 'i', 'l', 'd', 'r', 'e', 'n', '_', 't', 'y', 'p', 'e'))
+
+
+Repetition element class
+============================================================================
+
+Usage::
+
+    >>> # Repetition is given a dragonfly element, in this case a Sequence.
+    >>> seq = Sequence([Literal("hello"), Literal("world")])
+    >>> # Specify min and max values to allow more than one repetition.
+    >>> rep = Repetition(seq, min=1, max=16)
+    >>> test_rep = ElementTester(rep)
+    >>> test_rep.recognize("hello world")
+    [[u'hello', u'world']]
+    >>> test_rep.recognize("hello world hello world")
+    [[u'hello', u'world'], [u'hello', u'world']]
+    >>> # Incomplete recognitions result in recognition failure.
+    >>> test_rep.recognize("hello universe")
+    RecognitionFailure
+    >>> test_rep.recognize("hello world hello universe")
+    RecognitionFailure
+    >>> # Too many recognitions also result in recognition failure.
+    >>> test_rep.recognize(" ".join(["hello world"] * 17))
+    RecognitionFailure
+
+
+RuleRef element class
+============================================================================
+
+Basic usage::
+
+    >>> # Define a simple private CompoundRule and reference it.
+    >>> greet = CompoundRule(name="greet", spec="greetings", exported=False)
+    >>> ref = RuleRef(rule=greet, name="greet")
+    >>> test_ref = ElementTester(ref)
+    >>> test_ref.recognize("greetings")
+    u'greetings'
+    >>> test_ref.recognize("hello")
+    RecognitionFailure
