@@ -18,66 +18,81 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import unittest
 import doctest
-import pkg_resources
 import os.path
+import sys
+import unittest
+
+from six import PY3
+
 from dragonfly.test.engine_suite import EngineTestSuite
 
 
-#===========================================================================
+# ==========================================================================
 
-common_names   = [
-                  ".test_log",
-                  ".test_actions",
-                  ".test_parser",
-#                  ".test_engine",
-                  ".test_engine_nonexistent",
-                  ".test_window",
-                  ".test_timer",
-                  ".test_dictation",
-                  ".test_language_en_number",
-                  ".test_language_de_number",
-                  ".test_language_nl_number",
-                  ".test_accessibility",
-                  "doc:documentation/test_action_base_doctest.txt",
-                  "doc:documentation/test_grammar_elements_basic_doctest.txt",
-                  "doc:documentation/test_grammar_elements_compound_doctest.txt",
-                  "doc:documentation/test_grammar_list_doctest.txt",
-                 ]
+common_names = [
+    "test_accessibility",
+    "test_contexts",
+    "test_engine_nonexistent",
+    "test_language_de_number",
+    "test_language_en_number",
+    "test_language_nl_number",
+    "test_log",
+    "test_parser",
+    "test_timer",
+    "doc:documentation/test_action_base_doctest.txt",
+    "doc:documentation/test_grammar_elements_basic_doctest.txt",
+    "doc:documentation/test_grammar_elements_compound_doctest.txt",
+    "doc:documentation/test_grammar_list_doctest.txt",
+    "doc:documentation/test_recobs_doctest.txt",
+]
 
-natlink_names  = [
-                  ".test_engine_natlink",
-                  "doc:documentation/test_recobs_doctest.txt",
-#                  "doc:documentation/test_word_formatting_v10_doctest.txt",
-                  "doc:documentation/test_word_formatting_v11_doctest.txt",
-                 ]
+# Only include common Windows-only tests on Windows.
+if sys.platform == "nt":
+    common_names.extend([
+        "test_window",
+        "test_actions",
+    ])
 
-sapi5_names    = [
-                  ".test_engine_sapi5",
-                 ]
+natlink_names = [
+    "test_dictation",
+    "test_engine_natlink",
+    "test_engine_natlink_dictation",
+    # "doc:documentation/test_word_formatting_v10_doctest.txt",
+    "doc:documentation/test_word_formatting_v11_doctest.txt",
+]
 
-sphinx_names   = [
-                  ".test_engine_sphinx",
-                 ]
-#===========================================================================
+sapi5_names = [
+    "test_dictation",
+    "test_engine_sapi5",
+]
+
+sphinx_names = [
+    "test_engine_sphinx",
+]
+
+text_names = [
+    "test_engine_text",
+    "test_engine_text_dictation",
+]
+
+# ==========================================================================
 
 def build_suite(suite, names):
-    # Determine the root directory of the source code files.  This is
-    #  used for finding doctest files specified relative to that root.
-    project_root = os.path.join(os.path.dirname(__file__), "..", "..")
-    project_root = os.path.abspath(project_root)
-
     # Load test cases from specified names.
     loader = unittest.defaultTestLoader
     for name in names:
-        if name.startswith("."):
-            name = "dragonfly.test" + name
+        if name.startswith("test_"):
             suite.addTests(loader.loadTestsFromName(name))
         elif name.startswith("doc:"):
-            path = name[4:]
-            path = os.path.join(project_root, *path.split("/"))
-            path = os.path.abspath(path)
+            # Skip doc tests for Python 3.x because of incompatible Unicode
+            # string comparisons in some tests.
+            # TODO Use pytest instead for its ALLOW_UNICODE doctest flag.
+            if PY3:
+                continue
+
+            # Load doc tests using a relative path.
+            path = os.path.join("..", "..", "%s" % name[4:])
             suite.addTests(doctest.DocFileSuite(path))
         else:
             raise Exception("Invalid test name: %r." % (name,))
@@ -88,5 +103,13 @@ natlink_suite  = build_suite(EngineTestSuite("natlink"),
                              natlink_names + common_names)
 sapi5_suite    = build_suite(EngineTestSuite("sapi5"),
                              sapi5_names + common_names)
-sphinx_suite    = build_suite(EngineTestSuite("sphinx"),
+sphinx_suite   = build_suite(EngineTestSuite("sphinx"),
                              sphinx_names + common_names)
+text_suite     = build_suite(EngineTestSuite("text"),
+                             text_names + common_names)
+
+
+if __name__ == "__main__":
+    # TODO Have a way of running all test suites
+    runner = unittest.TextTestRunner()
+    runner.run(text_suite)
