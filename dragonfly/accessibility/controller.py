@@ -63,8 +63,7 @@ class AccessibilityController(object):
                     replacement = replacement.upper()
                 elif text_info.text and text_info.text[0].isupper():
                     replacement = replacement.capitalize()
-                # TODO Add escaping.
-                Text(replacement).execute()
+                Text(replacement.replace("%", "%%")).execute()
             else:
                 # Delete the selected text with a single backspace. Note that
                 # the user may want to delete the preceding whitespace as well,
