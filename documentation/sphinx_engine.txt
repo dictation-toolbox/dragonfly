@@ -21,7 +21,7 @@ There are three dependencies for using the Pocket Sphinx engine:
 *sphinxwrapper* must be installed manually at the moment. You can install
 it from the git submodule by running the following::
   
-  git clone --recursive https://github.com/Danesprite/dragonfly.git
+  git clone --recursive https://github.com/dictation-toolbox/dragonfly.git
   git submodule foreach python setup.py install
 
 You can install the other packages using::
@@ -283,8 +283,8 @@ to popular open source text-to-speech software such as `eSpeak`_,
 .. _SphinxTrainingHelper: https://github.com/ExpandingDev/SphinxTrainingHelper
 .. _YouTube video on model adaption: https://www.youtube.com/watch?v=IAHH6-t9jK0
 .. _adaption tutorial: https://cmusphinx.github.io/wiki/tutorialadapt/
-.. _default engine config module: https://github.com/Danesprite/dragonfly/blob/master/dragonfly/engines/backend_sphinx/config.py
-.. _dragonfly/examples/sphinx_module_loader.py: https://github.com/Danesprite/dragonfly/blob/master/dragonfly/examples/sphinx_module_loader.py
+.. _default engine config module: https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/engines/backend_sphinx/config.py
+.. _dragonfly/examples/sphinx_module_loader.py: https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/sphinx_module_loader.py
 .. _eSpeak: http://espeak.sourceforge.net/
 .. _pocketsphinx/cmdln_macro.h: https://github.com/cmusphinx/pocketsphinx/blob/master/include/cmdln_macro.h
 .. _ps_add_word: https://cmusphinx.github.io/doc/pocketsphinx/pocketsphinx_8h.html#a5f3c4fcdbef34915c4e785ac9a1c6005

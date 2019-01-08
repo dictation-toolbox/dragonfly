@@ -227,20 +227,20 @@ This release is the first in the Git version control system.
 
 
 .. Release links.
-.. _Unreleased:  https://github.com/Danesprite/dragonfly/compare/0.10.1...HEAD
-.. _0.10.1:      https://github.com/Danesprite/dragonfly/compare/0.10.0...0.10.1
-.. _0.10.0:      https://github.com/Danesprite/dragonfly/compare/0.9.1...0.10.0
-.. _0.9.1:       https://github.com/Danesprite/dragonfly/compare/0.9.0...0.9.1
-.. _0.9.0:       https://github.com/Danesprite/dragonfly/compare/0.8.0...0.9.0
-.. _0.8.0:       https://github.com/Danesprite/dragonfly/compare/0.7.0...0.8.0
-.. _0.7.0:       https://github.com/Danesprite/dragonfly/compare/74981c1...0.7.0
-.. _0.6.6b1:     https://github.com/Danesprite/dragonfly/compare/0.6.5...0.6.6b1
-.. _0.6.5:       https://github.com/Danesprite/dragonfly/compare/0.6.4-rc3...0.6.5
-.. _0.6.4:       https://github.com/Danesprite/dragonfly/compare/0.6.4-rc3...0.6.4
-.. _0.6.4-rc3:   https://github.com/Danesprite/dragonfly/compare/0.6.4-rc2...0.6.4-rc3
-.. _0.6.4-rc2:   https://github.com/Danesprite/dragonfly/compare/0.6.4-rc1...0.6.4-rc2
-.. _0.6.4-rc1:   https://github.com/Danesprite/dragonfly/compare/0.6.1...0.6.4-rc1
-.. _0.6.1:       https://github.com/Danesprite/dragonfly/compare/03d06af...0.6.1
+.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.10.1...HEAD
+.. _0.10.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.10.0...0.10.1
+.. _0.10.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.9.1...0.10.0
+.. _0.9.1:       https://github.com/dictation-toolbox/dragonfly/compare/0.9.0...0.9.1
+.. _0.9.0:       https://github.com/dictation-toolbox/dragonfly/compare/0.8.0...0.9.0
+.. _0.8.0:       https://github.com/dictation-toolbox/dragonfly/compare/0.7.0...0.8.0
+.. _0.7.0:       https://github.com/dictation-toolbox/dragonfly/compare/74981c1...0.7.0
+.. _0.6.6b1:     https://github.com/dictation-toolbox/dragonfly/compare/0.6.5...0.6.6b1
+.. _0.6.5:       https://github.com/dictation-toolbox/dragonfly/compare/0.6.4-rc3...0.6.5
+.. _0.6.4:       https://github.com/dictation-toolbox/dragonfly/compare/0.6.4-rc3...0.6.4
+.. _0.6.4-rc3:   https://github.com/dictation-toolbox/dragonfly/compare/0.6.4-rc2...0.6.4-rc3
+.. _0.6.4-rc2:   https://github.com/dictation-toolbox/dragonfly/compare/0.6.4-rc1...0.6.4-rc2
+.. _0.6.4-rc1:   https://github.com/dictation-toolbox/dragonfly/compare/0.6.1...0.6.4-rc1
+.. _0.6.1:       https://github.com/dictation-toolbox/dragonfly/compare/03d06af...0.6.1
 
 .. Other links.
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/

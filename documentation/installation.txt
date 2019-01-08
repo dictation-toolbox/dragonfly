@@ -50,7 +50,7 @@ distribution name, you'll need to remove the old version using:
 
 Dragonfly can also be installed by cloning this repository or
 downloading it from `the releases
-page <https://github.com/Danesprite/dragonfly/releases>`__ and running
+page <https://github.com/dictation-toolbox/dragonfly/releases>`__ and running
 the following (or similar) command in the project's root directory:
 
 .. code:: shell

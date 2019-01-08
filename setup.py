@@ -50,7 +50,7 @@ setup(
       maintainer       = "Dane Finlay",
       maintainer_email = "Danesprite@gmail.com",
       license          = "LICENSE.txt",
-      url              = "https://github.com/Danesprite/dragonfly",
+      url              = "https://github.com/dictation-toolbox/dragonfly",
       zip_safe         = False,  # To unzip documentation files.
       long_description = read("README.rst"),
 

@@ -18,7 +18,7 @@ It currently supports the following speech recognition engines:
 Dragonfly's documentation is available online at `Read the
 Docs <http://dragonfly2.readthedocs.org/en/latest/>`__. The changes in
 each release are listed in the project's `changelog
-<https://github.com/Danesprite/dragonfly/blob/master/CHANGELOG.rst>`__.
+<https://github.com/dictation-toolbox/dragonfly/blob/master/CHANGELOG.rst>`__.
 Dragonfly's FAQ is available at
 `Stackoverflow <http://stackoverflow.com/questions/tagged/python-dragonfly>`__.
 Dragonfly's mailing list/discussion group is available at `Google
@@ -54,7 +54,7 @@ distribution name, you'll need to remove the old version using:
 
 Dragonfly can also be installed by cloning this repository or
 downloading it from `the releases
-page <https://github.com/Danesprite/dragonfly/releases>`__ and running
+page <https://github.com/dictation-toolbox/dragonfly/releases>`__ and running
 the following (or similar) command in the project's root directory:
 
 .. code:: shell
