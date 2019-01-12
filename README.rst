@@ -151,8 +151,8 @@ compared to Dragonfly as follows:
    Dragonfly is a platform on which macro-writers can easily build new
    commands.
 
-.. |Build Status| image:: https://travis-ci.org/Danesprite/dragonfly.svg?branch=master
-   :target: https://travis-ci.org/Danesprite/dragonfly
+.. |Build Status| image:: https://travis-ci.org/dictation-toolbox/dragonfly.svg?branch=master
+   :target: https://travis-ci.org/dictation-toolbox/dragonfly
 .. |Docs Status| image:: https://readthedocs.org/projects/dragonfly2/badge/?version=latest&style=flat
    :target: https://dragonfly2.readthedocs.io
 .. |Join the chat at https://gitter.im/sphinx-dragonfly| image:: https://badges.gitter.im/Join%20Chat.svg
