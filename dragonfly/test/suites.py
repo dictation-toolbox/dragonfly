@@ -19,8 +19,8 @@
 #
 
 import doctest
+import os
 import os.path
-import sys
 import unittest
 
 from six import PY3
@@ -34,9 +34,6 @@ common_names = [
     "test_accessibility",
     "test_contexts",
     "test_engine_nonexistent",
-    "test_language_de_number",
-    "test_language_en_number",
-    "test_language_nl_number",
     "test_log",
     "test_parser",
     "test_timer",
@@ -48,32 +45,49 @@ common_names = [
 ]
 
 # Only include common Windows-only tests on Windows.
-if sys.platform == "nt":
-    common_names.extend([
-        "test_window",
-        "test_actions",
-    ])
+if os.name == "nt":
+    common_names.extend(["test_window", "test_actions"])
 
+
+# Define spoken language test files. All of them work with the natlink and
+# text engines. The English tests should work with sapi5 and sphinx by
+# default.
+language_names = [
+    "test_language_de_number",
+    "test_language_en_number",
+    "test_language_nl_number",
+]
+
+
+# Define the tests to run for DNS versions 10 and below.
+natlink_10_names = [
+    "test_dictation",
+    "test_engine_natlink",
+    "doc:documentation/test_word_formatting_v10_doctest.txt",
+] + language_names
+
+# Define the tests to run for DNS versions 11 and above.
 natlink_names = [
     "test_dictation",
     "test_engine_natlink",
-    # "doc:documentation/test_word_formatting_v10_doctest.txt",
     "doc:documentation/test_word_formatting_v11_doctest.txt",
-]
+] + language_names
 
 sapi5_names = [
     "test_dictation",
     "test_engine_sapi5",
+    "test_language_en_number",
 ]
 
 sphinx_names = [
     "test_engine_sphinx",
+    "test_language_en_number",
 ]
 
 text_names = [
     "test_engine_text",
     "test_engine_text_dictation",
-]
+] + language_names
 
 # ==========================================================================
 
@@ -82,6 +96,9 @@ def build_suite(suite, names):
     loader = unittest.defaultTestLoader
     for name in names:
         if name.startswith("test_"):
+            # Use full module names so the loader can import the files
+            # correctly.
+            name = "dragonfly.test." + name
             suite.addTests(loader.loadTestsFromName(name))
         elif name.startswith("doc:"):
             # Skip doc tests for Python 3.x because of incompatible Unicode
@@ -91,24 +108,20 @@ def build_suite(suite, names):
                 continue
 
             # Load doc tests using a relative path.
-            path = os.path.join("..", "..", "%s" % name[4:])
+            path = os.path.join("..", "..", name[4:])
             suite.addTests(doctest.DocFileSuite(path))
         else:
             raise Exception("Invalid test name: %r." % (name,))
     return suite
 
 
-natlink_suite  = build_suite(EngineTestSuite("natlink"),
-                             natlink_names + common_names)
-sapi5_suite    = build_suite(EngineTestSuite("sapi5"),
-                             sapi5_names + common_names)
-sphinx_suite   = build_suite(EngineTestSuite("sphinx"),
-                             sphinx_names + common_names)
-text_suite     = build_suite(EngineTestSuite("text"),
-                             text_names + common_names)
-
-
-if __name__ == "__main__":
-    # TODO Have a way of running all test suites
-    runner = unittest.TextTestRunner()
-    runner.run(text_suite)
+natlink_10_suite = build_suite(EngineTestSuite("natlink"),
+                               natlink_10_names + common_names)
+natlink_suite    = build_suite(EngineTestSuite("natlink"),
+                               natlink_names + common_names)
+sapi5_suite      = build_suite(EngineTestSuite("sapi5"),
+                               sapi5_names + common_names)
+sphinx_suite     = build_suite(EngineTestSuite("sphinx"),
+                               sphinx_names + common_names)
+text_suite       = build_suite(EngineTestSuite("text"),
+                               text_names + common_names)
