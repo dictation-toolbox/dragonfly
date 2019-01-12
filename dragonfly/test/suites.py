@@ -57,7 +57,6 @@ if sys.platform == "nt":
 natlink_names = [
     "test_dictation",
     "test_engine_natlink",
-    "test_engine_natlink_dictation",
     # "doc:documentation/test_word_formatting_v10_doctest.txt",
     "doc:documentation/test_word_formatting_v11_doctest.txt",
 ]
