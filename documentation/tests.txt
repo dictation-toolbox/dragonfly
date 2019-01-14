@@ -52,13 +52,9 @@ Follow the following steps to run the test suite for the DNS backend:
         python setup.py test --test-suite=dragonfly.test.suites.natlink_suite
 
 
-Dragonfly has tests for DNS versions 10 and below. They can be run using the
-following commands instead:
-
-    .. code:: shell
-
-        cd <dir>
-        python setup.py test --test-suite=dragonfly.test.suites.natlink_10_suite
+Different tests need to be run for different DNS versions. The natlink test
+suite will attempt to run the correct tests for the version of DNS you are
+using.
 
 
 Using WSR
