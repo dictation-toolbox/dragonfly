@@ -155,6 +155,17 @@ class Text(DynStrActionBase):
        keys.
     """
 
+    class Events(object):
+        def __init__(self,
+                     hardware_events,
+                     hardware_error_message,
+                     unicode_events,
+                     unicode_error_message):
+            self.hardware_events = hardware_events
+            self.hardware_error_message = hardware_error_message
+            self.unicode_events = unicode_events
+            self.unicode_error_message = unicode_error_message
+
     _pause_default = 0.02
     _keyboard = Keyboard()
     _specials = {
@@ -172,38 +183,38 @@ class Text(DynStrActionBase):
     def _parse_spec(self, spec):
         """Convert the given *spec* to keyboard events."""
         from struct import unpack
-        events = []
-        if self._use_hardware or require_hardware_emulation():
-            for character in spec:
-                if character in self._specials:
-                    typeable = self._specials[character]
-                    events.extend(typeable.events(self._pause))
-                else:
+        hardware_events = []
+        unicode_events = []
+        hardware_error_message = None
+        unicode_error_message = None
+        for character in text_type(spec):
+            if character in self._specials:
+                typeable = self._specials[character]
+                hardware_events.extend(typeable.events(self._pause))
+                unicode_events.extend(typeable.events(self._pause))
+            else:
+                # Add hardware events.
+                try:
+                    typeable = Keyboard.get_typeable(character)
+                    hardware_events.extend(typeable.events(self._pause))
+                except ValueError:
+                    hardware_error_message = ("Keyboard interface cannot type this"
+                                              " character: %r (in %r)"
+                                              % (character, spec))
+                # Add Unicode events.
+                byte_stream = character.encode("utf-16-le")
+                for short in unpack("<" + str(len(byte_stream) // 2) + "H",
+                                    byte_stream):
                     try:
-                        typeable = Keyboard.get_typeable(character)
-                        events.extend(typeable.events(self._pause))
+                        typeable = Keyboard.get_typeable(short,
+                                                         is_text=True)
+                        unicode_events.extend(typeable.events(self._pause * 0.5))
                     except ValueError:
-                        raise ActionError("Keyboard interface cannot type this"
-                                          " character: %r (in %r)"
-                                          % (character, spec))
-        else:
-            for character in text_type(spec):
-                if character in self._specials:
-                    typeable = self._specials[character]
-                    events.extend(typeable.events(self._pause))
-                else:
-                    byte_stream = character.encode("utf-16-le")
-                    for short in unpack("<" + str(len(byte_stream) // 2) + "H",
-                                        byte_stream):
-                        try:
-                            typeable = Keyboard.get_typeable(short,
-                                                             is_text=True)
-                            events.extend(typeable.events(self._pause * 0.5))
-                        except ValueError:
-                            raise ActionError("Keyboard interface cannot type "
-                                              "this character: %r (in %r)" %
-                                              (character, spec))
-        return events
+                        unicode_error_message = ("Keyboard interface cannot type "
+                                                 "this character: %r (in %r)" %
+                                                 (character, spec))
+        return self.Events(hardware_events, hardware_error_message,
+                           unicode_events, unicode_error_message)
 
     def _execute_events(self, events):
         """
@@ -244,5 +255,14 @@ class Text(DynStrActionBase):
             events = self._parse_spec(prefix + text + suffix)
 
         # Send keyboard events.
-        self._keyboard.send_keyboard_events(events)
+        if self._use_hardware or require_hardware_emulation():
+            error_message = events.hardware_error_message
+            keyboard_events = events.hardware_events
+        else:
+            error_message = events.unicode_error_message
+            keyboard_events = events.unicode_events
+        if error_message:
+            raise ActionError(error_message)
+        else:
+            self._keyboard.send_keyboard_events(keyboard_events)
         return True
