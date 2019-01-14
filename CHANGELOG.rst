@@ -22,6 +22,34 @@ Fixed
   file.
 
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add more doctests for fundamental dragonfly elements.
+* Add simple timer manager class for the text input engine.
+* Add tests for exclusive grammars and grammar/rule contexts.
+
+Changed
+~~~~~~~
+* Change logging framework to use ~/.dragonfly.log as the log file to make
+  logging work on Windows and on other operating systems.
+* Change the Natlink test suite to run different tests for different DNS
+  versions.
+* Change the default test suite to the "text" engine's test suite and add it
+  to the CI build.
+* Update documentation page for the test suites.
+
+Fixed
+~~~~~
+* Fix some encoding bugs with the text input engine.
+* Fix various issues with dragonfly's tests.
+
+Removed
+~~~~~~~
+* Remove old test files.
+
 0.10.0_ - 2018-12-28
 --------------------
 

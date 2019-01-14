@@ -13,15 +13,15 @@ information. For example::
 
     >>> from dragonfly.engines.backend_natlink.dictation_format import WordParserDns11
     >>> parser_dns11 = WordParserDns11()
-    >>> print parser_dns11.parse_input("hello")
-    Word(u'hello')
-    >>> print parser_dns11.parse_input(".\\period\\full-stop")
-    Word(u'.', u'full-stop', no_space_before, two_spaces_after, cap_next, not_after_period)
+    >>> print(parser_dns11.parse_input("hello"))
+    Word('hello')
+    >>> print(parser_dns11.parse_input(".\\period\\full-stop"))
+    Word('.', 'full-stop', no_space_before, two_spaces_after, cap_next, not_after_period)
 
 Nonexistent words can be parsed, but don't have any formatting info::
 
-    >>> print parser_dns11.parse_input("nonexistent-word")
-    Word(u'nonexistent-word')
+    >>> print(parser_dns11.parse_input("nonexistent-word"))
+    Word('nonexistent-word')
 
 This helper function allows for a compact notation of input string tests::
 

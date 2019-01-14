@@ -48,10 +48,16 @@ class TextDictationContainer(DictationContainerBase):
     def __init__(self, words):
         DictationContainerBase.__init__(self, words=words)
 
+    def __str__(self):
+        if PY2:
+            return self.__unicode__().encode("utf-8")
+        else:
+            return self.__unicode__()
+
     def __repr__(self):
         message = u"%s(%s)" % (self.__class__.__name__,
                                u", ".join(self._words))
         if PY2:
-            return message.encode()
+            return message.encode("utf-8")
         else:
             return message

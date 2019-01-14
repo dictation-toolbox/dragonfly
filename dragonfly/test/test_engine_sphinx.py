@@ -14,8 +14,6 @@ import unittest
 import time
 import logging
 
-from sphinxwrapper import DefaultConfig
-
 from dragonfly import *
 from dragonfly import List as DragonflyList, DictList as DragonflyDict
 from dragonfly.engines.backend_sphinx.engine import SphinxEngine
@@ -188,6 +186,8 @@ class BasicEngineTests(SphinxEngineCase):
             "END_TRAINING_PHRASE",
             "END_TRAINING_THRESHOLD",
         ]
+
+        from sphinxwrapper import DefaultConfig
 
         class TestConfig(object):
             DECODER_CONFIG = DefaultConfig()

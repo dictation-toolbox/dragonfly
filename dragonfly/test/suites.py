@@ -18,75 +18,144 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import unittest
 import doctest
-import pkg_resources
+import logging
+import os
 import os.path
+import unittest
+
+from six import PY3
+
+from dragonfly.log import setup_log
 from dragonfly.test.engine_suite import EngineTestSuite
 
 
-#===========================================================================
+# Set up dragonfly logging
+setup_log()
+_log = logging.getLogger("dfly.test")
 
-common_names   = [
-                  ".test_log",
-                  ".test_actions",
-                  ".test_parser",
-#                  ".test_engine",
-                  ".test_engine_nonexistent",
-                  ".test_window",
-                  ".test_timer",
-                  ".test_dictation",
-                  ".test_language_en_number",
-                  ".test_language_de_number",
-                  ".test_language_nl_number",
-                  ".test_accessibility",
-                  "doc:documentation/test_action_base_doctest.txt",
-                  "doc:documentation/test_grammar_elements_basic_doctest.txt",
-                  "doc:documentation/test_grammar_elements_compound_doctest.txt",
-                  "doc:documentation/test_grammar_list_doctest.txt",
-                 ]
 
-natlink_names  = [
-                  ".test_engine_natlink",
-                  "doc:documentation/test_recobs_doctest.txt",
-#                  "doc:documentation/test_word_formatting_v10_doctest.txt",
-                  "doc:documentation/test_word_formatting_v11_doctest.txt",
-                 ]
+# ==========================================================================
 
-sapi5_names    = [
-                  ".test_engine_sapi5",
-                 ]
+common_names = [
+    "test_accessibility",
+    "test_contexts",
+    "test_engine_nonexistent",
+    "test_log",
+    "test_parser",
+    "test_timer",
+    "doc:documentation/test_action_base_doctest.txt",
+    "doc:documentation/test_grammar_elements_basic_doctest.txt",
+    "doc:documentation/test_grammar_elements_compound_doctest.txt",
+    "doc:documentation/test_grammar_list_doctest.txt",
+    "doc:documentation/test_recobs_doctest.txt",
+]
 
-sphinx_names   = [
-                  ".test_engine_sphinx",
-                 ]
-#===========================================================================
+# Only include common Windows-only tests on Windows.
+if os.name == "nt":
+    common_names.extend(["test_window", "test_actions"])
+
+
+# Define spoken language test files. All of them work with the natlink and
+# text engines. The English tests should work with sapi5 and sphinx by
+# default.
+language_names = [
+    "test_language_de_number",
+    "test_language_en_number",
+    "test_language_nl_number",
+]
+
+
+# Define the tests to run for DNS versions 10 and below.
+natlink_10_names = [
+    "test_dictation",
+    "test_engine_natlink",
+    "doc:documentation/test_word_formatting_v10_doctest.txt",
+] + language_names
+
+# Define the tests to run for DNS versions 11 and above.
+natlink_11_names = [
+    "test_dictation",
+    "test_engine_natlink",
+    "doc:documentation/test_word_formatting_v11_doctest.txt",
+] + language_names
+
+sapi5_names = [
+    "test_dictation",
+    "test_engine_sapi5",
+    "test_language_en_number",
+]
+
+sphinx_names = [
+    "test_engine_sphinx",
+    "test_language_en_number",
+]
+
+text_names = [
+    "test_engine_text",
+    "test_engine_text_dictation",
+] + language_names
+
+# ==========================================================================
 
 def build_suite(suite, names):
-    # Determine the root directory of the source code files.  This is
-    #  used for finding doctest files specified relative to that root.
-    project_root = os.path.join(os.path.dirname(__file__), "..", "..")
-    project_root = os.path.abspath(project_root)
-
     # Load test cases from specified names.
     loader = unittest.defaultTestLoader
     for name in names:
-        if name.startswith("."):
-            name = "dragonfly.test" + name
+        if name.startswith("test_"):
+            # Use full module names so the loader can import the files
+            # correctly.
+            name = "dragonfly.test." + name
             suite.addTests(loader.loadTestsFromName(name))
         elif name.startswith("doc:"):
-            path = name[4:]
-            path = os.path.join(project_root, *path.split("/"))
-            path = os.path.abspath(path)
+            # Skip doc tests for Python 3.x because of incompatible Unicode
+            # string comparisons in some tests.
+            # TODO Use pytest instead for its ALLOW_UNICODE doctest flag.
+            if PY3:
+                continue
+
+            # Load doc tests using a relative path.
+            path = os.path.join("..", "..", name[4:])
             suite.addTests(doctest.DocFileSuite(path))
         else:
             raise Exception("Invalid test name: %r." % (name,))
     return suite
 
+sapi5_suite      = build_suite(EngineTestSuite("sapi5"),
+                               sapi5_names + common_names)
+sphinx_suite     = build_suite(EngineTestSuite("sphinx"),
+                               sphinx_names + common_names)
+text_suite       = build_suite(EngineTestSuite("text"),
+                               text_names + common_names)
 
-natlink_suite  = build_suite(EngineTestSuite("natlink"),
-                             natlink_names + common_names)
-sapi5_suite    = build_suite(EngineTestSuite("sapi5"),
-                             sapi5_names + common_names)
-sphinx_suite    = build_suite(EngineTestSuite("sphinx"),
-                             sphinx_names + common_names)
+
+# Build the natlink test suite for the current version of DNS.
+try:
+    import natlinkstatus
+    dns_version = int(natlinkstatus.NatlinkStatus().getDNSVersion())
+except:
+    # Couldn't get the DNS version for whatever reason.
+    dns_version = None
+
+
+# Use different test names depending on the DNS version. Fallback on v11 if
+# the version is unknown.
+if dns_version and dns_version <= 10:
+    natlink_names = natlink_10_names
+else:
+    natlink_names = natlink_11_names
+
+
+# Exclude the grammar lists doctest file for DNS 15 and above due to a minor
+# bug with natlink/Dragon.
+if dns_version and dns_version >= 15:
+    lists_doctest = "doc:documentation/test_grammar_list_doctest.txt"
+    common_names.remove(lists_doctest)
+    _log.warning("DNS version %d detected! Excluding test file: %s"
+                 % (dns_version, lists_doctest[4:]))
+    _log.warning("List functionality doesn't work if used in modules not "
+                 "loaded by natlinkmain.")
+    _log.warning("Please see: https://github.com/dictation-toolbox/dragonfly/pull/55")
+
+natlink_suite    = build_suite(EngineTestSuite("natlink"),
+                               natlink_names + common_names)

@@ -1,21 +1,21 @@
-# -*- encoding: windows-1252 -*-
+# -*- encoding: utf-8 -*-
 #
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -25,11 +25,12 @@ from six import string_types, text_type
 
 from dragonfly.engines.base.dictation   import DictationContainerBase
 from dragonfly.grammar.elements         import Compound, Dictation
+from dragonfly.test.infrastructure      import RecognitionFailure
 from dragonfly.test.element_testcase    import ElementTestCase
 from dragonfly.test.element_tester      import ElementTester
 
 
-#===========================================================================
+# ==========================================================================
 
 class TestNonAsciiDictation(unittest.TestCase):
 
@@ -43,19 +44,19 @@ class TestNonAsciiDictation(unittest.TestCase):
                            value_func=value_func)
         tester = ElementTester(element)
 
-        words = [u"test", u"touché"]
+        words = [u"test", u"TOUCHÃ‰"]
         dictation = tester.recognize(words)
 
         # Verify recognition returned dictation result.
         if not isinstance(dictation, DictationContainerBase):
             message = (u"Expected recognition result to be a dictation"
                        u" container, but received %r"
-                       % (repr(dictation).decode("windows-1252"),))
-            self.fail(message.encode("windows-1252"))
+                       % (repr(dictation).decode("utf-8"),))
+            self.fail(message.encode("utf-8"))
 
         # Verifying dictation converts/encode successfully.
-        self.assertEqual(str(dictation), "touché")
-        self.assertEqual(text_type(dictation), u"touché")
+        self.assertEqual(str(dictation), "touchÃ©")
+        self.assertEqual(text_type(dictation), u"touchÃ©")
         self.assertTrue(isinstance(repr(dictation), string_types))
 
 
@@ -70,9 +71,9 @@ class NonAsciiUnicodeDictationTestCase(ElementTestCase):
                         value_func=value_func)
 
     input_output = [
-                    (u"test dictation",     u"dictation"),
-                    (u"test touché",        u"touché"),
-                    (u"test jalapeño",      u"jalapeño"),
+                    (u"test DICTATION",     u"dictation"),
+                    (u"test TOUCHÃ‰",        u"touchÃ©"),
+                    (u"test JALAPEÃ‘O",      u"jalapeÃ±o"),
                    ]
 
 
@@ -87,13 +88,13 @@ class NonAsciiStrDictationTestCase(ElementTestCase):
                         value_func=value_func)
 
     input_output = [
-                    ("test dictation",     "dictation"),
-                    ("test touché",        "touché"),
-                    ("test jalapeño",      "jalapeño"),
+                    ("test DICTATION",     "dictation"),
+                    ("test TOUCHÃ‰",        "touchÃ©"),
+                    ("test JALAPEÃ‘O",      "jalapeÃ±o"),
                    ]
 
 
-#===========================================================================
+# ==========================================================================
 
 if __name__ == "__main__":
     unittest.main()

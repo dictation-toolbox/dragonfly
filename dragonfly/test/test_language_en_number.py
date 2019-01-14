@@ -27,14 +27,16 @@ Test suite for English language Integer and Digits classes
 from dragonfly.test.infrastructure      import RecognitionFailure
 from dragonfly.test.element_testcase    import ElementTestCase
 from dragonfly.language.base.integer    import Integer
-from dragonfly.language.en.number       import IntegerContent
 
 
 #---------------------------------------------------------------------------
+# Note: IntegerContent is imported locally in this file to avoid the
+# language loader being initialised too early when run with Python 3.x.
 
 class IntegerTestCase(ElementTestCase):
     """ Verify various integers between 0 and 10**12. """
     def _build_element(self):
+        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=0, max=10**12 - 1)
     input_output = [
                     ("zero",       0),
@@ -66,6 +68,7 @@ class IntegerTestCase(ElementTestCase):
 class Limit3to14TestCase(ElementTestCase):
     """ Verify integer limits of range 3 -- 14. """
     def _build_element(self):
+        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=3, max=14)
     input_output = [
                     ("zero",       RecognitionFailure),
@@ -94,6 +97,7 @@ class Limit3to14TestCase(ElementTestCase):
 class Limit23to47TestCase(ElementTestCase):
     """ Verify integer limits of range 23 -- 47. """
     def _build_element(self):
+        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=23, max=47)
     input_output = [
                     ("twenty two",        RecognitionFailure),
@@ -106,6 +110,7 @@ class Limit23to47TestCase(ElementTestCase):
 class Limit230to350TestCase(ElementTestCase):
     """ Verify integer limits of range 230 -- 350. """
     def _build_element(self):
+        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=230, max=350)
     input_output = [
                     ("two hundred twenty nine",     RecognitionFailure),
@@ -123,6 +128,7 @@ class Limit230to350TestCase(ElementTestCase):
 class Limit351TestCase(ElementTestCase):
     """ Verify integer limits of range up to 351. """
     def _build_element(self):
+        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=230, max=351)
     input_output = [
                     ("three hundred forty nine",    349),
@@ -135,6 +141,7 @@ class Limit351TestCase(ElementTestCase):
 class Limit352TestCase(ElementTestCase):
     """ Verify integer limits of range up to 352. """
     def _build_element(self):
+        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=230, max=352)
     input_output = [
                     ("three hundred forty nine",    349),

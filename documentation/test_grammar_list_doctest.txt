@@ -173,9 +173,9 @@ ListRef construction
 ListRef objects must be created referencing the correct type of list
 object::
 
-    >>> print ListRef("list_fruit_ref", [])  # Fails.
+    >>> print(ListRef("list_fruit_ref", []))  # Fails.
     Traceback (most recent call last):
         ...
     TypeError: List argument to ListRef constructor must be a Dragonfly list.
-    >>> print ListRef("list_fruit_ref", List("list_fruit"))  # Succeeds.
+    >>> print(ListRef("list_fruit_ref", List("list_fruit")))  # Succeeds.
     ListRef('list_fruit')
