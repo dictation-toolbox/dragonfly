@@ -20,6 +20,13 @@
 
 """
     This file builds the mapping from key-name to Typeable instances.
+
+    To make changes/additions to the mappings, use the _generate_typeables.py
+    script to generate the list and copy-paste the relevant section into
+    this file.
+
+    The script also generates documentation for the :class:`Key` action.
+
 """
 
 import logging
@@ -176,8 +183,9 @@ _add_typeable(name="9", char='9')
 _add_typeable(name="nine", char='9')
 
 # Symbol keys
-# All symbols can be referred to by their printable representation, except for
-# -,:/ because these are reserved characters in the Key action spec.
+# All symbols can be referred to by their printable representation.
+# Reserved characters for the Key action spec -,:/ are still typeables,
+# but Key requires use of the longer character names.
 _add_typeable(name="!", char='!')
 _add_typeable(name="bang", char='!')
 _add_typeable(name="exclamation", char='!')
@@ -203,6 +211,7 @@ _add_typeable(name="lparen", char='(')
 _add_typeable(name=")", char=')')
 _add_typeable(name="rightparen", char=')')
 _add_typeable(name="rparen", char=')')
+_add_typeable(name="-", char='-')
 _add_typeable(name="minus", char='-')
 _add_typeable(name="hyphen", char='-')
 _add_typeable(name="_", char='_')
@@ -229,6 +238,7 @@ _add_typeable(name="\\", char='\\')
 _add_typeable(name="backslash", char='\\')
 _add_typeable(name="|", char='|')
 _add_typeable(name="bar", char='|')
+_add_typeable(name=":", char=':')
 _add_typeable(name="colon", char=':')
 _add_typeable(name=";", char=';')
 _add_typeable(name="semicolon", char=';')
@@ -240,9 +250,11 @@ _add_typeable(name="\"", char='"')
 _add_typeable(name="quote", char='"')
 _add_typeable(name="doublequote", char='"')
 _add_typeable(name="dquote", char='"')
+_add_typeable(name=",", char=',')
 _add_typeable(name="comma", char=',')
 _add_typeable(name=".", char='.')
 _add_typeable(name="dot", char='.')
+_add_typeable(name="/", char='/')
 _add_typeable(name="slash", char='/')
 _add_typeable(name="<", char='<')
 _add_typeable(name="lessthan", char='<')
@@ -274,10 +286,10 @@ typeables.update({
     "alt":              Typeable(code=win32con.VK_MENU, name='alt'),
 
     # Right modifier keys
-    "ralt":             Typeable(code=win32con.VK_RMENU, name='ralt'),
     "rshift":           Typeable(code=win32con.VK_RSHIFT, name='rshift'),
     "rcontrol":         Typeable(code=win32con.VK_RCONTROL, name='rcontrol'),
     "rctrl":            Typeable(code=win32con.VK_RCONTROL, name='rctrl'),
+    "ralt":             Typeable(code=win32con.VK_RMENU, name='ralt'),
 
     # Special keys
     "escape":           Typeable(code=win32con.VK_ESCAPE, name='escape'),

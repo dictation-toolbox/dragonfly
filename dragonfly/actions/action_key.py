@@ -107,24 +107,31 @@ Key names
    ``3`` or ``three``, ``4`` or ``four``, ``5`` or ``five``,
    ``6`` or ``six``, ``7`` or ``seven``, ``8`` or ``eight``,
    ``9`` or ``nine``
- - Symbol keys: ``bang`` or ``exclamation``, ``at``, ``hash``,
-   ``dollar``, ``percent``, ``caret``, ``and`` or ``ampersand``,
-   ``star`` or ``asterisk``, ``leftparen`` or ``lparen``,
-   ``rightparen`` or ``rparen``, ``minus`` or ``hyphen``,
-   ``underscore``, ``plus``, ``backtick``, ``tilde``,
-   ``leftbracket`` or ``lbracket``, ``rightbracket`` or ``rbracket``,
-   ``leftbrace`` or ``lbrace``, ``rightbrace`` or ``rbrace``,
-   ``backslash``, ``bar``, ``colon``, ``semicolon``,
-   ``apostrophe`` or ``singlequote`` or ``squote``,
-   ``quote`` or ``doublequote`` or ``dquote``, ``comma``, ``dot``,
-   ``slash``, ``lessthan`` or ``leftangle`` or ``langle``,
-   ``greaterthan`` or ``rightangle`` or ``rangle``, ``question``,
-   ``equal`` or ``equals``
+ - Symbol keys: ``!`` or ``bang`` or ``exclamation``, ``@`` or ``at``,
+   ``#`` or ``hash``, ``$`` or ``dollar``, ``%`` or ``percent``,
+   ``^`` or ``caret``, ``&`` or ``and`` or ``ampersand``,
+   ``*`` or ``star`` or ``asterisk``,
+   ``(`` or ``leftparen`` or ``lparen``,
+   ``)`` or ``rightparen`` or ``rparen``, ``minus`` or ``hyphen``,
+   ``_`` or ``underscore``, ``+`` or ``plus``, ````` or ``backtick``,
+   ``~`` or ``tilde``, ``[`` or ``leftbracket`` or ``lbracket``,
+   ``]`` or ``rightbracket`` or ``rbracket``,
+   ``{`` or ``leftbrace`` or ``lbrace``,
+   ``}`` or ``rightbrace`` or ``rbrace``, ``\`` or ``backslash``,
+   ``|`` or ``bar``, ``colon``, ``;`` or ``semicolon``,
+   ``'`` or ``apostrophe`` or ``singlequote`` or ``squote``,
+   ``"`` or ``quote`` or ``doublequote`` or ``dquote``, ``comma``,
+   ``.`` or ``dot``, ``slash``,
+   ``<`` or ``lessthan`` or ``leftangle`` or ``langle``,
+   ``>`` or ``greaterthan`` or ``rightangle`` or ``rangle``,
+   ``?`` or ``question``, ``=`` or ``equal`` or ``equals``
  - Whitespace and editing keys: ``enter``, ``tab``, ``space``,
    ``backspace``, ``delete`` or ``del``
- - Modifier keys: ``shift``, ``control`` or ``ctrl``, ``alt``
- - Special keys: ``escape``, ``insert``, ``pause``, ``win``,
-   ``apps`` or ``popup``
+ - Main modifier keys: ``shift``, ``control`` or ``ctrl``, ``alt``
+ - Right modifier keys: ``rshift``, ``rcontrol`` or ``rctrl``, ``ralt``
+ - Special keys: ``escape``, ``insert``, ``pause``, ``win``, ``rwin``,
+   ``apps`` or ``popup``, ``snapshot`` or ``printscreen``
+ - Lock keys: ``scrolllock``, ``numlock``, ``capslock``
  - Navigation keys: ``up``, ``down``, ``left``, ``right``,
    ``pageup`` or ``pgup``, ``pagedown`` or ``pgdown``, ``home``, ``end``
  - Number pad keys: ``npmul``, ``npadd``, ``npsep``, ``npsub``,

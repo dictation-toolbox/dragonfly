@@ -28,7 +28,7 @@
 (vkey, lookup) = range(2)
 
 key_map = (
-    ("Lowercase letter keys", [
+    ("Lowercase letter keys", 0, [
         (lookup, "a",                              "a alpha"),
         (lookup, "b",                              "b bravo"),
         (lookup, "c",                              "c charlie"),
@@ -55,7 +55,7 @@ key_map = (
         (lookup, "x",                              "x xray"),
         (lookup, "y",                              "y yankee"),
         (lookup, "z",                              "z zulu")]),
-    ("Uppercase letter keys", [
+    ("Uppercase letter keys", 0, [
         (lookup, "A",                              "A Alpha"),
         (lookup, "B",                              "B Bravo"),
         (lookup, "C",                              "C Charlie"),
@@ -82,7 +82,7 @@ key_map = (
         (lookup, "X",                              "X Xray"),
         (lookup, "Y",                              "Y Yankee"),
         (lookup, "Z",                              "Z Zulu")]),
-    ("Number keys", [
+    ("Number keys", 0, [
         (lookup, "0",                              "0 zero"),
         (lookup, "1",                              "1 one"),
         (lookup, "2",                              "2 two"),
@@ -93,7 +93,7 @@ key_map = (
         (lookup, "7",                              "7 seven"),
         (lookup, "8",                              "8 eight"),
         (lookup, "9",                              "9 nine")]),
-    ("Symbol keys", [
+    ("Symbol keys", 0, [
         (lookup, "!",                              "! bang exclamation"),
         (lookup, "@",                              "@ at"),
         (lookup, "#",                              "# hash"),
@@ -104,7 +104,7 @@ key_map = (
         (lookup, "*",                              "* star asterisk"),
         (lookup, "(",                              "( leftparen lparen"),
         (lookup, ")",                              ") rightparen rparen"),
-        (lookup, "-",                              "minus hyphen"),
+        (lookup, "-",                              "- minus hyphen"),
         (lookup, "_",                              "_ underscore"),
         (lookup, "+",                              "+ plus"),
         (lookup, "`",                              "` backtick"),
@@ -113,36 +113,46 @@ key_map = (
         (lookup, "]",                              "] rightbracket rbracket"),
         (lookup, "{",                              "{ leftbrace lbrace"),
         (lookup, "}",                              "} rightbrace rbrace"),
-        (lookup, "\\",                             "\\ backslash"),
+        (lookup, r"\\",                           r"\\ backslash"),
         (lookup, "|",                              "| bar"),
-        (lookup, ":",                              "colon"),
+        (lookup, ":",                              ": colon"),
         (lookup, ";",                              "; semicolon"),
-        (lookup, "'",                              "' apostrophe singlequote squote"),
-        (lookup, '"',                              "\" quote doublequote dquote"),
-        (lookup, ",",                              "comma"),
+        (lookup, r"\'",                           r"\' apostrophe singlequote squote"),
+        (lookup, r'\"',                           r"\" quote doublequote dquote"),
+        (lookup, ",",                              ", comma"),
         (lookup, ".",                              ". dot"),
-        (lookup, "/",                              "slash"),
+        (lookup, "/",                              "/ slash"),
         (lookup, "<",                              "< lessthan leftangle langle"),
         (lookup, ">",                              "> greaterthan rightangle rangle"),
         (lookup, "?",                              "? question"),
         (lookup, "=",                              "= equal equals")]),
-    ("Whitespace and editing keys", [
+    ("Whitespace and editing keys", 1, [
         (vkey,   "win32con.VK_RETURN",             "enter"),
         (vkey,   "win32con.VK_TAB",                "tab"),
         (vkey,   "win32con.VK_SPACE",              "space"),
         (vkey,   "win32con.VK_BACK",               "backspace"),
         (vkey,   "win32con.VK_DELETE",             "delete del")]),
-    ("Modifier keys", [
+    ("Main modifier keys", 1, [
         (vkey,   "win32con.VK_SHIFT",              "shift"),
         (vkey,   "win32con.VK_CONTROL",            "control ctrl"),
         (vkey,   "win32con.VK_MENU",               "alt")]),
-    ("Special keys", [
+    ("Right modifier keys", 1, [
+        (vkey,   "win32con.VK_RSHIFT",             "rshift"),
+        (vkey,   "win32con.VK_RCONTROL",           "rcontrol rctrl"),
+        (vkey,   "win32con.VK_RMENU",              "ralt")]),
+    ("Special keys", 1, [
         (vkey,   "win32con.VK_ESCAPE",             "escape"),
         (vkey,   "win32con.VK_INSERT",             "insert"),
         (vkey,   "win32con.VK_PAUSE",              "pause"),
         (vkey,   "win32con.VK_LWIN",               "win"),
-        (vkey,   "win32con.VK_APPS",               "apps popup")]),
-    ("Navigation keys", [
+        (vkey,   "win32con.VK_RWIN",               "rwin"),
+        (vkey,   "win32con.VK_APPS",               "apps popup"),
+        (vkey,   "win32con.VK_SNAPSHOT",           "snapshot printscreen")]),
+    ("Lock keys", 1, [
+        (vkey,   "win32con.VK_SCROLL",             "scrolllock"),
+        (vkey,   "win32con.VK_NUMLOCK",            "numlock"),
+        (vkey,   "win32con.VK_CAPITAL",            "capslock")]),
+    ("Navigation keys", 1, [
         (vkey,   "win32con.VK_UP",                 "up"),
         (vkey,   "win32con.VK_DOWN",               "down"),
         (vkey,   "win32con.VK_LEFT",               "left"),
@@ -151,7 +161,7 @@ key_map = (
         (vkey,   "win32con.VK_NEXT",               "pagedown pgdown"),
         (vkey,   "win32con.VK_HOME",               "home"),
         (vkey,   "win32con.VK_END",                "end")]),
-    ("Number pad keys", [
+    ("Number pad keys", 1, [
         (vkey,   "win32con.VK_MULTIPLY",           "npmul"),
         (vkey,   "win32con.VK_ADD",                "npadd"),
         (vkey,   "win32con.VK_SEPARATOR",          "npsep"),
@@ -168,7 +178,7 @@ key_map = (
         (vkey,   "win32con.VK_NUMPAD7",            "numpad7 np7"),
         (vkey,   "win32con.VK_NUMPAD8",            "numpad8 np8"),
         (vkey,   "win32con.VK_NUMPAD9",            "numpad9 np9")]),
-    ("Function keys", [
+    ("Function keys", 1, [
         (vkey,   "win32con.VK_F1",                 "f1"),
         (vkey,   "win32con.VK_F2",                 "f2"),
         (vkey,   "win32con.VK_F3",                 "f3"),
@@ -193,7 +203,7 @@ key_map = (
         (vkey,   "win32con.VK_F22",                "f22"),
         (vkey,   "win32con.VK_F23",                "f23"),
         (vkey,   "win32con.VK_F24",                "f24")]),
-    ("Multimedia keys", [
+    ("Multimedia keys", 1, [
         (vkey,   "win32con.VK_VOLUME_UP",          "volumeup volup"),
         (vkey,   "win32con.VK_VOLUME_DOWN",        "volumedown voldown"),
         (vkey,   "win32con.VK_VOLUME_MUTE",        "volumemute volmute"),
@@ -204,30 +214,38 @@ key_map = (
         (vkey,   "win32con.VK_BROWSER_FORWARD",    "browserforward")]),
     )
 
-print("---- Code for typeables.py")
-for group_name, group_map in key_map:
-    print("    # %s" % (group_name,))
+
+print("# ---- Code for typeables.py")
+for group_name, indent_level, group_map in key_map:
+    indent = indent_level * "    "
+    print("%s# %s" % (indent , group_name))
     for key_type, key_value, key_names in group_map:
         for key_name in key_names.split():
             if key_type == lookup:
-                print('_add_typeable(name="%s", char='%s')' % (key_name, key_value))
+                print('%s_add_typeable(name="%s", char=\'%s\')'
+                      % (indent, key_name, key_value))
             elif key_type == vkey:
                 value_code = ("Typeable(code=%s, name=%r)"
                               % (key_value, key_name))
-                print(('    "%s": %s%s,'
-                       % (key_name, " " * (16-len(key_name)), value_code)))
+                print(('%s"%s": %s%s,'
+                       % (indent, key_name, " " * (16-len(key_name)),
+                          value_code)))
             else:
                 raise Exception("Invalid key type: {0!r} (for {1!r} {2!r})"
                                 .format(key_type, key_value, key_names))
     print("")
 
-print("---- Code for documentation in action_key.py")
-for group_name, group_map in key_map:
+print("# ---- Code for documentation in action_key.py")
+# Exclude reserved characters in the generated documentation.
+excluded = "-,:/"
+for group_name, _, group_map in key_map:
     parts = [group_name + ":"]
     for key_type, key_value, key_names in group_map:
         key_name_parts = []
         for key_name in key_names.split():
-            key_name_parts.append("``" + key_name + "``")
+            if key_name not in excluded:
+                key_name = key_name.decode("string_escape")
+                key_name_parts.append("``" + key_name + "``")
         parts.append(" or ".join(key_name_parts) + ",")
     parts[-1] = parts[-1][:-1]  # Remove trailing comma.
     line = " -"
