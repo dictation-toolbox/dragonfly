@@ -78,13 +78,13 @@ def get_engine(name=None):
             if name:
                 raise EngineError(message)
 
-    if not name or name == "sapi5":
+    if not name or name in ["sapi5shared", "sapi5inproc", "sapi5"]:
         # Attempt to retrieve the sapi5 back-end.
         try:
             from .backend_sapi5 import is_engine_available
             from .backend_sapi5 import get_engine as get_specific_engine
-            if is_engine_available():
-                _default_engine = get_specific_engine()
+            if is_engine_available(name):
+                _default_engine = get_specific_engine(name)
                 _engines_by_name["sapi5"] = _default_engine
                 return _default_engine
         except Exception as e:

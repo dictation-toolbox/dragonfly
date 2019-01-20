@@ -36,17 +36,13 @@ class Sapi5RecObsManager(RecObsManagerBase):
 
     def __init__(self, engine):
         RecObsManagerBase.__init__(self, engine)
-        self._grammar = None
+        self._grammar = Sapi5RecObsGrammar(self)
 
     def _activate(self):
-        if not self._grammar:
-            self._grammar = Sapi5RecObsGrammar(self)
         self._grammar.load()
 
     def _deactivate(self):
-        if self._grammar:
-            self._grammar.unload()
-        self._grammar = None
+        self._grammar.unload()
 
 
 #---------------------------------------------------------------------------
@@ -63,16 +59,17 @@ class Sapi5RecObsGrammar(Grammar):
 
     #-----------------------------------------------------------------------
     # Callback methods for handling utterances and recognitions.
+    # This grammar does not receive recognized words due to a limitation
+    # with WSR. The engine instead notifies observers by using the grammar
+    # that successfully recognized the words, if any words were recognized.
 
     def process_begin(self, executable, title, handle):
         self._manager.notify_begin()
 
     def process_recognition(self, words):
+        # Successfully recognising this grammar should be impossible.
         raise RuntimeError("Recognition observer received an unexpected"
                            " recognition: %s" % (words,))
-
-    def process_recognition_other(self, words):
-        self._manager.notify_recognition(words)
 
     def process_recognition_failure(self):
         self._manager.notify_failure()

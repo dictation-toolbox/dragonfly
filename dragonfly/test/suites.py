@@ -71,30 +71,33 @@ natlink_10_names = [
     "test_dictation",
     "test_engine_natlink",
     "doc:documentation/test_word_formatting_v10_doctest.txt",
-] + language_names
+] + common_names + language_names
 
 # Define the tests to run for DNS versions 11 and above.
 natlink_11_names = [
     "test_dictation",
     "test_engine_natlink",
     "doc:documentation/test_word_formatting_v11_doctest.txt",
-] + language_names
+] + common_names + language_names
 
 sapi5_names = [
-    "test_dictation",
     "test_engine_sapi5",
     "test_language_en_number",
-]
+] + common_names
+
+# Don't include recognition observer tests for sapi5 because its quirky
+# behaviour requires separate tests. These are in test_engine_sapi5.
+sapi5_names.remove("doc:documentation/test_recobs_doctest.txt")
 
 sphinx_names = [
     "test_engine_sphinx",
     "test_language_en_number",
-]
+] + common_names
 
 text_names = [
     "test_engine_text",
     "test_engine_text_dictation",
-] + language_names
+] + common_names + language_names
 
 # ==========================================================================
 
@@ -121,12 +124,11 @@ def build_suite(suite, names):
             raise Exception("Invalid test name: %r." % (name,))
     return suite
 
-sapi5_suite      = build_suite(EngineTestSuite("sapi5"),
-                               sapi5_names + common_names)
-sphinx_suite     = build_suite(EngineTestSuite("sphinx"),
-                               sphinx_names + common_names)
-text_suite       = build_suite(EngineTestSuite("text"),
-                               text_names + common_names)
+
+sapi5_suite       = build_suite(EngineTestSuite("sapi5"), sapi5_names)
+sapi5inproc_suite = build_suite(EngineTestSuite("sapi5inproc"), sapi5_names)
+sphinx_suite      = build_suite(EngineTestSuite("sphinx"), sphinx_names)
+text_suite        = build_suite(EngineTestSuite("text"), text_names)
 
 
 # Build the natlink test suite for the current version of DNS.
@@ -150,12 +152,11 @@ else:
 # bug with natlink/Dragon.
 if dns_version and dns_version >= 15:
     lists_doctest = "doc:documentation/test_grammar_list_doctest.txt"
-    common_names.remove(lists_doctest)
+    natlink_names.remove(lists_doctest)
     _log.warning("DNS version %d detected! Excluding test file: %s"
                  % (dns_version, lists_doctest[4:]))
     _log.warning("List functionality doesn't work if used in modules not "
                  "loaded by natlinkmain.")
     _log.warning("Please see: https://github.com/dictation-toolbox/dragonfly/pull/55")
 
-natlink_suite    = build_suite(EngineTestSuite("natlink"),
-                               natlink_names + common_names)
+natlink_suite    = build_suite(EngineTestSuite("natlink"), natlink_names)
