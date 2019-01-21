@@ -27,6 +27,7 @@ Multiplexing interface to a timer
 import time
 import logging
 
+from threading import Thread
 
 #---------------------------------------------------------------------------
 
@@ -65,14 +66,11 @@ class Timer(object):
 
 
 class TimerManagerBase(object):
-    """
-    """
+    """ Base timer manager class. """
 
     _log = logging.getLogger("engine.timer")
 
     def __init__(self, interval, engine):
-        """
-        """
         self.interval = interval
         self.engine = engine
         self.timers = []
@@ -109,3 +107,37 @@ class TimerManagerBase(object):
     def _deactivate_main_callback(self):
         raise NotImplementedError("_deactivate_main_callback() not implemented for"
                                   " %s class." % self.__class__.__name__)
+
+
+class ThreadedTimerManager(TimerManagerBase):
+    """
+    Timer manager class using a daemon thread.
+    """
+
+    def __init__(self, interval, engine):
+        TimerManagerBase.__init__(self, interval, engine)
+        self._running = False
+        self._thread = None
+
+    def _activate_main_callback(self, callback, sec):
+        # Do nothing if the thread is already running.
+        if self._running:
+            return
+
+        def run():
+            while self._running:
+                time.sleep(sec)
+                callback()
+
+        self._running = True
+        self._thread = Thread(target=run)
+        self._thread.setDaemon(True)
+        self._thread.start()
+
+    def _deactivate_main_callback(self):
+        # Stop the thread's main loop and wait until it finishes, timing out
+        # after 5 seconds.
+        self._running = False
+        if self._thread:
+            self._thread.join(timeout=5)
+            self._thread = None

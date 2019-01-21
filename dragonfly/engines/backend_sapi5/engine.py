@@ -39,11 +39,10 @@ from win32com.client.gencache  import EnsureDispatch
 from pywintypes                import com_error
 
 from ..base                    import (EngineBase, EngineError,
-                                       MimicFailure)
+                                       MimicFailure, ThreadedTimerManager)
 from .compiler                 import Sapi5Compiler
 from .dictation                import Sapi5DictationContainer
 from .recobs                   import Sapi5RecObsManager
-#from .timer                    import NatlinkTimerManager
 from ...grammar.state          import State
 from ...grammar.recobs         import RecognitionObserver
 from ...windows.window         import Window
@@ -100,7 +99,7 @@ class Sapi5SharedEngine(EngineBase):
         self._compiler    = None
 
         self._recognition_observer_manager = Sapi5RecObsManager(self)
-#        self._timer_manager = NatlinkTimerManager(0.02, self)
+        self._timer_manager = ThreadedTimerManager(0.02, self)
 
     def connect(self):
         """ Connect to back-end SR engine. """
