@@ -4,7 +4,8 @@ Dragonfly
 Dragonfly is a speech recognition framework. It is a Python 
 package which offers a high-level object model and allows its 
 users to easily write scripts, macros, and programs which use 
-speech recognition.
+speech recognition. This is a fork of the original
+`t4ngo/dragonfly <https://github.com/t4ngo/dragonfly>`__ project.
 
 It currently supports the following speech recognition engines:
 
