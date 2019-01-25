@@ -20,7 +20,10 @@
 
 import unittest
 
+from six import text_type, string_types
+
 from dragonfly.engines import get_engine, EngineBase
+from dragonfly.engines.base.dictation import DictationContainerBase
 
 #---------------------------------------------------------------------------
 
@@ -40,6 +43,35 @@ class TestEngineSapi5(unittest.TestCase):
         tester = ElementTester(seq, engine=engine)
         results = tester.recognize("hello world")
         self.assertEqual([u"hello", u"world"], results)
+
+    def test_dictation(self):
+        # Test dictation separately for SAPI5 because test_dictation.py
+        # won't work with it.
+        from dragonfly import Dictation, Literal, Sequence
+        from dragonfly.test import ElementTester, RecognitionFailure
+        seq = Sequence([Literal("hello"), Dictation("text")])
+        tester = ElementTester(seq)
+
+        # Test one word.
+        results = tester.recognize("hello world")
+        assert results[0] == "hello"
+
+        # Verify recognition returned dictation result.
+        dictation = results[1]
+        if not isinstance(dictation, DictationContainerBase):
+            message = (u"Expected recognition result to be a dictation"
+                       u" container, but received %r"
+                       % (repr(dictation).decode("windows-1252"),))
+            self.fail(message.encode("windows-1252"))
+
+        # Verifying dictation converts/encode successfully.
+        self.assertEqual(str(dictation), "world")
+        self.assertEqual(text_type(dictation), "world")
+        self.assertTrue(isinstance(repr(dictation), string_types))
+
+        # Test incomplete.
+        results = tester.recognize("hello")
+        assert results is RecognitionFailure
 
     def test_recognition_observers(self):
         # RecognitionObservers are a bit quirky for the sapi5 engines,
@@ -86,7 +118,7 @@ class TestEngineSapi5(unittest.TestCase):
         assert test_int.recognize("seven") == 7
         results = test_recobs.waiting, test_recobs.words
         assert results == (False, (u'seven',))
-        test_int.recognize("forty seven") == 47
+        assert test_int.recognize("forty seven") == 47
         results = test_recobs.waiting, test_recobs.words
         assert results == (False, (u'forty', u'seven'))
         assert test_int.recognize("one hundred") is RecognitionFailure

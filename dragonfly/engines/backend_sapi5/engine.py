@@ -36,7 +36,6 @@ import win32con
 from ctypes import *
 from win32com.client           import Dispatch, getevents, constants
 from win32com.client.gencache  import EnsureDispatch
-from pywintypes                import com_error
 
 from ..base                    import (EngineBase, EngineError,
                                        MimicFailure, ThreadedTimerManager)
@@ -207,16 +206,16 @@ class Sapi5SharedEngine(EngineBase):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        # Register a recognition observer for checking the success of this
-        # mimic.
-        observer = MimicObserver()
-        observer.register()
-
         self._log.debug("SAPI5 mimic: %r" % (words,))
         if isinstance(words, string_types):
             phrase = words
         else:
             phrase = " ".join(words)
+
+        # Register a recognition observer for checking the success of this
+        # mimic.
+        observer = MimicObserver()
+        observer.register()
 
         # Emulate recognition of the phrase and wait for recognition to
         # finish, timing out after 2 seconds.
@@ -225,7 +224,6 @@ class Sapi5SharedEngine(EngineBase):
         NULL = c_int(win32con.NULL)
         if timeout != None:
             begin_time = time.time()
-            timed_out = False
             windll.user32.SetTimer(NULL, NULL, int(timeout * 1000), NULL)
     
         message = MSG()
@@ -247,7 +245,6 @@ class Sapi5SharedEngine(EngineBase):
                 # A timer message means this loop has timed out.
                 self._log.debug("SAPI5 message loop timed out: %s sec left"
                                 % (timeout + begin_time - time.time()))
-                timed_out = True
                 break
             else:
                 # Process other messages as normal.
@@ -410,7 +407,6 @@ class GrammarWrapper(object):
         try:
             newResult = Dispatch(Result)
             phrase_info = newResult.PhraseInfo
-            rule_name = phrase_info.Rule.Name
 
             #---------------------------------------------------------------
             # Build a list of rule names for each element.
@@ -448,10 +444,17 @@ class GrammarWrapper(object):
 
             results = []
             rule_set = list(set(rule_names))
+
             elements = phrase_info.Elements
             for index in range(len(rule_names)):
                 element = elements.Item(index)
                 rule_id = rule_set.index(rule_names[index])
+
+                # Map dictation rule IDs to 1M so that dragonfly recognizes
+                # the words as dictation.
+                if rule_names[index] == "dgndictation":
+                    rule_id = 1000000
+
                 replacement = replacements[index]
                 info = [element.LexicalForm, rule_id,
                         element.DisplayText, element.DisplayAttributes,
@@ -468,9 +471,10 @@ class GrammarWrapper(object):
                     return
 
             s = State(results, rule_set, self.engine)
-            for r in self.grammar._rules:
-                if r.name != rule_name:
+            for r in self.grammar.rules:
+                if not r.active:
                     continue
+
                 s.initialize_decoding()
                 for result in r.decode(s):
                     if s.finished():
