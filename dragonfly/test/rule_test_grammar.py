@@ -66,18 +66,9 @@ class RuleTestGrammar(Grammar):
                 self._log.exception(msg)
                 raise TestError(msg)
 
-            # Retrieve method appropriate for active engine.
-            try:
-                mimic_method = self._mimic_methods[self.engine.name]
-            except KeyError:
-                msg = ("Test infrastructure does not support"
-                       " back-end engine: %r" % (self.engine.name,))
-                self._log.exception(msg)
-                raise TestError(msg)
-
             # Mimic recognition.
             try:
-                mimic_method(self, words)
+                self.engine.mimic(words)
             except MimicFailure as e:
                 msg = "Recognition failed. (Words: %s)" % (words,)
                 self._log.error(msg)
@@ -183,16 +174,3 @@ class RuleTestGrammar(Grammar):
             # Restore original process recognition methods.
             for rule, original_method in patched_rules:
                 rule._process_recognition = original_method
-
-    #-----------------------------------------------------------------------
-    # Engine-specific logic.
-
-    _mimic_methods = {}
-
-    def _mimic_words(self, words):
-        self.engine.mimic(words)
-
-    _mimic_methods["natlink"] = _mimic_words
-    _mimic_methods["sphinx"] = _mimic_words
-    _mimic_methods["text"] = _mimic_words
-

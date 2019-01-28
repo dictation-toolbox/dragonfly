@@ -25,8 +25,8 @@ from dragonfly import Window
 
 from .dictation import TextDictationContainer
 from .recobs import TextRecobsManager
-from .timer import TextTimerManager
-from ..base import EngineBase, EngineError, MimicFailure
+from ..base import (EngineBase, EngineError, MimicFailure,
+                    ThreadedTimerManager)
 
 
 def _map_word(word):
@@ -51,21 +51,14 @@ class TextInputEngine(EngineBase):
         EngineBase.__init__(self)
         self._language = "en"
         self._recognition_observer_manager = TextRecobsManager(self)
-        self._timer_manager = TextTimerManager(0.02, self)
-        self._connected = False
+        self._timer_manager = ThreadedTimerManager(0.02, self)
 
     def connect(self):
-        self._connected = True
+        pass
 
     def disconnect(self):
         # Clear grammar wrappers on disconnect()
         self._grammar_wrappers.clear()
-        self._connected = False
-
-    @property
-    def connected(self):
-        """ Whether :meth:`connect` has been called. """
-        return self._connected
 
     # -----------------------------------------------------------------------
     # Methods for administrating timers.
@@ -75,12 +68,9 @@ class TextInputEngine(EngineBase):
         Create and return a timer using the specified callback and repeat
         interval.
 
-        Timers created using this engine will only be run if
-        :meth:`engine.connect` is called beforehand. :meth:`threading.Timer`
-        may be used instead with no blocking issues.
-
         Timers created using this engine will be run in a separate daemon
         thread, meaning that their callbacks will **not** be thread safe.
+        :meth:`threading.Timer` may be used instead with no blocking issues.
         """
         return EngineBase.create_timer(self, callback, interval)
 

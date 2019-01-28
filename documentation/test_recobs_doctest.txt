@@ -3,10 +3,8 @@ RecognitionObserver base class
 ==========================================================================
 
 .. note:: :class:`RecognitionObserver` instances can be used for both
-   the DNS and the WSR backend engines.  However, WSR does not offer
-   access to the words recognized by a different context, and therefore
-   the :meth:`RecognitionObservers.on_recognition` will always
-   be called with ``words = False``.
+   the DNS and the WSR backend engines.  However, WSR will sometimes call
+   observer methods multiple times, so be careful using observers with it.
 
 Test fixture initialization::
 

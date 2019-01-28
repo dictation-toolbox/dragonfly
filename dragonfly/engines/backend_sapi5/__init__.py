@@ -19,8 +19,23 @@
 #
 
 """
-SR back-end package for SAPI 5
+SR back-end package for WSR and SAPI 5
 ============================================================================
+
+The WSR / SAPI 5 back-end has two engine classes:
+
+* `sapi5inproc` - engine class for SAPI 5 in process recognizer. This is the
+  default implementation and has no GUI (yet). :meth:`get_engine` will
+  return an instance of this class if the ``name`` parameter is ``None``
+  (default) or ``"sapi5inproc"``. It is recommended that you run this from
+  command-line.
+
+* `sapi5shared` - engine class for SAPI 5 shared recognizer. This
+  implementation uses the Windows Speech Recognition GUI. This
+  implementation's behaviour can be inconsistent and a little buggy at
+  times, which is why it is no longer the default. To use it anyway
+  pass ``"sapi5"`` or ``"sapi5shared"`` to :meth:`get_engine`.
+
 
 """
 
@@ -34,8 +49,13 @@ _log = logging.getLogger("engine.sapi5")
 _engine = None
 
 
-def is_engine_available():
-    """ Check whether SAPI is available. """
+def is_engine_available(name):
+    """
+        Check whether SAPI is available.
+
+        :param name: optional human-readable name of the engine to return.
+        :type name: str
+    """
     global _engine
     if _engine:
         return True
@@ -55,9 +75,16 @@ def is_engine_available():
                    "installed?" % e)
         return False
 
-    # Attempt to connect to SAPI.
+    # Attempt to connect to SAPI using the correct dispatch name.
+    from .engine import Sapi5Engine, Sapi5InProcEngine
+
+    # Use the in-process engine by default, otherwise use the shared engine.
+    if not name or name == "sapi5inproc":
+        dispatch_name = Sapi5InProcEngine.recognizer_dispatch_name
+    else:
+        dispatch_name = Sapi5Engine.recognizer_dispatch_name
     try:
-        Dispatch("SAPI.SpSharedRecognizer")
+        Dispatch(dispatch_name)
     except com_error as e:
         _log.exception("COM error during dispatch: %s" % e)
         return False
@@ -67,10 +94,19 @@ def is_engine_available():
     return True
 
 
-def get_engine():
-    """ Retrieve the Sapi5 back-end engine object. """
+def get_engine(name):
+    """
+        Retrieve the Sapi5 back-end engine object.
+
+        :param name: optional human-readable name of the engine to return.
+        :type name: str
+    """
     global _engine
     if not _engine:
-        from .engine import Sapi5Engine
-        _engine = Sapi5Engine()
+        from .engine import Sapi5Engine, Sapi5InProcEngine
+        # Use the in-process engine by default.
+        if not name or name == "sapi5inproc":
+            _engine = Sapi5InProcEngine()
+        else:
+            _engine = Sapi5Engine()
     return _engine

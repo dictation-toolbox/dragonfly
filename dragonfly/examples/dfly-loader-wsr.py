@@ -20,7 +20,7 @@ import os.path
 import logging
 import pythoncom
 
-from dragonfly.engines.backend_sapi5.engine import Sapi5InProcEngine
+from dragonfly import RecognitionObserver, get_engine
 from dragonfly.loader import CommandModuleDirectory
 
 
@@ -29,6 +29,22 @@ from dragonfly.loader import CommandModuleDirectory
 
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("compound.parse").setLevel(logging.INFO)
+
+# --------------------------------------------------------------------------
+# Simple recognition observer class.
+
+class Observer(RecognitionObserver):
+    def __init__(self):
+        super(Observer, self).__init__()
+
+    def on_begin(self):
+        print("Speech start detected.")
+
+    def on_recognition(self, words):
+        print(" ".join(words))
+
+    def on_failure(self):
+        print("Sorry, what was that?")
 
 
 #---------------------------------------------------------------------------
@@ -46,8 +62,12 @@ def main():
         path = os.getcwd()
         __file__ = os.path.join(path, "dfly-loader-wsr.py")
 
-    engine = Sapi5InProcEngine()
+    engine = get_engine("sapi5inproc")
     engine.connect()
+
+    # Register a recognition observer
+    observer = Observer()
+    observer.register()
 
     directory = CommandModuleDirectory(path, excludes=[__file__])
     directory.load()

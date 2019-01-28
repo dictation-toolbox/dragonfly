@@ -65,10 +65,14 @@ class TestTimer(unittest.TestCase):
         # Callback was called one or more times. The engine may or may not
         # have called it already by the time we get here, but getting an
         # exact call count is not required.
-        self.assertTrue(callback_called[0] >= 1)
-        self.assertTrue(len(self.log_capture.records) >= 1)
-        log_message = self.log_capture.records[0].msg
-        self.assertTrue("Exception from timer callback" in log_message)
+        try:
+            self.assertTrue(callback_called[0] >= 1)
+            self.assertTrue(len(self.log_capture.records) >= 1)
+            log_message = self.log_capture.records[0].msg
+            self.assertTrue("Exception from timer callback" in log_message)
+        finally:
+            # Stop the timer at the end regardless of the result.
+            timer.stop()
 
 #===========================================================================
 

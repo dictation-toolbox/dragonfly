@@ -75,6 +75,13 @@ Follow the following steps to run the test suite for the WSR backend:
         cd <dir>
         python setup.py test --test-suite=dragonfly.test.suites.sapi5_suite
 
+You can also run the test suite for the in process engine class. It has no
+GUI for the moment. Run the tests with the following commands:
+
+    .. code:: shell
+
+        cd <dir>
+        python setup.py test --test-suite=dragonfly.test.suites.sapi5inproc_suite
 
 Using the text-input engine
 ----------------------------------------------------------------------------

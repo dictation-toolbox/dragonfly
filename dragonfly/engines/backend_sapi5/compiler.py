@@ -77,6 +77,14 @@ class Sapi5Compiler(CompilerBase):
 
         return grammar_handle
 
+    def _get_next_rule_id(self, grammar):
+        # Generate a new unique rule ID within this grammar.
+        if not hasattr(grammar, "_sapi5_next_rule_id"):
+            grammar._sapi5_next_rule_id = 1
+        rule_id = grammar._sapi5_next_rule_id
+        grammar._sapi5_next_rule_id += 1
+        return rule_id
+
     def _compile_rule(self, rule, grammar, grammar_handle):
         self._log.debug("%s: Compiling rule %s." % (self, rule.name))
 
@@ -86,18 +94,13 @@ class Sapi5Compiler(CompilerBase):
             self._log.debug("%s: Already compiled rule %s." % (self, rule.name))
             return
 
-        # Generate a new unique rule ID within this grammar.
-        if not hasattr(grammar, "_sapi5_next_rule_id"):
-            grammar._sapi5_next_rule_id = 1
-        rule_id = grammar._sapi5_next_rule_id
-        grammar._sapi5_next_rule_id += 1
-
         # Determine the flags to set when adding this rule.
         flags = 0
         if rule.exported:
             flags |= constants.SRATopLevel
 
         # Add this rule, and compile its root element.
+        rule_id = self._get_next_rule_id(grammar)
         rule_handle = grammar_handle.Rules.Add(rule.name, flags, rule_id)
         self._log.debug("%s: Compiling rule %r (id %r)." % (self, rule_handle.Name, rule_handle.Id))
         self.compile_element(rule.element, rule_handle.InitialState, None, grammar, grammar_handle)
@@ -175,7 +178,9 @@ class Sapi5Compiler(CompilerBase):
         if not rule_handle:
             grammar.add_list(element.list)
             flags = constants.SRADynamic
-            rule_handle = grammar_handle.Rules.Add(list_rule_name, flags, 0)
+            rule_id = self._get_next_rule_id(grammar)
+            rule_handle = grammar_handle.Rules.Add(list_rule_name, flags,
+                                                   rule_id)
         src_state.AddRuleTransition(dst_state, rule_handle)
 
     @trace_compile
@@ -192,14 +197,13 @@ class Sapi5Compiler(CompilerBase):
         """
         rule_handle = grammar_handle.Rules.FindRule("dgndictation")
         if rule_handle:
-#            self._log.error("%s: dictation rule already present." % self)
             return rule_handle
-#        self._log.error("%s: building dictation rule ." % self)
 
         flags = 0
-#        flags = constants.SRADynamic
-        rule_handle = grammar_handle.Rules.Add("dgndictation", flags, 0)
-#        grammar.add_rule(
+        # flags = constants.SRADynamic
+        rule_id = self._get_next_rule_id(grammar)
+        rule_handle = grammar_handle.Rules.Add("dgndictation", flags,
+                                               rule_id)
 
         src_state = rule_handle.InitialState
         dst_state = None

@@ -23,4 +23,4 @@ from .engine       import EngineBase, EngineError, MimicFailure
 from .compiler     import CompilerBase, CompilerError
 from .dictation    import DictationContainerBase
 from .recobs       import RecObsManagerBase
-from .timer        import TimerManagerBase
+from .timer        import TimerManagerBase, ThreadedTimerManager
