@@ -17,26 +17,41 @@ Unreleased_
 
 Added
 ~~~~~
-* Add more doctests for fundamental dragonfly elements.
-* Add simple timer manager class for the text input engine.
-* Add tests for exclusive grammars and grammar/rule contexts.
+* Add additional tests to dragonfly's test suites.
+* Add documentation for dragonfly's timer classes.
+* Add new synchronous and process properties and error handling to
+  the RunCommand action.
+* Add timer manager class for the text input and SAPI 5 engines.
 
 Changed
 ~~~~~~~
-* Change logging framework to use ~/.dragonfly.log as the log file to make
-  logging work on Windows and on other operating systems.
-* Change the Natlink test suite to run different tests for different DNS
-  versions.
-* Change the default test suite to the "text" engine's test suite and add it
-  to the CI build.
-* Update documentation page for the test suites.
+* Change default engine class for SAPI 5 engine backend to
+  Sapi5InProcEngine.
+* Change logging framework to use *~/.dragonfly.log* as the log
+  file to make logging work on Windows and on other operating
+  systems.
+* Change the Natlink test suite to run different tests for
+  different DNS versions.
+* Change the default test suite to the "text" engine's test suite
+  and add it to the CI build.
+* Change typeables.py so that all symbols can be referred to by
+  their printable representation (thanks `@wolfmanstout`_).
+* Make several changes to the SAPI 5 engine backend so it passes
+  the relevant dragonfly tests.
+* Update how _generate_typeables.py generates code used in
+  typeables.py.
+* Update several documentation pages.
+* Use a RecognitionObserver in dfly-loader-wsr.py for user feedback
+  when using Sapi5InProcEngine.
 
 Fixed
 ~~~~~
-* Fix bug where the :class:`Text` action intermittently ignores the
-  hardware_apps override.
+* Add default implementation for the RunCommand.process_command
+  method so that most commands don't hang without an implementation.
+* Fix bug where the Text action intermittently ignores the
+  hardware_apps override (thanks `@wolfmanstout`_).
 * Fix some encoding bugs with the text input engine.
-* Fix various issues with dragonfly's tests.
+* Fix various issues with dragonfly's tests and test framework.
 
 Removed
 ~~~~~~~
@@ -48,7 +63,7 @@ Removed
 Fixed
 ~~~~~
 * Disable **backwards-incompatible** Unicode keyboard functionality by
-  default for the :class:`Text` action. Restoring the old behaviour
+  default for the Text action. Restoring the old behaviour
   requires deleting/modifying the `~/.dragonfly2-speech/settings.cfg`
   file.
 
@@ -57,7 +72,7 @@ Fixed
 
 Added
 ~~~~~
-* Add configurable Windows Unicode keyboard support to the :class:`Text`
+* Add configurable Windows Unicode keyboard support to the Text
   action (thanks `@Versatilus`_).
 * Add Windows accessibility API support to Dragonfly (thanks
   `@wolfmanstout`_).
@@ -69,7 +84,7 @@ Changed
 ~~~~~~~
 * Change default paste key for the Paste action to Shift+insert.
 * Change typeables.py to log errors for untypeable characters.
-* Make **backwards-incompatible** change to the :class:`Text` class where
+* Make **backwards-incompatible** change to the Text class where
   it no longer respects modifier keys being held down by default.
 * Move TestContext class from Pocket Sphinx engine tests into
   test/infrastructure.py.
