@@ -18,8 +18,22 @@
 #
 
 """
-RPC server class
+RPC server
 ----------------------------------------------------------------------------
+
+Dragonfly's RPC server handles requests by processing each method through
+the current engine's :ref:`multiplexing timer interface <RefEngineTimers>`.
+This allows engines to handle requests safely and keeps engine-specific
+implementation details out of the *dragonfly.rpc* sub-package.
+
+.. warning::
+
+   Do not call engine methods directly or indirectly from other threads,
+   e.g. with :meth:`engine.mimic`, :meth:`grammar.unload`,
+   :meth:`grammar.load`, etc. Some engines such as natlink do not support
+   multi-threading and will raise errors. In addition, the
+   :code:`EngineBase` class is not thread safe.
+
 """
 
 import logging
@@ -30,10 +44,11 @@ from jsonrpc.manager import JSONRPCResponseManager
 from werkzeug.wrappers import Request, Response
 from werkzeug.serving import run_simple
 
-# Import the RPC method dispatcher. This will also set up methods defined in
+# Import some things from .methods. This will also set up methods defined in
 # that module.
-from .methods import dispatcher
+from .methods import dispatcher, server_timer_function
 from .util import send_rpc_request
+from ..engines import get_engine
 from ..log import setup_log
 
 
@@ -95,6 +110,7 @@ class RPCServer(object):
         self._ssl_context = ssl_context
         self._threaded = threaded
         self._thread = None
+        self.timer = None
 
     @property
     def url(self):
@@ -143,13 +159,35 @@ class RPCServer(object):
         def run():
             # Note: 'threaded' means that each request is handled using a
             # separate thread. This introduces some overhead costs.
-            return run_simple(self._address, self._port, application,
-                              ssl_context=self._ssl_context,
-                              threaded=self._threaded)
+            try:
+                return run_simple(self._address, self._port, application,
+                                  ssl_context=self._ssl_context,
+                                  threaded=self._threaded)
+            except Exception as e:
+                _log.exception("Exception caught on RPC server thread: %s"
+                               % e)
+                # Stop the engine timer for processing requests.
+                self.timer.stop()
+                self.timer = None
 
         self._thread = threading.Thread(target=run)
         self._thread.setDaemon(True)
         self._thread.start()
+
+        def natlink_timer():
+            # Let the server's thread run for a bit.
+            if self._thread:
+                self._thread.join(0.05)
+                server_timer_function()
+
+        # Create a timer with the current engine in order to process methods
+        # properly. Have the timer run every second.
+        engine = get_engine()
+        if engine.name == "natlink":
+            timer_function = natlink_timer
+        else:
+            timer_function = server_timer_function
+        self.timer = engine.create_timer(timer_function, 1)
 
         # Wait a few milliseconds to allow the server to start properly.
         time.sleep(0.1)
@@ -158,9 +196,17 @@ class RPCServer(object):
         """
         Stop the server if it is running.
         """
+        # Handle a previous Thread.join() timeout.
+        if self._thread and not self._thread.isAlive():
+            self._thread = None
+
         # Return if the server isn't currently running.
         if not self._thread:
             return
+
+        # Stop the engine timer for processing requests.
+        self.timer.stop()
+        self.timer = None
 
         # werkzeug is normally stopped through a request to the server.
         self.send_request("shutdown_rpc_server", [])

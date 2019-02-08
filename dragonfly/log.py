@@ -57,6 +57,8 @@ default_levels = {
                   "action.exec":          (_warning, _warning),
                   "context":              (_warning, _info),
                   "context.match":        (_warning, _info),
+                  "rpc.server":           (_warning, _warning),
+                  "rpc.methods":          (_warning, _warning),
                   "rule":                 (_warning, _info),
                   "config":               (_warning, _info),
                   "monitor.init":         (_warning, _info),

@@ -17,12 +17,12 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+import threading
+import time
 import unittest
-import sys
 
 from dragonfly import (ActionBase, CompoundRule, Grammar, Literal,
-                       MappingRule, Rule, get_engine)
-from dragonfly.rpc import RPCServer
+                       MappingRule, Rule, get_engine, RPCServer)
 
 
 class RPCTestCase(unittest.TestCase):
@@ -32,21 +32,53 @@ class RPCTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.server = RPCServer()
+        cls.current_response = None
+
+        # Start the server on a different port for the tests and esure the
+        # engine is connected.
+        cls.server = RPCServer(port=50052)
+        get_engine().connect()
         cls.server.start()
 
     @classmethod
     def tearDownClass(cls):
         cls.server.stop()
+        get_engine().disconnect()
+
+    def send_request(self, method, params):
+        # Send requests to the server using new threads to emulate requests
+        # from a different process.
+        def request():
+            try:
+                self.current_response = self.server.send_request(
+                    method, params
+                )
+            except Exception as e:
+                self.current_response = e
+
+        request_thread = threading.Thread(target=request)
+        request_thread.start()
+
+        # Manually process server requests by calling the timer manager's
+        # main callback directly.
+        while request_thread.isAlive():
+            self.server.timer.manager.main_callback()
+            time.sleep(0.05)
+
+        # Handle errors and results from the request.
+        if isinstance(self.current_response, Exception):
+            raise self.current_response
+        else:
+            return self.current_response
 
     def test_add_method(self):
         """ Verify that RPC methods can be added and replaced."""
         self.server.add_method("foo", lambda: "bar")
-        response = self.server.send_request("foo", [])
+        response = self.send_request("foo", [])
         self.assertEqual(response, {'jsonrpc': '2.0', 'result': 'bar',
                                     'id': 0})
         self.server.add_method("foo", lambda: "foo")
-        response = self.server.send_request("foo", [])
+        response = self.send_request("foo", [])
         self.assertEqual(response, {'jsonrpc': '2.0', 'result': 'foo',
                                     'id': 0})
 
@@ -57,7 +89,7 @@ class RPCTestCase(unittest.TestCase):
 
         # Add a 'bar' method, check that it works.
         self.server.add_method("bar", lambda: "foo")
-        response = self.server.send_request("bar", [])
+        response = self.send_request("bar", [])
         self.assertEqual(response, {'jsonrpc': '2.0', 'result': 'foo',
                                     'id': 0})
 
@@ -69,6 +101,7 @@ class RPCTestCase(unittest.TestCase):
                           lambda: self.server.send_request("bar", []))
 
     def test_list_grammars(self):
+        """ Verify that the 'list_grammars' RPC method works correctly. """
         # Load a Grammar with three rules and check that the RPC returns the
         # correct data for them.
         g = Grammar("list_grammars_test")
@@ -82,8 +115,7 @@ class RPCTestCase(unittest.TestCase):
                         exported=False))
         g.load()
 
-        response = self.server.send_request("list_grammars", [])
-        self.assertIn("result", response)
+        response = self.send_request("list_grammars", [])
         expected_grammar_data = {
             "name": g.name, "enabled": True, "active": True, "rules": [
                 {"name": "compound", "specs": ["testing"],
@@ -98,9 +130,31 @@ class RPCTestCase(unittest.TestCase):
         # be the only grammar and that is acceptable because dragonfly's
         # tests can be run while user grammars are loaded.
         try:
+            self.assertIn("result", response)
             self.assertIn(expected_grammar_data, response["result"])
         finally:
             g.unload()
+
+    def test_mimic(self):
+        """ Verify that the 'mimic' RPC method works correctly. """
+        g = Grammar("mimic_test")
+        g.add_rule(CompoundRule(name="compound", spec="testing mimicry",
+                                exported=True))
+        g.load()
+
+        response = self.send_request("mimic", ["testing mimicry"])
+        try:
+            self.assertIn("result", response)
+            self.assertEqual(response["result"], True)
+        finally:
+            g.unload()
+
+    def test_get_engine_language(self):
+        """ Verify that the 'get_engine_language' RPC method works
+            correctly. """
+        response = self.send_request("get_engine_language", [])
+        self.assertIn("result", response)
+        self.assertEqual(response["result"], "en")
 
 
 if __name__ == '__main__':

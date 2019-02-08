@@ -13,10 +13,10 @@ Some use cases for this framework include:
 - Guiding the user through complex commands.
 - A GUI for building dragonfly/third-party grammars.
 
-.. automodule:: dragonfly.rpc.methods
+.. automodule:: dragonfly.rpc.server
    :members:
 
-.. automodule:: dragonfly.rpc.server
+.. automodule:: dragonfly.rpc.methods
    :members:
 
 .. automodule:: dragonfly.rpc.util

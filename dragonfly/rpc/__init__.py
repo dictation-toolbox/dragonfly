@@ -17,5 +17,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+from .methods import rpc_method
 from .server import RPCServer
 from .util import send_rpc_request
