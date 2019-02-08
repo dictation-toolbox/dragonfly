@@ -31,9 +31,13 @@ class EngineTestSuite(unittest.TestSuite):
         unittest.TestSuite.__init__(self)
 
     def run(self, result):
-        engine = dragonfly.get_engine(self.engine_name)
-        engine.connect()
+        self.engine = dragonfly.get_engine(self.engine_name)
+        self.engine.connect()
         try:
             return unittest.TestSuite.run(self, result)
         finally:
-            engine.disconnect()
+            self.engine.disconnect()
+
+    def tearDownClass(cls):
+        # Check that the dragonfly engine was not changed during the tests.
+        assert cls.engine is dragonfly.get_engine()
