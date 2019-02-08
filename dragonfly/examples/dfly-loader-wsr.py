@@ -18,7 +18,6 @@ directory it's in and loads any ``*.py`` it finds.
 import time
 import os.path
 import logging
-import pythoncom
 
 from dragonfly import RecognitionObserver, get_engine
 from dragonfly.loader import CommandModuleDirectory
@@ -72,10 +71,9 @@ def main():
     directory = CommandModuleDirectory(path, excludes=[__file__])
     directory.load()
 
-    engine.speak('beginning loop!')
-    while 1:
-        pythoncom.PumpWaitingMessages()
-        time.sleep(.1)
+    # Recognize from WSR in a loop.
+    engine.recognize_forever()
+
 
 if __name__ == "__main__":
     main()

@@ -32,13 +32,15 @@ import time
 
 from six import string_types, integer_types
 
+import pythoncom
 import win32con
 from ctypes import *
 from win32com.client           import Dispatch, getevents, constants
 from win32com.client.gencache  import EnsureDispatch
 
 from ..base                    import (EngineBase, EngineError,
-                                       MimicFailure, ThreadedTimerManager)
+                                       MimicFailure, DelegateTimerManager,
+                                       DelegateTimerManagerInterface)
 from .compiler                 import Sapi5Compiler
 from .dictation                import Sapi5DictationContainer
 from .recobs                   import Sapi5RecObsManager
@@ -66,6 +68,7 @@ class MimicObserver(RecognitionObserver):
     _log = logging.getLogger("SAPI5 RecObs")
 
     def __init__(self):
+        RecognitionObserver.__init__(self)
         self.status = "none"
 
     def on_recognition(self, words):
@@ -79,7 +82,7 @@ class MimicObserver(RecognitionObserver):
 
 #===========================================================================
 
-class Sapi5SharedEngine(EngineBase):
+class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     """ Speech recognition engine back-end for SAPI 5 shared recognizer. """
 
     _name = "sapi5shared"
@@ -90,6 +93,7 @@ class Sapi5SharedEngine(EngineBase):
 
     def __init__(self):
         EngineBase.__init__(self)
+        DelegateTimerManagerInterface.__init__(self)
 
         EnsureDispatch(self.recognizer_dispatch_name)
         EnsureDispatch("SAPI.SpVoice")
@@ -98,7 +102,10 @@ class Sapi5SharedEngine(EngineBase):
         self._compiler    = None
 
         self._recognition_observer_manager = Sapi5RecObsManager(self)
-        self._timer_manager = ThreadedTimerManager(0.02, self)
+        self._timer_manager = DelegateTimerManager(0.05, self)
+        self._timer_callback = None
+        self._timer_interval = None
+        self._timer_next_time = 0
 
     def connect(self):
         """ Connect to back-end SR engine. """
@@ -270,6 +277,30 @@ class Sapi5SharedEngine(EngineBase):
     def _get_language(self):
         return "en"
 
+    def set_timer_callback(self, callback, sec):
+        self._timer_callback = callback
+        self._timer_interval = sec
+        self._timer_next_time = time.time()
+
+    def _call_timer_callback(self):
+        if not (self._timer_callback or self._timer_interval):
+            return
+
+        now = time.time()
+        if self._timer_next_time < now:
+            self._timer_callback()
+
+    def recognize_forever(self):
+        """
+        Recognize speech in a loop.
+
+        This will also call any scheduled timer functions.
+        """
+        self.speak('beginning loop!')
+        while 1:
+            pythoncom.PumpWaitingMessages()
+            self._call_timer_callback()
+            time.sleep(0.07)
 
 #---------------------------------------------------------------------------
 # Make the shared engine available as Sapi5Engine, for backwards

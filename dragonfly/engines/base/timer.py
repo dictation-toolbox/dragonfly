@@ -149,10 +149,10 @@ class ThreadedTimerManager(TimerManagerBase):
     """
     Timer manager class using a daemon thread.
 
-    This class is used by the "text" and SAPI 5 engines.
+    This class is used by the "text" engine.
 
-    It may be used by any SR engine that doesn't have to contend with
-    Python's multi-threading limitations.
+    It may be used by any SR engine that supports engine operations on
+    multiple threads.
     """
 
     def __init__(self, interval, engine):
@@ -184,3 +184,45 @@ class ThreadedTimerManager(TimerManagerBase):
         if self._thread:
             self._thread.join(timeout=5)
             self._thread = None
+
+
+class DelegateTimerManagerInterface(object):
+    """
+    DelegateTimerManager interface.
+    """
+    def set_timer_callback(self, callback, sec):
+        """
+        Virtual method to set the timer manager's callback.
+
+        :param callback: function to call every N seconds
+        :type callback: callable | None
+        :param sec: number of seconds between calls to the callback function
+        :type sec: float | int
+        """
+        raise NotImplementedError()
+
+
+class DelegateTimerManager(TimerManagerBase):
+    """
+    Timer manager class that calls :meth:`main_callback` through an
+    engine-specific callback function.
+
+    Engines using this class must implement
+    :class:`DelegateManagerInterface`.
+
+    This class is used by the SAPI 5 engine.
+    """
+
+    def __init__(self, interval, engine):
+        TimerManagerBase.__init__(self, interval, engine)
+        if not isinstance(self.engine, DelegateTimerManagerInterface):
+            raise TypeError("engines using ProxyTimerManager must "
+                            "implement ProxyManagerInterface")
+
+    def _activate_main_callback(self, callback, sec):
+        """"""
+        self.engine.set_timer_callback(callback, sec)
+
+    def _deactivate_main_callback(self):
+        """"""
+        self.engine.set_timer_callback(None, 0)

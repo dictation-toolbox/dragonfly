@@ -142,11 +142,18 @@ class RPCTestCase(unittest.TestCase):
                                 exported=True))
         g.load()
 
+        # Set the grammar as exclusive.
+        # The sapi5shared engine apparently requires this for mimic() to
+        # work, making the method kind of useless. This does not apply to
+        # sapi5inproc.
+        g.set_exclusiveness(True)
+
         response = self.send_request("mimic", ["testing mimicry"])
         try:
             self.assertIn("result", response)
             self.assertEqual(response["result"], True)
         finally:
+            g.set_exclusiveness(False)
             g.unload()
 
     def test_get_engine_language(self):
