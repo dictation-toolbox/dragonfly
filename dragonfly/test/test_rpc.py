@@ -156,9 +156,13 @@ class RPCTestCase(unittest.TestCase):
             g.set_exclusiveness(False)
             g.unload()
 
+    def test_speak(self):
+        response = self.send_request("speak", ["testing speak"])
+        self.assertIn("result", response)
+        self.assertEqual(response["result"], None)
+
     def test_get_engine_language(self):
-        """ Verify that the 'get_engine_language' RPC method works
-            correctly. """
+        """ Verify that the 'speak' RPC method works correctly. """
         response = self.send_request("get_engine_language", [])
         self.assertIn("result", response)
         self.assertEqual(response["result"], "en")

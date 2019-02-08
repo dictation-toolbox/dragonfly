@@ -180,6 +180,20 @@ def mimic(words):
 
 
 @rpc_method
+def speak(text):
+    """
+    Speak the given *text* using text-to-speech using :meth:`engine.speak`.
+
+    :param text: text to speak using text-to-speech
+    :type text: str
+    """
+    if not isinstance(text, string_types):
+        raise TypeError("text must be a string")
+
+    return get_engine().speak(text)
+
+
+@rpc_method
 def get_engine_language():
     """
     Get the current engine's language.
