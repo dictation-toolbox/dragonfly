@@ -46,7 +46,7 @@ from werkzeug.serving import run_simple
 
 # Import some things from .methods. This will also set up methods defined in
 # that module.
-from .methods import dispatcher, server_timer_function
+from .methods import dispatcher, rpc_method, server_timer_function
 from .util import send_rpc_request
 from ..engines import get_engine
 from ..log import setup_log
@@ -233,7 +233,10 @@ class RPCServer(object):
         :type name: str
         :type method: callable
         """
-        dispatcher[name] = method
+        # Use the rpc_method function to decorate and add the method to the
+        # dispatcher.
+        method.__name__ = name
+        rpc_method(method)
 
     def remove_method(self, name):
         """

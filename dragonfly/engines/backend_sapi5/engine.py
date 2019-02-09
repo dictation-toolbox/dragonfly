@@ -288,6 +288,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
 
         now = time.time()
         if self._timer_next_time < now:
+            self._timer_next_time = now + self._timer_interval
             self._timer_callback()
 
     def recognize_forever(self):
