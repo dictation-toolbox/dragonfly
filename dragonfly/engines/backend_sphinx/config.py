@@ -1,4 +1,4 @@
-# This Python file uses the following encoding: utf-8
+# encoding: utf-8
 
 """
 CMU Pocket Sphinx engine configuration module.
@@ -44,12 +44,12 @@ SLEEP_PHRASE_THRESHOLD = 1e-40
 
 # Configuration for acoustic model training.
 # Relative directory paths will use the current working directory, i.e. where the
-# loader is.
-TRAINING_DATA_DIR = "training/"
+# loader is. Disabled by default.
+TRAINING_DATA_DIR = ""
 START_TRAINING_PHRASE = "start training session"
-START_TRAINING_THRESHOLD = 1e-48
+START_TRAINING_PHRASE_THRESHOLD = 1e-48
 END_TRAINING_PHRASE = "end training session"
-END_TRAINING_THRESHOLD = 1e-45
+END_TRAINING_PHRASE_THRESHOLD = 1e-45
 
 # Keyword arguments given to the PyAudio.open method for opening a stream from a
 # microphone. PyAudio streams are used by the engine to recognise speech from audio.
