@@ -190,6 +190,11 @@ class RunCommand(ActionBase):
         def call():
             try:
                 self.process_command(self._proc)
+                return_code = self._proc.wait()
+                if return_code != 0:
+                    self._log.error("Command '%s' failed with return code "
+                                    "%d" % (self.command, return_code))
+                    return
             except Exception as e:
                 self._log.exception("Exception processing command '%s': %s"
                                     % (self.command, e))
