@@ -72,7 +72,7 @@ class JSGFCompiler(CompilerBase):
 
         # Compile each dragonfly rule and add it to the new grammar.
         for rule in grammar.rules:
-            result.add_rule(self.compile_rule(rule))
+            result.add_rule(self.compile_rule(rule, result))
 
         # Also compile and add any dragonfly Lists.
         for lst in grammar.lists:
@@ -84,10 +84,12 @@ class JSGFCompiler(CompilerBase):
 
         return result
 
-    def compile_rule(self, rule):
-        return jsgf.Rule(name=self.get_reference_name(rule),
-                         visible=rule.exported,
-                         expansion=self.compile_element(rule.element))
+    def compile_rule(self, rule, *args, **kwargs):
+        return jsgf.Rule(
+            name=self.get_reference_name(rule),
+            visible=rule.exported,
+            expansion=self.compile_element(rule.element, *args, **kwargs)
+        )
 
     # ----------------------------------------------------------------------
     # Method for compiling dragonfly lists and dictionary lists.
@@ -124,65 +126,74 @@ class JSGFCompiler(CompilerBase):
                                   " for element type %s."
                                   % (self, element))
 
-    def _compile_repetition(self, element):
+    def _compile_repetition(self, element, *args, **kwargs):
         # Compile the first element only; pyjsgf doesn't support limits on
         # repetition (yet).
         children = element.children
         if len(children) > 1:
             self._log.debug("Ignoring limits of repetition element %s."
                             % element)
-        return jsgf.Repeat(self.compile_element(children[0]))
+        compiled_child = self.compile_element(children[0], *args, **kwargs)
+        return jsgf.Repeat(compiled_child)
 
-    def _compile_sequence(self, element):
+    def _compile_sequence(self, element, *args, **kwargs):
         # Compile Repetition elements separately.
         if isinstance(element, elements_.Repetition):
-            return self._compile_repetition(element)
+            return self._compile_repetition(element, *args, **kwargs)
 
         children = element.children
         if len(children) > 1:
-            return jsgf.Sequence(*[self.compile_element(c)
-                                   for c in children])
+            return jsgf.Sequence(*[
+                self.compile_element(c, *args, **kwargs) for c in children
+            ])
         elif len(children) == 1:
             # Skip redundant (1 child) sequences.
-            return self.compile_element(children[0])
+            return self.compile_element(children[0], *args, **kwargs)
         else:
             # Compile an Empty element for empty sequences.
-            return self.compile_element(elements_.Empty())
+            return self.compile_element(elements_.Empty(), *args, **kwargs)
 
-    def _compile_alternative(self, element):
+    def _compile_alternative(self, element, *args, **kwargs):
         children = element.children
         if len(children) > 1:
-            return jsgf.AlternativeSet(*[self.compile_element(c)
-                                         for c in children])
+            return jsgf.AlternativeSet(*[
+                self.compile_element(c, *args, **kwargs) for c in children
+            ])
         elif len(children) == 1:
             # Skip redundant (1 child) alternatives.
-            return self.compile_element(children[0])
+            return self.compile_element(children[0], *args, **kwargs)
         else:
             # Compile an Empty element for empty alternatives.
-            return self.compile_element(elements_.Empty())
+            return self.compile_element(elements_.Empty(), *args, **kwargs)
 
-    def _compile_optional(self, element):
-        child = element.children[0]
-        return jsgf.OptionalGrouping(self.compile_element(child))
+    def _compile_optional(self, element, *args, **kwargs):
+        child = self.compile_element(element.children[0], *args, **kwargs)
+        return jsgf.OptionalGrouping(child)
 
-    def _compile_literal(self, element):
+    def _compile_literal(self, element, *args, **kwargs):
         return jsgf.Literal(" ".join(element.words))
 
-    def _compile_rule_ref(self, element):
+    def _compile_rule_ref(self, element, *args, **kwargs):
         name = element.rule.name
         return jsgf.NamedRuleRef(name)
 
-    def _compile_list_ref(self, element):
+    def _compile_list_ref(self, element, *args, **kwargs):
         name = element.list.name
         return jsgf.NamedRuleRef(name)
 
-    def _compile_empty(self, element):
+    def _compile_empty(self, element, *args, **kwargs):
         return jsgf.NullRef()
 
-    def _compile_impossible(self, element):
-        # Note: this will disable the entire rule and the entire grammar if
-        # it was compiled as a 'root' grammar.
+    def _compile_impossible(self, element, *args, **kwargs):
         return jsgf.VoidRef()
+
+    def _compile_dictation(self, element, *args, **kwargs):
+        # JSGF has no equivalent for dictation elements. Instead compile and
+        # return an Impossible element that allows dictation to be used,
+        # but not matched.
+        return self.compile_element(
+            elements_.Impossible(), *args, **kwargs
+        )
 
 
 class PatchedRepeat(jsgf.Repeat):
@@ -205,10 +216,12 @@ class SphinxJSGFCompiler(JSGFCompiler):
     JSGF compiler sub-class used by the CMU Pocket Sphinx backend.
     """
 
+    impossible_literal = "impossible " * 20
+
     # ----------------------------------------------------------------------
     # Methods for compiling elements.
 
-    def _compile_repetition(self, element):
+    def _compile_repetition(self, element, *args, **kwargs):
         # Compile the first element only; pyjsgf doesn't support limits on
         # repetition (yet).
         children = element.children
@@ -217,4 +230,24 @@ class SphinxJSGFCompiler(JSGFCompiler):
                             % element)
 
         # Return a PatchedRepeat instead of a normal Repeat expansion.
-        return PatchedRepeat(self.compile_element(children[0]))
+        compiled_child = self.compile_element(children[0], *args, **kwargs)
+        return PatchedRepeat(compiled_child)
+
+    def _compile_impossible(self, element, *args, **kwargs):
+        # Override this to avoid VoidRefs disabling entire rules/grammars.
+        # Use a special <_impossible> private rule instead. Only add the
+        # special rule if it isn't in the result grammar.
+        grammar = args[0]
+        if "_impossible" not in grammar.rule_names:
+            grammar.add_rule(jsgf.Rule(
+                name="_impossible", visible=False,
+                expansion=jsgf.Literal(self.impossible_literal)
+            ))
+
+        return jsgf.NamedRuleRef("_impossible")
+
+    # TODO Change this to allow dictation elements to work.
+    def _compile_dictation(self, element, *args, **kwargs):
+        return self.compile_element(
+            elements_.Impossible(), *args, **kwargs
+        )
