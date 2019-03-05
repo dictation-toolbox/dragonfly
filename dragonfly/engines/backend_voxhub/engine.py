@@ -30,6 +30,7 @@ import logging
 from dragonfly.engines.backend_voxhub import is_engine_available
 from compiler import VoxhubCompiler
 from ..base import EngineBase, EngineError, MimicFailure
+from .dictation import VoxhubDictationContainer
 from mic import setup
 from multiprocessing import Process, Queue
 from ...grammar.state import State
@@ -42,6 +43,7 @@ class VoxhubEngine(EngineBase):
     _log = logging.getLogger("engine.voxhub")
     _name = ".voxhub"
     _timer_manager = None
+    DictationContainer = VoxhubDictationContainer
 
     def __init__(self):
         self._connected = False

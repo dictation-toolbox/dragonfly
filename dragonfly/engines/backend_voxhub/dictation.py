@@ -37,7 +37,7 @@ from six import PY2
 from ..base import DictationContainerBase
 
 
-class SphinxDictationContainer(DictationContainerBase):
+class VoxhubDictationContainer(DictationContainerBase):
     """
         Container class for dictated words as recognized by the
         :class:`Dictation` element.
