@@ -30,6 +30,10 @@ import logging
 from dragonfly.engines.backend_voxhub import is_engine_available
 from compiler import VoxhubCompiler
 from ..base import EngineBase, EngineError, MimicFailure
+from mic import setup
+from multiprocessing import Process, Queue
+from ...grammar.state import State
+import re
 
 
 class VoxhubEngine(EngineBase):
@@ -40,6 +44,9 @@ class VoxhubEngine(EngineBase):
     _timer_manager = None
 
     def __init__(self):
+        self._connected = False
+        self._queue = None
+        self._process = None
         EngineBase.__init__(self)
 
     def __str__(self):
@@ -47,13 +54,23 @@ class VoxhubEngine(EngineBase):
 
     def connect(self):
         """ Connect to back-end SR engine. """
-        raise NotImplementedError("Virtual method not implemented for"
-                                  " engine %s." % self)
+        self._queue = Queue()
+        self._process = Process(target=setup, args=("silvius-server.voxhub.io", self._queue,))
+        self._process.start()
+        # self._ws_connection = setup("silvius-server.voxhub.io")
+        self._connected = True
+        # raise NotImplementedError("Virtual method not implemented for"
+        #                           " engine %s." % self)
 
     def disconnect(self):
         """ Disconnect from back-end SR engine. """
-        raise NotImplementedError("Virtual method not implemented for"
-                                  " engine %s." % self)
+        if self._process:
+            self._process.terminate()
+            self._connected = False
+            print "Connection closed"
+        self._connected = False
+        # raise NotImplementedError("Virtual method not implemented for"
+        #                           " engine %s." % self)
 
     def connection(self):
         """ Context manager for a connection to the back-end SR engine. """
@@ -205,3 +222,42 @@ class VoxhubEngine(EngineBase):
 
     def _get_language(self):
         return "en"  # default to english
+
+    def process_transcript(self, transcript):
+        results = [(word, 0) for word in transcript.split()]
+        for (_, grammar) in self._grammar_wrappers.items():
+            if self.process_results_with_grammar(results, ["dgndictation"], grammar):
+                return True
+        return False
+
+    def process_results_with_grammar(self, results, rule_set, grammar):
+        func = getattr(grammar, "process_recognition", None)
+        if func:
+            words = [w for w, r in results]
+            if not func(words):
+                return False
+
+        s = State(results, rule_set, self)
+        for r in grammar._rules:
+            if not r.active or not r.exported: continue
+            s.initialize_decoding()
+            for result in r.decode(s):
+                if s.finished():
+                    self._log.debug("Matching rule: %s" % r.name)
+                    root = s.build_parse_tree()
+                    r.process_recognition(root)
+                    return True
+        return False
+
+    def process_speech(self):
+        while self._connected:
+            result = self._queue.get()
+            if result:
+                # result = "quit"
+                print "IT WORKS"
+                print result
+                if re.match(r"\s*quit\s*", result, re.I):
+                    print('Exiting..')
+                    self.disconnect()
+                    return False
+                self.process_transcript(result)
