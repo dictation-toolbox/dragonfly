@@ -31,7 +31,7 @@ from dragonfly.engines.backend_voxhub import is_engine_available
 from compiler import VoxhubCompiler
 from ..base import EngineBase, EngineError, MimicFailure
 from .dictation import VoxhubDictationContainer
-from mic import setup
+from server import connect_to_server
 from multiprocessing import Process, Queue
 from ...grammar.state import State
 import re
@@ -55,24 +55,18 @@ class VoxhubEngine(EngineBase):
         return "%s()" % self.__class__.__name__
 
     def connect(self):
-        """ Connect to back-end SR engine. """
+        """ Connect to back-end Voxhub server. """
         self._queue = Queue()
-        self._process = Process(target=setup, args=("silvius-server.voxhub.io", self._queue,))
+        self._process = Process(target=connect_to_server, args=(self._queue,))
         self._process.start()
-        # self._ws_connection = setup("silvius-server.voxhub.io")
         self._connected = True
-        # raise NotImplementedError("Virtual method not implemented for"
-        #                           " engine %s." % self)
 
     def disconnect(self):
-        """ Disconnect from back-end SR engine. """
+        """ Disconnect from back-end Voxhub server. """
         if self._process:
             self._process.terminate()
-            self._connected = False
             print "Connection closed"
         self._connected = False
-        # raise NotImplementedError("Virtual method not implemented for"
-        #                           " engine %s." % self)
 
     def connection(self):
         """ Context manager for a connection to the back-end SR engine. """
@@ -220,7 +214,7 @@ class VoxhubEngine(EngineBase):
         print "[MIMIC]" + words
 
     def speak(self, text):
-        print "[SPEAK]" + words
+        print "[SPEAK]" + text
 
     def _get_language(self):
         return "en"  # default to english
