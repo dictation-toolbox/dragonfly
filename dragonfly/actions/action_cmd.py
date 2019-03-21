@@ -29,6 +29,10 @@ subprocess.
 Processing will occur asynchronously by default. Commands running
 asynchronously should not normally prevent the Python process from exiting.
 
+It may sometimes be necessary to use a list for the action's *command*
+argument instead of a string. This is because some command-line shells may
+not work 100% correctly with Python's built-in :meth:`shlex.split` function.
+
 This action should work on Windows and other platforms.
 
 Example using the ping command::
@@ -37,6 +41,14 @@ Example using the ping command::
 
     # Ping localhost for 4 seconds.
     RunCommand('ping -w 4 localhost').execute()
+
+
+Example using a command list instead of a string::
+
+    from dragonfly import RunCommand
+
+    # Ping localhost for 4 seconds.
+    RunCommand(['ping', '-w', '4', 'localhost']).execute()
 
 
 Example using the optional function parameter::
@@ -62,7 +74,7 @@ Example using the subprocess's :class:`Popen` object::
 
     from dragonfly import RunCommand
 
-    # Initialise and execute a command synchronously.
+    # Initialise and execute a command asynchronously.
     cmd = RunCommand('ping -w 4 localhost')
     cmd.execute()
 
@@ -118,9 +130,10 @@ class RunCommand(ActionBase):
                  synchronous=False):
         """
             Constructor arguments:
-             - *command* (str) -- the command to run when this action is
-               executed. The command may include arguments and will be
-               parsed by :meth:`shlex.split`.
+             - *command* (str or list) -- the command to run when this
+               action is executed. It will be parsed by :meth:`shlex.split`
+               if it is a string and passed directly to ``subprocess.Popen``
+               if it is a list. Command arguments can be included.
              - *process_command* (callable) -- optional callable to invoke
                with the :class:`Popen` object after successfully starting
                the subprocess. Using this argument effectively overrides
@@ -137,9 +150,10 @@ class RunCommand(ActionBase):
         # at the class level: property & class-value.
         if command is not None:
             self.command = command
-        if not (self.command and isinstance(self.command, string_types)):
-            raise TypeError("command must be a non-empty string, not %s"
-                            % self.command)
+        command_types = (string_types, list)
+        if not (self.command and isinstance(self.command, command_types)):
+            raise TypeError("command must be a non-empty string or list, "
+                            "not %s" % self.command)
         if synchronous is not False:
             self.synchronous = synchronous
         if callable(process_command):
@@ -147,6 +161,12 @@ class RunCommand(ActionBase):
         if not callable(self.process_command):
             raise TypeError("process_command must be a callable object or "
                             "None")
+
+        # Set the string used for representing actions.
+        if isinstance(self.command, list):
+            self._str = "'%s'" % " ".join(self.command)
+        else:
+            self._str = "'%s'" % self.command
 
     @property
     def process(self):
@@ -175,24 +195,36 @@ class RunCommand(ActionBase):
         if os.name == 'nt':
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
+        # Pre-process self.command before passing it to subprocess.Popen.
+        command = self.command
+        if isinstance(command, string_types):
+            # Split command strings using shlex before passing it to Popen.
+            # Use POSIX mode only if on a POSIX platform.
+            command = shlex.split(command, posix=os.name == "posix")
         try:
-            self._proc = subprocess.Popen(shlex.split(self.command),
+            self._proc = subprocess.Popen(command,
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT,
                                           stdin=subprocess.PIPE,
                                           startupinfo=startupinfo)
         except Exception as e:
-            self._log.exception("Exception from starting subprocess '%s': "
-                                "%s" % (self.command, e))
+            self._log.exception("Exception from starting subprocess %s: "
+                                "%s" % (self._str, e))
             return False
 
         # Call process_command either synchronously or asynchronously.
         def call():
             try:
                 self.process_command(self._proc)
+                return_code = self._proc.wait()
+                if return_code != 0:
+                    self._log.error("Command %s failed with return code "
+                                    "%d" % (self._str, return_code))
+                    return False
             except Exception as e:
-                self._log.exception("Exception processing command '%s': %s"
-                                    % (self.command, e))
+                self._log.exception("Exception processing command %s: %s"
+                                    % (self._str, e))
                 return False
             finally:
                 self._proc = None

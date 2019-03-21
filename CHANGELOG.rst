@@ -12,6 +12,20 @@ Note: this project had no release versions between 0.6.6b1_ and
 commit history and will be placed under headings in this file over time.
 
 
+0.11.1_ - 2019-02-22
+--------------------
+
+Changed
+~~~~~~~
+* Change the RunCommand action to allow the *command* argument to be a list
+  to pass directly to *subprocess.Popen* instead of through *shlex.split()*.
+
+Fixed
+~~~~~
+* Fix the RunCommand action so it properly parses command strings using
+  non-POSIX/Windows paths.
+* Fix minor issues with RunCommand's string representation and error logging.
+
 0.11.0_ - 2019-01-30
 --------------------
 
@@ -141,7 +155,7 @@ Fixed
 * Make Read the Docs generate documentation from Python modules again.
 
 0.8.0_ - 2018-09-27
----------------------
+-------------------
 
 Added
 ~~~~~
@@ -272,7 +286,8 @@ This release is the first in the Git version control system.
 
 
 .. Release links.
-.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.11.0...HEAD
+.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.11.1...HEAD
+.. _0.11.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.11.0...0.11.1
 .. _0.11.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.10.1...0.11.0
 .. _0.10.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.10.0...0.10.1
 .. _0.10.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.9.1...0.10.0
