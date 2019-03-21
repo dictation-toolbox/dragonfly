@@ -89,7 +89,7 @@ Usage::
     >>> # Repetition is given a dragonfly element, in this case a Sequence.
     >>> seq = Sequence([Literal("hello"), Literal("world")])
     >>> # Specify min and max values to allow more than one repetition.
-    >>> rep = Repetition(seq, min=1, max=16)
+    >>> rep = Repetition(seq, min=1, max=16, optimize=False)
     >>> test_rep = ElementTester(rep)
     >>> test_rep.recognize("hello world")
     [[u'hello', u'world']]
@@ -103,6 +103,13 @@ Usage::
     >>> # Too many recognitions also result in recognition failure.
     >>> test_rep.recognize(" ".join(["hello world"] * 17))
     RecognitionFailure
+    >>> # Using the 'optimize' argument:
+    rep = Repetition(seq, min=1, max=16, optimize=True)
+    >>> test_rep = ElementTester(rep)
+    >>> test_rep.recognize("hello world")
+    [[u'hello', u'world']]
+    >>> test_rep.recognize("hello world hello world")
+    [[u'hello', u'world'], [u'hello', u'world']]
 
 
 RuleRef element class
