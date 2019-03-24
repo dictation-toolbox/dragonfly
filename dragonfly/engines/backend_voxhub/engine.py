@@ -34,6 +34,7 @@ from .dictation import VoxhubDictationContainer
 from server import connect_to_server
 from multiprocessing import Process, Queue
 from ...grammar.state import State
+from config import *
 import re
 
 
@@ -47,8 +48,14 @@ class VoxhubEngine(EngineBase):
 
     def __init__(self):
         self._connected = False
+        # Shared queue between processes for voxhub server and dragonfly
         self._queue = None
+        # Background process for the voxhub server
         self._process = None
+        # For enabling/disabling processing of transcript
+        self._pause_transcript_processing = False
+        # Pre checking of config. Improve config handling later
+        self.validate_config()
         EngineBase.__init__(self)
 
     def __str__(self):
@@ -60,6 +67,7 @@ class VoxhubEngine(EngineBase):
         self._process = Process(target=connect_to_server, args=(self._queue,))
         self._process.start()
         self._connected = True
+        self.process_speech()
 
     def disconnect(self):
         """ Disconnect from back-end Voxhub server. """
@@ -69,8 +77,33 @@ class VoxhubEngine(EngineBase):
         self._connected = False
 
     def connection(self):
-        """ Context manager for a connection to the back-end SR engine. """
+        """ Context manager for a connection to the back-end Voxhub engine. """
         return EngineContext(self)
+
+    @staticmethod
+    def validate_config():
+        connection_attributes = ["SERVER","PORT","CONTENT_TYPE","PATH"]
+        not_preset = []
+        for a_connection_attribute in connection_attributes:
+            if a_connection_attribute not in globals():
+                not_preset.append(a_connection_attribute)
+
+        if "MISC_CONFIG" not in globals():
+            not_preset.append("MISC_CONFIG completely missing")
+        else:
+            misc_attributes = ["device", "keep_going", "hypotheses", "audio_gate",
+                               "byte_rate", "chunk"]
+            for a_misc_attribute in misc_attributes:
+                if a_misc_attribute not in MISC_CONFIG:
+                    not_preset.append('MISC_CONFIG["'+a_misc_attribute+'"]')
+
+        if not_preset:
+            # Raise an error with the attributes that weren't set.
+            not_preset.sort()
+            raise EngineError("Invalid engine configuration. Please check backend_voxhub/config.py. The following "
+                              "attributes were not present: %s"
+                              % ", ".join(not_preset))
+
 
     #-----------------------------------------------------------------------
     # Methods for administrating grammar wrappers.
@@ -220,6 +253,7 @@ class VoxhubEngine(EngineBase):
         return "en"  # default to english
 
     def process_transcript(self, transcript):
+        # print "Processing transcript"
         results = [(word, 0) for word in transcript.split()]
         for (_, grammar) in self._grammar_wrappers.items():
             if self.process_results_with_grammar(results, ["dgndictation"], grammar):
@@ -250,10 +284,20 @@ class VoxhubEngine(EngineBase):
             result = self._queue.get()
             if result:
                 # result = "quit"
-                print "IT WORKS"
-                print result
-                if re.match(r"\s*quit\s*", result, re.I):
+                print "Transcript: ", result
+
+                if re.match(r"\s*"+QUIT_PHRASE+"\s*", result, re.I):
                     print('Exiting..')
                     self.disconnect()
                     return False
-                self.process_transcript(result)
+
+                elif re.match(r"\s*"+SLEEP_PHRASE+"\s*", result, re.I):
+                    self._pause_transcript_processing = True
+                    print("Sleeping...")
+
+                if not self._pause_transcript_processing:
+                    self.process_transcript(result)
+
+                if re.match(r"\s*"+WAKE_UP_PHRASE+"\s*", result, re.I):
+                    self._pause_transcript_processing = False
+                    print("Waking up...")

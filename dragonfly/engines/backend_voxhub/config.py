@@ -24,6 +24,10 @@ MISC_CONFIG = {
                 'byte_rate': 16000,                 # Rate in bytes/sec at which audio should be sent to the server.
                 'send_adaptation_state': None,      # Send adaptation state from file
                 'save_adaptation_state': None,      # Save adaptation state to file
-                'chunk': 2048 * 2                   # Try adjusting this if you want fewer network packets # TODO : Discuss with David
+                'chunk': 2048 * 2                   # Try adjusting this if you want fewer network packets
               }
+
+QUIT_PHRASE = "rate"
+SLEEP_PHRASE = "go to sleep"
+WAKE_UP_PHRASE = "wake up"
 
