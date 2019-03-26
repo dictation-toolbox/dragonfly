@@ -45,7 +45,7 @@ if sys.platform.startswith("win"):
                             make_input_array, send_input_array)
 elif sys.platform.startswith("linux"):
     from .action_key            import Key
-    from ..os_dependent_mock    import Text
+    from .action_text           import Text
     from ..os_dependent_mock    import Mouse
     from ..os_dependent_mock    import Paste
     from ..os_dependent_mock    import WaitWindow

@@ -68,12 +68,14 @@ Text class reference
 
 """
 
+import sys
 
 from six import text_type
 
 from ..engines import get_engine
-from ..windows.clipboard import Clipboard
-from ..windows.window import Window
+if sys.platform.startswith("win"):
+    from ..windows.clipboard    import Clipboard
+    from ..windows.window import Window
 from .action_base import ActionError, DynStrActionBase
 from .action_key import Key
 from .keyboard import Keyboard
@@ -226,7 +228,7 @@ class Text(DynStrActionBase):
         the text's spacing and capitalization before
         sending it as keyboard events.
         """
-        if self._autofmt:
+        if self._autofmt and sys.platform.startswith("win"):
             # Mimic a word, select and copy it to retrieve capitalization.
             get_engine().mimic("test")
             Key("cs-left, c-c/5").execute()

@@ -33,7 +33,7 @@ def mock_dyn_str_action(*args, **kwargs):
     return DynStrActionBase(*args, **kwargs)
 
 Text = mock_dyn_str_action
-#Key = mock_dyn_str_action
+Key = mock_dyn_str_action
 Mouse = mock_dyn_str_action
 Paste = mock_dyn_str_action
 WaitWindow = mock_action
