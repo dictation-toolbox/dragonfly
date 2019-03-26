@@ -188,6 +188,7 @@ from .action_base  import DynStrActionBase, ActionError
 from .typeables    import typeables
 from .keyboard     import Keyboard
 
+
 #---------------------------------------------------------------------------
 
 class Key(DynStrActionBase):
@@ -230,8 +231,6 @@ class Key(DynStrActionBase):
         events = []
         for single in spec.split(self._key_separator):
             events.extend(self._parse_single(single))
-        if len(events) == 0:
-            print "Key._parse_spec concludes no actions given spec", spec
         return events
 
     def _parse_single(self, spec):
