@@ -35,22 +35,32 @@ from .action_cmd          import RunCommand
 
 # Import Windows OS dependent classes only for Windows
 if sys.platform.startswith("win"):
-    from .action_key          import Key
-    from .action_text         import Text
-    from .action_mouse        import Mouse
-    from .action_paste        import Paste
-    from .action_waitwindow   import WaitWindow
-    from .action_focuswindow  import FocusWindow
-    from .action_startapp     import StartApp, BringApp
-    from .action_playsound    import PlaySound
-    from .keyboard             import Keyboard, Typeable
+    from .action_key            import Key
+    from .action_text           import Text
+    from .action_mouse          import Mouse
+    from .action_paste          import Paste
+    from .action_waitwindow     import WaitWindow
+    from .action_focuswindow    import FocusWindow
+    from .action_startapp       import StartApp, BringApp
+    from .action_playsound      import PlaySound
+    from .keyboard              import Keyboard, Typeable
+elif sys.platform.startswith("linux"):
+    from .action_key            import Key
+    from ..os_dependent_mock    import Text
+    from ..os_dependent_mock    import Mouse
+    from ..os_dependent_mock    import Paste
+    from ..os_dependent_mock    import WaitWindow
+    from ..os_dependent_mock    import FocusWindow
+    from ..os_dependent_mock    import StartApp, BringApp
+    from ..os_dependent_mock    import PlaySound
+    from .keyboard              import Keyboard, Typeable
 else:
-    from ..os_dependent_mock import Key
-    from ..os_dependent_mock import Text
-    from ..os_dependent_mock import Mouse
-    from ..os_dependent_mock import Paste
-    from ..os_dependent_mock import WaitWindow
-    from ..os_dependent_mock import FocusWindow
-    from ..os_dependent_mock import StartApp, BringApp
-    from ..os_dependent_mock import PlaySound
-    from ..os_dependent_mock import Keyboard, Typeable
+    from ..os_dependent_mock    import Key
+    from ..os_dependent_mock    import Text
+    from ..os_dependent_mock    import Mouse
+    from ..os_dependent_mock    import Paste
+    from ..os_dependent_mock    import WaitWindow
+    from ..os_dependent_mock    import FocusWindow
+    from ..os_dependent_mock    import StartApp, BringApp
+    from ..os_dependent_mock    import PlaySound
+    from ..os_dependent_mock    import Keyboard, Typeable

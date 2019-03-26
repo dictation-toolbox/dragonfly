@@ -30,7 +30,7 @@
 """
 
 import logging
-import win32con
+import platform
 from dragonfly.actions.keyboard import keyboard, Typeable
 
 logging.basicConfig()
@@ -271,6 +271,63 @@ _add_typeable(name="equal", char='=')
 _add_typeable(name="equals", char='=')
 
 typeables.update({
+    # Symbol keys
+    "bang":             keyboard.get_typeable(char='!'),
+    "exclamation":      keyboard.get_typeable(char='!'),
+    "at":               keyboard.get_typeable(char='@'),
+    "hash":             keyboard.get_typeable(char='#'),
+    "dollar":           keyboard.get_typeable(char='$'),
+    "percent":          keyboard.get_typeable(char='%'),
+    "caret":            keyboard.get_typeable(char='^'),
+    "and":              keyboard.get_typeable(char='&'),
+    "ampersand":        keyboard.get_typeable(char='&'),
+    "star":             keyboard.get_typeable(char='*'),
+    "asterisk":         keyboard.get_typeable(char='*'),
+    "leftparen":        keyboard.get_typeable(char='('),
+    "lparen":           keyboard.get_typeable(char='('),
+    "rightparen":       keyboard.get_typeable(char=')'),
+    "rparen":           keyboard.get_typeable(char=')'),
+    "minus":            keyboard.get_typeable(char='-'),
+    "hyphen":           keyboard.get_typeable(char='-'),
+    "underscore":       keyboard.get_typeable(char='_'),
+    "plus":             keyboard.get_typeable(char='+'),
+    "backtick":         keyboard.get_typeable(char='`'),
+    "tilde":            keyboard.get_typeable(char='~'),
+    "leftbracket":      keyboard.get_typeable(char='['),
+    "lbracket":         keyboard.get_typeable(char='['),
+    "rightbracket":     keyboard.get_typeable(char=']'),
+    "rbracket":         keyboard.get_typeable(char=']'),
+    "leftbrace":        keyboard.get_typeable(char='{'),
+    "lbrace":           keyboard.get_typeable(char='{'),
+    "rightbrace":       keyboard.get_typeable(char='}'),
+    "rbrace":           keyboard.get_typeable(char='}'),
+    "backslash":        keyboard.get_typeable(char='\\'),
+    "bar":              keyboard.get_typeable(char='|'),
+    "colon":            keyboard.get_typeable(char=':'),
+    "semicolon":        keyboard.get_typeable(char=';'),
+    "apostrophe":       keyboard.get_typeable(char="'"),
+    "singlequote":      keyboard.get_typeable(char="'"),
+    "squote":           keyboard.get_typeable(char="'"),
+    "quote":            keyboard.get_typeable(char='"'),
+    "doublequote":      keyboard.get_typeable(char='"'),
+    "dquote":           keyboard.get_typeable(char='"'),
+    "comma":            keyboard.get_typeable(char=','),
+    "dot":              keyboard.get_typeable(char='.'),
+    "slash":            keyboard.get_typeable(char='/'),
+    "lessthan":         keyboard.get_typeable(char='<'),
+    "leftangle":        keyboard.get_typeable(char='<'),
+    "langle":           keyboard.get_typeable(char='<'),
+    "greaterthan":      keyboard.get_typeable(char='>'),
+    "rightangle":       keyboard.get_typeable(char='>'),
+    "rangle":           keyboard.get_typeable(char='>'),
+    "question":         keyboard.get_typeable(char='?'),
+    "equal":            keyboard.get_typeable(char='='),
+    "equals":           keyboard.get_typeable(char='='),
+})
+
+if platform.platform() == "Windows":
+    import win32con
+    win_typeables = {
     # Whitespace and editing keys
     "enter":            Typeable(code=win32con.VK_RETURN, name='enter'),
     "tab":              Typeable(code=win32con.VK_TAB, name='tab'),
@@ -387,4 +444,125 @@ typeables.update({
     "playpause":        Typeable(code=win32con.VK_MEDIA_PLAY_PAUSE, name='playpause'),
     "browserback":      Typeable(code=win32con.VK_BROWSER_BACK, name='browserback'),
     "browserforward":   Typeable(code=win32con.VK_BROWSER_FORWARD, name='browserforward'),
-})
+    }
+    typeables.update(win_typeables)
+else:
+    other_typeables = {
+    # Whitespace and editing keys
+    "enter":            Typeable(0x0, name='enter'),
+    "tab":              Typeable(0x0, name='tab'),
+    "space":            Typeable(0x0, name='space'),
+    "backspace":        Typeable(0x0, name='backspace'),
+    "delete":           Typeable(0x0, name='delete'),
+    "del":              Typeable(0x0, name='del'),
+
+    # Main modifier keys
+    "shift":            Typeable(0x0, name='shift'),
+    "control":          Typeable(0x0, name='control'),
+    "ctrl":             Typeable(0x0, name='ctrl'),
+    "alt":              Typeable(0x0, name='alt'),
+
+    # Right modifier keys
+    "ralt":             Typeable(0x0, name='ralt'),
+    "rshift":           Typeable(0x0, name='rshift'),
+    "rcontrol":         Typeable(0x0, name='rcontrol'),
+    "rctrl":            Typeable(0x0, name='rctrl'),
+
+    # Special keys
+    "escape":           Typeable(0x0, name='escape'),
+    "insert":           Typeable(0x0, name='insert'),
+    "pause":            Typeable(0x0, name='pause'),
+    "win":              Typeable(0x0, name='win'),
+    "rwin":             Typeable(0x0, name='rwin'),
+    "apps":             Typeable(0x0, name='apps'),
+    "popup":            Typeable(0x0, name='popup'),
+    "snapshot":         Typeable(0x0, name='snapshot'),
+    "printscreen":      Typeable(0x0, name='printscreen'),
+
+    # Lock keys
+    # win32api.GetKeyState(code) could be used to toggle lock keys sensibly
+    # instead of using the up/down modifiers.
+    "scrolllock":       Typeable(0x0, name='scrolllock'),
+    "numlock":          Typeable(0x0, name='numlock'),
+    "capslock":         Typeable(0x0, name='capslock'),
+
+    # Navigation keys
+    "up":               Typeable(0x0, name='up'),
+    "down":             Typeable(0x0, name='down'),
+    "left":             Typeable(0x0, name='left'),
+    "right":            Typeable(0x0, name='right'),
+    "pageup":           Typeable(0x0, name='pageup'),
+    "pgup":             Typeable(0x0, name='pgup'),
+    "pagedown":         Typeable(0x0, name='pagedown'),
+    "pgdown":           Typeable(0x0, name='pgdown'),
+    "home":             Typeable(0x0, name='home'),
+    "end":              Typeable(0x0, name='end'),
+
+    # Number pad keys
+    "npmul":            Typeable(0x0, name='npmul'),
+    "npadd":            Typeable(0x0, name='npadd'),
+    "npsep":            Typeable(0x0, name='npsep'),
+    "npsub":            Typeable(0x0, name='npsub'),
+    "npdec":            Typeable(0x0, name='npdec'),
+    "npdiv":            Typeable(0x0, name='npdiv'),
+    "numpad0":          Typeable(0x0, name='numpad0'),
+    "np0":              Typeable(0x0, name='np0'),
+    "numpad1":          Typeable(0x0, name='numpad1'),
+    "np1":              Typeable(0x0, name='np1'),
+    "numpad2":          Typeable(0x0, name='numpad2'),
+    "np2":              Typeable(0x0, name='np2'),
+    "numpad3":          Typeable(0x0, name='numpad3'),
+    "np3":              Typeable(0x0, name='np3'),
+    "numpad4":          Typeable(0x0, name='numpad4'),
+    "np4":              Typeable(0x0, name='np4'),
+    "numpad5":          Typeable(0x0, name='numpad5'),
+    "np5":              Typeable(0x0, name='np5'),
+    "numpad6":          Typeable(0x0, name='numpad6'),
+    "np6":              Typeable(0x0, name='np6'),
+    "numpad7":          Typeable(0x0, name='numpad7'),
+    "np7":              Typeable(0x0, name='np7'),
+    "numpad8":          Typeable(0x0, name='numpad8'),
+    "np8":              Typeable(0x0, name='np8'),
+    "numpad9":          Typeable(0x0, name='numpad9'),
+    "np9":              Typeable(0x0, name='np9'),
+
+    # Function keys
+    "f1":               Typeable(0x0, name='f1'),
+    "f2":               Typeable(0x0, name='f2'),
+    "f3":               Typeable(0x0, name='f3'),
+    "f4":               Typeable(0x0, name='f4'),
+    "f5":               Typeable(0x0, name='f5'),
+    "f6":               Typeable(0x0, name='f6'),
+    "f7":               Typeable(0x0, name='f7'),
+    "f8":               Typeable(0x0, name='f8'),
+    "f9":               Typeable(0x0, name='f9'),
+    "f10":              Typeable(0x0, name='f10'),
+    "f11":              Typeable(0x0, name='f11'),
+    "f12":              Typeable(0x0, name='f12'),
+    "f13":              Typeable(0x0, name='f13'),
+    "f14":              Typeable(0x0, name='f14'),
+    "f15":              Typeable(0x0, name='f15'),
+    "f16":              Typeable(0x0, name='f16'),
+    "f17":              Typeable(0x0, name='f17'),
+    "f18":              Typeable(0x0, name='f18'),
+    "f19":              Typeable(0x0, name='f19'),
+    "f20":              Typeable(0x0, name='f20'),
+    "f21":              Typeable(0x0, name='f21'),
+    "f22":              Typeable(0x0, name='f22'),
+    "f23":              Typeable(0x0, name='f23'),
+    "f24":              Typeable(0x0, name='f24'),
+
+    # Multimedia keys
+    "volumeup":         Typeable(0x0, name='volumeup'),
+    "volup":            Typeable(0x0, name='volup'),
+    "volumedown":       Typeable(0x0, name='volumedown'),
+    "voldown":          Typeable(0x0, name='voldown'),
+    "volumemute":       Typeable(0x0, name='volumemute'),
+    "volmute":          Typeable(0x0, name='volmute'),
+    "tracknext":        Typeable(0x0, name='tracknext'),
+    "trackprev":        Typeable(0x0, name='trackprev'),
+    "playpause":        Typeable(0x0, name='playpause'),
+    "browserback":      Typeable(0x0, name='browserback'),
+    "browserforward":   Typeable(0x0, name='browserforward'),
+    }
+    typeables.update(other_typeables)

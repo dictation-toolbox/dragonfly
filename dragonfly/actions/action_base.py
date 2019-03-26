@@ -124,6 +124,7 @@ class DynStrActionBase(ActionBase):
         if static or spec.find("%") == -1:
             self._static = True
             self._events = self._parse_spec(spec)
+            print "DynStrActionActionBase.initialize spec to events:", spec, self._events
         else:
             self._static = False
             self._events = None
@@ -134,14 +135,17 @@ class DynStrActionBase(ActionBase):
 
     def _parse_spec(self, spec):
         """ Virtual method. """
+        print "DynStrActionBase._parse_spec not implemented!"
 
     #-----------------------------------------------------------------------
     # Execution methods.
 
     def _execute(self, data=None):
+        print "DynStrActionBase._execute", data
         if self._static:
             # If static, the events have already been parsed by the
             #  initialize() method.
+            print "    static case, calling _execute_events", self._events
             self._execute_events(self._events)
 
         else:
@@ -161,6 +165,7 @@ class DynStrActionBase(ActionBase):
             self._log_exec.debug("%s: Parsing dynamic spec: %r"
                                  % (self, spec))
             events = self._parse_spec(spec)
+            print "    dynamic case, calling _execute_events", events, spec
             self._execute_events(events)
 
     def _execute_events(self, events):

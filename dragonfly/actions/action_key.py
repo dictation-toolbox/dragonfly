@@ -188,7 +188,6 @@ from .action_base  import DynStrActionBase, ActionError
 from .typeables    import typeables
 from .keyboard     import Keyboard
 
-
 #---------------------------------------------------------------------------
 
 class Key(DynStrActionBase):
@@ -226,11 +225,14 @@ class Key(DynStrActionBase):
     _keyboard = Keyboard()
 
     def _parse_spec(self, spec):
+        print "Key._parse_spec beginning with", spec
         # Iterate through the keystrokes specified in spec, parsing
         #  each individually.
         events = []
         for single in spec.split(self._key_separator):
             events.extend(self._parse_single(single))
+        if len(events) == 0:
+            print "Key._parse_spec concludes no actions given spec", spec
         return events
 
     def _parse_single(self, spec):
@@ -357,5 +359,6 @@ class Key(DynStrActionBase):
         return events
 
     def _execute_events(self, events):
+        print "Key._execute_events,", events
         self._keyboard.send_keyboard_events(events)
         return True

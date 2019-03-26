@@ -43,6 +43,19 @@ if sys.platform.startswith("win"):
     from .typeables import typeables
     from .sendinput import (KeyboardInput, MouseInput, HardwareInput,
                             make_input_array, send_input_array)
+elif sys.platform.startswith("linux"):
+    from .action_key            import Key
+    from ..os_dependent_mock    import Text
+    from ..os_dependent_mock    import Mouse
+    from ..os_dependent_mock    import Paste
+    from ..os_dependent_mock    import WaitWindow
+    from ..os_dependent_mock    import FocusWindow
+    from ..os_dependent_mock    import StartApp, BringApp
+    from ..os_dependent_mock    import PlaySound
+    from .keyboard              import Keyboard, Typeable
+    from .typeables             import typeables
+    from ..os_dependent_mock    import (KeyboardInput, MouseInput, HardwareInput,
+                                        make_input_array, send_input_array)
 else:
     from ..os_dependent_mock import Key
     from ..os_dependent_mock import Text

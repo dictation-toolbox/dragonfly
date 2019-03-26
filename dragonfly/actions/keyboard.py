@@ -24,11 +24,15 @@
 import time
 from six import text_type, PY2
 
-import win32con
+import platform
+if platform.platform() == "Windows":
+    import win32con
+    from ctypes import windll, c_char, c_wchar
+    from dragonfly.actions.sendinput import (KeyboardInput, make_input_array,
+                                             send_input_array)
 
-from ctypes import windll, c_char, c_wchar
-from dragonfly.actions.sendinput import (KeyboardInput, make_input_array,
-                                         send_input_array)
+elif platform.platform() == "Linux":
+    pass
 
 
 class Typeable(object):
@@ -80,97 +84,119 @@ class Typeable(object):
         return events
 
 
-class Keyboard(object):
-    """Static class wrapper around SendInput."""
+#---------------------------------------------------------------------------
+# Keyboard access class.
 
-    shift_code = win32con.VK_SHIFT
-    ctrl_code = win32con.VK_CONTROL
-    alt_code = win32con.VK_MENU
+if platform.platform() == "Windows":
+    class Keyboard(object):
+        """Static class wrapper around SendInput."""
+        shift_code =    win32con.VK_SHIFT
+        ctrl_code =     win32con.VK_CONTROL
+        alt_code =      win32con.VK_MENU
 
-    @classmethod
-    def send_keyboard_events(cls, events):
-        """
-        Send a sequence of keyboard events.
+        @classmethod
+        def send_keyboard_events(cls, events):
+            """
+            Send a sequence of keyboard events.
 
-        Positional arguments:
-        events -- a sequence of tuples of the form
-            (keycode, down, timeout), where
-                keycode (int): Win32 Virtual Key code.
-                down (boolean): True means the key will be pressed down,
-                    False means the key will be released.
-                timeout (int): number of seconds to sleep after
-                    the keyboard event.
-            or
-            (character, down, timeout, is_text), where
-                character (str): Unicode character.
-                down (boolean): True means the key will be pressed down,
-                    False means the key will be released.
-                timeout (int): number of seconds to sleep after
-                    the keyboard event.
-                is_text (boolean): True means that the keypress is targeted
-                    at a window or control that accepts Unicode text.
-        """
-        items = []
-        for event in events:
-            if len(event) == 3:
-                keycode, down, timeout = event
-                input_structure = KeyboardInput(keycode, down)
-            elif len(event) == 4 and event[3]:
-                character, down, timeout = event[:3]
-                input_structure = KeyboardInput(0, down, scancode=character)
-            items.append(input_structure)
-            if timeout:
-                array = make_input_array(items)
-                items = []
-                send_input_array(array)
-                time.sleep(timeout)
-        if items:
-            array = make_input_array(items)
-            send_input_array(array)
-            if timeout: time.sleep(timeout)
+            Positional arguments:
+            events -- a sequence of tuples of the form
+                (keycode, down, timeout), where
+                    keycode (int): Win32 Virtual Key code.
+                    down (boolean): True means the key will be pressed down,
+                        False means the key will be released.
+                    timeout (int): number of seconds to sleep after
+                        the keyboard event.
+                or
+                (character, down, timeout, is_text), where
+                    character (str): Unicode character.
+                    down (boolean): True means the key will be pressed down,
+                        False means the key will be released.
+                    timeout (int): number of seconds to sleep after
+                        the keyboard event.
+                    is_text (boolean): True means that the keypress is targeted
+                        at a window or control that accepts Unicode text.
+            """
+            items = []
+            for event in events:
+                if len(event) == 3:
+                    keycode, down, timeout = event
+                    input_structure = KeyboardInput(keycode, down)
+                elif len(event) == 4 and event[3]:
+                    character, down, timeout = event[:3]
+                    input_structure = KeyboardInput(0, down, scancode=character)
+                items.append(input_structure)
+                if timeout: time.sleep(timeout)
 
-    @classmethod
-    def _get_initial_keycode(cls, char):
-        layout = windll.user32.GetKeyboardLayout(0)
-        if isinstance(char, str) and PY2:
-            code = windll.user32.VkKeyScanExA(c_char(char), layout)
-        elif isinstance(char, text_type):  # unicode for PY2, str for PY3
-            code = windll.user32.VkKeyScanExW(c_wchar(char), layout)
-        else:
-            code = -1
-        if code == -1:
-            raise ValueError("Unknown char: %r" % char)
-        return code
+        @classmethod
+        def _get_initial_keycode(cls, char):
+            layout = windll.user32.GetKeyboardLayout(0)
+            if isinstance(char, str) and PY2:
+                code = windll.user32.VkKeyScanExA(c_char(char), layout)
+            elif isinstance(char, text_type):  # unicode for PY2, str for PY3
+                code = windll.user32.VkKeyScanExW(c_wchar(char), layout)
+            else:
+                code = -1
+            if code == -1:
+                raise ValueError("Unknown char: %r" % char)
+            return code
 
-    @classmethod
-    def xget_virtual_keycode(cls, char):
-        code = cls._get_initial_keycode(char)
+        @classmethod
+        def xget_virtual_keycode(cls, char):
+            code = cls._get_initial_keycode(char)
 
-        # Construct a list of the virtual key code and modifiers.
-        codes = [code & 0x00ff]
-        if code & 0x0100: codes.append(cls.shift_code)
-        if code & 0x0200: codes.append(cls.ctrl_code)
-        if code & 0x0400: codes.append(cls.alt_code)
-        return codes
+            # Construct a list of the virtual key code and modifiers.
+            codes = [code & 0x00ff]
+            if code & 0x0100: codes.append(cls.shift_code)
+            if code & 0x0200: codes.append(cls.ctrl_code)
+            if code & 0x0400: codes.append(cls.alt_code)
+            return codes
 
-    @classmethod
-    def get_keycode_and_modifiers(cls, char):
-        code = cls._get_initial_keycode(char)
+        @classmethod
+        def get_keycode_and_modifiers(cls, char):
+            code = cls._get_initial_keycode(char)
 
-        # Construct a list of the virtual key code and modifiers.
-        modifiers = []
-        if code & 0x0100: modifiers.append(cls.shift_code)
-        if code & 0x0200: modifiers.append(cls.ctrl_code)
-        if code & 0x0400: modifiers.append(cls.alt_code)
-        code &= 0x00ff
-        return code, modifiers
+            # Construct a list of the virtual key code and modifiers.
+            modifiers = []
+            if code & 0x0100: modifiers.append(cls.shift_code)
+            if code & 0x0200: modifiers.append(cls.ctrl_code)
+            if code & 0x0400: modifiers.append(cls.alt_code)
+            code &= 0x00ff
+            return code, modifiers
 
-    @classmethod
-    def get_typeable(cls, char, is_text=False):
-        if is_text:
-            return Typeable(char, is_text=True)
-        code, modifiers = cls.get_keycode_and_modifiers(char)
-        return Typeable(code, modifiers)
+        @classmethod
+        def get_typeable(cls, char, is_text=False):
+            if is_text:
+                return Typeable(char, is_text=True)
+            code, modifiers = cls.get_keycode_and_modifiers(char)
+            return Typeable(code, modifiers)
 
 
-keyboard = Keyboard()
+    global keyboard
+    keyboard = Keyboard()
+else:
+    class Keyboard(object):
+        @classmethod
+        def send_keyboard_events(cls, events):
+            """
+                Send a sequence of keyboard events.
+
+                Positional arguments:
+                events -- a sequence of 3-tuples of the form
+                    (keycode, down, timeout), where
+                    keycode (int): virtual key code.
+                    down (boolean): True means the key will be pressed down,
+                        False means the key will be released.
+                    timeout (int): number of seconds to sleep after
+                        the keyboard event.
+
+            """
+            print "Keyboard.send_keyboard_events", events
+
+        @classmethod
+        def get_typeable(cls, char):
+            code, modifiers = 0, []
+            return Typeable(code, modifiers)
+
+    global keyboard
+    keyboard = Keyboard()
