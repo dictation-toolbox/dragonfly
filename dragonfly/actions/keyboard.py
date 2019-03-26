@@ -24,14 +24,14 @@
 import time
 from six import text_type, PY2
 
-import platform
-if platform.platform() == "Windows":
+import sys
+if sys.platform.startswith("win"):
     import win32con
     from ctypes import windll, c_char, c_wchar
     from dragonfly.actions.sendinput import (KeyboardInput, make_input_array,
                                              send_input_array)
 
-elif platform.platform() == "Linux":
+elif sys.platform.startswith("linux"):
     pass
 
 
@@ -87,7 +87,7 @@ class Typeable(object):
 #---------------------------------------------------------------------------
 # Keyboard access class.
 
-if platform.platform() == "Windows":
+if sys.platform.startswith("win"):
     class Keyboard(object):
         """Static class wrapper around SendInput."""
         shift_code =    win32con.VK_SHIFT
@@ -174,7 +174,7 @@ if platform.platform() == "Windows":
 
     global keyboard
     keyboard = Keyboard()
-else:
+elif sys.platform.startswith("linux"):
     import linux_x11
     global kb_backend
     kb_backend = linux_x11.XdotoolBackend()

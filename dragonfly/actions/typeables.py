@@ -30,7 +30,7 @@
 """
 
 import logging
-import platform
+import sys
 from dragonfly.actions.keyboard import keyboard, Typeable
 
 logging.basicConfig()
@@ -325,7 +325,7 @@ typeables.update({
     "equals":           keyboard.get_typeable(char='='),
 })
 
-if platform.platform() == "Windows":
+if sys.platform.startswith("win"):
     import win32con
     win_typeables = {
     # Whitespace and editing keys
@@ -446,7 +446,7 @@ if platform.platform() == "Windows":
     "browserforward":   Typeable(code=win32con.VK_BROWSER_FORWARD, name='browserforward'),
     }
     typeables.update(win_typeables)
-else:
+elif sys.platform.startswith("linux"):
     other_typeables = {
     # Whitespace and editing keys
     "enter":            keyboard.get_named_typeable(name='enter'),
