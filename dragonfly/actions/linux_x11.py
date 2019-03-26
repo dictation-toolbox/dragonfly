@@ -128,6 +128,46 @@ _KEY_TRANSLATION = {
     'win': 'Super_L',
 }
 
+MORE_KEYS = {
+    '!':     "exclamation",
+    '@':     "at",
+    '#':     "hash",
+    '$':     "dollar",
+    '%':     "percent",
+    '^':     "caret",
+    '&':     "ampersand",
+    '*':     "asterisk",
+    '(':     "lparen",
+    ')':     "rparen",
+    '-':     "hyphen",
+    '_':     "underscore",
+    '+':     "plus",
+    '`':     "backtick",
+    '~':     "tilde",
+    '[':     "lbracket",
+    ']':     "rbracket",
+    '{':     "lbrace",
+    '}':     "rbrace",
+    '\\':    "backslash",
+    '|':     "bar",
+    ':':     "colon",
+    ';':     "semicolon",
+    "'":     "squote",
+    '"':     "dquote",
+    ',':     "comma",
+    '.':     "dot",
+    '/':     "slash",
+    '<':     "langle",
+    '>':     "rangle",
+    '?':     "question",
+    '=':     "equal",
+}
+for key in MORE_KEYS:
+    value = MORE_KEYS[key]
+    if value in _KEY_TRANSLATION:
+        translation = _KEY_TRANSLATION[value]
+        _KEY_TRANSLATION[key] = translation
+
 
 def update_key_translation(translation):
     caps_keys = [

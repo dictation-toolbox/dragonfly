@@ -205,5 +205,10 @@ else:
             code, modifiers = char, []
             return Typeable(code, modifiers)
 
+        @classmethod
+        def get_named_typeable(cls, name):
+            modifiers = []
+            return Typeable(name, modifiers, name)
+
     global keyboard
     keyboard = Keyboard()
