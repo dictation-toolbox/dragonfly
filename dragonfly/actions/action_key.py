@@ -225,7 +225,6 @@ class Key(DynStrActionBase):
     _keyboard = Keyboard()
 
     def _parse_spec(self, spec):
-        print "Key._parse_spec beginning with", spec
         # Iterate through the keystrokes specified in spec, parsing
         #  each individually.
         events = []
@@ -359,6 +358,5 @@ class Key(DynStrActionBase):
         return events
 
     def _execute_events(self, events):
-        print "Key._execute_events,", events
         self._keyboard.send_keyboard_events(events)
         return True
