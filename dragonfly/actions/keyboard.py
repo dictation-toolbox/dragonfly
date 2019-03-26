@@ -175,6 +175,9 @@ if platform.platform() == "Windows":
     global keyboard
     keyboard = Keyboard()
 else:
+    import linux_x11
+    global kb_backend
+    kb_backend = linux_x11.XdotoolBackend()
     class Keyboard(object):
         @classmethod
         def send_keyboard_events(cls, events):
@@ -192,10 +195,14 @@ else:
 
             """
             print "Keyboard.send_keyboard_events", events
+            for event in events:
+                (key, down, timeout) = event
+                direction = 'down' if down else 'up'
+                kb_backend.key_press(key=key, modifiers=(), direction=direction)
 
         @classmethod
         def get_typeable(cls, char):
-            code, modifiers = 0, []
+            code, modifiers = char, []
             return Typeable(code, modifiers)
 
     global keyboard

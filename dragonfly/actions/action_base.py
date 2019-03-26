@@ -135,7 +135,7 @@ class DynStrActionBase(ActionBase):
 
     def _parse_spec(self, spec):
         """ Virtual method. """
-        print "DynStrActionBase._parse_spec not implemented!"
+        print "DynStrActionBase._parse_spec not implemented! self", self
 
     #-----------------------------------------------------------------------
     # Execution methods.

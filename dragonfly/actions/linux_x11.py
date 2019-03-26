@@ -156,10 +156,8 @@ class XdotoolBackend:
     """
     Implement all of Aenea's RPCs via shelling out to xdotool, xsel, and xprop
     """
-    def __init__(self, config, xdotool='xdotool'):
-        super(XdotoolPlatformRpcs, self).__init__(
-            logger=logging.getLogger('aenea.XdotoolPlatformRpcs'))
-
+    def __init__(self, xdotool='xdotool'):
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.xdotool = xdotool
         self.xdotool_delay = getattr(config, 'XDOTOOL_DELAY', 0)
 
