@@ -175,7 +175,7 @@ if sys.platform.startswith("win"):
     global keyboard
     keyboard = Keyboard()
 elif sys.platform.startswith("linux"):
-    import linux_x11
+    from . import linux_x11
     global kb_backend
     kb_backend = linux_x11.XdotoolBackend()
     class Keyboard(object):
@@ -201,9 +201,9 @@ elif sys.platform.startswith("linux"):
                 kb_backend.key_press(key=key, modifiers=(), direction=direction)
 
         @classmethod
-        def get_typeable(cls, char):
+        def get_typeable(cls, char, is_text=False):
             code, modifiers = char, []
-            return Typeable(code, modifiers)
+            return Typeable(code, modifiers, is_text)
 
         @classmethod
         def get_named_typeable(cls, name):

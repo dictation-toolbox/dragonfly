@@ -128,6 +128,9 @@ load_configuration()
 
 def require_hardware_emulation():
     """Return `True` if the current context requires hardware emulation."""
+    if not sys.platform.startswith("win"):
+        return True
+
     from os.path import basename
     foreground_executable = basename(Window.get_foreground()
                                      .executable.lower())
