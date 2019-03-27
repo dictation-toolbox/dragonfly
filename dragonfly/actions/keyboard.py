@@ -194,7 +194,7 @@ elif sys.platform.startswith("linux"):
                         the keyboard event.
 
             """
-            print "Keyboard.send_keyboard_events", events
+            print("Keyboard.send_keyboard_events", events)
             for event in events:
                 (key, down, timeout) = event
                 direction = 'down' if down else 'up'
