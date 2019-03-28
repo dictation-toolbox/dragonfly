@@ -475,27 +475,46 @@ class GrammarWrapper(object):
             #---------------------------------------------------------------
             # Retain audio
 
-            if self.engine._retain_dir:
+            # Only write audio data and metadata if the directory exists.
+            retain_dir = self.engine._retain_dir
+            if retain_dir and not os.path.isdir(retain_dir):
+                self.engine._log.warning(
+                    "Audio was not retained because '%s' was not a "
+                    "directory" % retain_dir
+                )
+            elif retain_dir:
                 try:
                     file_stream = Dispatch("SAPI.SpFileStream")
-                    # Note: application can also retrieve smaller portions of the audio stream by specifying a starting phrase element and phrase element length
+                    # Note: application can also retrieve smaller portions
+                    # of the audio stream by specifying a starting phrase
+                    # element and phrase element length.
                     audio_stream = newResult.Audio()
-                    # Make sure we have audio data, which we wouldn't from a mimic
+
+                    # Make sure we have audio data, which we wouldn't from a
+                    # mimic or if the retain flag wasn't set above.
                     if audio_stream:
-                        # Write audio data
+                        # Write audio data.
                         file_stream.Format = audio_stream.Format
-                        filename = "retain_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f") + ".wav"
-                        file_stream.Open(os.path.join(self.engine._retain_dir, filename), constants.SSFMCreateForWrite)
+                        now = datetime.now()
+                        filename = ("retain_%s.wav"
+                                    % now.strftime("%Y-%m-%d_%H-%M-%S_%f"))
+                        wav_path = os.path.join(retain_dir, filename)
+                        flags = constants.SSFMCreateForWrite
+                        file_stream.Open(wav_path, flags)
                         try:
-                            buf = audio_stream.GetData()
-                            written = file_stream.Write(buf)
+                            file_stream.Write(audio_stream.GetData())
                         finally:
                             file_stream.Close()
+
                         # Write metadata
                         words = ' '.join([r[2] for r in results])
                         audio_length = int(newResult.Times.Length) / 1e7
-                        with open(os.path.join(self.engine._retain_dir, "retain.tsv"), "a") as csvfile:
-                            csvfile.write('\t'.join([filename, str(audio_length), self.grammar._name, rule_name, words]) + '\n')
+                        tsv_path = os.path.join(retain_dir, "retain.tsv")
+                        with open(tsv_path, "a") as tsv_file:
+                            tsv_file.write('\t'.join([
+                                filename, str(audio_length),
+                                self.grammar.name, rule_name, words
+                            ]) + '\n')
                 except:
                     self.engine._log.exception("Exception retaining audio")
 
