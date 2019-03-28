@@ -38,6 +38,12 @@ Engine backends
 .. automodule:: dragonfly.engines.backend_sapi5
    :members:
 
+.. autoclass:: dragonfly.engines.backend_sapi5.engine.Sapi5SharedEngine
+   :members: connect, disconnect
+
+.. autoclass:: dragonfly.engines.backend_sapi5.engine.Sapi5InProcEngine
+   :members:
+
 .. automodule:: dragonfly.engines.backend_sphinx
    :members:
 

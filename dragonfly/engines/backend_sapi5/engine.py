@@ -29,6 +29,8 @@ SAPI 5 engine classes
 
 import logging
 import time
+import os.path
+from datetime import datetime
 
 from six import string_types, integer_types
 
@@ -88,7 +90,7 @@ class Sapi5SharedEngine(EngineBase):
 
     #-----------------------------------------------------------------------
 
-    def __init__(self):
+    def __init__(self, retain_dir=None):
         EngineBase.__init__(self)
 
         EnsureDispatch(self.recognizer_dispatch_name)
@@ -99,6 +101,12 @@ class Sapi5SharedEngine(EngineBase):
 
         self._recognition_observer_manager = Sapi5RecObsManager(self)
         self._timer_manager = ThreadedTimerManager(0.02, self)
+
+        if isinstance(retain_dir, string_types) or retain_dir is None:
+            self._retain_dir = retain_dir
+        else:
+            self._retain_dir = None
+            self._log.error("Invalid retain_dir: %r" % retain_dir)
 
     def connect(self):
         """ Connect to back-end SR engine. """
@@ -132,6 +140,8 @@ class Sapi5SharedEngine(EngineBase):
         # Create recognition context, compile grammar, and create
         #  the grammar wrapper object for managing this grammar.
         context = self._recognizer.CreateRecoContext()
+        if self._retain_dir:
+            context.RetainedAudio = constants.SRAORetainAudio
         handle = self._compiler.compile_grammar(grammar, context)
         wrapper = GrammarWrapper(grammar, handle, context, self,
                                  self._recognition_observer_manager)
@@ -139,9 +149,9 @@ class Sapi5SharedEngine(EngineBase):
         handle.State = constants.SGSEnabled
         for rule in grammar.rules:
             handle.CmdSetRuleState(rule.name, constants.SGDSActive)
-#        self.activate_grammar(grammar)
-#        for l in grammar.lists:
-#            l._update()
+       # self.activate_grammar(grammar)
+       # for l in grammar.lists:
+       #     l._update()
         handle.CmdSetRuleState("_FakeRule", constants.SGDSActive)
 
         return wrapper
@@ -198,7 +208,7 @@ class Sapi5SharedEngine(EngineBase):
                         % (grammar.name, exclusive))
         grammar_handle = self._get_grammar_wrapper(grammar).handle
         grammar_handle.State = constants.SGSExclusive
-#        grammar_handle.SetGrammarState(constants.SPGS_EXCLUSIVE)
+       # grammar_handle.SetGrammarState(constants.SPGS_EXCLUSIVE)
 
 
     #-----------------------------------------------------------------------
@@ -407,6 +417,7 @@ class GrammarWrapper(object):
         try:
             newResult = Dispatch(Result)
             phrase_info = newResult.PhraseInfo
+            rule_name = phrase_info.Rule.Name
 
             #---------------------------------------------------------------
             # Build a list of rule names for each element.
@@ -460,6 +471,33 @@ class GrammarWrapper(object):
                         element.DisplayText, element.DisplayAttributes,
                         replacement]
                 results.append(info)
+
+            #---------------------------------------------------------------
+            # Retain audio
+
+            if self.engine._retain_dir:
+                try:
+                    file_stream = Dispatch("SAPI.SpFileStream")
+                    # Note: application can also retrieve smaller portions of the audio stream by specifying a starting phrase element and phrase element length
+                    audio_stream = newResult.Audio()
+                    # Make sure we have audio data, which we wouldn't from a mimic
+                    if audio_stream:
+                        # Write audio data
+                        file_stream.Format = audio_stream.Format
+                        filename = "retain_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f") + ".wav"
+                        file_stream.Open(os.path.join(self.engine._retain_dir, filename), constants.SSFMCreateForWrite)
+                        try:
+                            buf = audio_stream.GetData()
+                            written = file_stream.Write(buf)
+                        finally:
+                            file_stream.Close()
+                        # Write metadata
+                        words = ' '.join([r[2] for r in results])
+                        audio_length = int(newResult.Times.Length) / 1e7
+                        with open(os.path.join(self.engine._retain_dir, "retain.tsv"), "a") as csvfile:
+                            csvfile.write('\t'.join([filename, str(audio_length), self.grammar._name, rule_name, words]) + '\n')
+                except:
+                    self.engine._log.exception("Exception retaining audio")
 
             #---------------------------------------------------------------
             # Attempt to parse the recognition.
