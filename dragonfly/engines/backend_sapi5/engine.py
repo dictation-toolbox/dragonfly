@@ -30,14 +30,20 @@ SAPI 5 engine classes
 import logging
 import time
 import os.path
-from datetime import datetime
 
+from datetime import datetime
+from ctypes import Structure, c_long, c_int, c_uint, pointer
 from six import string_types, integer_types
 
-import win32con
-from ctypes import *
-from win32com.client           import Dispatch, getevents, constants
-from win32com.client.gencache  import EnsureDispatch
+try:
+    import win32con
+    from win32com.client           import Dispatch, getevents, constants
+    from win32com.client.gencache  import EnsureDispatch
+    from ctypes import windll, WinError
+except ImportError:
+    # Ignore import errors so that documentation can be built on other
+    # platforms.
+    pass
 
 from ..base                    import (EngineBase, EngineError,
                                        MimicFailure, ThreadedTimerManager)
