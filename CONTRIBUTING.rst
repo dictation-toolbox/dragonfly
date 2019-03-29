@@ -51,7 +51,7 @@ Then run the following command on Windows to build the documentation:
 
 .. code:: shell
 
-   $ ./make.bat html
+   $ make.bat html
 
 Or use the Makefile on other systems:
 
