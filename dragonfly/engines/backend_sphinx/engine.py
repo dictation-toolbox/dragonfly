@@ -37,75 +37,17 @@ from ..base import EngineBase, EngineError, MimicFailure
 
 try:
     from jsgf import RootGrammar, PublicRule, Literal
-    from sphinxwrapper import PocketSphinx, DefaultConfig
+    from sphinxwrapper import PocketSphinx
     from .compiler import SphinxJSGFCompiler
     from .grammar_wrapper import GrammarWrapper
+    from .misc import (EngineConfig, WaveRecognitionObserver,
+                       get_decoder_config_object)
     from .recording import PyAudioRecorder
 except ImportError:
     # Import a few things here optionally for readability (the engine won't
     # start without them) and so that autodoc can import this module without
     # them.
     pass
-
-
-def _get_decoder_config_object():
-    decoder_config = DefaultConfig()
-
-    # Silence the decoder output by default.
-    decoder_config.set_string("-logfn", os.devnull)
-
-    # Set voice activity detection configuration options for the decoder.
-    # These values can be changed if noise in the background triggers speech
-    # start and/or false recognitions (e.g. of short words) frequently.
-    # Descriptions for VAD config options were retrieved from:
-    # https://cmusphinx.github.io/doc/sphinxbase/fe_8h_source.html
-
-    # Number of silence frames to keep after from speech to silence.
-    decoder_config.set_int("-vad_postspeech", 30)
-
-    # Number of speech frames to keep before silence to speech.
-    decoder_config.set_int("-vad_prespeech", 20)
-
-    # Number of speech frames to trigger vad from silence to speech.
-    decoder_config.set_int("-vad_startspeech", 10)
-
-    # Threshold for decision between noise and silence frames. Log-ratio
-    # between signal level and noise level.
-    decoder_config.set_float("-vad_threshold", 3.0)
-    return decoder_config
-
-
-class EngineConfig(object):
-    """ Default engine configuration. """
-
-    # Configuration for the Pocket Sphinx decoder.
-    DECODER_CONFIG = _get_decoder_config_object()
-
-    # User language for the engine to use.
-    LANGUAGE = "en"
-
-    # Configuration for wake/sleep phrases
-    START_ASLEEP = True
-    WAKE_PHRASE = "wake up"
-    WAKE_PHRASE_THRESHOLD = 1e-20
-    SLEEP_PHRASE = "go to sleep"
-    SLEEP_PHRASE_THRESHOLD = 1e-40
-
-    # Configuration for acoustic model training.
-    TRAINING_DATA_DIR = ""
-    TRANSCRIPT_NAME = "training"
-    START_TRAINING_PHRASE = "start training session"
-    START_TRAINING_PHRASE_THRESHOLD = 1e-48
-    END_TRAINING_PHRASE = "end training session"
-    END_TRAINING_PHRASE_THRESHOLD = 1e-45
-
-    # Audio input configuration.
-    # These values should match the requirements for the acoustic model
-    # being used. Default values match the 16 kHz CMU US English models.
-    CHANNELS = 1              # one channel (mono)
-    SAMPLE_WIDTH = 2          # Sample width of 2 bytes/16 bits
-    RATE = 16000              # 16kHz sample rate
-    FRAMES_PER_BUFFER = 2048  # frames per audio buffer
 
 
 class UnknownWordError(Exception):
@@ -184,7 +126,7 @@ class SphinxEngine(EngineBase):
         # Set a new decoder config if necessary.
         if not hasattr(engine_config, "DECODER_CONFIG"):
             setattr(engine_config, "DECODER_CONFIG",
-                    _get_decoder_config_object())
+                    get_decoder_config_object())
         options = [
             "LANGUAGE",
 
@@ -927,10 +869,11 @@ class SphinxEngine(EngineBase):
 
     def process_wave_file(self, path):
         """
-        Recognise speech from a wave file. This method checks that the wave
-        file is valid. It raises an error if the file doesn't exist, if it
-        can't be read or if the WAV header values do not match those in the
-        engine configuration.
+        Recognise speech from a wave file and return the recognition results.
+
+        This method checks that the wave file is valid. It raises an error
+        if the file doesn't exist, if it can't be read or if the WAV header
+        values do not match those in the engine configuration.
 
         If recognition is paused (sleep mode), this method will call
         :meth:`resume_recognition`.
@@ -941,8 +884,12 @@ class SphinxEngine(EngineBase):
         If the file is valid, :meth:`process_buffer` is then used to process
         the audio.
 
+        Multiple utterances are supported.
+
         :param path: wave file path
         :raises: IOError | OSError | ValueError
+        :returns: recognition results
+        :rtype: list
         """
         if not self._decoder:
             self.connect()
@@ -967,9 +914,11 @@ class SphinxEngine(EngineBase):
         if self.recognition_paused:
             self.resume_recognition(notify=False)
 
-        # Open the wave file. Use contextlib to make sure that the file is closed
-        # whether errors are raised or not.
-        with contextlib.closing(wave.open(path, "rb")) as wf:
+        # Open the wave file. Use contextlib to make sure that the file is
+        # closed whether errors are raised or not.
+        # Also register a custom recognition observer for the duration.
+        obs = WaveRecognitionObserver(self)
+        with contextlib.closing(wave.open(path, "rb")) as wf, obs as obs:
             # Validate the wave file's header.
             if wf.getnchannels() != channels:
                 message = ("WAV file '%s' should use %d channel(s), not %d!"
@@ -987,12 +936,24 @@ class SphinxEngine(EngineBase):
                 raise ValueError(message)
 
             # Use process_buffer to process each buffer.
-            for i in range(0, int(wf.getnframes() / chunk) + 1):
+            for _ in range(0, int(wf.getnframes() / chunk) + 1):
                 data = wf.readframes(chunk)
                 if not data:
                     break
 
                 self.process_buffer(data)
+
+        # Log warnings if speech start or end weren't detected.
+        if not obs.complete:
+            self._log.warning("Speech start/end wasn't detected in the wave "
+                              "file!")
+            self._log.warning("Perhaps the Sphinx '-vad_prespeech' value "
+                              "should be higher?")
+            self._log.warning("Or maybe '-vad_startspeech' or "
+                              "'-vad_postspeech' should be lower?")
+
+        # Get the results from the observer.
+        return obs.results
 
     def recognise_forever(self):
         """
