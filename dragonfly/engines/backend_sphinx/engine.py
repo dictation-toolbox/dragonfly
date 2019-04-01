@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -25,7 +25,6 @@ Engine class for CMU Pocket Sphinx
 import contextlib
 import logging
 import os
-import time
 import wave
 
 from six import text_type, PY2
@@ -33,20 +32,80 @@ from six import text_type, PY2
 from dragonfly import Window
 from .dictation import SphinxDictationContainer
 from .recobs import SphinxRecObsManager
-from .training import TrainingDataWriter
+from .training import write_training_data, write_transcript_files
 from ..base import EngineBase, EngineError, MimicFailure
 
 try:
     from jsgf import RootGrammar, PublicRule, Literal
-    from pyaudio import PyAudio
-    from sphinxwrapper import PocketSphinx, search_arguments_set
-
+    from sphinxwrapper import PocketSphinx, DefaultConfig
     from .compiler import SphinxJSGFCompiler
     from .grammar_wrapper import GrammarWrapper
+    from .recording import PyAudioRecorder
 except ImportError:
-    # Import a few things here optionally for readability (the engine won't start
-    # without them) and so that autodoc can import this module without them.
+    # Import a few things here optionally for readability (the engine won't
+    # start without them) and so that autodoc can import this module without
+    # them.
     pass
+
+
+def _get_decoder_config_object():
+    decoder_config = DefaultConfig()
+
+    # Silence the decoder output by default.
+    decoder_config.set_string("-logfn", os.devnull)
+
+    # Set voice activity detection configuration options for the decoder.
+    # These values can be changed if noise in the background triggers speech
+    # start and/or false recognitions (e.g. of short words) frequently.
+    # Descriptions for VAD config options were retrieved from:
+    # https://cmusphinx.github.io/doc/sphinxbase/fe_8h_source.html
+
+    # Number of silence frames to keep after from speech to silence.
+    decoder_config.set_int("-vad_postspeech", 30)
+
+    # Number of speech frames to keep before silence to speech.
+    decoder_config.set_int("-vad_prespeech", 20)
+
+    # Number of speech frames to trigger vad from silence to speech.
+    decoder_config.set_int("-vad_startspeech", 10)
+
+    # Threshold for decision between noise and silence frames. Log-ratio
+    # between signal level and noise level.
+    decoder_config.set_float("-vad_threshold", 3.0)
+    return decoder_config
+
+
+class EngineConfig(object):
+    """ Default engine configuration. """
+
+    # Configuration for the Pocket Sphinx decoder.
+    DECODER_CONFIG = _get_decoder_config_object()
+
+    # User language for the engine to use.
+    LANGUAGE = "en"
+
+    # Configuration for wake/sleep phrases
+    START_ASLEEP = True
+    WAKE_PHRASE = "wake up"
+    WAKE_PHRASE_THRESHOLD = 1e-20
+    SLEEP_PHRASE = "go to sleep"
+    SLEEP_PHRASE_THRESHOLD = 1e-40
+
+    # Configuration for acoustic model training.
+    TRAINING_DATA_DIR = ""
+    TRANSCRIPT_NAME = "training"
+    START_TRAINING_PHRASE = "start training session"
+    START_TRAINING_PHRASE_THRESHOLD = 1e-48
+    END_TRAINING_PHRASE = "end training session"
+    END_TRAINING_PHRASE_THRESHOLD = 1e-45
+
+    # Audio input configuration.
+    # These values should match the requirements for the acoustic model
+    # being used. Default values match the 16 kHz CMU US English models.
+    CHANNELS = 1              # one channel (mono)
+    SAMPLE_WIDTH = 2          # Sample width of 2 bytes/16 bits
+    RATE = 16000              # 16kHz sample rate
+    FRAMES_PER_BUFFER = 2048  # frames per audio buffer
 
 
 class UnknownWordError(Exception):
@@ -72,13 +131,13 @@ class SphinxEngine(EngineBase):
         except ImportError:
             self._log.error("%s: Failed to import jsgf, pyaudio and/or "
                             "sphinxwrapper. Are they installed?" % self)
-            raise EngineError("Failed to import Pocket Sphinx engine dependencies.")
+            raise EngineError("Failed to import Pocket Sphinx engine "
+                              "dependencies.")
 
-        # Import and set the default configuration module. This can be changed later
-        # using the config property.
-        from . import config
+        # Set the default engine configuration.
+        # This can be changed later using the config property.
         self._config = None
-        self.config = config
+        self.config = EngineConfig
 
         # Set other variables
         self._decoder = None
@@ -87,92 +146,78 @@ class SphinxEngine(EngineBase):
         self._recognition_observer_manager = SphinxRecObsManager(self)
         self._keyphrase_thresholds = {}
         self._keyphrase_functions = {}
+        self._training_session_active = False
 
         # Set up keyphrase search names and valid search names for grammars.
         self._keyphrase_search_names = ["_key_phrases", "_wake_phrase"]
         self._valid_searches = set()
 
-        # Recognising loop control variables
-        self._recognising = False
+        # Recognising loop members.
+        self._recorder = PyAudioRecorder(self.config)
         self._cancel_recognition_next_time = False
+        self._recognising = False
         self._recognition_paused = False
-
-        # Training data writer, initialised on connect().
-        self._training_data_writer = None
-
-        # Variable used in training sessions.
-        self._training_session_active = False
 
     @property
     def config(self):
         """
         Python module/object containing engine configuration.
 
-        Setting this property will raise an :class:`EngineError` if the
-        given configuration object doesn't define each required
-        configuration option.
-
         You will need to restart the engine with :meth:`disconnect` and
         :meth:`connect` if the configuration has been changed after
         :meth:`connect` has been called.
 
-        :raises: EngineError
         :returns: config module/object
         """
         return self._config
 
     @config.setter
     def config(self, value):
-        # Validate configuration module
+        # Validate configuration object.
         self.validate_config(value)
         self._config = value
 
     @classmethod
     def validate_config(cls, engine_config):
-        required_attributes = [
-            "DECODER_CONFIG", "PYAUDIO_STREAM_KEYWORD_ARGS", "LANGUAGE",
-            "NEXT_PART_TIMEOUT", "START_ASLEEP"
+        # Check configuration options and set defaults where appropriate.
+        # Set a new decoder config if necessary.
+        if not hasattr(engine_config, "DECODER_CONFIG"):
+            setattr(engine_config, "DECODER_CONFIG",
+                    _get_decoder_config_object())
+        options = [
+            "LANGUAGE",
+
+            "START_ASLEEP",
+            "WAKE_PHRASE",
+            "WAKE_PHRASE_THRESHOLD",
+            "SLEEP_PHRASE",
+            "SLEEP_PHRASE_THRESHOLD",
+
+            "TRAINING_DATA_DIR",
+            "TRANSCRIPT_NAME",
+            "START_TRAINING_PHRASE",
+            "START_TRAINING_PHRASE_THRESHOLD",
+            "END_TRAINING_PHRASE",
+            "END_TRAINING_PHRASE_THRESHOLD",
+
+            "CHANNELS",
+            "RATE",
+            "SAMPLE_WIDTH",
+            "FRAMES_PER_BUFFER",
         ]
-        not_preset = []
-        for attr in required_attributes:
-            if not hasattr(engine_config, attr):
-                not_preset.append(attr)
 
-        if not_preset:
-            # Raise an error with the required attributes that weren't set.
-            not_preset.sort()
-            raise EngineError("invalid engine configuration. The following "
-                              "required attributes were not present: %s"
-                              % ", ".join(not_preset))
+        # Get default values and set them they are missing.
+        for option in options:
+            if hasattr(engine_config, option):
+                continue
 
-        # Check optional config attributes. Set default values for any
-        # missing attributes.
-        training_dir = "TRAINING_DATA_DIR"
-        if not hasattr(engine_config, training_dir):
-            setattr(engine_config, training_dir, "")
-
-        # Check which built-in key phrases are present and have values.
-        # All of these can be overridden with "" (or equiv.) to be disabled.
-        defaults = {
-            "WAKE": ("wake up", 1e-20),
-            "SLEEP": ("go to sleep", 1e-40),
-            "START_TRAINING": ("start training session", 1e-48),
-            "END_TRAINING": ("end training session", 1e-45),
-        }
-
-        def set_builtin_phrase_attributes(name):
-            # Set default values if 'engine_config' does not define the
-            # attributes.
-            phrase_attr = name + "_PHRASE"
-            threshold_attr = name + "_PHRASE_THRESHOLD"
-            d_phrase, d_threshold = defaults[name]
-            if not hasattr(engine_config, phrase_attr):
-                setattr(engine_config, phrase_attr, d_phrase)
-            if not hasattr(engine_config, threshold_attr):
-                setattr(engine_config, threshold_attr, d_threshold)
-
-        for phrase in defaults.keys():
-            set_builtin_phrase_attributes(phrase)
+            default_value = getattr(EngineConfig, option)
+            if "PHRASE" in option:
+                # Disable missing phrases by default if using a language
+                # other than English.
+                if not engine_config.LANGUAGE.startswith("en"):
+                    default_value = "" if option.endswith("PHRASE") else 0.0
+            setattr(engine_config, option, default_value)
 
     def connect(self):
         """
@@ -183,20 +228,10 @@ class SphinxEngine(EngineBase):
         if self._decoder:
             return
 
-        # Check that no search argument other than -lm is specified, as the
-        # engine will be handling that side of things.
-        decoder_config = self.config.DECODER_CONFIG
-        search_args = search_arguments_set(decoder_config)
-
-        # Note: len(search_args) > 1 is handled by sphinxwrapper internally by
-        # raising an error, so we don't need handle that here.
-        if len(search_args) == 1 and search_args[0] != "-lm":
-            raise EngineError("invalid PS configuration: please do not specify "
-                              "'%s' in the Config object" % search_args[0])
-
         # Initialise a new decoder with the given configuration
+        decoder_config = self._config.DECODER_CONFIG
         self._decoder = PocketSphinx(decoder_config)
-        self._valid_searches.add(self._dictation_search_name)
+        self._valid_searches.add(self._default_search_name)
 
         # Set up callback function wrappers
         def hypothesis(hyp):
@@ -245,28 +280,23 @@ class SphinxEngine(EngineBase):
         safe_set_keyphrase("END_TRAINING",
                            self.end_training_session)
 
-        # Initialise a TrainingDataWriter instance if necessary.
-        if self.config.TRAINING_DATA_DIR:
-            # Get required audio configuration from the engine config.
-            channels, sample_width, rate = (
-                self.config.PYAUDIO_STREAM_KEYWORD_ARGS["channels"],
-                PyAudio().get_sample_size(
-                    self.config.PYAUDIO_STREAM_KEYWORD_ARGS["format"]
-                ),
-                self.config.PYAUDIO_STREAM_KEYWORD_ARGS["rate"],
-            )
-            self._training_data_writer = TrainingDataWriter(
-                self.config.TRAINING_DATA_DIR, "training",
-                channels, sample_width, rate
-            )
-        else:
-            self._training_data_writer = None
+        # Set the PyAudioRecorder instance's config object.
+        self._recorder.config = self.config
+
+        # Start in sleep mode if requested.
+        if self.config.START_ASLEEP:
+            self.pause_recognition()
+            self._log.warning("Starting in sleep mode as requested.")
 
     def _free_engine_resources(self):
         """
         Internal method for freeing the resources used by the engine.
         """
-        # Free the decoder and clear the audio buffer list
+        # Stop the audio recorder if it is running.
+        self._recognising = False
+        self._recorder.stop()
+
+        # Free the decoder and clear audio buffers.
         self._decoder = None
         self._audio_buffers = []
 
@@ -274,11 +304,6 @@ class SphinxEngine(EngineBase):
         self._cancel_recognition_next_time = False
         self._training_session_active = False
         self._recognition_paused = False
-
-        # Close the training data files and discard the writer if necessary.
-        if self._training_data_writer:
-            self._training_data_writer.close_files()
-            self._training_data_writer = None
 
         # Clear dictionaries and sets
         self._grammar_wrappers.clear()
@@ -301,6 +326,7 @@ class SphinxEngine(EngineBase):
             self._free_engine_resources()
         else:
             self._recognising = False
+            self._recorder.stop()
 
     # -----------------------------------------------------------------------
     # Methods for working with grammars.
@@ -343,11 +369,6 @@ class SphinxEngine(EngineBase):
         # Connect to the engine if it isn't connected already.
         self.connect()
 
-        # Don't allow grammar wrappers to use keyphrase search names.
-        if wrapper.search_name in self._keyphrase_search_names:
-            raise EngineError("grammar cannot be loaded because '%s' is a "
-                              "reserved name" % wrapper.search_name)
-
         def activate_search_if_necessary():
             if activate:
                 self._decoder.end_utterance()
@@ -387,10 +408,9 @@ class SphinxEngine(EngineBase):
 
     def _unset_search(self, name):
         # Unset a Pocket Sphinx search with the given name.
-        # Note that this method will not unset the dictation or keyphrase
-        # searches.
-        dictation_search = self._dictation_search_name
-        reserved = [dictation_search] + self._keyphrase_search_names
+        # Don't unset the default or keyphrase searches.
+        default_search = self._default_search_name
+        reserved = [default_search] + self._keyphrase_search_names
         if name in reserved:
             return
 
@@ -403,6 +423,10 @@ class SphinxEngine(EngineBase):
 
             # Remove the search from the valid searches set.
             self._valid_searches.remove(name)
+
+        # Change to the default search to avoid possible segmentation faults
+        # from Pocket Sphinx which crash Python.
+        self._set_default_search()
 
     # TODO Add optional context parameter
     def set_keyphrase(self, keyphrase, threshold, func):
@@ -452,10 +476,20 @@ class SphinxEngine(EngineBase):
         self._decoder.end_utterance()
         self._decoder.set_kws_list("_key_phrases", self._keyphrase_thresholds)
 
-    def _set_dictation_search(self):
-        # Change the active search to the one used for recognising dictation.
-        self._decoder.end_utterance()  # ensure we're not processing
-        self._decoder.active_search = self._dictation_search_name
+    def _set_default_search(self):
+        # Change the active search to the one used for processing speech as
+        # it is heard.
+        swap_to_wake_search = (
+            self.recognition_paused and self.config.WAKE_PHRASE and
+            self.config.WAKE_PHRASE_THRESHOLD
+        )
+
+        # Ensure we're not processing.
+        self._decoder.end_utterance()
+        if swap_to_wake_search:
+            self._decoder.active_search = "_wake_phrase"
+        else:
+            self._decoder.active_search = self._default_search_name
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar* and return a wrapper. """
@@ -567,18 +601,18 @@ class SphinxEngine(EngineBase):
     @property
     def recognising(self):
         """
-        Whether the engine is recognising speech in a loop.
+        Whether the engine is currently recognising speech.
 
         To stop recognition, use :meth:`disconnect`.
 
         :rtype: bool
         """
-        return self._recognising
+        return self._recorder.recording or self._recognising
 
     @property
-    def _dictation_search_name(self):
+    def _default_search_name(self):
         # The name of the Pocket Sphinx search used for processing speech as
-        # dictation.
+        # it is heard.
         return "_default"
 
     def _get_best_hypothesis(self, hypotheses):
@@ -636,26 +670,15 @@ class SphinxEngine(EngineBase):
         for wrapper in self._grammar_wrappers.values():
             wrapper.process_begin(fg_window)
 
-        # Do a few things with audio buffers if not mimicking.
         if not mimicking:
-            # Reprocess current audio buffers if necessary; <decoder>.end_utterance
-            # can be called by the above code or by the timer thread.
-            if self._decoder.utt_ended and not mimicking:
-                self._decoder.batch_process(self._audio_buffers, use_callbacks=False)
-
-            # Trim excess audio buffers from the start of the list. Keep a maximum 3
-            # seconds of silence before speech start was detected. This should help
+            # Trim excess audio buffers from the start of the list. Keep a maximum 1
+            # second of silence before speech start was detected. This should help
             # increase the performance of batch reprocessing later.
-            chunk = self.config.PYAUDIO_STREAM_KEYWORD_ARGS["frames_per_buffer"]
-            rate = self.config.PYAUDIO_STREAM_KEYWORD_ARGS["rate"]
-            seconds = 3
+            chunk = self.config.FRAMES_PER_BUFFER
+            rate = self.config.RATE
+            seconds = 1
             n_buffers = int(rate / chunk * seconds)
             self._audio_buffers = self._audio_buffers[-1 * n_buffers:]
-
-            # Add trimmed pre-speech audio buffers to training .wav file.
-            if self._training_data_writer:
-                for buf in self._audio_buffers:
-                    self._training_data_writer.write_to_wave_file(buf)
 
         # Notify observers
         self._recognition_observer_manager.notify_begin()
@@ -669,25 +692,32 @@ class SphinxEngine(EngineBase):
         :param mimicking:  whether to treat speech as mimicked speech.
         :rtype: bool
         """
+        # Clear any recorded audio buffers.
+        self._recorder.clear_buffers()
+
         # Process speech. We should get back a boolean for whether processing
         # occurred as well as the final speech hypothesis.
-        processing_occurred, speech = self._process_hypotheses(
+        processing_occurred, final_speech = self._process_hypotheses(
             speech, mimicking
         )
-        self._set_dictation_search()
 
         # Notify observers of failure.
         if not processing_occurred:
             self._recognition_observer_manager.notify_failure()
 
-        # Finalise the current training data and open a new wav file.
-        # If speech is None, the current .wav file will be discarded.
-        if self._training_data_writer and not mimicking:
-            self._training_data_writer.finalise(speech)
-            self._training_data_writer.open_next_wav_file()
+        # Write the training data files if necessary.
+        data_dir = self.config.TRAINING_DATA_DIR
+        if not mimicking and data_dir and os.path.isdir(data_dir):
+            # Use the default search's hypothesis if final_speech was nil.
+            if not final_speech:
+                final_speech = speech
+            try:
+                write_training_data(self.config, self._audio_buffers,
+                                    final_speech)
+            except Exception as e:
+                self._log.exception("Failed to write training data: %s" % e)
 
-        # Clear the internal audio buffer list because it is no longer
-        # needed.
+        # Clear audio buffer list because utterance processing has finished.
         self._audio_buffers = []
 
         # Return whether processing occurred in case this method was called
@@ -696,13 +726,15 @@ class SphinxEngine(EngineBase):
 
     def _process_key_phrases(self, speech, mimicking):
         """
-        Processing key phrase searches and return the matched keyphrase (if any).
+        Processing key phrase searches and return the matched keyphrase
+        (if any).
 
         :type speech: str
         :param mimicking: whether to treat speech as mimicked speech.
         :rtype: str
         """
-        if not speech:
+        # Return if speech is empty/null or if there are no key phrases set.
+        if not (speech and self._keyphrase_thresholds):
             return ""  # no matches
 
         if not mimicking:
@@ -715,8 +747,8 @@ class SphinxEngine(EngineBase):
             # Get the hypothesis string.
             speech = hyp.hypstr if hyp else ""
 
-            # Restore search to the dictation search.
-            self._set_dictation_search()
+            # Restore search to the default search.
+            self._set_default_search()
 
             # Return if no key phrase matched.
             if not speech:
@@ -759,7 +791,8 @@ class SphinxEngine(EngineBase):
             if PY2 and isinstance(word, str):
                 word = text_type(word, encoding="utf-8")
             if word.isupper() and mimicking:
-                # Convert dictation words to lowercase for consistent output.
+                # Convert dictation words to lowercase for consistent
+                # output.
                 result.append((word.lower(), 1000000))
             else:
                 result.append((word, 0))
@@ -785,7 +818,7 @@ class SphinxEngine(EngineBase):
 
         # Otherwise do grammar processing.
         processing_occurred = False
-        hypotheses = {self._dictation_search_name: speech}
+        hypotheses = {}
 
         # Collect each active grammar's GrammarWrapper.
         wrappers = [w for w in self._grammar_wrappers.values()
@@ -816,15 +849,12 @@ class SphinxEngine(EngineBase):
             # Set the hypothesis in the dictionary.
             hypotheses[wrapper.search_name] = hyp
 
-        # TODO Decide whether including the LM hypothesis is worth it
-        # hypotheses.pop(self._dictation_search_name)
-
         # Get the best hypothesis.
         speech = self._get_best_hypothesis(list(hypotheses.values()))
         if not speech:
             return processing_occurred, speech
 
-        # Process speech using the matching grammar(s).
+        # Process speech using the first matching grammar.
         words_rules = self._generate_words_rules(speech, mimicking)
         for wrapper in wrappers:
             if hypotheses[wrapper.search_name] != speech:
@@ -842,17 +872,19 @@ class SphinxEngine(EngineBase):
         # post processing.
         return processing_occurred, speech
 
-    def process_buffer(self, buf, sleep_time=0.1):
+    def process_buffer(self, buf):
         """
-        Recognise speech from an audio buffer. This method is meant to be called
-        in sequence for multiple buffers.
+        Recognise speech from an audio buffer.
+
+        This method is meant to be called in sequence for multiple audio
+        buffers. It will do nothing if :meth:`connect` hasn't been called.
 
         :param buf: audio buffer
-        :param sleep_time: time to sleep after processing an audio buffer. Use 0
-            for no sleep time.
-        :type sleep_time: float
         :type buf: str
         """
+        if not self._decoder:
+            return
+
         # Cancel current recognition if it has been requested.
         if self._cancel_recognition_next_time:
             self._decoder.end_utterance()
@@ -863,29 +895,25 @@ class SphinxEngine(EngineBase):
         # Sphinx searches later.
         self._audio_buffers.append(buf)
 
-        # Write the buffer to the current .wav file used for acoustic model
-        # training. Only do this if in speech, the writer is initialised and
-        # recognition is not paused.
-        if self._decoder.get_in_speech() and self._training_data_writer and \
-                not self.recognition_paused:
-            self._training_data_writer.write_to_wave_file(buf)
-
-        # Process audio and wait a few milliseconds.
-        self._decoder.process_audio(buf)
-
-        # This improves the performance; we don't need to process as much audio
-        # as the device can read, and people don't speak that fast anyway!
-        time.sleep(sleep_time)
+        # Process audio.
+        try:
+            self._recognising = True
+            self._decoder.process_audio(buf)
+        finally:
+            self._recognising = False
 
     def process_wave_file(self, path):
         """
-        Recognise speech from a wave file. This method checks that the wave file is
-        valid. It raises an error if the file doesn't exist, if it can't be read or
-        if the WAV header values do not match those in the engine configuration.
+        Recognise speech from a wave file. This method checks that the wave
+        file is valid. It raises an error if the file doesn't exist, if it
+        can't be read or if the WAV header values do not match those in the
+        engine configuration.
 
-        The wave file must use the same sample width, sample rate and number of
-        channels defined in the engine configuration ``PYAUDIO_STREAM_KEYWORD_ARGS``
-        attribute.
+        If recognition is paused (sleep mode), this method will call
+        :meth:`resume_recognition`.
+
+        The wave file must use the same sample width, sample rate and number
+        of channels that the acoustic model uses.
 
         If the file is valid, :meth:`process_buffer` is then used to process
         the audio.
@@ -896,91 +924,77 @@ class SphinxEngine(EngineBase):
         if not self._decoder:
             self.connect()
 
-        # This method's implementation has been adapted from the PyAudio play wave
-        # example: http://people.csail.mit.edu/hubert/pyaudio/#play-wave-example
+        # This method's implementation has been adapted from the PyAudio
+        # play wave example:
+        # http://people.csail.mit.edu/hubert/pyaudio/#play-wave-example
 
         # Check that path is a valid file.
         if not os.path.isfile(path):
             raise IOError("'%s' is not a file. Please use a different file path.")
 
         # Get required audio configuration from the engine config.
-        p = PyAudio()
         channels, sample_width, rate, chunk = (
-            self.config.PYAUDIO_STREAM_KEYWORD_ARGS["channels"],
-            p.get_sample_size(
-                self.config.PYAUDIO_STREAM_KEYWORD_ARGS["format"]
-            ),
-            self.config.PYAUDIO_STREAM_KEYWORD_ARGS["rate"],
-            self.config.PYAUDIO_STREAM_KEYWORD_ARGS["frames_per_buffer"]
+            self.config.CHANNELS,
+            self.config.SAMPLE_WIDTH,
+            self.config.RATE,
+            self.config.FRAMES_PER_BUFFER
         )
+
+        # Make sure recognition is not paused.
+        if self.recognition_paused:
+            self.resume_recognition(notify=False)
 
         # Open the wave file. Use contextlib to make sure that the file is closed
         # whether errors are raised or not.
         with contextlib.closing(wave.open(path, "rb")) as wf:
             # Validate the wave file's header.
             if wf.getnchannels() != channels:
-                raise ValueError("WAV file '%s' should use %d channel(s), not %d!"
-                                 % (path, channels, wf.getnchannels()))
+                message = ("WAV file '%s' should use %d channel(s), not %d!"
+                           % (path, channels, wf.getnchannels()))
             elif wf.getsampwidth() != sample_width:
-                raise ValueError("WAV file '%s' should use sample width %d, not %d!"
-                                 % (path, sample_width, wf.getsampwidth()))
+                message = ("WAV file '%s' should use sample width %d, not "
+                           "%d!" % (path, sample_width, wf.getsampwidth()))
             elif wf.getframerate() != rate:
-                raise ValueError("WAV file '%s' should use sample rate %d, not %d!"
-                                 % (path, rate, wf.getframerate()))
+                message = ("WAV file '%s' should use sample rate %d, not "
+                           "%d!" % (path, rate, wf.getframerate()))
+            else:
+                message = None
+
+            if message:
+                raise ValueError(message)
 
             # Use process_buffer to process each buffer.
-            data = wf.readframes(chunk)
-            while data != "":
-                self.process_buffer(data, 0)  # no sleep time required
+            for i in range(0, int(wf.getnframes() / chunk) + 1):
                 data = wf.readframes(chunk)
+                if not data:
+                    break
 
-    def post_loader_init(self):
-        """
-        Do post grammar loader initialisation tasks that can't be done in
-        :meth:`connect`.
-
-        This is automatically called by :meth:`recognise_forever`, but **not** by
-        :meth:`process_buffer` or :meth:`process_wave_file`.
-
-        This currently only handles the engine's ``START_ASLEEP`` configuration
-        option.
-        """
-        # Start in sleep mode if requested.
-        if self.config.START_ASLEEP:
-            self.pause_recognition()
-            self._log.info("Starting in sleep mode as requested.")
+                self.process_buffer(data)
 
     def recognise_forever(self):
         """
         Start recognising from the default recording device until
         :meth:`disconnect` is called.
 
-        Recognition can be paused and resumed using either the sleep/wake key
-        phrases or by calling :meth:`pause_recognition` or
+        Recognition can be paused and resumed using either the sleep/wake
+        key phrases or by calling :meth:`pause_recognition` or
         :meth:`resume_recognition`.
 
-        To configure audio input settings, modify the engine's
-        ``PYAUDIO_STREAM_KEYWORD_ARGS`` configuration attribute.
+        To configure audio input settings, modify the engine's ``CHANNELS``,
+        ``RATE``, ``SAMPLE_WIDTH`` and/or ``FRAMES_PER_BUFFER``
+        configuration options.
         """
-        # Open a PyAudio stream with the specified keyword args and get the number
-        # of frames to read per buffer
-        p = PyAudio()
-        keyword_args = self.config.PYAUDIO_STREAM_KEYWORD_ARGS
-        stream = p.open(**keyword_args)
-        frames_per_buffer = keyword_args["frames_per_buffer"]
+        if not self._decoder:
+            self.connect()
 
-        # Do post grammar loader initialisation.
-        self.post_loader_init()
-
-        # Start recognising in a loop
-        stream.start_stream()
-        self._recognising = True
+        # Start recognising in a loop.
+        self._recorder.start()
         self._cancel_recognition_next_time = False
         while self.recognising:
-            # Read from the audio device (default number of frames is 2048)
-            self.process_buffer(stream.read(frames_per_buffer))
+            for buf in self._recorder.get_buffers():
+                self.process_buffer(buf)
 
-        stream.close()
+        # Free engine resources after recognition has stopped.
         self._free_engine_resources()
 
     def mimic(self, words):
@@ -998,25 +1012,25 @@ class SphinxEngine(EngineBase):
         # Process the words as if they were spoken
         result = self._hypothesis_callback(words, True)
         if not result:
-            raise MimicFailure("No matching rule found for words %s." % words)
+            raise MimicFailure("No matching rule found for words %s."
+                               % words)
 
     def mimic_phrases(self, *phrases):
         """
         Mimic a recognition of the given *phrases*.
 
-        This method accepts variable phrases instead of a list of words to allow
-        mimicking of rules using :class:`Dictation` elements.
+        This method accepts variable phrases instead of a list of words.
         """
-        wake_phrase = self.config.WAKE_PHRASE
-        if self.recognition_paused and " ".join(phrases) == wake_phrase:
-            self.resume_recognition()
-            return
-
         # Pretend that Sphinx has started processing speech
         self._speech_start_callback(True)
 
         # Process phrases as if they were spoken
+        wake_phrase = self.config.WAKE_PHRASE
         for phrase in phrases:
+            if self.recognition_paused and phrase == wake_phrase:
+                self.resume_recognition()
+                continue
+
             result = self._hypothesis_callback(phrase, True)
             if not result:
                 raise MimicFailure("No matching rule found for words %s."
@@ -1032,8 +1046,26 @@ class SphinxEngine(EngineBase):
     def _get_language(self):
         return self.config.LANGUAGE
 
-    # ---------------------------------------------------------------------
-    # Training session methods
+    # ----------------------------------------------------------------------
+    # Training-related methods
+
+    def write_transcript_files(self, fileids_path, transcription_path):
+        """
+        Write .fileids and .transcription files for files in the training
+        data directory and write them to the specified file paths.
+
+        This method will raise an error if the ``TRAINING_DATA_DIR``
+        configuration option is not set to an existing directory.
+
+        :param fileids_path: path to .fileids file to create.
+        :param transcription_path: path to .transcription file to create.
+        :type fileids_path: str
+        :type transcription_path: str
+        :raises: IOError | OSError
+        """
+        write_transcript_files(
+            self.config, fileids_path, transcription_path
+        )
 
     @property
     def training_session_active(self):
@@ -1047,14 +1079,13 @@ class SphinxEngine(EngineBase):
     def start_training_session(self):
         """
         Start the training session. This will stop recognition processing
-        until either :meth:`end_training_session` is called or the end training
-        keyphrase is heard.
+        until either :meth:`end_training_session` is called or the end
+        training keyphrase is heard.
         """
-        if not self._training_data_writer:
-            self._log.warning(
-                "Training data will not be recorded! Please call "
-                "connect() and/or check that engine config "
-                "'TRAINING_DATA_DIR' is set to a valid path.")
+        data_dir = self.config.TRAINING_DATA_DIR
+        if not data_dir or not os.path.isdir(data_dir):
+            self._log.warning("Training data will not be recorded; '%s' is "
+                              "not a directory" % data_dir)
 
         if not self._training_session_active:
             self._log.info("Training session has started. No rule "
@@ -1069,11 +1100,12 @@ class SphinxEngine(EngineBase):
         processing once again.
         """
         if self._training_session_active:
-            self._log.info("Ending training session. Rule actions "
-                           "will now be processed normally again.")
+            self._log.info("Ending training session.")
+            self._log.info("Rule actions will now be processed normally "
+                           "again.")
             self._training_session_active = False
 
-    # ---------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Recognition loop control methods
     # Stopping recognition loop is done using disconnect()
 
@@ -1083,16 +1115,14 @@ class SphinxEngine(EngineBase):
         Whether the engine is waiting for the wake phrase to be heard or for
         :meth:`resume_recognition` to be called.
 
-        This property returns False if :meth:`connect` hasn't been called yet.
-
         :rtype: bool
         """
         return self._recognition_paused
 
     def pause_recognition(self):
         """
-        Pause recognition and wait for :meth:`resume_recognition` to be called or
-        for the wake keyphrase to be spoken.
+        Pause recognition and wait for :meth:`resume_recognition` to be
+        called or for the wake keyphrase to be spoken.
         """
         if not self._decoder:
             return
@@ -1101,15 +1131,15 @@ class SphinxEngine(EngineBase):
 
         # Switch to the wake keyphrase search if a wake keyphrase has been
         # set.
-        if self.config.WAKE_PHRASE:
-            self._decoder.end_utterance()
-            self._decoder.active_search = "_wake_phrase"
-        else:
+        self._set_default_search()
+        if not self.config.WAKE_PHRASE:
             self._log.warning("No wake phrase has been set.")
             self._log.warning("Use engine.resume_recognition() to wake up.")
 
         # Define temporary callback for the decoder.
         def hypothesis(hyp):
+            # Clear any recorded audio buffers.
+            self._recorder.clear_buffers()
             s = hyp.hypstr if hyp else None
 
             # Resume recognition if s is the wake keyphrase.
@@ -1124,7 +1154,7 @@ class SphinxEngine(EngineBase):
         # Override decoder hypothesis callback.
         self._decoder.hypothesis_callback = hypothesis
 
-    def resume_recognition(self):
+    def resume_recognition(self, notify=True):
         """
         Resume listening for grammar rules and key phrases.
         """
@@ -1136,7 +1166,8 @@ class SphinxEngine(EngineBase):
         # Notify observers about recognition resume.
         keyphrase = self.config.WAKE_PHRASE
         words = tuple(keyphrase.strip().split())
-        self._recognition_observer_manager.notify_recognition(words)
+        if words and notify:
+            self._recognition_observer_manager.notify_recognition(words)
 
         # Restore the callbacks to normal
         def hypothesis(hyp):
@@ -1146,12 +1177,12 @@ class SphinxEngine(EngineBase):
 
         self._decoder.hypothesis_callback = hypothesis
 
-        # Switch to the dictation search.
-        self._set_dictation_search()
+        # Switch to the default search.
+        self._set_default_search()
 
     def cancel_recognition(self):
         """
-        If a recognition was in progress, cancel it before processing the next
-        audio buffer.
+        If a recognition was in progress, cancel it before processing the
+        next audio buffer.
         """
         self._cancel_recognition_next_time = True

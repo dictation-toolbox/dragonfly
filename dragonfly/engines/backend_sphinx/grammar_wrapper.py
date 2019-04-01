@@ -73,7 +73,7 @@ class GrammarWrapper(object):
 
         :return: str
         """
-        return self._jsgf_grammar.name
+        return "g_%s" % self._jsgf_grammar.name
 
     @property
     def grammar_active(self):

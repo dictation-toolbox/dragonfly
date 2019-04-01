@@ -12,7 +12,6 @@ language models distributed with the `pocketsphinx` Python package are used.
 import unittest
 
 import logging
-import os
 
 from dragonfly.engines import (EngineBase, EngineError, MimicFailure,
                                get_engine)
@@ -74,19 +73,10 @@ class SphinxEngineCase(unittest.TestCase):
     log = logging.getLogger("engine")
 
     def setUp(self):
-        # Get the sphinx engine and set the default config.
-        from dragonfly.engines.backend_sphinx import config
         self.engine = get_engine("sphinx")
-        self.engine.config = config
-
-        # Set a default NEXT_PART_TIMEOUT value so there aren't timing
-        # errors that break tests. Value of 0 means no timeout at all.
-        self.engine.config.NEXT_PART_TIMEOUT = 0
-
-        # Disable training data directory for the tests.
-        self.engine.config.TRAINING_DATA_DIR = ""
 
         # Ensure the relevant configuration values are used.
+        self.engine.config.TRAINING_DATA_DIR = ""
         self.engine.config.START_ASLEEP = False
         self.engine.config.WAKE_PHRASE = "wake up"
         self.engine.config.SLEEP_PHRASE = "go to sleep"
@@ -105,7 +95,6 @@ class SphinxEngineCase(unittest.TestCase):
         self.test_recobs.register()
 
     def tearDown(self):
-        # Restore saved config and do some other things.
         self.test_map.clear()
         self.engine.resume_recognition()
         self.test_recobs.unregister()
@@ -196,23 +185,29 @@ class EngineTests(SphinxEngineCase):
 
     def test_engine_config(self):
         """ Verify that engine configuration is validated correctly. """
-        required = [
+        # Use START_ASLEEP=True for this test.
+        self.engine.config.START_ASLEEP = True
+        options = [
             "DECODER_CONFIG",
             "LANGUAGE",
-            "PYAUDIO_STREAM_KEYWORD_ARGS",
-            "NEXT_PART_TIMEOUT",
+
             "START_ASLEEP",
-        ]
-        optional = [
             "WAKE_PHRASE",
-            "SLEEP_PHRASE",
             "WAKE_PHRASE_THRESHOLD",
+            "SLEEP_PHRASE",
             "SLEEP_PHRASE_THRESHOLD",
+
             "TRAINING_DATA_DIR",
+            "TRANSCRIPT_NAME",
             "START_TRAINING_PHRASE",
             "START_TRAINING_PHRASE_THRESHOLD",
             "END_TRAINING_PHRASE",
             "END_TRAINING_PHRASE_THRESHOLD",
+
+            "CHANNELS",
+            "RATE",
+            "SAMPLE_WIDTH",
+            "FRAMES_PER_BUFFER",
         ]
 
         class TestConfig(object):
@@ -220,28 +215,24 @@ class EngineTests(SphinxEngineCase):
 
         # Set TestConfig values using the engine config.
         original_config = self.engine.config
-        for name in required + optional:
+        for name in options:
             setattr(TestConfig, name, getattr(original_config, name))
 
         def set_config(value):
             self.engine.config = value
 
-        # Test that optional attributes are set to default values if
-        # deleted.
-        for name in optional:
+        # Test that options are set to default values if deleted.
+        # Don't compare decoder config objects with assertEqual because they
+        # aren't comparable.
+        for name in options:
             delattr(TestConfig, name)
             set_config(TestConfig)
-            self.assertEqual(getattr(TestConfig, name),
-                             getattr(original_config, name))
-
-        # Test with sufficient attributes. This shouldn't raise an error.
-        set_config(TestConfig)
-
-        # Delete each attribute and check that an EngineError is raised
-        # upon setting the config again.
-        for name in required:
-            delattr(TestConfig, name)
-            self.assertRaises(EngineError, set_config, TestConfig)
+            self.assertTrue(hasattr(TestConfig, name),
+                            "%s was not reset" % name)
+            if name != "DECODER_CONFIG":
+                self.assertEqual(getattr(TestConfig, name),
+                                 getattr(original_config, name),
+                                 "%s did not match" % name)
 
     def test_pause_resume_recognition(self):
         """ Verify that pause/resume recognition functionality works. """
@@ -275,7 +266,7 @@ class EngineTests(SphinxEngineCase):
         self.assertFalse(self.engine.recognition_paused)
 
     def test_start_asleep(self):
-        """ Verify that the START_ASLEEP config attribute works. """
+        """ Verify that the START_ASLEEP config option works. """
         # config.START_ASLEEP is False for the tests by default, so test
         # that first.
         self.assertFalse(self.engine.recognition_paused)
@@ -285,7 +276,6 @@ class EngineTests(SphinxEngineCase):
         self.engine.config.START_ASLEEP = True
         self.engine.disconnect()
         self.engine.connect()
-        self.engine.post_loader_init()  # instead of 'recognise_forever()'
         self.assertTrue(self.engine.recognition_paused)
         self.assert_mimic_success("wake up")
 
