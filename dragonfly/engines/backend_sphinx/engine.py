@@ -376,16 +376,14 @@ class SphinxEngine(EngineBase):
         # aren't.
         self._validate_words(wrapper.grammar_words,
                              "grammar '%s'" % wrapper.grammar.name)
-        try:
-            # Set the JSGF search.
-            self._decoder.end_utterance()
-            self._decoder.set_jsgf_string(wrapper.search_name, compiled)
-            activate_search_if_necessary()
-        except RuntimeError:
-            self._log.error("error setting PS JSGF search: %s" % compiled)
-        else:
-            # Grammar search has been loaded, add the search name to the set.
-            self._valid_searches.add(wrapper.search_name)
+
+        # Set the JSGF search.
+        self._decoder.end_utterance()
+        self._decoder.set_jsgf_string(wrapper.search_name, compiled)
+        activate_search_if_necessary()
+
+        # Grammar search has been loaded, add the search name to the set.
+        self._valid_searches.add(wrapper.search_name)
 
     def _unset_search(self, name):
         # Unset a Pocket Sphinx search with the given name.
@@ -478,15 +476,18 @@ class SphinxEngine(EngineBase):
             # Unknown words should be logged as plain error messages, not
             # exception stack traces.
             self._log.error(e)
+            raise EngineError("Failed to load grammar %s: %s."
+                              % (grammar, e))
         except Exception as e:
             self._log.exception("Failed to load grammar %s: %s."
                                 % (grammar, e))
+            raise EngineError("Failed to load grammar %s: %s."
+                              % (grammar, e))
         return wrapper
 
     def _unload_grammar(self, grammar, wrapper):
         try:
-            # Unload the current and default searches for the grammar.
-            # It doesn't matter if the names are the same.
+            # Unset the search names for the grammar.
             self._unset_search(wrapper.search_name)
         except Exception as e:
             self._log.exception("Failed to unload grammar %s: %s."
@@ -542,7 +543,11 @@ class SphinxEngine(EngineBase):
 
         # Reload the grammar.
         self._unset_search(wrapper.search_name)
-        self._set_grammar(wrapper, False)
+        try:
+            self._set_grammar(wrapper, False)
+        except Exception as e:
+            self._log.exception("Failed to update list %s: %s."
+                                % (lst, e))
 
     def set_exclusiveness(self, grammar, exclusive):
         # Disable/enable each grammar.

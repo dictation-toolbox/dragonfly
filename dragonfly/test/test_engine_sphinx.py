@@ -373,8 +373,8 @@ class EngineTests(SphinxEngineCase):
         handler = MockLoggingHandler()
         self.log.addHandler(handler)
         try:
-            grammar.load()
-            grammar.unload()
+            self.assertRaises(EngineError, grammar.load)
+            self.assertFalse(grammar.loaded)
         finally:
             self.log.removeHandler(handler)
 
