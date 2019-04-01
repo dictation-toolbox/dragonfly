@@ -26,16 +26,20 @@ class GrammarWrapper(object):
         self._jsgf_grammar = engine.compiler.compile_grammar(grammar)
         self._jsgf_grammar.language_name = engine.language
 
+    def _get_reference_name(self, name):
+        return self.engine.compiler.get_reference_name(name)
+
     def enable_rule(self, name):
-        self._jsgf_grammar.enable_rule(name)
+        self._jsgf_grammar.enable_rule(self._get_reference_name(name))
 
     def disable_rule(self, name):
-        self._jsgf_grammar.disable_rule(name)
+        self._jsgf_grammar.disable_rule(self._get_reference_name(name))
 
     def update_list(self, lst):
         # Remove the old list, recompile the list again and add it to the
         # grammar.
-        self._jsgf_grammar.remove_rule(lst.name, ignore_dependent=True)
+        name = self._get_reference_name(lst.name)
+        self._jsgf_grammar.remove_rule(name, ignore_dependent=True)
         new_rule = self.engine.compiler.compile_list(lst)
         self._jsgf_grammar.add_rule(new_rule)
 

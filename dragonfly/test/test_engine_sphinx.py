@@ -16,8 +16,10 @@ import os
 
 from dragonfly.engines import (EngineBase, EngineError, MimicFailure,
                                get_engine)
-from dragonfly.grammar.elements import Literal, Sequence
+from dragonfly.grammar.elements import Literal, Sequence, ListRef
+from dragonfly.grammar.list import List
 from dragonfly.grammar.grammar_base import Grammar
+from dragonfly.grammar.rule_base import Rule
 from dragonfly.grammar.recobs import RecognitionObserver
 from dragonfly.grammar.rule_compound import CompoundRule
 from dragonfly.test import (ElementTester, RuleTestGrammar)
@@ -383,6 +385,20 @@ class EngineTests(SphinxEngineCase):
         self.assertIn("unknownword", errors[0])
         self.assertIn("wordz", errors[0])
         self.assertNotIn("testing", errors[0])
+
+    def test_reference_names_with_spaces(self):
+        """ Verify that reference names with spaces are accepted. """
+        lst = List("my list", ["test list"])
+        grammar = Grammar("My dragonfly grammar")
+        grammar.add_rule(CompoundRule(name="my rule", spec="test rule"))
+        grammar.add_rule(Rule(element=ListRef("my list", lst),
+                              exported=True))
+        try:
+            grammar.load()
+            self.assert_mimic_success("test rule")
+            self.assert_mimic_success("test list")
+        finally:
+            grammar.unload()
 
     def test_training_session(self):
         """ Verify that no recognition processing occurs when training. """

@@ -46,11 +46,18 @@ class JSGFCompiler(CompilerBase):
     @staticmethod
     def get_reference_name(o):
         # Return a non-nil name string.
-        if not o.name:
-            name = o.__class__.__name__
+        if hasattr(o, "name"):
+            if not o.name:
+                name = o.__class__.__name__
+            else:
+                name = o.name
         else:
-            name = o.name
-        return name
+            # Assume the object is a string.
+            name = o
+
+        # JSGF and Pocket Sphinx don't allow spaces in names, but dragonfly
+        # does. Work around this by changing any spaces to underscores.
+        return name.replace(" ", "_")
 
     # ----------------------------------------------------------------------
     # Methods for compiling grammars and rules.
@@ -174,11 +181,11 @@ class JSGFCompiler(CompilerBase):
         return jsgf.Literal(" ".join(element.words))
 
     def _compile_rule_ref(self, element, *args, **kwargs):
-        name = element.rule.name
+        name = element.rule.name.replace(" ", "_")
         return jsgf.NamedRuleRef(name)
 
     def _compile_list_ref(self, element, *args, **kwargs):
-        name = element.list.name
+        name = element.list.name.replace(" ", "_")
         return jsgf.NamedRuleRef(name)
 
     def _compile_empty(self, element, *args, **kwargs):
