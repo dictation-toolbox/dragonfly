@@ -59,6 +59,7 @@ default_levels = {
                   "context.match":        (_warning, _info),
                   "rule":                 (_warning, _info),
                   "config":               (_warning, _info),
+                  "module":               (_info, _info),
                   "monitor.init":         (_warning, _info),
                   "dfly.test":            (_debug, _debug),
                   "accessibility":        (_info, _info),

@@ -1,26 +1,22 @@
 """
-Dragonfly command module designed for use with the CMU Pocket Sphinx engine
-backend.
+Dragonfly command module designed for use with the CMU Pocket Sphinx engine,
+either with the module loader or as a script.
 
-Shows use of dragonfly Lists, Repetition, Dictation, IntegerRefs.
-
-Maybe be used with other engines by changing the call to get_engine().
+Shows use of dragonfly Functions, Lists, Repetition, Dictation, IntegerRefs,
+Mimic, etc.
 """
 
 from dragonfly import (Dictation, Function, Grammar, IntegerRef, List,
-                       ListRef, MappingRule, RecognitionObserver,
-                       Repetition, RuleRef, Text, get_engine)
+                       ListRef, MappingRule, RecognitionObserver, Mimic,
+                       Repetition, RuleRef, get_engine, Text)
 
 
-# Set the engine to "sphinx". This file should be either run as a script or
-# loaded with the Pocket Sphinx module loader.
 engine = get_engine("sphinx")
-if engine.name == "sphinx":
-    engine.config.START_ASLEEP = False
-    engine.config.TRAINING_DATA_DIR = ""
 
 
 def disconnect():
+    # You shouldn't really run this module in other engines because it uses
+    # sphinx-specific engine methods.
     print("Disconnecting engine (only for sphinx)")
     if engine.name == "sphinx":
         engine.disconnect()
@@ -43,6 +39,12 @@ def update_list():
         lst.append(item)
 
 
+def write_transcripts():
+    engine.write_transcript_files(
+        "training.fileids", "training.transcription"
+    )
+
+
 # Define a rule for typing numbers.
 numbers_rule = MappingRule(
     name="numbers", mapping={"<n>": Text("%(n)d")},
@@ -62,6 +64,9 @@ class ExampleRule(MappingRule):
         # engine's support for dictation has been temporarily disabled.
         "hello <dictation>": Function(lambda dictation: print_(dictation)),
 
+        # You still can use Mimic or engine.mimic() to match dictation.
+        "say hello world": Mimic("hello", "WORLD"),
+
         # Update and recognise from a dragonfly list.
         "update list": Function(update_list),
         "<lst>": Function(lambda lst: print_(lst)),
@@ -71,6 +76,9 @@ class ExampleRule(MappingRule):
 
         # Stop recognising from the microphone and exit.
         "disconnect engine|turn off": Function(disconnect),
+
+        # Write transcript files used for training models.
+        "(make|write) transcripts": Function(write_transcripts),
     }
 
     extras = [
@@ -100,10 +108,11 @@ if __name__ == '__main__':
         def on_failure(self):
             print("Sorry, what was that?")
 
-        def on_next_rule_part(self, words):
-            print("Current words: %s" % " ".join(words))
-            print("Awaiting next rule part...")
-
     observer = Observer()
     observer.register()
-    engine.recognise_forever()
+
+    # Start engine's main recognition loop
+    try:
+        engine.recognise_forever()
+    except KeyboardInterrupt:
+        pass
