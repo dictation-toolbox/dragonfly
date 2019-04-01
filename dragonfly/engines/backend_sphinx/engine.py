@@ -147,6 +147,7 @@ class SphinxEngine(EngineBase):
         self._keyphrase_thresholds = {}
         self._keyphrase_functions = {}
         self._training_session_active = False
+        self._default_search_result = None
 
         # Set up keyphrase search names and valid search names for grammars.
         self._keyphrase_search_names = ["_key_phrases", "_wake_phrase"]
@@ -235,11 +236,17 @@ class SphinxEngine(EngineBase):
 
         # Set up callback function wrappers
         def hypothesis(hyp):
+            # Set default search result.
+            self._default_search_result = hyp
+
             # Set speech to the hypothesis string or None if there isn't one
             speech = hyp.hypstr if hyp else None
             return self._hypothesis_callback(speech, False)
 
         def speech_start():
+            # Reset the default search result and call the engine's callback
+            # method.
+            self._default_search_result = None
             return self._speech_start_callback(False)
 
         self._decoder.hypothesis_callback = hypothesis
@@ -610,6 +617,19 @@ class SphinxEngine(EngineBase):
         return self._recorder.recording or self._recognising
 
     @property
+    def default_search_result(self):
+        """
+        The last hypothesis object of the default search.
+
+        This does not currently reach recognition observers because it is
+        intended to be used for dictation results, which are currently
+        disabled. Nevertheless this object can be useful sometimes.
+
+        :returns: Sphinx Hypothesis object | None
+        """
+        return self._default_search_result
+
+    @property
     def _default_search_name(self):
         # The name of the Pocket Sphinx search used for processing speech as
         # it is heard.
@@ -719,6 +739,9 @@ class SphinxEngine(EngineBase):
 
         # Clear audio buffer list because utterance processing has finished.
         self._audio_buffers = []
+
+        # Ensure that the correct search is used.
+        self._set_default_search()
 
         # Return whether processing occurred in case this method was called
         # by mimic.
@@ -1171,6 +1194,9 @@ class SphinxEngine(EngineBase):
 
         # Restore the callbacks to normal
         def hypothesis(hyp):
+            # Set default search result.
+            self._default_search_result = hyp
+
             # Set speech to the hypothesis string or None if there isn't one
             speech = hyp.hypstr if hyp else None
             return self._hypothesis_callback(speech, False)
