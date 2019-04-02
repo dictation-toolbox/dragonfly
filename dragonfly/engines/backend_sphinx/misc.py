@@ -96,7 +96,7 @@ class WaveRecognitionObserver(RecognitionObserver):
     """ Observer class used in :meth:`SphinxEngine.process_wave_file`. """
     def __init__(self, engine):
         RecognitionObserver.__init__(self)
-        self.results = []
+        self.words = ""
         self.complete = None
         self.engine = engine
 
@@ -105,15 +105,16 @@ class WaveRecognitionObserver(RecognitionObserver):
 
     def on_recognition(self, words):
         self.complete = True
-        self.results.append(words)
+        self.words = words
 
     def on_failure(self):
         self.complete = True
 
         # Use the default search result on failure.
         hyp = self.engine.default_search_result
-        # print(hyp.prob)
-        self.results.append(hyp.hypstr)
+        if hyp:
+            # print(hyp.prob)
+            self.words = hyp.hypstr
 
     def __enter__(self):
         self.register()

@@ -32,14 +32,16 @@ def main():
     # For example:
     engine.config.DECODER_CONFIG.set_int("-vad_postspeech", 30)
 
-    # Process the wave file and save the results.
+    # Process the wave file and print any results.
+    # Note: process_wave_file() is a generator function.
     engine.connect()
-    results = engine.process_wave_file(file_path)
-    for result in results:
+    had_result = False
+    for result in engine.process_wave_file(file_path):
         print(result)
+        had_result = True
 
     # Exit with 1 if there were no results.
-    if not results:
+    if not had_result:
         exit(1)
 
 

@@ -889,7 +889,7 @@ class SphinxEngine(EngineBase):
         :param path: wave file path
         :raises: IOError | OSError | ValueError
         :returns: recognition results
-        :rtype: list
+        :rtype: generator
         """
         if not self._decoder:
             self.connect()
@@ -943,6 +943,11 @@ class SphinxEngine(EngineBase):
 
                 self.process_buffer(data)
 
+                # Get the results from the observer.
+                if obs.words:
+                    yield obs.words
+                    obs.words = ""
+
         # Log warnings if speech start or end weren't detected.
         if not obs.complete:
             self._log.warning("Speech start/end wasn't detected in the wave "
@@ -951,9 +956,6 @@ class SphinxEngine(EngineBase):
                               "should be higher?")
             self._log.warning("Or maybe '-vad_startspeech' or "
                               "'-vad_postspeech' should be lower?")
-
-        # Get the results from the observer.
-        return obs.results
 
     def recognise_forever(self):
         """
