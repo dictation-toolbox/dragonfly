@@ -351,7 +351,7 @@ class SphinxEngine(EngineBase):
                 "%s" % (search_type, ", ".join(unknown_words)))
 
     def _build_grammar_wrapper(self, grammar):
-        return GrammarWrapper(grammar, self)
+        return GrammarWrapper(grammar, self, self._recognition_observer_manager)
 
     def _set_grammar(self, wrapper, activate, partial=False):
         if not wrapper:
@@ -772,6 +772,12 @@ class SphinxEngine(EngineBase):
             else:
                 speech = speech.rstrip()  # remove trailing whitespace.
 
+        # Notify observers if a keyphrase was matched.
+        result = speech if speech in self._keyphrase_functions else ""
+        if result:
+            words = tuple(result.split())
+            self._recognition_observer_manager.notify_recognition(words)
+
         # Call the registered function if there was a match and the function
         # is callable.
         func = self._keyphrase_functions.get(speech, None)
@@ -784,8 +790,6 @@ class SphinxEngine(EngineBase):
                     "keyphrase '%s': %s" % (speech, e)
                 )
 
-        # Return speech if it matched a keyphrase.
-        result = speech if speech in self._keyphrase_functions else ""
         return result
 
     @classmethod
@@ -818,9 +822,7 @@ class SphinxEngine(EngineBase):
         # Check key phrases search first.
         keyphrase = self._process_key_phrases(speech, mimicking)
         if keyphrase:
-            # Keyphrase search matched. Notify observers and return True.
-            words = tuple(keyphrase.split())
-            self._recognition_observer_manager.notify_recognition(words)
+            # Keyphrase search matched.
             return True, keyphrase
 
         # Otherwise do grammar processing.
@@ -869,10 +871,6 @@ class SphinxEngine(EngineBase):
 
             processing_occurred = wrapper.process_words(words_rules)
             if processing_occurred:
-                # Notify observers of the recognition.
-                self._recognition_observer_manager.notify_recognition(
-                    tuple([word for word, _ in words_rules])
-                )
                 break
 
         # Return whether processing occurred and the final speech hypothesis for

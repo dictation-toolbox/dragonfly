@@ -14,13 +14,14 @@ class GrammarWrapper(object):
 
     _log = logging.getLogger("engine")
 
-    def __init__(self, grammar, engine):
+    def __init__(self, grammar, engine, observer_manager):
         """
         :type grammar: Grammar
         :type engine: SphinxEngine
         """
         self.grammar = grammar
         self.engine = engine
+        self._observer_manager = observer_manager
 
         # Compile the grammar into a JSGF grammar and set the language.
         self._jsgf_grammar = engine.compiler.compile_grammar(grammar)
@@ -124,9 +125,16 @@ class GrammarWrapper(object):
             s.initialize_decoding()
             for _ in r.decode(s):
                 if s.finished():
+                    # Notify observers using the manager *before* processing.
+                    self._observer_manager.notify_recognition(
+                        tuple([word for word, _ in words])
+                    )
+
+                    # Process the rule if not in training mode.
                     root = s.build_parse_tree()
                     if not self.engine.training_session_active:
                         r.process_recognition(root)
+
                     return True
 
         self._log.debug("Grammar %s: failed to decode recognition %r."
