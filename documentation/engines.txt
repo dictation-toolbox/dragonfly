@@ -64,3 +64,6 @@ Engine timer classes
 
 .. automodule:: dragonfly.engines.backend_natlink.timer
    :members:
+
+.. automodule:: dragonfly.engines.backend_sphinx.timer
+   :members:
