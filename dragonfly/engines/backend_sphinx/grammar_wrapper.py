@@ -131,10 +131,13 @@ class GrammarWrapper(object):
                     )
 
                     # Process the rule if not in training mode.
-                    root = s.build_parse_tree()
                     if not self.engine.training_session_active:
-                        r.process_recognition(root)
-
+                        try:
+                            root = s.build_parse_tree()
+                            r.process_recognition(root)
+                        except Exception as e:
+                            self._log.exception("Failed to process rule "
+                                                "'%s': %s" % (r.name, e))
                     return True
 
         self._log.debug("Grammar %s: failed to decode recognition %r."

@@ -18,6 +18,8 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+import logging
+
 from six import string_types, text_type, PY2
 
 import dragonfly.grammar.state as state_
@@ -204,6 +206,9 @@ class TextInputEngine(EngineBase):
 
 
 class GrammarWrapper(object):
+
+    _log = logging.getLogger("engine")
+
     def __init__(self, grammar, engine):
         self.grammar = grammar
         self.engine = engine
@@ -218,8 +223,8 @@ class GrammarWrapper(object):
         if not (self.grammar.enabled and self.grammar.active_rules):
             return
 
-        TextInputEngine._log.debug("Grammar %s: received recognition %r."
-                                   % (self.grammar.name, words))
+        self._log.debug("Grammar %s: received recognition %r."
+                        % (self.grammar.name, words))
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
             if func:
@@ -249,11 +254,14 @@ class GrammarWrapper(object):
             s.initialize_decoding()
             for _ in r.decode(s):
                 if s.finished():
-                    root = s.build_parse_tree()
-                    r.process_recognition(root)
+                    try:
+                        root = s.build_parse_tree()
+                        r.process_recognition(root)
+                    except Exception as e:
+                        self._log.exception("Failed to process rule "
+                                            "'%s': %s" % (r.name, e))
                     return True
 
-        TextInputEngine._log.debug("Grammar %s: failed to decode "
-                                   "recognition %r."
-                                   % (self.grammar.name, words))
+        self._log.debug("Grammar %s: failed to decode recognition %r."
+                        % (self.grammar.name, words))
         return False
