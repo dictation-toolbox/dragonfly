@@ -80,7 +80,8 @@ class TextInputEngine(EngineBase):
     # Methods for working with grammars.
 
     def _build_grammar_wrapper(self, grammar):
-        return GrammarWrapper(grammar, self)
+        return GrammarWrapper(grammar, self,
+                              self._recognition_observer_manager)
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar* and return a wrapper. """
@@ -167,10 +168,6 @@ class TextInputEngine(EngineBase):
             wrapper.process_begin(fg_window)
             processing_occurred = wrapper.process_words(words_rules)
             if processing_occurred:
-                # Notify observers of the recognition.
-                self._recognition_observer_manager.notify_recognition(
-                    tuple([word for word, _ in words_rules])
-                )
                 break
 
         # If no processing occurred, then the mimic failed.
@@ -209,9 +206,10 @@ class GrammarWrapper(object):
 
     _log = logging.getLogger("engine")
 
-    def __init__(self, grammar, engine):
+    def __init__(self, grammar, engine, observer_manager):
         self.grammar = grammar
         self.engine = engine
+        self._observer_manager = observer_manager
 
     def process_begin(self, fg_window):
         self.grammar.process_begin(fg_window.executable, fg_window.title,
@@ -254,6 +252,11 @@ class GrammarWrapper(object):
             s.initialize_decoding()
             for _ in r.decode(s):
                 if s.finished():
+                    # Notify observers using the manager *before* processing.
+                    self._observer_manager.notify_recognition(
+                        tuple([word for word, _ in words])
+                    )
+
                     try:
                         root = s.build_parse_tree()
                         r.process_recognition(root)
