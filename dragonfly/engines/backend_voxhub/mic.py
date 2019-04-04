@@ -1,7 +1,7 @@
 import pyaudio
 
 
-def get_available_microphones():
+def list_available_microphones():
     pa = pyaudio.PyAudio()  # prints a lot of junk
 
     print ""
@@ -51,4 +51,4 @@ def setup_microphone(mic, byte_rate, chunk):
 
 
 if __name__ == "__main__":
-    get_available_microphones()
+    list_available_microphones()

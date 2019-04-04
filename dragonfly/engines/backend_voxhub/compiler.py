@@ -40,6 +40,10 @@ class VoxhubCompiler(CompilerBase):
 
     def compile_grammar(self, grammar):
         self._log.debug("%s: Compiling grammar %s." % (self, grammar.name))
+        return True
+
+    def dump_grammar(self, grammar):
+        self._log.debug("%s: Compiling grammar %s." % (self, grammar.name))
 
         compiler = _Compiler()
         for rule in grammar.rules:
@@ -114,8 +118,7 @@ class VoxhubCompiler(CompilerBase):
 
 
 #===========================================================================
-# Internal compiler class which takes care of the binary format
-#  used to specify grammars with Dragon NaturallySpeaking.
+# Internal compiler class which logs the rule structure.
 
 class _Compiler(object):
     def __init__(self):
