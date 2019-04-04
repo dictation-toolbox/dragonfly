@@ -19,7 +19,7 @@
 #
 
 """
-Recognition observer class for the Sphinx engine
+Recognition observer class for the Voxhub engine
 ============================================================================
 
 """
@@ -27,7 +27,7 @@ Recognition observer class for the Sphinx engine
 from ..base import RecObsManagerBase
 
 
-class SphinxRecObsManager(RecObsManagerBase):
+class VoxhubRecObsManager(RecObsManagerBase):
     """
     This class's methods are called by the engine directly, rather than through a
     grammar.

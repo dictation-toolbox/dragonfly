@@ -34,6 +34,7 @@ from .dictation import VoxhubDictationContainer
 from server import connect_to_server
 from multiprocessing import Process, Queue
 from ...grammar.state import State
+from recobs import VoxhubRecObsManager
 from config import *
 import re
 
@@ -56,7 +57,11 @@ class VoxhubEngine(EngineBase):
         self._pause_transcript_processing = False
         # Pre checking of config. Improve config handling later
         self.validate_config()
+
         EngineBase.__init__(self)
+
+        # Recognition observer
+        self._recognition_observer_manager = VoxhubRecObsManager(self)
 
     def __str__(self):
         return "%s()" % self.__class__.__name__
@@ -225,29 +230,14 @@ class VoxhubEngine(EngineBase):
         return wrapper
 
     #-----------------------------------------------------------------------
-    # Recognition observer methods.
-
-    def register_recognition_observer(self, observer):
-        self._recognition_observer_manager.register(observer)
-
-    def unregister_recognition_observer(self, observer):
-        self._recognition_observer_manager.unregister(observer)
-
-    def enable_recognition_observers(self):
-        self._recognition_observer_manager.enable()
-
-    def disable_recognition_observers(self):
-        self._recognition_observer_manager.disable()
-
-
-    #-----------------------------------------------------------------------
     #  Miscellaneous methods.
 
     def mimic(self, words):
-        print "[MIMIC]" + words
+        print "[MIMIC]", words
+        self.process_transcript(words[0])
 
     def speak(self, text):
-        print "[SPEAK]" + text
+        print "[SPEAK]", text
 
     def _get_language(self):
         return "en"  # default to english
