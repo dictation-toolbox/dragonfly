@@ -161,6 +161,7 @@ MORE_KEYS = {
     '>':     "rangle",
     '?':     "question",
     '=':     "equal",
+    ' ':     "space",
 }
 for key in MORE_KEYS:
     value = MORE_KEYS[key]

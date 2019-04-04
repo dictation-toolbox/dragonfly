@@ -172,7 +172,6 @@ if sys.platform.startswith("win"):
             return Typeable(code, modifiers)
 
 
-    global keyboard
     keyboard = Keyboard()
 elif sys.platform.startswith("linux"):
     from . import linux_x11
@@ -210,5 +209,4 @@ elif sys.platform.startswith("linux"):
             modifiers = []
             return Typeable(name, modifiers, name)
 
-    global keyboard
     keyboard = Keyboard()
