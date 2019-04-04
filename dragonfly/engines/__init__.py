@@ -35,7 +35,7 @@ _default_engine = None
 _engines_by_name = {}
 
 
-def get_engine(name=None):
+def get_engine(name=None, **kwargs):
     """
         Get the engine implementation.
 
@@ -46,6 +46,8 @@ def get_engine(name=None):
 
         :param name: optional human-readable name of the engine to return.
         :type name: str
+        :param \\**kwargs: optional keyword arguments passed through to the
+            engine for engine-specific configuration.
         :rtype: EngineBase
         :raises: EngineError
     """
@@ -65,8 +67,8 @@ def get_engine(name=None):
         try:
             from .backend_natlink import is_engine_available
             from .backend_natlink import get_engine as get_specific_engine
-            if is_engine_available():
-                _default_engine = get_specific_engine()
+            if is_engine_available(**kwargs):
+                _default_engine = get_specific_engine(**kwargs)
                 _engines_by_name["natlink"] = _default_engine
                 return _default_engine
         except Exception as e:
@@ -83,8 +85,8 @@ def get_engine(name=None):
         try:
             from .backend_sapi5 import is_engine_available
             from .backend_sapi5 import get_engine as get_specific_engine
-            if is_engine_available(name):
-                _default_engine = get_specific_engine(name)
+            if is_engine_available(name, **kwargs):
+                _default_engine = get_specific_engine(name, **kwargs)
                 _engines_by_name["sapi5"] = _default_engine
                 return _default_engine
         except Exception as e:
@@ -101,8 +103,8 @@ def get_engine(name=None):
         try:
             from .backend_sphinx import is_engine_available
             from .backend_sphinx import get_engine as get_specific_engine
-            if is_engine_available():
-                _default_engine = get_specific_engine()
+            if is_engine_available(**kwargs):
+                _default_engine = get_specific_engine(**kwargs)
                 _engines_by_name["sphinx"] = _default_engine
                 return _default_engine
         except Exception as e:
@@ -122,8 +124,8 @@ def get_engine(name=None):
         try:
             from .backend_text import is_engine_available
             from .backend_text import get_engine as get_specific_engine
-            if is_engine_available():
-                _default_engine = get_specific_engine()
+            if is_engine_available(**kwargs):
+                _default_engine = get_specific_engine(**kwargs)
                 _engines_by_name["text"] = _default_engine
                 return _default_engine
         except Exception as e:

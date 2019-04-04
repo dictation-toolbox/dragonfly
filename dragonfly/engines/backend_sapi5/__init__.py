@@ -49,12 +49,14 @@ _log = logging.getLogger("engine.sapi5")
 _engine = None
 
 
-def is_engine_available(name):
+def is_engine_available(name, **kwargs):
     """
         Check whether SAPI is available.
 
         :param name: optional human-readable name of the engine to return.
         :type name: str
+        :param \\**kwargs: optional keyword arguments passed through to the
+            engine for engine-specific configuration.
     """
     global _engine
     if _engine:
@@ -94,19 +96,27 @@ def is_engine_available(name):
     return True
 
 
-def get_engine(name):
+def get_engine(name=None, **kwargs):
     """
         Retrieve the Sapi5 back-end engine object.
 
         :param name: optional human-readable name of the engine to return.
         :type name: str
+        :param \\**kwargs: optional keyword arguments passed through to the
+            engine for engine-specific configuration.
+        :Keyword Arguments:
+            * **retain_dir** (``str``) -- directory to save audio data:
+                A ``.wav`` file for each utterance, and ``retain.tsv`` file
+                with each row listing (wav filename, wav length in seconds,
+                grammar name, rule name, recognized text) as tab separated
+                values.
     """
     global _engine
     if not _engine:
         from .engine import Sapi5Engine, Sapi5InProcEngine
         # Use the in-process engine by default.
         if not name or name == "sapi5inproc":
-            _engine = Sapi5InProcEngine()
+            _engine = Sapi5InProcEngine(**kwargs)
         else:
-            _engine = Sapi5Engine()
+            _engine = Sapi5Engine(**kwargs)
     return _engine

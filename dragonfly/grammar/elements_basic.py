@@ -539,15 +539,24 @@ class Repetition(Sequence):
            exactly *min* times (i.e. *max = min + 1*)
          - *name* (*str*, default: *None*) --
            the name of this element
+         - *optimize* (*bool*, default: *True*) --
+           whether the engine's compiler should compile the element
+           optimally
 
         For a recognition to match, at least one of the child elements
         must match the recognition.  The first matching child is
         used.  Child elements are searched in the order they are given
         in the *children* constructor argument.
 
+        If the *optimize* argument is set to *True*, the compiler will
+        ignore the *min* and *max* limits to reduce grammar complexity. If
+        the number of repetitions recognized is more than the *max* value,
+        the rule will fail to match.
+
     """
 
-    def __init__(self, child, min=1, max=None, name=None, default=None):
+    def __init__(self, child, min=1, max=None, name=None, default=None,
+                 optimize=True):
         if not isinstance(child, ElementBase):
             raise TypeError("Child of %s object must be an"
                             " ElementBase instance." % self)
@@ -559,6 +568,7 @@ class Repetition(Sequence):
         self._min = min
         if max is None: self._max = min + 1
         else:           self._max = max
+        self._optimize = optimize
 
         optional_length = self._max - self._min - 1
         if optional_length > 0:
@@ -577,15 +587,25 @@ class Repetition(Sequence):
 
         Sequence.__init__(self, children, name=name, default=default)
 
-    min = property(lambda self: self._min,
-                   doc="The minimum number of times that the child element must be"
-                       "recognized; may be 0. (Read-only)")
+    min = property(
+        lambda self: self._min,
+        doc="The minimum number of times that the child element must be "
+        "recognized; may be 0. (Read-only)"
+    )
 
-    max = property(lambda self: self._max,
-                   doc="The maximum number of times that the child element must be"
-                       "recognized; if *None*, the child element must be "
-                       "recognized exactly *min* times (i.e. *max = min + 1*). "
-                       "(Read-only)")
+    max = property(
+        lambda self: self._max,
+        doc="The maximum number of times that the child element must be "
+        "recognized; if *None*, the child element must be "
+        "recognized exactly *min* times (i.e. *max = min + 1*). "
+        "(Read-only)"
+    )
+
+    optimize = property(
+        lambda self: self._optimize,
+        doc="Whether the engine's compiler should compile the element "
+        "optimally. (Read-only)"
+    )
 
     def dependencies(self, memo):
         if self in memo:

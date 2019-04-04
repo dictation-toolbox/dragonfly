@@ -11,6 +11,52 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+0.12.0_
+-------
+
+Added
+~~~~~
+* Add *CONTRIBUTING.rst* file.
+* Add Repetition 'optimize' parameter that should reduce grammar complexity.
+* Add SphinxEngine.default_search_result property.
+* Add SphinxEngine.write_transcript_files method.
+* Add WSR/SAPI5 retain audio support for saving recognition data
+  (thanks `@daanzu`_).
+* Add example *sphinx_wave_transcriber.py* script into *dragonfly/examples*.
+* Allow passing keyword arguments to get_engine() functions
+  (thanks `@daanzu`_).
+
+Changed
+~~~~~~~
+* Change Sphinx and text engines to call notify_recognition() before rule processing.
+* Change Sphinx engine to allow specifying default decoder search options
+  other than "-lm".
+* Change SphinxEngine.process_wave_file() method to yield recognised words.
+* Change the format of the Sphinx engine's saved training data.
+* Disable the Sphinx engine's built-in key phrases if the engine language
+  isn't English.
+* Disable writing Sphinx engine training data to files by default.
+* Erase dragonfly's log file when creating the logging handler to avoid
+  large files.
+* Make all Sphinx engine configuration optional.
+* Replace Sphinx engine's *PYAUDIO_STREAM_KEYWORD_ARGS* config option with 4
+  new options.
+* Simplify Sphinx engine backend code and improve its performance.
+* Update Sphinx engine documentation to reflect the other changes.
+
+Fixed
+~~~~~
+* Add rule processing error handling to the Sphinx and text engines.
+* Fix lots of bugs with the Sphinx engine backend.
+* Fix Sphinx engine's support for exclusive grammars and multiplexing
+  timers.
+* Minimise dropped audio frames when recording with the Sphinx engine.
+
+Removed
+~~~~~~~
+* Remove Sphinx engine's *config.py* file.
+* Remove the Sphinx engine's support for Dictation elements for now.
+* Remove/hide some unnecessary public SphinxEngine methods and properties.
 
 0.11.1_ - 2019-02-22
 --------------------
@@ -286,7 +332,8 @@ This release is the first in the Git version control system.
 
 
 .. Release links.
-.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.11.1...HEAD
+.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.12.0...HEAD
+.. _0.12.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.11.1...0.12.0
 .. _0.11.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.11.0...0.11.1
 .. _0.11.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.10.1...0.11.0
 .. _0.10.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.10.0...0.10.1

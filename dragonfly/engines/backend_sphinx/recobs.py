@@ -29,8 +29,8 @@ from ..base import RecObsManagerBase
 
 class SphinxRecObsManager(RecObsManagerBase):
     """
-    This class's methods are called by the engine directly, rather than through a
-    grammar.
+    This class's methods are called by the engine directly, rather than
+    through a grammar.
     """
     def __init__(self, engine):
         RecObsManagerBase.__init__(self, engine)
@@ -44,9 +44,10 @@ class SphinxRecObsManager(RecObsManagerBase):
 
     def notify_next_rule_part(self, words):
         """
-        Notify observers that the next part of a rule has been spoken. This is for
-        rules involving Dictation elements that must be spoken in sequence.
-        :type words: list
+        Notify observers that the next part of a rule has been spoken.
+
+        This is for rules involving Dictation elements that must be spoken
+        in sequence.
         """
         for observer in self._observers:
             try:
