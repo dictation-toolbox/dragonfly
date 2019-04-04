@@ -38,7 +38,7 @@ def setup_microphone(mic, byte_rate, chunk):
                 input=True,
                 input_device_index=mic,
                 frames_per_buffer=chunk)
-            return stream
+            return (stream, byte_rate)
         except IOError, e:
             if e.errno == -9997 or e.errno == 'Invalid sample rate':
                 new_sample_rate = int(pa.get_device_info_by_index(mic)['defaultSampleRate'])
@@ -47,7 +47,7 @@ def setup_microphone(mic, byte_rate, chunk):
                     continue
             print str(e)
             print "\nCould not open microphone. Please try a different device."
-            return False
+            return (None, None)
 
 
 if __name__ == "__main__":

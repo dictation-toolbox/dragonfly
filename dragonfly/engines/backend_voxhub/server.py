@@ -29,6 +29,7 @@ class MyClient(WebSocketClient):
         self.save_adaptation_state_filename = save_adaptation_state_filename
         self.send_adaptation_state_filename = send_adaptation_state_filename
         self.chunk = chunk
+        self.byterate = byte_rate
         self.audio_gate = audio_gate
         self.queue = queue
 
@@ -36,7 +37,7 @@ class MyClient(WebSocketClient):
         self.send(data, binary=True)
 
     def opened(self):
-        mic_stream = setup_microphone(self.mic, self.byte_rate, self.chunk)
+        (mic_stream, sample_rate) = setup_microphone(self.mic, self.byte_rate, self.chunk)
         if not mic_stream:
             global fatal_error
             fatal_error = True
@@ -45,12 +46,15 @@ class MyClient(WebSocketClient):
         def mic_to_ws():  # uses stream
             try:
                 print "\nLISTENING TO MICROPHONE"
+                last_state = None
                 while True:
-                    data = mic_stream.read(self.chunk)
+                    data = mic_stream.read(self.chunk * sample_rate / self.byterate)
                     if self.audio_gate > 0:
                         rms = audioop.rms(data, 2)
                         if rms < self.audio_gate:
                             data = '\00' * len(data)
+                    if sample_rate != self.byterate:
+                        (data, last_state) = audioop.ratecv(data, 2, 1, sample_rate, self.byterate, last_state)
 
                     self.send_data(data)
             except IOError, e:
