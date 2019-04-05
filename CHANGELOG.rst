@@ -11,6 +11,13 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Fixed
+~~~~~
+* Fix Sphinx engine bug where grammar searches could be overridden.
+
 0.12.0_
 -------
 

@@ -351,7 +351,9 @@ class SphinxEngine(EngineBase):
                 "%s" % (search_type, ", ".join(unknown_words)))
 
     def _build_grammar_wrapper(self, grammar):
-        return GrammarWrapper(grammar, self, self._recognition_observer_manager)
+        return GrammarWrapper(grammar, self,
+                              self._recognition_observer_manager,
+                              len(self._grammar_wrappers))
 
     def _set_grammar(self, wrapper, activate, partial=False):
         if not wrapper:
