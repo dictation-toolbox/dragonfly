@@ -12,7 +12,7 @@ from ws4py.client.threadedclient import WebSocketClient
 from dragonfly.engines.backend_voxhub.config import *
 from dragonfly.engines.backend_voxhub.mic import setup_microphone
 
-reconnect_mode = False
+reconnect_mode = True
 fatal_error = False
 
 
@@ -65,6 +65,12 @@ class MyClient(WebSocketClient):
                 pass
 
             try:
+                mic_stream.stop_stream()
+                mic_stream.close()
+            except:
+                pass
+
+            try:
                 self.close()
             except IOError:
                 pass
@@ -106,16 +112,17 @@ class MyClient(WebSocketClient):
 
 def connect_to_server(queue=None):
     uri = create_connection_uri()
-    print >> sys.stderr, "Connecting to", uri
 
-    ws = MyClient(uri, byte_rate=MISC_CONFIG["byte_rate"], mic=MISC_CONFIG["device"],
-                  show_hypotheses=MISC_CONFIG["hypotheses"],
-                  save_adaptation_state_filename=MISC_CONFIG.get("save_adaptation_state", None),
-                  send_adaptation_state_filename=MISC_CONFIG.get("send_adaptation_state", None),
-                  audio_gate=MISC_CONFIG["audio_gate"], chunk=MISC_CONFIG['chunk'],
-                  queue=queue)
-    ws.connect()
-    ws.run_forever()
+    while True:
+        print >> sys.stderr, "Connecting to", uri
+        ws = MyClient(uri, byte_rate=MISC_CONFIG["byte_rate"], mic=MISC_CONFIG["device"],
+                      show_hypotheses=MISC_CONFIG["hypotheses"],
+                      save_adaptation_state_filename=MISC_CONFIG.get("save_adaptation_state", None),
+                      send_adaptation_state_filename=MISC_CONFIG.get("send_adaptation_state", None),
+                      audio_gate=MISC_CONFIG["audio_gate"], chunk=MISC_CONFIG['chunk'],
+                      queue=queue)
+        ws.connect()
+        ws.run_forever()
 
 
 def create_connection_uri():
