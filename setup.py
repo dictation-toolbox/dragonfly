@@ -48,7 +48,7 @@ setup(
       author           = "Christo Butcher",
       author_email     = "dist.dragonfly@twizzy.biz",
       maintainer       = "Dane Finlay",
-      maintainer_email = "Danesprite@gmail.com",
+      maintainer_email = "Danesprite@posteo.net",
       license          = "LICENSE.txt",
       url              = "https://github.com/dictation-toolbox/dragonfly",
       zip_safe         = False,  # To unzip documentation files.
