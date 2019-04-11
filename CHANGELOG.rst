@@ -14,6 +14,11 @@ commit history and will be placed under headings in this file over time.
 Unreleased_
 -----------
 
+Added
+~~~~~
+* Add modified ContextAction class from `Aenea`_
+  (thanks `@calmofthestorm`_).
+
 Fixed
 ~~~~~
 * Fix Sphinx engine bug where grammar searches could be overridden.
@@ -365,3 +370,5 @@ This release is the first in the Git version control system.
 .. _@daanzu: https://github.com/daanzu
 .. _@Versatilus: https://github.com/Versatilus
 .. _@wolfmanstout: https://github.com/wolfmanstout
+.. _@calmofthestorm: https://github.com/calmofthestorm
+.. _Aenea: https://github.com/dictation-toolbox/aenea

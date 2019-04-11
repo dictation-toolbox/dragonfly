@@ -53,7 +53,7 @@ from .actions           import (ActionBase, DynStrActionBase, ActionError,
                                 Typeable, Keyboard, typeables,
                                 KeyboardInput, MouseInput, HardwareInput,
                                 make_input_array, send_input_array,
-                                RunCommand
+                                RunCommand, ContextAction
                                 )
 
 #---------------------------------------------------------------------------

@@ -1,3 +1,4 @@
+Alex Roper <alex@aroper.net>
 Christo Butcher <t4ngo@twizzy.biz>
 Christopher Schnick <c.schnick@monospark.org>
 Dane Finlay <Danesprite@gmail.com>
