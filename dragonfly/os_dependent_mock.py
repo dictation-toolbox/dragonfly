@@ -32,10 +32,9 @@ def mock_action(*args, **kwargs):
 def mock_dyn_str_action(*args, **kwargs):
     return DynStrActionBase(*args, **kwargs)
 
-Text = mock_dyn_str_action
-Key = mock_dyn_str_action
-Mouse = mock_dyn_str_action
+
 Paste = mock_dyn_str_action
+Mouse = mock_dyn_str_action
 WaitWindow = mock_action
 FocusWindow = mock_action
 StartApp = mock_action
@@ -44,7 +43,6 @@ PlaySound = mock_action
 
 
 class _WindowInfo(object):
-    # TODO Use proxy contexts instead
     executable = ""
     title = ""
     handle = ""
@@ -65,10 +63,6 @@ class HardwareInput(MockBase):
     pass
 
 
-class Keyboard(MockBase):
-    pass
-
-
 class KeyboardInput(MockBase):
     pass
 
@@ -82,12 +76,6 @@ class Monitor(MockBase):
 
 class MouseInput(MockBase):
     pass
-
-
-class Typeable(object):
-    pass
-
-typeables = {}
 
 
 def make_input_array(inputs):

@@ -23,7 +23,8 @@ Text action
 ============================================================================
 
 This section describes the :class:`Text` action object. This type of
-action is used for typing text into the foreground application.
+action is used for typing text into the foreground application.  This works
+on Windows, Mac OS and with X11 (e.g. on Linux).
 
 It differs from the :class:`Key` action in that :class:`Text` is used for
 typing literal text, while :class:`dragonfly.actions.action_key.Key`
@@ -62,18 +63,21 @@ emulation. If you use such applications, add their executable names to the
 ``hardware_apps`` list in the configuration file mentioned above to make
 dragonfly always use hardware emulation for them.
 
+These settings and parameters have no effect on other platforms.
+
 
 Text class reference
 ............................................................................
 
 """
 
+import sys
 
 from six import text_type
 
 from ..engines import get_engine
-from ..windows.clipboard import Clipboard
-from ..windows.window import Window
+from ..util.clipboard import Clipboard
+from ..windows import Window
 from .action_base import ActionError, DynStrActionBase
 from .action_key import Key
 from .keyboard import Keyboard
@@ -195,7 +199,7 @@ class Text(DynStrActionBase):
             else:
                 # Add hardware events.
                 try:
-                    typeable = Keyboard.get_typeable(character)
+                    typeable = self._keyboard.get_typeable(character)
                     hardware_events.extend(typeable.events(self._pause))
                 except ValueError:
                     hardware_error_message = ("Keyboard interface cannot type this"
@@ -206,8 +210,8 @@ class Text(DynStrActionBase):
                 for short in unpack("<" + str(len(byte_stream) // 2) + "H",
                                     byte_stream):
                     try:
-                        typeable = Keyboard.get_typeable(short,
-                                                         is_text=True)
+                        typeable = self._keyboard.get_typeable(short,
+                                                               is_text=True)
                         unicode_events.extend(typeable.events(self._pause * 0.5))
                     except ValueError:
                         unicode_error_message = ("Keyboard interface cannot type "
@@ -255,7 +259,13 @@ class Text(DynStrActionBase):
             events = self._parse_spec(prefix + text + suffix)
 
         # Send keyboard events.
-        if self._use_hardware or require_hardware_emulation():
+        use_hardware_events = (
+            self._use_hardware or require_hardware_emulation() or
+
+            # Always use hardware_events for non-Windows platforms.
+            not sys.platform.startswith("win")
+        )
+        if use_hardware_events:
             error_message = events.hardware_error_message
             keyboard_events = events.hardware_events
         else:

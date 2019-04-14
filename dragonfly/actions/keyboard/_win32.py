@@ -18,69 +18,118 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""This file implements a Win32 keyboard interface using sendinput."""
-
+"""This file implements the Win32 keyboard interface using sendinput."""
 
 import time
-from six import text_type, PY2
-
 import win32con
 
 from ctypes import windll, c_char, c_wchar
-from dragonfly.actions.sendinput import (KeyboardInput, make_input_array,
-                                         send_input_array)
+from six import text_type, PY2
+
+from ._base import BaseKeyboard, Typeable
+from ..sendinput import KeyboardInput, make_input_array, send_input_array
 
 
-class Typeable(object):
-    """Container for keypress events."""
+class Win32KeySymbols(object):
+    """ Key symbols for win32. """
 
-    __slots__ = ("_code", "_modifiers", "_name", "_is_text")
+    # Whitespace and editing keys
+    RETURN = win32con.VK_RETURN
+    TAB = win32con.VK_TAB
+    SPACE = win32con.VK_SPACE
+    BACK = win32con.VK_BACK
+    DELETE = win32con.VK_DELETE
 
-    def __init__(self, code, modifiers=(), name=None, is_text=False):
-        """Set keypress information."""
-        self._code = code
-        self._modifiers = modifiers
-        self._name = name
-        self._is_text = is_text
+    # Main modifier keys
+    SHIFT = win32con.VK_SHIFT
+    CONTROL = win32con.VK_CONTROL
+    ALT = win32con.VK_MENU
 
-    def __str__(self):
-        """Return information useful for debugging."""
-        return ("%s(%s)" % (self.__class__.__name__, self._name) +
-                repr(self.events()))
+    # Right modifier keys
+    RSHIFT = win32con.VK_RSHIFT
+    RCONTROL = win32con.VK_RCONTROL
+    RALT = win32con.VK_RMENU
 
-    def on_events(self, timeout=0):
-        """Return events for pressing this key down."""
-        if self._is_text:
-            events = [(self._code, True, timeout, True)]
-        else:
-            events = [(m, True, 0) for m in self._modifiers]
-            events.append((self._code, True, timeout))
-        return events
+    # Special keys
+    ESCAPE = win32con.VK_ESCAPE
+    INSERT = win32con.VK_INSERT
+    PAUSE = win32con.VK_PAUSE
+    LSUPER = win32con.VK_LWIN
+    RSUPER = win32con.VK_RWIN
+    APPS = win32con.VK_APPS
+    SNAPSHOT = win32con.VK_SNAPSHOT
 
-    def off_events(self, timeout=0):
-        """Return events for releasing this key."""
-        if self._is_text:
-            events = [(self._code, False, timeout, True)]
-        else:
-            events = [(m, False, 0) for m in self._modifiers]
-            events.append((self._code, False, timeout))
-            events.reverse()
-        return events
+    # Lock keys
+    SCROLL_LOCK = win32con.VK_SCROLL
+    NUM_LOCK = win32con.VK_NUMLOCK
+    CAPS_LOCK = win32con.VK_CAPITAL
 
-    def events(self, timeout=0):
-        """Return events for pressing and then releasing this key."""
-        if self._is_text:
-            events = [(self._code, True, timeout, True),
-                      (self._code, False, timeout, True)]
-        else:
-            events = [(self._code, True, 0), (self._code, False, timeout)]
-            for m in self._modifiers[-1::-1]:
-                events.insert(0, (m, True, 0))
-                events.append((m, False, 0))
-        return events
+    # Navigation keys
+    UP = win32con.VK_UP
+    DOWN = win32con.VK_DOWN
+    LEFT = win32con.VK_LEFT
+    RIGHT = win32con.VK_RIGHT
+    PAGE_UP = win32con.VK_PRIOR
+    PAGE_DOWN = win32con.VK_NEXT
+    HOME = win32con.VK_HOME
+    END = win32con.VK_END
+
+    # Number pad keys
+    MULTIPLY = win32con.VK_MULTIPLY
+    ADD = win32con.VK_ADD
+    SEPARATOR = win32con.VK_SEPARATOR
+    SUBTRACT = win32con.VK_SUBTRACT
+    DECIMAL = win32con.VK_DECIMAL
+    DIVIDE = win32con.VK_DIVIDE
+    NUMPAD0 = win32con.VK_NUMPAD0
+    NUMPAD1 = win32con.VK_NUMPAD1
+    NUMPAD2 = win32con.VK_NUMPAD2
+    NUMPAD3 = win32con.VK_NUMPAD3
+    NUMPAD4 = win32con.VK_NUMPAD4
+    NUMPAD5 = win32con.VK_NUMPAD5
+    NUMPAD6 = win32con.VK_NUMPAD6
+    NUMPAD7 = win32con.VK_NUMPAD7
+    NUMPAD8 = win32con.VK_NUMPAD8
+    NUMPAD9 = win32con.VK_NUMPAD9
+
+    # Function keys
+    F1 = win32con.VK_F1
+    F2 = win32con.VK_F2
+    F3 = win32con.VK_F3
+    F4 = win32con.VK_F4
+    F5 = win32con.VK_F5
+    F6 = win32con.VK_F6
+    F7 = win32con.VK_F7
+    F8 = win32con.VK_F8
+    F9 = win32con.VK_F9
+    F10 = win32con.VK_F10
+    F11 = win32con.VK_F11
+    F12 = win32con.VK_F12
+    F13 = win32con.VK_F13
+    F14 = win32con.VK_F14
+    F15 = win32con.VK_F15
+    F16 = win32con.VK_F16
+    F17 = win32con.VK_F17
+    F18 = win32con.VK_F18
+    F19 = win32con.VK_F19
+    F20 = win32con.VK_F20
+    F21 = win32con.VK_F21
+    F22 = win32con.VK_F22
+    F23 = win32con.VK_F23
+    F24 = win32con.VK_F24
+
+    # Multimedia keys
+    VOLUME_UP = win32con.VK_VOLUME_UP
+    VOLUME_DOWN = win32con.VK_VOLUME_DOWN
+    VOLUME_MUTE = win32con.VK_VOLUME_MUTE
+    MEDIA_NEXT_TRACK = win32con.VK_MEDIA_NEXT_TRACK
+    MEDIA_PREV_TRACK = win32con.VK_MEDIA_PREV_TRACK
+    MEDIA_PLAY_PAUSE = win32con.VK_MEDIA_PLAY_PAUSE
+    BROWSER_BACK = win32con.VK_BROWSER_BACK
+    BROWSER_FORWARD = win32con.VK_BROWSER_FORWARD
 
 
-class Keyboard(object):
+class Keyboard(BaseKeyboard):
     """Static class wrapper around SendInput."""
 
     shift_code = win32con.VK_SHIFT
@@ -171,6 +220,3 @@ class Keyboard(object):
             return Typeable(char, is_text=True)
         code, modifiers = cls.get_keycode_and_modifiers(char)
         return Typeable(code, modifiers)
-
-
-keyboard = Keyboard()
