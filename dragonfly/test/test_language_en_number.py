@@ -153,9 +153,9 @@ class Limit352TestCase(ElementTestCase):
 
 
 class LineIntegerTestCase(ElementTestCase):
-    """ Verify integer limits of range up to 352. """
+    """ Verify line integer class working as expected """
     def _build_element(self):
-        from dragonfly.language.en.number       import LineIntegerContent
+        from dragonfly.language.en.line_number       import LineIntegerContent
         return Integer(content=LineIntegerContent, min=0, max=10000)
     input_output = [
                     ("one",                           1),
