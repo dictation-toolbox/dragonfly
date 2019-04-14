@@ -220,7 +220,7 @@ class DarwinKeySymbols(BaseKeySymbols):
     # Multimedia keys.
     VOLUME_UP = virtual_keys.volume_up
     VOLUME_DOWN = virtual_keys.volume_down
-    VOLUME_MUTE = virtual_keys.volume_
+    VOLUME_MUTE = virtual_keys.volume_mute
     MEDIA_NEXT_TRACK = virtual_keys.media_next_track
     MEDIA_PREV_TRACK = virtual_keys.media_prev_track
     MEDIA_PLAY_PAUSE = virtual_keys.media_play_pause
