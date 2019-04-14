@@ -294,11 +294,9 @@ class Key(DynStrActionBase):
         else:
             raise ActionError("Invalid key spec: %s" % spec)
 
-        try:
-            code = typeables[keyname]
-        except KeyError:
+        code = typeables.get(keyname)
+        if code is None:
             raise ActionError("Invalid key name: %r" % keyname)
-
 
         if inner_pause is not None:
             s = inner_pause
