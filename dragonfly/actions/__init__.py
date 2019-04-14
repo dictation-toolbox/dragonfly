@@ -33,10 +33,10 @@ from .keyboard            import Keyboard, Typeable
 from .typeables           import typeables
 from .action_key          import Key
 from .action_text         import Text
+from .action_paste        import Paste
 
 if sys.platform.startswith("win"):
     # Import Windows only classes and functions.
-    from .action_paste        import Paste
     from .action_mouse        import Mouse
     from .action_waitwindow   import WaitWindow
     from .action_focuswindow  import FocusWindow
@@ -46,7 +46,6 @@ if sys.platform.startswith("win"):
                             make_input_array, send_input_array)
 else:
     # Import mocked classes and functions for other platforms.
-    from ..os_dependent_mock import Paste
     from ..os_dependent_mock import Mouse
     from ..os_dependent_mock import WaitWindow
     from ..os_dependent_mock import FocusWindow
