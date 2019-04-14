@@ -18,6 +18,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from .base.integer  import Integer,  IntegerRef, LineIntegerRef
+from .base.integer  import Integer,  IntegerRef, ShortIntegerRef
 from .base.digits   import Digits,   DigitsRef
 from .base.number   import Number,   NumberRef

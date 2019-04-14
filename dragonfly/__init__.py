@@ -68,7 +68,7 @@ from .windows           import Window
 from .windows           import Monitor, monitors
 
 #---------------------------------------------------------------------------
-from .language          import (Integer, IntegerRef, LineIntegerRef,
+from .language          import (Integer, IntegerRef, ShortIntegerRef,
                                 Digits, DigitsRef,
                                 Number, NumberRef)
 

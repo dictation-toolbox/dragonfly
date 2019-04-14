@@ -94,10 +94,10 @@ class IntegerRef(RuleWrap):
         element = Integer(None, min, max)
         RuleWrap.__init__(self, name, element, default=default)
 
-class LineIntegerRef(RuleWrap):
+class ShortIntegerRef(RuleWrap):
 
     def __init__(self, name, min, max, default=None):
-        element = Integer(None, min, max, content=language.LineIntegerContent)
+        element = Integer(None, min, max, content=language.ShortIntegerContent)
         RuleWrap.__init__(self, name, element, default=default)
 
 #---------------------------------------------------------------------------

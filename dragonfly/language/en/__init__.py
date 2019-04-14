@@ -19,7 +19,7 @@
 #
 
 
-from .number      import    IntegerContent, DigitsContent
-from .line_number import    LineIntegerContent
-from .calendar    import   (AbsoluteDate, RelativeDate, Date,
+from .number       import    IntegerContent, DigitsContent
+from .short_number import    ShortIntegerContent
+from .calendar     import   (AbsoluteDate, RelativeDate, Date,
                             MilitaryTime, Time)

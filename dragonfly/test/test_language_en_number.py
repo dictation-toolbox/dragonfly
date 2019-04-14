@@ -152,11 +152,11 @@ class Limit352TestCase(ElementTestCase):
                    ]
 
 
-class LineIntegerTestCase(ElementTestCase):
+class ShortIntegerTestCase(ElementTestCase):
     """ Verify line integer class working as expected """
     def _build_element(self):
-        from dragonfly.language.en.line_number       import LineIntegerContent
-        return Integer(content=LineIntegerContent, min=0, max=10000)
+        from dragonfly.language.en.short_number       import ShortIntegerContent
+        return Integer(content=ShortIntegerContent, min=0, max=10000)
     input_output = [
                     ("one",                           1),
                     ("ten",                           10),

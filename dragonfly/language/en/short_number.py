@@ -57,6 +57,6 @@ int_x100_x999       = MagnitudeIntBuilder(
 
 #---------------------------------------------------------------------------
 
-class LineIntegerContent(IntegerContentBase):
+class ShortIntegerContent(IntegerContentBase):
     builders = [int_0, int_1_9, int_10_19, int_20_99, int_10_99,
                 int_x01_x99, int_x10_x99, int_x000_x099, int_x100_x999]
