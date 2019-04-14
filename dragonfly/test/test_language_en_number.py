@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -62,7 +62,7 @@ class IntegerTestCase(ElementTestCase):
                     ("seventy four hundred",    7400),
                     ("seventy four thousand",  74000),
                     ("two hundred and thirty four thousand five hundred sixty seven", 234567),
-                   ]    
+                   ]
 
 
 class Limit3to14TestCase(ElementTestCase):
@@ -91,7 +91,7 @@ class Limit3to14TestCase(ElementTestCase):
                     ("seventeen",  RecognitionFailure),
                     ("eighteen",   RecognitionFailure),
                     ("nineteen",   RecognitionFailure),
-                   ]    
+                   ]
 
 
 class Limit23to47TestCase(ElementTestCase):
@@ -104,7 +104,7 @@ class Limit23to47TestCase(ElementTestCase):
                     ("twenty three",      23),
                     ("forty six",         46),
                     ("forty seven",       RecognitionFailure),
-                   ]    
+                   ]
 
 
 class Limit230to350TestCase(ElementTestCase):
@@ -122,7 +122,7 @@ class Limit230to350TestCase(ElementTestCase):
                     ("three hundred forty nine",    349),
                     ("three hundred fifty zero",    RecognitionFailure),
                     ("three hundred fifty",         RecognitionFailure),
-                   ]    
+                   ]
 
 
 class Limit351TestCase(ElementTestCase):
@@ -135,7 +135,7 @@ class Limit351TestCase(ElementTestCase):
                     ("three hundred fifty",         350),
                     ("three hundred fifty zero",    RecognitionFailure),
                     ("three hundred fifty one",     RecognitionFailure),
-                   ]    
+                   ]
 
 
 class Limit352TestCase(ElementTestCase):
@@ -149,4 +149,33 @@ class Limit352TestCase(ElementTestCase):
                     ("three hundred fifty zero",    RecognitionFailure),
                     ("three hundred fifty one",     351),
                     ("three hundred fifty two",     RecognitionFailure),
-                   ]    
+                   ]
+
+
+class LineIntegerTestCase(ElementTestCase):
+    """ Verify integer limits of range up to 352. """
+    def _build_element(self):
+        from dragonfly.language.en.number       import LineIntegerContent
+        return Integer(content=LineIntegerContent, min=0, max=10000)
+    input_output = [
+                    ("one",                           1),
+                    ("ten",                           10),
+                    ("twenty three",                  23),
+                    ("two three",                     23),
+                    ("seventy",                       70),
+                    ("seven zero",                    70),
+                    ("hundred",                       100),
+                    ("one oh three",                  103),
+                    ("hundred three",                 103),
+                    ("one twenty seven",              127),
+                    ("one two seven",                 127),
+                    ("one hundred twenty seven",      127),
+                    ("seven hundred",                 700),
+                    ("thousand",                      1000),
+                    ("seventeen hundred",             1700),
+                    ("seventeen hundred fifty three", 1753),
+                    ("seventeen fifty three",         1753),
+                    ("one seven five three",          1753),
+                    ("seventeen five three",          1753),
+                    ("four thousand",                 4000),
+                   ]

@@ -43,7 +43,7 @@ int_x10_x99        = MagnitudeIntBuilder(
 # One thousand fifty
 int_x000_x099       = MagnitudeIntBuilder(
                    factor      = 1000,
-                   spec        = "<multiplier> thousand [<remainder>]",
+                   spec        = "[<multiplier>] thousand [<remainder>]",
                    multipliers = [int_1_9],
                    remainders  = [int_1_9, int_and_10_99]
                   )
