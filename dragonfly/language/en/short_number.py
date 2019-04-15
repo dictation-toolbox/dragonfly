@@ -1,3 +1,44 @@
+
+'''
+ShortIntegerRef
+============================================================================
+
+`ShortIntegerRef` is a modified version of :class:`IntegerRef` which allows for greater flexibility in the way that numbers may be pronounced, allowing for words like "hundred" to be dropped. This may be particularly useful when navigating files by line or page number.
+
+Some examples of allowed pronunciations:
+
+================================     ======
+Pronunciation                        Result
+================================     ======
+one                                   1
+ten                                   10
+twenty three                          23
+two three                             23
+seventy                               70
+seven zero                            70
+hundred                               100
+one oh three                          103
+hundred three                         103
+one twenty seven                      127
+one two seven                         127
+one hundred twenty seven              127
+seven hundred                         700
+thousand                              1000
+seventeen hundred                     1700
+seventeen hundred fifty three         1753
+seventeen fifty three                 1753
+one seven five three                  1753
+seventeen five three                  1753
+four thousand                         4000
+================================     ======
+
+The class works in the same way as `IntegerRef`, by adding the following as an extra.
+
+.. code:: python
+
+   ShortIntegerRef("name", 0, 1000),
+'''
+
 from ..base.integer_internal  import (MapIntBuilder, CollectionIntBuilder,
                                       MagnitudeIntBuilder, IntegerContentBase)
 from .number import int_0, int_1_9, int_10_19, int_20_90_10
