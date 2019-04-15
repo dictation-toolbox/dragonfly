@@ -3,7 +3,7 @@
 ShortIntegerRef
 ============================================================================
 
-`ShortIntegerRef` is a modified version of :class:`IntegerRef` which allows for greater flexibility in the way that numbers may be pronounced, allowing for words like "hundred" to be dropped. This may be particularly useful when navigating files by line or page number.
+:class:`ShortIntegerRef` is a modified version of :class:`IntegerRef` which allows for greater flexibility in the way that numbers may be pronounced, allowing for words like "hundred" to be dropped. This may be particularly useful when navigating files by line or page number.
 
 Some examples of allowed pronunciations:
 
@@ -32,7 +32,7 @@ seventeen five three                  1753
 four thousand                         4000
 ================================     ======
 
-The class works in the same way as `IntegerRef`, by adding the following as an extra.
+The class works in the same way as :class:`IntegerRef`, by adding the following as an extra.
 
 .. code:: python
 
