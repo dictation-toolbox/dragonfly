@@ -31,7 +31,7 @@ the callable will be called.
 Simple usage::
 
     >>> def func(count):
-    ...     print("count:", count)
+    ...     print("count: %d" % count)
     ... 
     >>> action = Function(func)
     >>> action.execute({"count": 2})
@@ -45,8 +45,8 @@ Simple usage::
 Usage with default arguments::
 
     >>> def func(count, flavor):
-    ...     print("count:", count)
-    ...     print("flavor:", flavor)
+    ...     print("count: %d" % count)
+    ...     print("flavor: %s" % flavor)
     ... 
     >>> # The Function object can be given default argument values:
     >>> action = Function(func, flavor="spearmint")
@@ -60,14 +60,31 @@ Usage with default arguments::
     flavor: vanilla
     True
 
+Usage with the ``remap_data`` argument::
+
+    >>> def func(x, y, z):
+    ...     print("x: %d" % x)
+    ...     print("y: %d" % y)
+    ...     print("z: %d" % z)
+    ...
+    >>> # The Function object can optionally be given a second dictionary
+    >>> # argument to use extras with different names. It should be
+    >>> # compatible with the 'defaults' parameter:
+    >>> action = Function(func, dict(n="x", m="y"), z=4)
+    >>> action.execute({"n": 2, "m": 3})
+    x: 2
+    y: 3
+    z: 4
+    True
+
 
 Class reference
 ----------------------------------------------------------------------------
 
 """
 
-from inspect           import getargspec
-from .action_base      import ActionBase, ActionError
+from inspect                            import getargspec
+from dragonfly.actions.action_base      import ActionBase, ActionError
 
 
 #---------------------------------------------------------------------------
@@ -75,11 +92,13 @@ from .action_base      import ActionBase, ActionError
 class Function(ActionBase):
     """ Call a function with extra keyword arguments. """
 
-    def __init__(self, function, **defaults):
+    def __init__(self, function, remap_data=None, **defaults):
         """
             Constructor arguments:
              - *function* (callable) --
                the function to call when this action is executed
+             - *remap_data* (dict, default: None) --
+               optional dict of data keys to function keyword arguments
              - defaults --
                default keyword-values for the arguments with which
                the function will be called
@@ -88,6 +107,7 @@ class Function(ActionBase):
         ActionBase.__init__(self)
         self._function = function
         self._defaults = defaults
+        self._remap_data = remap_data or {}
         self._str = function.__name__
 
         # TODO Use inspect.signature instead; getargspec is deprecated.
@@ -100,6 +120,12 @@ class Function(ActionBase):
         arguments = dict(self._defaults)
         if isinstance(data, dict):
             arguments.update(data)
+
+        # Remap specified names.
+        if arguments and self._remap_data:
+            for old_name, new_name in self._remap_data.items():
+                if old_name in data:
+                    arguments[new_name] = arguments.pop(old_name)
 
         if self._filter_keywords:
             invalid_keywords = set(arguments.keys()) - self._valid_keywords
