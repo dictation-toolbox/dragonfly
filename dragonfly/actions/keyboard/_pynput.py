@@ -125,7 +125,8 @@ class BaseKeySymbols(object):
     NUMPAD9 = KeyCode(char="9")
 
     # Function keys
-    # F13-20 don't work on X11 with pynput due to a bug.
+    # F13-20 don't work on X11 with pynput because they are not usually
+    # part of the keyboard map.
     F1 = virtual_keys.f1
     F2 = virtual_keys.f2
     F3 = virtual_keys.f3
@@ -177,8 +178,9 @@ class X11KeySymbols(BaseKeySymbols):
 
     # Function keys F21-F24.
     # Retrieved from /usr/include/X11/keysymdef.h on Debian 9.
-    # These don't currently work with pynput, but doing this stops some
-    # warnings.
+    # These keys don't work on X11 with pynput because they are not usually
+    # part of the keyboard map. They are set here to avoid some warnings
+    # and because the Windows keyboard supports them.
     F21 = KeyCode.from_vk(0xffd1)
     F22 = KeyCode.from_vk(0xffd2)
     F23 = KeyCode.from_vk(0xffd3)
@@ -257,7 +259,7 @@ class Keyboard(BaseKeyboard):
             # string, e.g. "a", "b", "/", etc, but we don't check if those
             # are valid.
             if isinstance(key, KeyCode) and key.vk == -1:
-                raise ValueError("Unsupported character: %r" % key.char)
+                raise ValueError("Unsupported key: %r" % key.char)
 
             # Press/release the key, catching any errors.
             try:
