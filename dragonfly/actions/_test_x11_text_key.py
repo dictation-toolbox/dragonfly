@@ -52,33 +52,30 @@ def main():
         # Navigation keys
         "up", "down", "left", "right", "pageup", "pagedown", "home", "end",
 
-        # Number pad keys
-        "npmul", "npadd", "npsep", "npsub", "npdec", "npdiv", "np0", "np1",
+        # Number pad keys (except npsep)
+        "npmul", "npadd", "npsub", "npdec", "npdiv", "np0", "np1",
         "np2", "np3", "np4", "np5", "np6", "np7", "np8", "np9",
 
         # Function keys (not including F13-24)
         "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11",
-        "f12",
+        "f11", "f12",
 
         # Multimedia keys (press toggle keys twice)
         "volumeup", "volup", "volumedown", "voldown", "volumemute",
         "volmute", "tracknext", "trackprev", "playpause", "playpause",
         "browserback", "browserforward",
-    ])
 
-    # Add modifiers.
-    keys.extend([
+        # Modifiers.
         "shift:down", "shift:up",
         "ctrl:down", "ctrl:up",
         "alt:down", "alt:up",
         "rshift:down", "rshift:up",
         "rctrl:down", "rctrl:up",
         "ralt:down", "ralt:up",
-        "win:down", "win:up", "rwin:down", "rwin:up"
-    ])
+        "win:down", "win:up", "win:down", "win:up",
+        "rwin:down", "rwin:up", "rwin:down", "rwin:up",
 
-    # Add some common key combinations.
-    keys.extend([
+        # Some common key combinations.
         "s-insert",
         "c-left",
         "c-home",
@@ -99,8 +96,9 @@ def main():
                                 stdin=subprocess.PIPE)
         def print_key_events():
             for line in iter(proc.stdout.readline, b''):
+                line = line.decode()
                 if "keysym" in line:
-                    print(line, end='')
+                    print(line.strip())
 
         t = threading.Thread(target=print_key_events)
         t.setDaemon(True)  # make this thread terminate with the main thread
