@@ -8,6 +8,5 @@ Contents:
    config
    ccr
    cli
-   language
    windows
    accessibility

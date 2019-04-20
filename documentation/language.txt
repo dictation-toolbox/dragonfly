@@ -1,5 +1,5 @@
 
-Language Support
+Language Support & Sub-package
 ============================================================================
 
 Dragonfly supports multiple spoken languages for its :class:`Integer`,
@@ -26,5 +26,9 @@ and the supported languages for Windows Speech are listed on
 
 The Pocket Sphinx engine documentation has a `section on language support <https://dragonfly2.readthedocs.io/en/latest/sphinx_engine.html?highlight=language#spoken-language-support>`_.
 
+Language classes reference
+----------------------------------------------------------------------------
+
 .. automodule:: dragonfly.language.en.short_number
    :members:
+
