@@ -83,8 +83,9 @@ from .typeables import typeables
 
 UNICODE_KEYBOARD = False
 HARDWARE_APPS = [
-            "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
-        ]
+    "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
+]
+PAUSE_DEFAULT = 0.005
 
 
 def load_configuration():
@@ -98,6 +99,7 @@ def load_configuration():
 
     global UNICODE_KEYBOARD
     global HARDWARE_APPS
+    global PAUSE_DEFAULT
 
     home = os.path.expanduser("~")
     config_folder = os.path.join(home, ".dragonfly2-speech")
@@ -112,6 +114,7 @@ def load_configuration():
             f.write(u'[Text]\n')
             f.write(u'hardware_apps = %s\n' % "|".join(HARDWARE_APPS))
             f.write(u'unicode_keyboard = %s\n' % UNICODE_KEYBOARD)
+            f.write(u'pause_default = %f\n' % PAUSE_DEFAULT)
 
     parser = configparser.ConfigParser()
     parser.read(config_path)
@@ -119,7 +122,8 @@ def load_configuration():
         HARDWARE_APPS = parser.get("Text", "hardware_apps").lower().split("|")
     if parser.has_option("Text", "unicode_keyboard"):
         UNICODE_KEYBOARD = parser.getboolean("Text", "unicode_keyboard")
-
+    if parser.has_option("Text", "pause_default"):
+        PAUSE_DEFAULT = parser.getfloat("Text", "pause_default")
 
 load_configuration()
 
@@ -166,16 +170,21 @@ class Text(DynStrActionBase):
             self.unicode_events = unicode_events
             self.unicode_error_message = unicode_error_message
 
-    _pause_default = 0.02
     _keyboard = Keyboard()
+    _pause_default = PAUSE_DEFAULT
     _specials = {
                  "\n": typeables["enter"],
                  "\t": typeables["tab"],
                 }
 
-    def __init__(self, spec=None, static=False, pause=_pause_default,
+    def __init__(self, spec=None, static=False, pause=None,
                  autofmt=False, use_hardware=False):
-        self._pause = pause
+        # Use the default pause time if pause in None.
+        # Use the class's _pause_default value so that Text sub-classes can
+        # easily override it.
+        self._pause = self._pause_default if pause is None else pause
+
+        # Set other members and call the super constructor.
         self._autofmt = autofmt
         self._use_hardware = use_hardware
         DynStrActionBase.__init__(self, spec=spec, static=static)
