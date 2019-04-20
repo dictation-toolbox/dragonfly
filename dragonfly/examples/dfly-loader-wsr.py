@@ -10,7 +10,7 @@ Command-module loader for WSR
 
 This script can be used to look Dragonfly command-modules 
 for use with Window Speech Recognition.  It scans the 
-directory it's in and loads any ``*.py`` it finds.
+directory it's in and loads any ``_*.py`` it finds.
 
 """
 
