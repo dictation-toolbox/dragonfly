@@ -16,11 +16,26 @@ Unreleased_
 
 Added
 ~~~~~
+* Add and document optional "remap_data" parameter to Function action to
+  allow using extras with different names than the function argument names.
 * Add modified ContextAction class from `Aenea`_
   (thanks `@calmofthestorm`_).
+* Add more flexible ShortIntegerRef class (thanks `@mrob95`_).
+
+Changed
+~~~~~~~
+* Allow saying "oh" as well as "zero" for IntegerRefs.
+* Change the Sphinx engine to disallow multiple grammars with the same name.
+* Change the Text action's default pause value to 0.005 seconds & make it
+  configurable.
+* Rename *Language Support* doc page to *Language Support & Sub-package*.
+* Rename 3 example command modules to start with underscores.
+* Update some documentation to mention that dragonfly's module loaders will
+  load from files matching "_\*.py" rather than "\*.py".
 
 Fixed
 ~~~~~
+* Allow Text sub-classes to override the '_pause_default' attribute.
 * Fix Sphinx engine bug where grammar searches could be overridden.
 
 0.12.0_
@@ -371,4 +386,5 @@ This release is the first in the Git version control system.
 .. _@Versatilus: https://github.com/Versatilus
 .. _@wolfmanstout: https://github.com/wolfmanstout
 .. _@calmofthestorm: https://github.com/calmofthestorm
+.. _@mrob95: https://github.com/mrob95
 .. _Aenea: https://github.com/dictation-toolbox/aenea
