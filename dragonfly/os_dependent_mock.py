@@ -20,26 +20,32 @@ Mock module to allow dragonfly to be imported on linux locally.
 Heavily modified to allow more dragonfly functionality to work
 regardless of operating system.
 """
+
 from .actions import ActionBase, DynStrActionBase
 
 
-# Mock ActionBase and DynStrActionBase classes
-
-def mock_action(*args, **kwargs):
-    return ActionBase()
-
-
-def mock_dyn_str_action(*args, **kwargs):
-    return DynStrActionBase(*args, **kwargs)
+class MockBase(object):
+    def __init__(self, *args, **kwargs):
+        pass
 
 
-Paste = mock_dyn_str_action
-Mouse = mock_dyn_str_action
-WaitWindow = mock_action
-FocusWindow = mock_action
-StartApp = mock_action
-BringApp = mock_action
-PlaySound = mock_action
+class MockAction(ActionBase):
+    """ Mock class for dragonfly actions. """
+    def __init__(self, *args, **kwargs):
+        ActionBase.__init__(self)
+
+
+class Mouse(DynStrActionBase):
+    """ Mock Mouse action class. """
+    def __init__(self, spec=None, static=False):
+        DynStrActionBase.__init__(self, spec, static)
+
+
+WaitWindow = MockAction
+FocusWindow = MockAction
+StartApp = MockAction
+BringApp = MockAction
+PlaySound = MockAction
 
 
 class _WindowInfo(object):
@@ -52,11 +58,6 @@ class Window(object):
     @staticmethod
     def get_foreground():
         return _WindowInfo
-
-
-class MockBase(object):
-    def __init__(self, *args, **kwargs):
-        pass
 
 
 class HardwareInput(MockBase):
