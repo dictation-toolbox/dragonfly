@@ -60,28 +60,8 @@ class Window(object):
         return _WindowInfo
 
 
-class HardwareInput(MockBase):
-    pass
-
-
-class KeyboardInput(MockBase):
-    pass
-
-
 monitors = []
 
 
 class Monitor(MockBase):
-    pass
-
-
-class MouseInput(MockBase):
-    pass
-
-
-def make_input_array(inputs):
-    return inputs
-
-
-def send_input_array(input_array):
     pass

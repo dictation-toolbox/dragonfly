@@ -18,6 +18,8 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+import sys
+
 #---------------------------------------------------------------------------
 from .config            import Config, Section, Item
 from .error             import DragonflyError
@@ -50,11 +52,12 @@ from .actions           import (ActionBase, DynStrActionBase, ActionError,
                                 Repeat, Key, Text, Mouse, Paste, Pause,
                                 Mimic, Playback, WaitWindow, FocusWindow,
                                 Function, StartApp, BringApp, PlaySound,
-                                Typeable, Keyboard, typeables,
-                                KeyboardInput, MouseInput, HardwareInput,
-                                make_input_array, send_input_array,
-                                RunCommand, ContextAction
-                                )
+                                Typeable, Keyboard, typeables, RunCommand,
+                                ContextAction)
+
+if sys.platform.startswith("win"):
+    from .actions       import (KeyboardInput, MouseInput, HardwareInput,
+                                make_input_array, send_input_array)
 
 #---------------------------------------------------------------------------
 
