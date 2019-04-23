@@ -20,14 +20,14 @@
 
 import sys
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 from .config            import Config, Section, Item
-from .error             import DragonflyError
+from .error             import DragonflyError, GrammarError
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 from .engines           import get_engine, EngineError, MimicFailure
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 from .grammar.grammar_base       import Grammar
 from .grammar.grammar_connection import ConnectionGrammar
 from .grammar.rule_base          import Rule
@@ -43,10 +43,7 @@ from .grammar.list      import ListBase, List, DictList
 from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
                                 PlaybackHistory)
 
-#from .grammar.number    import (Integer, IntegerRef, Digits, DigitsRef,
-#                                Number, NumberRef)
-
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 from .actions           import (ActionBase, DynStrActionBase, ActionError,
                                 Repeat, Key, Text, Mouse, Paste, Pause,
@@ -59,23 +56,22 @@ if sys.platform.startswith("win"):
     from .actions       import (KeyboardInput, MouseInput, HardwareInput,
                                 make_input_array, send_input_array)
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 from .util              import Clipboard
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 from .windows.rectangle import Rectangle, unit
 from .windows.point     import Point
-from .windows           import Window
-from .windows           import Monitor, monitors
+from .windows           import Window, Monitor, monitors
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 from .language          import (Integer, IntegerRef, ShortIntegerRef,
                                 Digits, DigitsRef,
                                 Number, NumberRef)
 
-#---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 from .accessibility     import (CursorPosition, TextQuery,
                                 get_accessibility_controller,
                                 get_stopping_accessibility_controller)
