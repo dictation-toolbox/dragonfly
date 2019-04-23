@@ -69,6 +69,8 @@ class Clipboard(BaseClipboard):
 
     @classmethod
     def set_system_text(cls, content):
+        if not content:
+            content = ""
         pyperclip.copy(content)
 
     @classmethod

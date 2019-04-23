@@ -26,8 +26,8 @@ Key action
 
 This section describes the :class:`Key` action object.  This 
 type of action is used for sending keystrokes to the foreground 
-application.  Examples of how to use this class are given in
-:ref:`RefKeySpecExamples`.
+application.  This works on Windows, Mac OS and with X11 (e.g. on Linux).
+Examples of how to use this class are given in :ref:`RefKeySpecExamples`.
 
 
 .. _RefKeySpec:
@@ -206,8 +206,10 @@ class Key(DynStrActionBase):
 
         This class emulates keyboard activity by sending keystrokes to the 
         foreground application.  It does this using Dragonfly's keyboard 
-        interface implemented in the :mod:`keyboard` and :mod:`sendinput` 
-        modules.  These use the ``sendinput()`` function of the Win32 API.
+        interface for the current platform.  The implementation for Windows
+        uses the ``sendinput()`` Win32 API function.  The implementations
+        for X11 and Mac OS use
+        `pynput <https://pynput.readthedocs.io/en/latest/>`__.
 
     """
 
@@ -292,11 +294,9 @@ class Key(DynStrActionBase):
         else:
             raise ActionError("Invalid key spec: %s" % spec)
 
-        try:
-            code = typeables[keyname]
-        except KeyError:
+        code = typeables.get(keyname)
+        if code is None:
             raise ActionError("Invalid key name: %r" % keyname)
-
 
         if inner_pause is not None:
             s = inner_pause
