@@ -32,14 +32,15 @@ _logger = logging.getLogger("keyboard")
 # TODO Implement classes for Wayland (XDG_SESSION_TYPE == "wayland").
 
 # Import the Keyboard, KeySymbols and Typeable classes for the current
-# platform.
-if sys.platform.startswith("win"):
+# platform. Always use the base classes for building documentation.
+doc_build = bool(os.environ.get("SPHINX_BUILD_RUNNING"))
+if sys.platform.startswith("win") and not doc_build:
     # Import classes for Windows.
     from ._win32 import Keyboard, Typeable, Win32KeySymbols as KeySymbols
-elif sys.platform == "darwin":
+elif sys.platform == "darwin" and not doc_build:
     # Import classes for Mac OS.
     from ._pynput import Keyboard, Typeable, DarwinKeySymbols as KeySymbols
-elif os.environ.get("XDG_SESSION_TYPE") == "x11":
+elif os.environ.get("XDG_SESSION_TYPE") == "x11" and not doc_build:
     # Import classes for X11 (typically used on Linux systems).
     # The XDG_SESSION_TYPE environment variable may not be set in some
     # circumstances, in which case it can be set manually in ~/.profile.
@@ -51,8 +52,9 @@ else:
     # Warn that no keyboard implementation is available.
     # Don't raise an error because this will break continuous integration
     # tests. Most of dragonfly can still be used anyway.
-    _logger.warning("There is no keyboard implementation for this "
-                    "platform!")
+    if not doc_build:
+        _logger.warning("There is no keyboard implementation for this "
+                        "platform!")
 
 # Initialize a Keyboard instance.
 keyboard = Keyboard()
