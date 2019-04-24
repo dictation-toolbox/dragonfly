@@ -18,6 +18,7 @@ Added
 ~~~~~
 * Add and document optional "remap_data" parameter to Function action to
   allow using extras with different names than the function argument names.
+* Add Key, Text and Paste action support for X11 and Mac OS using `pynput`_.
 * Add modified ContextAction class from `Aenea`_
   (thanks `@calmofthestorm`_).
 * Add more flexible ShortIntegerRef class (thanks `@mrob95`_).
@@ -30,6 +31,8 @@ Changed
   configurable.
 * Rename *Language Support* doc page to *Language Support & Sub-package*.
 * Rename 3 example command modules to start with underscores.
+* Stop mocking Windows-only sendinput classes & functions on other
+  platforms.
 * Update some documentation to mention that dragonfly's module loaders will
   load from files matching "_\*.py" rather than "\*.py".
 
@@ -37,9 +40,10 @@ Fixed
 ~~~~~
 * Allow Text sub-classes to override the '_pause_default' attribute.
 * Fix Sphinx engine bug where grammar searches could be overridden.
+* Fix some issues with dragonfly's mocked actions.
 
-0.12.0_
--------
+0.12.0_ - 2019-04-04
+--------------------
 
 Added
 ~~~~~
@@ -388,3 +392,4 @@ This release is the first in the Git version control system.
 .. _@calmofthestorm: https://github.com/calmofthestorm
 .. _@mrob95: https://github.com/mrob95
 .. _Aenea: https://github.com/dictation-toolbox/aenea
+.. _pynput: https://github.com/moses-palmer/pynput
