@@ -20,7 +20,6 @@
 
 import sys
 
-# OS agnostic imports
 from .rectangle import Rectangle, unit
 from .point     import Point
 

@@ -11,8 +11,39 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
-0.12.0_
--------
+0.13.0_ - 2019-04-24
+--------------------
+
+Added
+~~~~~
+* Add and document optional "remap_data" parameter to Function action to
+  allow using extras with different names than the function argument names.
+* Add Key, Text and Paste action support for X11 and Mac OS using `pynput`_.
+* Add modified ContextAction class from `Aenea`_
+  (thanks `@calmofthestorm`_).
+* Add more flexible ShortIntegerRef class (thanks `@mrob95`_).
+
+Changed
+~~~~~~~
+* Allow saying "oh" as well as "zero" for IntegerRefs.
+* Change the Sphinx engine to disallow multiple grammars with the same name.
+* Change the Text action's default pause value to 0.005 seconds & make it
+  configurable.
+* Rename *Language Support* doc page to *Language Support & Sub-package*.
+* Rename 3 example command modules to start with underscores.
+* Stop mocking Windows-only sendinput classes & functions on other
+  platforms.
+* Update some documentation to mention that dragonfly's module loaders will
+  load from files matching "_\*.py" rather than "\*.py".
+
+Fixed
+~~~~~
+* Allow Text sub-classes to override the '_pause_default' attribute.
+* Fix Sphinx engine bug where grammar searches could be overridden.
+* Fix some issues with dragonfly's mocked actions.
+
+0.12.0_ - 2019-04-04
+--------------------
 
 Added
 ~~~~~
@@ -332,7 +363,8 @@ This release is the first in the Git version control system.
 
 
 .. Release links.
-.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.12.0...HEAD
+.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.13.0...HEAD
+.. _0.13.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.12.0...0.13.0
 .. _0.12.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.11.1...0.12.0
 .. _0.11.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.11.0...0.11.1
 .. _0.11.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.10.1...0.11.0
@@ -358,3 +390,7 @@ This release is the first in the Git version control system.
 .. _@daanzu: https://github.com/daanzu
 .. _@Versatilus: https://github.com/Versatilus
 .. _@wolfmanstout: https://github.com/wolfmanstout
+.. _@calmofthestorm: https://github.com/calmofthestorm
+.. _@mrob95: https://github.com/mrob95
+.. _Aenea: https://github.com/dictation-toolbox/aenea
+.. _pynput: https://github.com/moses-palmer/pynput

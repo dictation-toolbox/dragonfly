@@ -48,7 +48,7 @@ setup(
       author           = "Christo Butcher",
       author_email     = "dist.dragonfly@twizzy.biz",
       maintainer       = "Dane Finlay",
-      maintainer_email = "Danesprite@gmail.com",
+      maintainer_email = "Danesprite@posteo.net",
       license          = "LICENSE.txt",
       url              = "https://github.com/dictation-toolbox/dragonfly",
       zip_safe         = False,  # To unzip documentation files.
@@ -62,6 +62,7 @@ setup(
                         "setuptools >= 0.6c7",
                         "comtypes;platform_system=='Windows'",
                         "pywin32;platform_system=='Windows'",
+                        "pynput >= 1.4.2;platform_system!='Windows'",
                         "six",
                         "pyperclip >= 1.7.0",
                         "enum34;python_version<'3.4'",

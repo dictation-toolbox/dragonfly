@@ -2,11 +2,18 @@
 #
 
 import sys
+import os
 import os.path
 import re
 
 directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, directory)
+
+#---------------------------------------------------------------------------
+# Set an environment variable so that dragonfly can check if a sphinx build
+# is running.
+
+os.environ["SPHINX_BUILD_RUNNING"] = "1"
 
 
 #---------------------------------------------------------------------------

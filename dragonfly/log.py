@@ -65,6 +65,8 @@ default_levels = {
                   "monitor.init":         (_warning, _info),
                   "dfly.test":            (_debug, _debug),
                   "accessibility":        (_info, _info),
+                  "keyboard":             (_warning, _warning),
+                  "typeables":            (_warning, _warning),
                  }
 
 

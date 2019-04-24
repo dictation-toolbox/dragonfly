@@ -93,11 +93,13 @@ If you would like to use Dragonfly command-modules with WSR,
 then you must run a *loader* program which will load and manage 
 the command-modules.  A simple *loader* is available in the 
 ``dragonfly/examples/dfly-loader-wsr.py`` file.  When run, it 
-will scan the directory it's in for other ``*.py`` files and try 
-to load them as command-modules.
+will scan the directory it's in for files beginning with ``_`` and ending
+with ``.py``, then try to load them as command-modules.
 
 Installation for CMU Pocket Sphinx
 ----------------------------------------------------------------------------
 
 Please see the :ref:`Pocket Sphinx engine page <RefSphinxEngine>` for
-installation and usage information.
+installation and usage information. There is a *loader* program for
+the Sphinx engine available in the
+``dragonfly/examples/sphinx_module_loader.py.py`` file.

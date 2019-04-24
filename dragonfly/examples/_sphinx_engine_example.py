@@ -89,7 +89,7 @@ class ExampleRule(MappingRule):
     ]
 
 
-grammar = Grammar("test", engine=engine)
+grammar = Grammar("Sphinx engine example", engine=engine)
 grammar.add_rule(ExampleRule())
 grammar.load()
 

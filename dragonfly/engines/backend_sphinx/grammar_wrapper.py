@@ -22,6 +22,7 @@ class GrammarWrapper(object):
         self.grammar = grammar
         self.engine = engine
         self._observer_manager = observer_manager
+        self.set_search = True
 
         # Compile the grammar into a JSGF grammar and set the language.
         self._jsgf_grammar = engine.compiler.compile_grammar(grammar)
@@ -31,18 +32,34 @@ class GrammarWrapper(object):
         return self.engine.compiler.get_reference_name(name)
 
     def enable_rule(self, name):
-        self._jsgf_grammar.enable_rule(self._get_reference_name(name))
+        ref_name = self._get_reference_name(name)
+        jsgf_rule = self._jsgf_grammar.get_rule_from_name(ref_name)
+
+        # Only enable the rule and set the flag if the rule is disabled.
+        if not jsgf_rule.active:
+            jsgf_rule.enable()
+            self.set_search = True
 
     def disable_rule(self, name):
-        self._jsgf_grammar.disable_rule(self._get_reference_name(name))
+        ref_name = self._get_reference_name(name)
+        jsgf_rule = self._jsgf_grammar.get_rule_from_name(ref_name)
+
+        # Only disable the rule and set the flag if the rule is enabled.
+        if jsgf_rule.active:
+            jsgf_rule.disable()
+            self.set_search = True
 
     def update_list(self, lst):
-        # Remove the old list, recompile the list again and add it to the
-        # grammar.
+        # Recompile the list again.
         name = self._get_reference_name(lst.name)
-        self._jsgf_grammar.remove_rule(name, ignore_dependent=True)
+        old_rule = self._jsgf_grammar.get_rule_from_name(name)
         new_rule = self.engine.compiler.compile_list(lst)
-        self._jsgf_grammar.add_rule(new_rule)
+
+        # Only replace the old rule if the list has changed.
+        if old_rule != new_rule:
+            self._jsgf_grammar.remove_rule(old_rule, ignore_dependent=True)
+            self._jsgf_grammar.add_rule(new_rule)
+            self.set_search = True
 
     def compile_jsgf(self):
         return self._jsgf_grammar.compile_as_root_grammar()

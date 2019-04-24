@@ -35,8 +35,10 @@ with your grammar modules and run it using::
   python sphinx_module_loader.py
 
 
-This is the equivalent to the 'core' directory that NatLink uses to load
-grammar modules.
+This file is the equivalent to the 'core' directory that NatLink uses to
+load grammar modules. When run, it will scan the directory it's in for files
+beginning with ``_`` and ending with ``.py``, then try to load them as
+command-modules.
 
 
 Cross-platform Engine

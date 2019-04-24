@@ -6,9 +6,8 @@ Contents:
 
 .. toctree::
    accessibility
+   config
    ccr
    cli
-   config
-   language
    rpc
    windows
