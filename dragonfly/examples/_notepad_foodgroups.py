@@ -1,4 +1,4 @@
-﻿#
+#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
@@ -23,7 +23,7 @@
 
     It shows how to use Dragonfly's Grammar, AppContext, and CompoundRule
     classes.  This module can be activated in the same way as other
-    Natlink macros by placing it in the My Documents\Natlink folder.
+    Natlink macros by placing it in the "NatLink/MacroSystem" folder.
 
 """
 

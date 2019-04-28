@@ -1,4 +1,4 @@
-﻿"""
+"""
 Command-module loader for CMU Pocket Sphinx.
 
 This script is based on 'dfly-loader-wsr.py' written by Christo Butcher and
