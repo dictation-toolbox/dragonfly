@@ -8,16 +8,19 @@ Mimic, etc.
 
 from dragonfly import (Dictation, Function, Grammar, IntegerRef, List,
                        ListRef, MappingRule, RecognitionObserver, Mimic,
-                       Repetition, RuleRef, get_engine, Text)
+                       Repetition, get_engine, Text)
 
 
-engine = get_engine("sphinx")
+if __name__ == '__main__':
+    # If this file is being run, not imported, then use the sphinx engine.
+    sphinx_engine = get_engine("sphinx")
 
 
 def disconnect():
     # You shouldn't really run this module in other engines because it uses
     # sphinx-specific engine methods.
     print("Disconnecting engine (only for sphinx)")
+    engine = get_engine()
     if engine.name == "sphinx":
         engine.disconnect()
 
@@ -40,21 +43,16 @@ def update_list():
 
 
 def write_transcripts():
-    engine.write_transcript_files(
-        "training.fileids", "training.transcription"
-    )
+    engine = get_engine()
+    if engine.name == "sphinx":
+        engine.write_transcript_files(
+            "training.fileids", "training.transcription"
+        )
 
 
-# Define a rule for typing numbers.
-numbers_rule = MappingRule(
-    name="numbers", mapping={"<n>": Text("%(n)d")},
-    exported=False, extras=[IntegerRef("n", 1, 20)]
-)
-
-# Define a function for executing the rule's actions.
+# Define a function for typing multiple numbers.
 def type_numbers(numbers):
-    for n in numbers:
-        n.execute()
+    Text("".join(map(str, numbers))).execute()
 
 
 class ExampleRule(MappingRule):
@@ -62,14 +60,14 @@ class ExampleRule(MappingRule):
         # Recognise 'hello' followed by arbitrary dictation.
         # This mapping cannot be matched using Pocket Sphinx because the
         # engine's support for dictation has been temporarily disabled.
-        "hello <dictation>": Function(lambda dictation: print_(dictation)),
+        "hello <dictation>": Function(print_, dict(dictation="x")),
 
         # You still can use Mimic or engine.mimic() to match dictation.
         "say hello world": Mimic("hello", "WORLD"),
 
         # Update and recognise from a dragonfly list.
         "update list": Function(update_list),
-        "<lst>": Function(lambda lst: print_(lst)),
+        "<lst>": Function(print_, dict(lst="x")),
 
         # Command to type numbers, e.g. 'type one two three'.
         "type <numbers>": Function(type_numbers),
@@ -84,12 +82,12 @@ class ExampleRule(MappingRule):
     extras = [
         Dictation("dictation"),
         ListRef("lst", lst),
-        Repetition(RuleRef(rule=numbers_rule), min=1, max=16,
+        Repetition(IntegerRef("n", 1, 20), min=1, max=16,
                    name="numbers"),
     ]
 
 
-grammar = Grammar("Sphinx engine example", engine=engine)
+grammar = Grammar("Sphinx engine example")
 grammar.add_rule(ExampleRule())
 grammar.load()
 
@@ -113,6 +111,6 @@ if __name__ == '__main__':
 
     # Start engine's main recognition loop
     try:
-        engine.recognise_forever()
+        sphinx_engine.recognise_forever()
     except KeyboardInterrupt:
         pass

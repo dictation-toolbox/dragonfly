@@ -34,7 +34,7 @@ from dragonfly import (Grammar, AppContext, CompoundRule, Choice, Dictation)
 # Create this module's grammar and the context under which it'll be active.
 
 grammar_context = AppContext(executable="notepad")
-grammar = Grammar("notepad_example", context=grammar_context)
+grammar = Grammar("notepad_example_2", context=grammar_context)
 
 
 #---------------------------------------------------------------------------
