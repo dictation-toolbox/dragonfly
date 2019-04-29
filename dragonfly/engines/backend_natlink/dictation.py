@@ -32,6 +32,8 @@ dictation formatting for the Natlink and Dragon NaturallySpeaking engine.
 #  not available and the dictation container implemented here
 #  cannot be used.  However, we don't raise an exception because
 #  this file should still be importable for documentation purposes.
+import locale
+
 from six import text_type, PY2
 
 try:
@@ -39,7 +41,6 @@ try:
 except ImportError:
     natlink = None
 
-import logging
 from ..base import DictationContainerBase
 from .dictation_format import WordFormatter
 
@@ -71,6 +72,6 @@ class NatlinkDictationContainer(DictationContainerBase):
 
     def __str__(self):
         if PY2:
-            return self.__unicode__().encode("windows-1252")
+            return self.__unicode__().encode(locale.getpreferredencoding())
         else:
             return self.__unicode__()

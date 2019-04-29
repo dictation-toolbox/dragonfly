@@ -37,6 +37,10 @@ retrieved using :attr:`~DictationContainerBase.words`.
 #---------------------------------------------------------------------------
 # Dictation base class -- base class for SR engine-specific containers
 #  of dictated words.
+import locale
+
+from six import PY2
+
 
 class DictationContainerBase(object):
     """
@@ -76,7 +80,10 @@ class DictationContainerBase(object):
     def __repr__(self):
         message = u"%s(%s)" % (self.__class__.__name__,
                                u", ".join(self._words))
-        return message.encode("windows-1252")
+        if PY2:
+            return message.encode(locale.getpreferredencoding())
+        else:
+            return message
 
     @property
     def words(self):

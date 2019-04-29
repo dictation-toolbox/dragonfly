@@ -32,6 +32,7 @@ on a dictation container object. A tuple of the raw  spoken words can be
 retrieved using :attr:`~DictationContainerBase.words`.
 
 """
+import locale
 
 from six import PY2
 
@@ -58,6 +59,6 @@ class TextDictationContainer(DictationContainerBase):
         message = u"%s(%s)" % (self.__class__.__name__,
                                u", ".join(self._words))
         if PY2:
-            return message.encode("utf-8")
+            return message.encode(locale.getpreferredencoding())
         else:
             return message
