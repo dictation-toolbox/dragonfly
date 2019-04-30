@@ -71,21 +71,23 @@ class Monitor(object):
         # Update the list with any new or changed monitors.
         for h1, _, rectangle in updated_monitors:
             handle = h1.handle
-            x1, x2, dx, dy = rectangle
+            top_left_x, top_left_y, bottom_right_x, bottom_right_y = rectangle
+            dx = bottom_right_x - top_left_x
+            dy = bottom_right_y - top_left_y
 
             # Check if the monitors list already contains this monitor.
             if handle in monitor_handles:
                 # Replace the rectangle for the monitor if it has changed.
                 i = monitor_handles.index(handle)
                 m = monitors[i]
-                r = Rectangle(x1, x2, dx, dy)
+                r = Rectangle(top_left_x, top_left_y, dx, dy)
                 if r != m._rectangle:
                     Monitor._log.debug("Setting %s.rectangle to %s"
                                        % (m, r))
                     m.rectangle = r
             else:
                 # Add the new monitor to the list.
-                m = Monitor(handle, Rectangle(x1, x2, dx, dy))
+                m = Monitor(handle, Rectangle(top_left_x, top_left_y, dx, dy))
                 Monitor._log.debug("Adding %s to monitors list" % m)
                 monitors.append(m)
 
