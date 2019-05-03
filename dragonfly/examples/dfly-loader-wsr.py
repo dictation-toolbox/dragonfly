@@ -81,6 +81,10 @@ def main():
         window = Window.get_foreground()
         if hwnd == window.handle:
             for grammar in engine.grammars:
+                # Prevent 'notify_begin()' from being called.
+                if grammar.name == "_recobs_grammar":
+                    continue
+
                 grammar.process_begin(window.executable, window.title, window.handle)
 
     def set_hook(win_event_proc, event_type):
