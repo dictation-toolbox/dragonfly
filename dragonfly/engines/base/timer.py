@@ -27,7 +27,7 @@ Multiplexing interface to a timer
 import time
 import logging
 
-from threading import Thread
+from threading import Thread, current_thread, RLock
 
 #---------------------------------------------------------------------------
 
@@ -104,10 +104,12 @@ class TimerManagerBase(object):
         self.interval = interval
         self.engine = engine
         self.timers = []
+        self._lock = RLock()
 
     def add_timer(self, timer):
         """ Add a timer and activate the main callback if required. """
-        self.timers.append(timer)
+        with self._lock:
+            self.timers.append(timer)
         if len(self.timers) == 1:
             self._activate_main_callback(self.main_callback,
                                          self.interval)
@@ -115,7 +117,8 @@ class TimerManagerBase(object):
     def remove_timer(self, timer):
         """ Remove a timer and deactivate the main callback if required. """
         try:
-            self.timers.remove(timer)
+            with self._lock:
+                self.timers.remove(timer)
         except Exception as e:
             self._log.exception("Failed to remove timer: %s" % e)
             return
@@ -125,7 +128,7 @@ class TimerManagerBase(object):
     def main_callback(self):
         """ Method to call each timer's function when required. """
         now = time.time()
-        for c in self.timers:
+        for c in tuple(self.timers):
             if c.next_time < now:
                 try:
                     c.call()
@@ -186,7 +189,7 @@ class ThreadedTimerManager(TimerManagerBase):
         # Stop the thread's main loop and wait until it finishes, timing out
         # after 5 seconds.
         self._running = False
-        if self._thread:
+        if self._thread and self._thread is not current_thread():
             self._thread.join(timeout=5)
             self._thread = None
 
