@@ -39,7 +39,6 @@ Built-in RPC methods
 
 import logging
 import threading
-import time
 
 from decorator import decorator
 from six import string_types
@@ -56,69 +55,36 @@ _log = logging.getLogger("rpc.methods")
 # Initialise a JSON RPC method dispatcher.
 dispatcher = Dispatcher()
 
-# Set up some variables used in scheduling RPC methods to run via engine
-# timers.
-_request_queue = []
-_results_map = {}
-_lock = threading.RLock()
-
-def _queue_not_empty():
-    with _lock:  # len() is not atomic.
-        return len(_request_queue) > 0
-
-
-def server_timer_function():
-    # This function is scheduled via 'engine.create_timer' by the RPC server
-    # on start() and removed on stop().
-    start_time = time.time()
-    while _queue_not_empty():
-        with _lock:
-            # Unpack the first request and process it.
-            condition, method, args, kwargs = _request_queue.pop(0)
-        try:
-            result = method(*args, **kwargs)
-        except Exception as e:
-            # Log any exceptions.
-            _log.exception("Exception occurred during RPC method %s: %s"
-                           % (method.__name__, e))
-            result = e
-
-        # Save the result return to the RPC client, using the memory
-        # address of the condition as the key.
-        with _lock:
-            _results_map[id(condition)] = result
-
-        # Notify the waiting thread about the result being ready.
-        with condition:
-            condition.notifyAll()
-
-        # Return if this function has been running for more than 100 ms.
-        # Processing will resume whenever the function is next scheduled
-        # to run.
-        if time.time() - start_time > 0.1:
-            break
-
 
 @decorator
 def _execute_via_timer(method, *args, **kwargs):
     # Create a thread condition for waiting for the method's result.
-    # These conditions use a separate lock from _lock.
     condition = threading.Condition()
 
-    # Acquire _lock and append the request to the queue.
-    with _lock:
-        _request_queue.append((condition, method, args, kwargs))
+    closure = []
+    def timer_func():
+        try:
+            closure.append(method(*args, **kwargs))
+        except Exception as e:
+            # Log any exceptions.
+            _log.exception("Exception occurred during RPC method '%s': %s" %
+                           (method.__name__, e))
+            closure.append(e)
+
+        # Notify the waiting thread that the result is ready.
+        with condition:
+            condition.notify()
+
+    # Start a non-repeating timer to execute timer_func().
+    get_engine().create_timer(timer_func, 0, repeating=False)
 
     # Wait for the result.
     with condition:
         condition.wait()
 
-    # Acquire _lock again and pop the method result.
-    with _lock:
-        result = _results_map.pop(id(condition))
-
     # Raise an error if it's an exception (json-rpc handles this),
     # otherwise return it.
+    result = closure[0]
     if isinstance(result, Exception):
         raise result
     else:

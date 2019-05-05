@@ -62,7 +62,7 @@ class RPCTestCase(unittest.TestCase):
         # Manually process server requests by calling the timer manager's
         # main callback directly.
         while request_thread.isAlive():
-            self.server.timer.manager.main_callback()
+            get_engine()._timer_manager.main_callback()
             time.sleep(0.05)
 
         # Handle errors and results from the request.

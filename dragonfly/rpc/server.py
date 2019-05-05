@@ -46,7 +46,7 @@ from werkzeug.serving import run_simple
 
 # Import some things from .methods. This will also set up methods defined in
 # that module.
-from .methods import dispatcher, rpc_method, server_timer_function
+from .methods import dispatcher, rpc_method
 from .util import send_rpc_request
 from ..engines import get_engine
 from ..log import setup_log
@@ -110,7 +110,7 @@ class RPCServer(object):
         self._ssl_context = ssl_context
         self._threaded = threaded
         self._thread = None
-        self.timer = None
+        self._timer = None
 
     @property
     def url(self):
@@ -166,28 +166,26 @@ class RPCServer(object):
             except Exception as e:
                 _log.exception("Exception caught on RPC server thread: %s"
                                % e)
-                # Stop the engine timer for processing requests.
-                self.timer.stop()
-                self.timer = None
+                # Stop the engine timer for processing requests if it is
+                # running.
+                if self._timer:
+                    self._timer.stop()
+                    self._timer = None
 
         self._thread = threading.Thread(target=run)
         self._thread.setDaemon(True)
         self._thread.start()
 
-        def natlink_timer():
-            # Let the server's thread run for a bit.
-            if self._thread:
-                self._thread.join(0.05)
-                server_timer_function()
-
-        # Create a timer with the current engine in order to process methods
-        # properly. Have the timer run every second.
+        # If the current engine is natlink, then add a timer to ensure that
+        # requests sent to the server are processed.
         engine = get_engine()
         if engine.name == "natlink":
-            timer_function = natlink_timer
-        else:
-            timer_function = server_timer_function
-        self.timer = engine.create_timer(timer_function, 1)
+            def natlink_timer():
+                # Let the server's thread run for a bit.
+                if self._thread:
+                    self._thread.join(0.05)
+
+            self._timer = engine.create_timer(natlink_timer, 1)
 
         # Wait a few milliseconds to allow the server to start properly.
         time.sleep(0.1)
@@ -205,8 +203,9 @@ class RPCServer(object):
             return
 
         # Stop the engine timer for processing requests.
-        self.timer.stop()
-        self.timer = None
+        if self._timer:
+            self._timer.stop()
+            self._timer = None
 
         # werkzeug is normally stopped through a request to the server.
         self.send_request("shutdown_rpc_server", [])
