@@ -17,12 +17,23 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+import logging
 import threading
 import time
 import unittest
 
 from dragonfly import (ActionBase, CompoundRule, Grammar, Literal,
                        MappingRule, Rule, get_engine, RPCServer)
+
+
+class CapturingHandler(logging.Handler):
+
+    def __init__(self):
+        logging.Handler.__init__(self)
+        self.records = []
+
+    def emit(self, record):
+        self.records.append(record)
 
 
 class RPCTestCase(unittest.TestCase):
@@ -98,7 +109,28 @@ class RPCTestCase(unittest.TestCase):
         # error.
         self.server.remove_method("bar")
         self.assertRaises(RuntimeError,
-                          lambda: self.server.send_request("bar", []))
+                          lambda: self.send_request("bar", []))
+
+    def test_errors(self):
+        """ Verify that the server handles errors from RPC methods. """
+        log_capture = CapturingHandler()
+        logger = logging.getLogger("rpc.methods")
+        logger.addHandler(log_capture)
+
+        # Add a new RPC method and check if an error is logged and received.
+        def error():
+            raise RuntimeError("error message")
+
+        self.server.add_method("error", error)
+        try:
+            self.assertRaises(RuntimeError,
+                              lambda: self.send_request("error", []))
+            self.assertEqual(len(log_capture.records), 1)
+            log_message = log_capture.records[0].msg
+            self.assertTrue("Exception occurred during RPC method" in log_message)
+            self.assertTrue("error message" in log_message)
+        finally:
+            logger.removeHandler(log_capture)
 
     def test_list_grammars(self):
         """ Verify that the 'list_grammars' RPC method works correctly. """
