@@ -65,7 +65,7 @@ class TextInputEngine(EngineBase):
     # -----------------------------------------------------------------------
     # Methods for administrating timers.
 
-    def create_timer(self, callback, interval):
+    def create_timer(self, callback, interval, repeating=True):
         """
         Create and return a timer using the specified callback and repeat
         interval.
@@ -74,7 +74,7 @@ class TextInputEngine(EngineBase):
         thread, meaning that their callbacks will **not** be thread safe.
         :meth:`threading.Timer` may be used instead with no blocking issues.
         """
-        return EngineBase.create_timer(self, callback, interval)
+        return EngineBase.create_timer(self, callback, interval, repeating)
 
     # -----------------------------------------------------------------------
     # Methods for working with grammars.

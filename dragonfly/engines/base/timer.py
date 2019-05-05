@@ -42,6 +42,8 @@ class Timer(object):
      - *interval* (*float*) -- number of seconds between calls to the
        function.
      - *manager* (:class:`TimerManagerBase`) -- engine timer manager instance.
+     - *repeating* (*bool*) -- whether to call the function every N seconds
+       or just once (default: True).
 
     Instances of this class are normally initialised from
     :meth:`engine.create_timer`.
@@ -49,10 +51,11 @@ class Timer(object):
 
     _log = logging.getLogger("engine.timer")
 
-    def __init__(self, function, interval, manager):
+    def __init__(self, function, interval, manager, repeating=True):
         self.function = function
         self.interval = interval
         self.manager = manager
+        self.repeating = repeating
         self.active = False
         self.next_time = None
         self.start()
@@ -88,6 +91,8 @@ class Timer(object):
             self.function()
         except Exception as e:
             self._log.exception("Exception during timer callback: %s" % (e,))
+        if not self.repeating:
+            self.stop()
 
 
 class TimerManagerBase(object):

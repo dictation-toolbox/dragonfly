@@ -288,7 +288,7 @@ class SphinxEngine(EngineBase):
     # -----------------------------------------------------------------------
     # Multiplexing timer methods.
 
-    def create_timer(self, callback, interval):
+    def create_timer(self, callback, interval, repeating=True):
         """
         Create and return a timer using the specified callback and repeat
         interval.
@@ -300,7 +300,8 @@ class SphinxEngine(EngineBase):
             self._log.warning("Timers will not run unless the engine is "
                               "recognising audio.")
 
-        return super(SphinxEngine, self).create_timer(callback, interval)
+        return super(SphinxEngine, self).create_timer(callback, interval,
+                                                      repeating)
 
     def set_timer_callback(self, callback, sec):
         """"""
