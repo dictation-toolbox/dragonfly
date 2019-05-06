@@ -80,7 +80,13 @@ setup(
                      "sphinxwrapper >= 1.1.1",
                      "pyjsgf >= 1.2.2",
                      "pyaudio"
-                    ]
+                    ],
+          "kaldi": [
+                    "kaldi-active-grammar == 0.1.0.dev3",
+                    "pyparsing ~= 2.2",
+                    "webrtcvad ~= 2.0",
+                    "pyaudio == 0.2.*",
+                   ],
       },
 
       classifiers=[
