@@ -160,12 +160,11 @@ class KaldiEngine(EngineBase):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        raise NotImplementedError("Method not implemented for engine %s." % self)  # FIXME
-        if isinstance(words, string_types):
-            phrase = words
-        else:
-            phrase = " ".join(words)
-        self._recognizer.EmulateRecognition(phrase)
+        output = words if isinstance(words, string_types) else " ".join(words)
+        kaldi_rules_activity = self._compute_kaldi_rules_activity()
+        output = self._compiler.untranslate_output(output)
+        kaldi_rule = self._parse_recognition(output, mimic=True)
+        self._log.debug("End of mimic: rule %s, %r" % (kaldi_rule, output))
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
@@ -244,20 +243,12 @@ class KaldiEngine(EngineBase):
         self._log.debug("active kaldi rules: %s", [kr.name for kr in self._active_kaldi_rules])
         return self._kaldi_rules_activity
 
-    def _parse_recognition(self, output):
+    def _parse_recognition(self, output, mimic=False):
         # if output == '':
         #     self._log.warning("attempted to parse empty recognition")
         #     return None
 
-        if self._compiler.parsing_framework == 'token':
-            kaldi_rule, parsed_output = self._compiler.parse_output(output)
-            if kaldi_rule is None:
-                if parsed_output != '':
-                    self._log.error("unable to parse recognition: %r" % output)
-                self._recognition_observer_manager.notify_failure()
-                return None
-
-        elif self._compiler.parsing_framework == 'text':
+        if self._compiler.parsing_framework == 'text' or mimic:
             with debug_timer(self._log.debug, "kaldi_rule parse time"):
                 detect_ambiguity = False
                 results = []
@@ -281,6 +272,17 @@ class KaldiEngine(EngineBase):
                     # FIXME: improve sorting criterion
                     results.sort(key=lambda result: 100 if result[0].dictation else 0)
                 kaldi_rule, parsed_output = results[0]
+
+        elif self._compiler.parsing_framework == 'token':
+            kaldi_rule, parsed_output = self._compiler.parse_output(output)
+            if kaldi_rule is None:
+                if parsed_output != '':
+                    self._log.error("unable to parse recognition: %r" % output)
+                self._recognition_observer_manager.notify_failure()
+                return None
+
+        else:
+            raise EngineError("invalid _compiler.parsing_framework")
 
         words = tuple(word for word in parsed_output.split())
         grammar_wrapper = self._get_grammar_wrapper(kaldi_rule.grammar)
