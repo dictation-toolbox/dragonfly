@@ -19,7 +19,7 @@
 #
 
 """
-Dictation container class for the Sphinx engine
+Dictation container class for the Voxhub engine
 ============================================================================
 
 This class is used to store the recognized results of dictation elements 
