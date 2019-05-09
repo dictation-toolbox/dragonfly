@@ -30,10 +30,6 @@ import logging
 
 from six import PY2
 
-# Set up logging.
-from ..log import setup_log
-setup_log()
-
 
 #---------------------------------------------------------------------------
 

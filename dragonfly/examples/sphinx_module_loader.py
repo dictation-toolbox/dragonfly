@@ -45,8 +45,6 @@ class Observer(RecognitionObserver):
 # Main event driving loop.
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-
     try:
         path = os.path.dirname(__file__)
     except NameError:

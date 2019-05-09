@@ -23,13 +23,13 @@ import win32con
 
 from dragonfly import RecognitionObserver, get_engine, Window
 from dragonfly.loader import CommandModuleDirectory
-
+from dragonfly.log import setup_log
 
 #---------------------------------------------------------------------------
 # Set up basic logging.
 
-logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("compound.parse").setLevel(logging.INFO)
+setup_log()
+# logging.getLogger("compound.parse").setLevel(logging.INFO)
 
 # --------------------------------------------------------------------------
 # Simple recognition observer class.
@@ -52,8 +52,6 @@ class Observer(RecognitionObserver):
 # Main event driving loop.
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-
     try:
         path = os.path.dirname(__file__)
     except NameError:

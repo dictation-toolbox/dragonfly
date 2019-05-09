@@ -114,14 +114,7 @@ class DispatchingHandler(logging.Handler):
 # ---------------------------------------------------------------------------
 
 def _setup_stdout_handler():
-    class _OutputStream(object):
-        def __init__(self, write):
-            self.write = write
-
-        def flush(self):
-            pass
-
-    stdout_handler = logging.StreamHandler(_OutputStream(sys.stdout.write))
+    stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(name)s (%(levelname)s): %(message)s")
     stdout_handler.setFormatter(formatter)

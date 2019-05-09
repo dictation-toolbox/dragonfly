@@ -26,12 +26,9 @@ import unittest
 
 from six import PY3
 
-from dragonfly.log import setup_log
 from dragonfly.test.engine_suite import EngineTestSuite
 
 
-# Set up dragonfly logging
-setup_log()
 _log = logging.getLogger("dfly.test")
 
 
