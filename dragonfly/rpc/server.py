@@ -40,37 +40,59 @@ import logging
 import threading
 import time
 
+from decorator import decorator
+from jsonrpc.dispatcher import Dispatcher
 from jsonrpc.manager import JSONRPCResponseManager
 from werkzeug.wrappers import Request, Response
 from werkzeug.serving import run_simple
 
-# Import some things from .methods. This will also set up methods defined in
-# that module.
-from .methods import dispatcher, rpc_method
+from .methods import methods
 from .util import send_rpc_request
 from ..engines import get_engine
-from ..log import setup_log
 
 
-# Set up a logger.
-_log = logging.getLogger("rpc.server")
-setup_log()
-
-
-@Request.application
-def application(request):
-    # Dispatcher is dictionary {<method_name>: callable}
-    # Add a shutdown method if it is available.
-    shutdown_function = request.environ.get('werkzeug.server.shutdown')
-    if shutdown_function:
-        dispatcher["shutdown_rpc_server"] = shutdown_function
-
-    response = JSONRPCResponseManager.handle(
-        request.data, dispatcher
-    )
-    return Response(response.json, mimetype='application/json')
+_log = logging.getLogger("rpc.methods")
 
 # --------------------------------------------------------------------------
+# RPC method decorator used by the server internally.
+
+@decorator
+def _rpc_method(method, *args, **kwargs):
+    # Create a thread condition for waiting for the method's result.
+    condition = threading.Condition()
+
+    closure = []
+    def timer_func():
+        try:
+            closure.append(method(*args, **kwargs))
+        except Exception as e:
+            # Log any exceptions.
+            _log.exception("Exception occurred during RPC method '%s': %s"
+                           % (method.__name__, e))
+            closure.append(e)
+
+        # Notify the waiting thread that the result is ready.
+        with condition:
+            condition.notify()
+
+    # Start a non-repeating timer to execute timer_func().
+    get_engine().create_timer(timer_func, 0, repeating=False)
+
+    # Wait for the result.
+    with condition:
+        condition.wait()
+
+    # Raise an error if it's an exception (json-rpc handles this),
+    # otherwise return it.
+    result = closure[0]
+    if isinstance(result, Exception):
+        raise result
+    else:
+        return result
+
+
+# --------------------------------------------------------------------------
+# RPC server class.
 
 class RPCServer(object):
     """
@@ -103,6 +125,9 @@ class RPCServer(object):
     "127.0.0.1" instead of "localhost".
 
     """
+
+    _log = logging.getLogger("rpc.server")
+
     def __init__(self, address="127.0.0.1", port=50051, ssl_context=None,
                  threaded=True):
         self._address = address
@@ -111,6 +136,23 @@ class RPCServer(object):
         self._threaded = threaded
         self._thread = None
         self._timer = None
+        self._dispatcher = Dispatcher()
+
+        # Add the built-in RPC methods defined in methods.py.
+        for method in methods:
+            self.add_method(method)
+
+    @Request.application
+    def _application(self, request):
+        # Dispatcher is dictionary {<method_name>: callable}
+        # Add a shutdown method if it is available.
+        shutdown_function = request.environ.get('werkzeug.server.shutdown')
+        if shutdown_function:
+            self._dispatcher["shutdown_rpc_server"] = shutdown_function
+        response = JSONRPCResponseManager.handle(
+            request.data, self._dispatcher
+        )
+        return Response(response.json, mimetype='application/json')
 
     @property
     def url(self):
@@ -160,12 +202,13 @@ class RPCServer(object):
             # Note: 'threaded' means that each request is handled using a
             # separate thread. This introduces some overhead costs.
             try:
-                return run_simple(self._address, self._port, application,
+                return run_simple(self._address, self._port,
+                                  self._application,
                                   ssl_context=self._ssl_context,
                                   threaded=self._threaded)
             except Exception as e:
-                _log.exception("Exception caught on RPC server thread: %s"
-                               % e)
+                self._log.exception("Exception caught on RPC server thread:"
+                                    " %s" % e)
                 # Stop the engine timer for processing requests if it is
                 # running.
                 if self._timer:
@@ -212,12 +255,12 @@ class RPCServer(object):
         timeout = 5
         self._thread.join(timeout)
         if self._thread.isAlive():
-            _log.warning("RPC server thread failed to stop after %d seconds"
-                         % timeout)
+            self._log.warning("RPC server thread failed to stop after %d "
+                              "seconds" % timeout)
         else:
             self._thread = None
 
-    def add_method(self, name, method):
+    def add_method(self, method, name=None):
         """
         Add an RPC method to the server.
 
@@ -227,15 +270,16 @@ class RPCServer(object):
         This can be used to override method implementations if that is
         desirable.
 
-        :param name: the name of the RPC method to add.
         :param method: the implementation of the RPC method to add.
-        :type name: str
+        :param name: optional name of the RPC method to add. If this is
+            None, then :code:`method.__name__` will be used instead.
         :type method: callable
+        :type name: str
         """
-        # Use the rpc_method function to decorate and add the method to the
-        # dispatcher.
-        method.__name__ = name
-        rpc_method(method)
+        # Decorate the method and add it to the dispatcher.
+        if not name:
+            name = method.__name__
+        self._dispatcher[name] = _rpc_method(method)
 
     def remove_method(self, name):
         """
@@ -248,7 +292,7 @@ class RPCServer(object):
         :param name: the name of the RPC method to remove.
         :type name: str
         """
-        dispatcher.pop(name, None)
+        self._dispatcher.pop(name, None)
 
     def __enter__(self):
         self.start()

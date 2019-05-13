@@ -84,11 +84,11 @@ class RPCTestCase(unittest.TestCase):
 
     def test_add_method(self):
         """ Verify that RPC methods can be added and replaced."""
-        self.server.add_method("foo", lambda: "bar")
+        self.server.add_method(lambda: "bar", "foo")
         response = self.send_request("foo", [])
         self.assertEqual(response, {'jsonrpc': '2.0', 'result': 'bar',
                                     'id': 0})
-        self.server.add_method("foo", lambda: "foo")
+        self.server.add_method(lambda: "foo", "foo")
         response = self.send_request("foo", [])
         self.assertEqual(response, {'jsonrpc': '2.0', 'result': 'foo',
                                     'id': 0})
@@ -99,7 +99,7 @@ class RPCTestCase(unittest.TestCase):
         self.server.remove_method("non_existent")
 
         # Add a 'bar' method, check that it works.
-        self.server.add_method("bar", lambda: "foo")
+        self.server.add_method(lambda: "foo", "bar")
         response = self.send_request("bar", [])
         self.assertEqual(response, {'jsonrpc': '2.0', 'result': 'foo',
                                     'id': 0})
@@ -121,7 +121,7 @@ class RPCTestCase(unittest.TestCase):
         def error():
             raise RuntimeError("error message")
 
-        self.server.add_method("error", error)
+        self.server.add_method(error, "error")
         try:
             self.assertRaises(RuntimeError,
                               lambda: self.send_request("error", []))

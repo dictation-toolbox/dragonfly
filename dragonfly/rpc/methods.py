@@ -21,15 +21,17 @@
 RPC methods
 ----------------------------------------------------------------------------
 
-For RPC methods to work they must be decorated with :code:`@rpc_method`.
-For example::
+For RPC methods to work they must be added to the server with
+:meth:`add_method`. For example::
 
     from dragonfly.engines import get_engine
-    from dragonfly.rpc import rpc_method
+    from dragonfly.rpc import RPCServer
 
-    @rpc_method
     def get_engine_language():
         return get_engine().language
+
+    server = RPCServer()
+    server.add_method(get_engine_language)
 
 
 Built-in RPC methods
@@ -37,65 +39,21 @@ Built-in RPC methods
 
 """
 
-import logging
-import threading
-
-from decorator import decorator
 from six import string_types
-
-from jsonrpc.dispatcher import Dispatcher
 
 from .. import get_engine, CompoundRule, MappingRule
 from ..engines.base import MimicFailure
 
 
-# Set up a logger.
-_log = logging.getLogger("rpc.methods")
-
-# Initialise a JSON RPC method dispatcher.
-dispatcher = Dispatcher()
+methods = []
 
 
-@decorator
-def _execute_via_timer(method, *args, **kwargs):
-    # Create a thread condition for waiting for the method's result.
-    condition = threading.Condition()
-
-    closure = []
-    def timer_func():
-        try:
-            closure.append(method(*args, **kwargs))
-        except Exception as e:
-            # Log any exceptions.
-            _log.exception("Exception occurred during RPC method '%s': %s" %
-                           (method.__name__, e))
-            closure.append(e)
-
-        # Notify the waiting thread that the result is ready.
-        with condition:
-            condition.notify()
-
-    # Start a non-repeating timer to execute timer_func().
-    get_engine().create_timer(timer_func, 0, repeating=False)
-
-    # Wait for the result.
-    with condition:
-        condition.wait()
-
-    # Raise an error if it's an exception (json-rpc handles this),
-    # otherwise return it.
-    result = closure[0]
-    if isinstance(result, Exception):
-        raise result
-    else:
-        return result
+def _add_method(m):
+    methods.append(m)
+    return m
 
 
-def rpc_method(method):
-    return dispatcher.add_method(_execute_via_timer(method))
-
-
-@rpc_method
+@_add_method
 def list_grammars():
     """
     Get a list of grammars loaded into the current engine.
@@ -127,7 +85,7 @@ def list_grammars():
     return grammars
 
 
-@rpc_method
+@_add_method
 def mimic(words):
     """
     Mimic the given *words*.
@@ -145,7 +103,7 @@ def mimic(words):
         return False
 
 
-@rpc_method
+@_add_method
 def speak(text):
     """
     Speak the given *text* using text-to-speech using :meth:`engine.speak`.
@@ -159,7 +117,7 @@ def speak(text):
     return get_engine().speak(text)
 
 
-@rpc_method
+@_add_method
 def get_engine_language():
     """
     Get the current engine's language.
