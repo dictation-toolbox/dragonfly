@@ -192,11 +192,13 @@ class AppContext(Context):
         certain requirements.  Which requirements must be met for this
         context to match are determined by the constructor arguments.
 
+        If multiple strings are passed in a list, True will be returned if the foreground window matches one or more of them.
+
         Constructor arguments:
-         - *executable* (*str*) --
+         - *executable* (*str* or *list*) --
            (part of) the path name of the foreground application's
            executable; case insensitive
-         - *title* (*str*) --
+         - *title* (*str* or *list*) --
            (part of) the title of the foreground window; case insensitive
 
     """
