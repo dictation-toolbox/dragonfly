@@ -242,14 +242,12 @@ class AppContext(Context):
 
         found = False
         if self._executable:
-            # found = (executable.find(self._executable) != -1)
             for match in self._executable:
                 if executable.find(match) != -1:
                     found = True
                     break
 
         if self._title:
-            # found = (title.find(self._title) != -1)
             for match in self._title:
                 if title.find(match) != -1:
                     found = True
