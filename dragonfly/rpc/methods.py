@@ -27,11 +27,38 @@ For RPC methods to work they must be added to the server with
     from dragonfly.engines import get_engine
     from dragonfly.rpc import RPCServer
 
+    # Initialise and start the server.
+    server = RPCServer()
+    server.start()
+
+    # Add the RPC method via decoration.
+    @server.add_method
     def get_engine_language():
         return get_engine().language
 
-    server = RPCServer()
+    # add_method() can also be used normally.
     server.add_method(get_engine_language)
+
+
+Sending requests
+============================================================================
+Requests can be sent to the server using, the :meth:`send_rpc_request`
+function from Python::
+
+    send_rpc_request(
+        server.url, method="get_engine_language",
+        params=[server.security_token], id=0
+    )
+
+Other tools such as `curl <https://curl.haxx.se/>`_ can also be used.
+
+..  code:: shell
+
+    Using positional arguments:
+    $ curl --data-binary '{"jsonrpc":"2.0","id": "0","method": "speak","params": ["hello world", "<security-token>"]}' -H 'content-type:text/json;' http://127.0.0.1:50051
+
+    Using key word arguments:
+    $ curl --data-binary '{"jsonrpc":"2.0","id": "0","method": "speak","params": {"text": "hello world", "security_token": "<security-token>"}}' -H 'content-type:text/json;' http://127.0.0.1:50051
 
 
 Built-in RPC methods

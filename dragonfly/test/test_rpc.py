@@ -23,7 +23,8 @@ import time
 import unittest
 
 from dragonfly import (ActionBase, CompoundRule, Grammar, Literal,
-                       MappingRule, Rule, get_engine, RPCServer)
+                       MappingRule, Rule, get_engine, RPCServer,
+                       send_rpc_request)
 
 
 class CapturingHandler(logging.Handler):
@@ -56,18 +57,10 @@ class RPCTestCase(unittest.TestCase):
         cls.server.stop()
         get_engine().disconnect()
 
-    def send_request(self, method, params):
+    def _send_request(self, request_function):
         # Send requests to the server using new threads to emulate requests
         # from a different process.
-        def request():
-            try:
-                self.current_response = self.server.send_request(
-                    method, params
-                )
-            except Exception as e:
-                self.current_response = e
-
-        request_thread = threading.Thread(target=request)
+        request_thread = threading.Thread(target=request_function)
         request_thread.start()
 
         # Manually process server requests by calling the timer manager's
@@ -81,6 +74,17 @@ class RPCTestCase(unittest.TestCase):
             raise self.current_response
         else:
             return self.current_response
+
+    def send_request(self, method, params, id=0):
+        def request():
+            try:
+                self.current_response = self.server.send_request(
+                    method, params, id
+                )
+            except Exception as e:
+                self.current_response = e
+
+        return self._send_request(request)
 
     def test_add_method(self):
         """ Verify that RPC methods can be added and replaced."""
@@ -129,6 +133,77 @@ class RPCTestCase(unittest.TestCase):
             log_message = log_capture.records[0].msg
             self.assertTrue("Exception occurred during RPC method" in log_message)
             self.assertTrue("error message" in log_message)
+        finally:
+            logger.removeHandler(log_capture)
+
+    def test_security_tokens(self):
+        """ Verify that security tokens must match for RPC execution to occur.
+        """
+        logger = logging.getLogger("rpc.methods")
+
+        # Add an RPC method for testing.
+        def security_check():
+            logger.info("security check method called.")
+            return True
+
+        self.server.add_method(security_check)
+
+        # The 'send_request' method of this test class will always send the
+        # server's security token. So define a special function for sending
+        # requests via '_send_request' instead.
+        def do_check_request(params):
+            def request():
+                try:
+                    self.current_response = send_rpc_request(
+                        self.server.url, "security_check", params, 0
+                    )
+                except Exception as e:
+                    self.current_response = e
+
+            return self._send_request(request)
+
+        # Log errors for the 'rpc.methods' logger.
+        log_capture = CapturingHandler()
+        logger.addHandler(log_capture)
+        last_length = [0]
+
+        def next_log_msg():
+            records = log_capture.records
+            assert len(records) > last_length[0], "no next log message"
+            last_length[0] = len(records)
+            return records[len(records) - 1].msg
+
+        try:
+            # Test with no security token.
+            self.assertRaises(RuntimeError, do_check_request, ())
+            self.assertIn(next_log_msg(),
+                          "client did not send the required "
+                          "'security_token' argument")
+
+            # Test with an invalid security token using positional and
+            # keyword arguments.
+            invalid_token = "NotTheTokenYou'reLookingFor"
+            invalid_msg = ("Client sent a security token that did not "
+                           "match the server\'s")
+            self.assertRaises(RuntimeError, do_check_request,
+                              [invalid_token])
+            self.assertIn(next_log_msg(), invalid_msg)
+            self.assertRaises(RuntimeError, do_check_request,
+                              {"security_token": invalid_token})
+            self.assertIn(next_log_msg(), invalid_msg)
+
+            # Test with the correct security token.
+            valid_msg = "security check method called."
+            self.assertTrue(do_check_request([self.server.security_token]))
+            self.assertIn(next_log_msg(), valid_msg)
+            self.assertTrue(do_check_request({
+                "security_token": self.server.security_token}))
+            self.assertIn(next_log_msg(), valid_msg)
+
+            # Also check using the normal send_request method that adds the
+            # security token automatically.
+            self.assertTrue(self.send_request("security_check", []))
+            self.assertIn(next_log_msg(), valid_msg)
         finally:
             logger.removeHandler(log_capture)
 

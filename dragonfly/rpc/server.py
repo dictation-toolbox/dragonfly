@@ -26,29 +26,51 @@ the current engine's :ref:`multiplexing timer interface <RefEngineTimers>`.
 This allows engines to handle requests safely and keeps engine-specific
 implementation details out of the *dragonfly.rpc* sub-package.
 
-.. warning::
+Security tokens
+============================================================================
 
-   Do not call engine methods directly or indirectly from other threads,
-   e.g. with :meth:`engine.mimic`, :meth:`grammar.unload`,
-   :meth:`grammar.load`, etc. Some engines such as natlink do not support
-   multi-threading and will raise errors. In addition, the
-   :code:`EngineBase` class is not thread safe.
+The RPC server uses mandatory security tokens to authenticate client
+requests. This avoids some security issues where, for example, malicious web
+pages could send POST requests to the server, even if running on localhost.
+
+If sending requests over an open network, please ensure that the connection
+is secure by using TLS or SSH port forwarding.
+
+If the server's :code:`security_token` constructor parameter is not
+specified, a new token will be generated and printed to the console. Clients
+must specify the security token either as the last positional argument or as
+the :code:`security_token` keyword argument.
+
+Errors will be raised if clients send no security token or a token that
+doesn't match the server's.
+
+Class reference
+============================================================================
 
 """
 
+import functools
 import logging
 import threading
 import time
 
 from decorator import decorator
-from jsonrpc.dispatcher import Dispatcher
+from jsonrpc.dispatcher import Dispatcher as BaseDispatcher
 from jsonrpc.manager import JSONRPCResponseManager
 from werkzeug.wrappers import Request, Response
 from werkzeug.serving import run_simple
 
 from .methods import methods
+from .security import compare_security_token, generate_security_token
 from .util import send_rpc_request
 from ..engines import get_engine
+
+
+class PermissionDeniedError(Exception):
+    """
+    Error raised if clients send security tokens that don't match the
+    server's.
+    """
 
 
 _log = logging.getLogger("rpc.methods")
@@ -90,6 +112,57 @@ def _rpc_method(method, *args, **kwargs):
     else:
         return result
 
+# --------------------------------------------------------------------------
+# JSONRPC Dispatcher sub-class.
+
+class Dispatcher(BaseDispatcher):
+    """"""
+
+    def __init__(self, server):
+        self.server = server
+        super(Dispatcher, self).__init__()
+
+    def add_method(self, f=None, name=None):
+        """"""
+        if name and not f:
+            return functools.partial(self.add_method, name=name)
+        elif not name and f:
+            name = f.__name__
+
+        if not callable(f):
+            raise TypeError("f must be callable")
+
+        def checked_rpc_method(*args, **kwargs):
+            assert not (args and kwargs)
+
+            # Pop the security token from args or kwargs. Raise an error if
+            # there is no token.
+            if args:
+                args = list(args)
+                rpc_security_token = args.pop(len(args) - 1)
+            elif "security_token" in kwargs:
+                rpc_security_token = kwargs.pop("security_token")
+            else:
+                message = ("client did not send the required "
+                           "'security_token' argument")
+                _log.error(message)
+                raise ValueError(message)
+
+            # Check if the received token matches the server's token.
+            if not compare_security_token(self.server.security_token,
+                                          rpc_security_token):
+                message = ("Client sent a security token that did not match"
+                           " the server\'s")
+                _log.error(message)
+                raise PermissionDeniedError(message)
+
+            # The security tokens match, so execute the method.
+            return f(*args, **kwargs)
+
+        checked_rpc_method.__name__ = name
+        self.method_map[name] = checked_rpc_method
+        return f
+
 
 # --------------------------------------------------------------------------
 # RPC server class.
@@ -110,6 +183,9 @@ class RPCServer(object):
       *werkzeug.serving.run_simple* (*SSLContext*, default: None).
     - *threaded* -- whether to use a separate thread to process each request
       (*bool*, default: True).
+    - *security_token* -- security token for authenticating clients
+      (*str*, default: None). A new token will be generated and printed if
+      this parameter is unspecified.
 
     The *ssl_context* parameter is explained in more detail in Werkzeug's
     `SSL serving documentation
@@ -124,19 +200,37 @@ class RPCServer(object):
     *address* parameter should increase performance somewhat, e.g.
     "127.0.0.1" instead of "localhost".
 
+    .. warning::
+
+       Do **not** send requests to the server from the main engine thread;
+       thread deadlocks *will* occur if you do this because the main thread
+       cannot call timer functions and wait for a response at the same time.
+       The RPC framework was designed to be used from *remote* processes.
+
+       Requests will not be processed if the engine is not connected and
+       processing speech.
+
+
     """
 
     _log = logging.getLogger("rpc.server")
 
     def __init__(self, address="127.0.0.1", port=50051, ssl_context=None,
-                 threaded=True):
+                 threaded=True, security_token=None):
         self._address = address
         self._port = port
         self._ssl_context = ssl_context
         self._threaded = threaded
+        if security_token is None:
+            security_token = generate_security_token()
+            self._log.warning("Generating a new security token because the "
+                              "'security_token' parameter was unspecified.")
+            print("The generated security token is '%s'." % security_token)
+
+        self.security_token = security_token
         self._thread = None
         self._timer = None
-        self._dispatcher = Dispatcher()
+        self._dispatcher = Dispatcher(self)
 
         # Add the built-in RPC methods defined in methods.py.
         for method in methods:
@@ -144,11 +238,15 @@ class RPCServer(object):
 
     @Request.application
     def _application(self, request):
-        # Dispatcher is dictionary {<method_name>: callable}
-        # Add a shutdown method if it is available.
-        shutdown_function = request.environ.get('werkzeug.server.shutdown')
-        if shutdown_function:
-            self._dispatcher["shutdown_rpc_server"] = shutdown_function
+        # Add the shutdown method if it is available and has not already
+        # been added. This won't be executed via the engine timers.
+        shutdown_func = request.environ.get('werkzeug.server.shutdown')
+        shutdown_func_name = "shutdown_rpc_server"
+        if shutdown_func and shutdown_func_name not in self._dispatcher:
+            # Add it to the dispatcher directly.
+            self._dispatcher.add_method(shutdown_func, shutdown_func_name)
+
+        # Get a response using the method dispatcher and return it.
         response = JSONRPCResponseManager.handle(
             request.data, self._dispatcher
         )
@@ -165,21 +263,35 @@ class RPCServer(object):
 
     def send_request(self, method, params, id=0):
         """
-        Utility method to send a JSON-RPC request to the server.
+        Utility method to send a JSON-RPC request to the server. This will
+        block the current thread until a response is received.
+
+        This method is mostly used for testing. If called from the engine's
+        main thread, a deadlock *will* occur.
 
         This will raise an error if the request fails with an error or if
         the server is unreachable.
+
+        The server's security token will automatically be added to the
+        ``params`` list/dictionary.
 
         :param method: name of the RPC method to call.
         :param params: parameters of the RPC method to call.
         :param id: ID of the JSON-RPC request (default: 0).
         :type method: str
-        :type params: list
+        :type params: list | dict
         :type id: int
         :returns: JSON-RPC response
         :rtype: dict
         :raises: RuntimeError
         """
+        # Add the server's security token to params.
+        security_token = self.security_token
+        if isinstance(params, dict):
+            params["security_token"] = security_token
+        else:
+            params.append(security_token)
+
         return send_rpc_request(self.url, method, params, id)
 
     def start(self):
@@ -270,16 +382,22 @@ class RPCServer(object):
         This can be used to override method implementations if that is
         desirable.
 
+        This method can also be used as a decorator.
+
         :param method: the implementation of the RPC method to add.
         :param name: optional name of the RPC method to add. If this is
             None, then :code:`method.__name__` will be used instead.
         :type method: callable
         :type name: str
         """
-        # Decorate the method and add it to the dispatcher.
-        if not name:
-            name = method.__name__
-        self._dispatcher[name] = _rpc_method(method)
+        if name and not method:
+            return functools.partial(self.add_method, name=name)
+
+        new_method = _rpc_method(method)
+        self._dispatcher.add_method(new_method, name)
+
+        # Return the original method.
+        return method
 
     def remove_method(self, name):
         """
