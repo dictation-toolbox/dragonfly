@@ -34,15 +34,29 @@ def main():
     url = "http://127.0.0.1:50051/jsonrpc"
     headers = {'content-type': 'application/json'}
     payload = {
+        # Method to call.
         "method": "list_grammars",
-        "params": [],
+
+        # Method parameters containing the server's security token.
+        # Change the placeholder value to the security token normally
+        # generated and printed when the RPC server is initialised.
+        "params": {"security_token": "<security-token>"},
+        # "params": ["<security-token>"],
+
+        # Protocol version and request ID.
         "jsonrpc": "2.0",
         "id": 0,
     }
     response = requests.post(
         url, data=json.dumps(payload), headers=headers
     ).json()
-    print(response)
+
+    # Print the names of loaded grammars and rules.
+    for grammar in response["result"]:
+        rules = grammar["rules"]
+        print("Grammar '%s' (%d rules)" % (grammar["name"], len(rules)))
+        for rule in rules:
+            print("Rule '%s'" % grammar["name"])
 
 
 if __name__ == '__main__':
