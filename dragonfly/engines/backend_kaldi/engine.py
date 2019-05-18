@@ -34,7 +34,7 @@ from .dictation                 import KaldiDictationContainer
 from .recobs                    import KaldiRecObsManager
 from .testing                   import debug_timer
 from ...grammar.state           import State
-from ...windows.window          import Window
+from ...windows                 import Window
 
 
 #===========================================================================
