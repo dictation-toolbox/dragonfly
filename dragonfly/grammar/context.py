@@ -242,23 +242,26 @@ class AppContext(Context):
         executable = executable.lower()
         title = title.lower()
 
-        found = False
         if self._executable:
+            found = False
             for match in self._executable:
                 if executable.find(match) != -1:
                     found = True
                     break
+            if self._exclude == found:
+                self._log_match.debug("%s: No match, executable doesn't match." % self)
+                return False
 
         if self._title:
+            found = False
             for match in self._title:
                 if title.find(match) != -1:
                     found = True
                     break
-
-        if self._exclude != found:
-            self._log_match.debug("%s: Match." % self)
-            return True
+            if self._exclude == found:
+                self._log_match.debug("%s: No match, title doesn't match." % self)
+                return False
 
         if self._log_match:
-            self._log_match.debug("%s: No match." % self)
-        return False
+            self._log_match.debug("%s: Match." % self)
+        return True
