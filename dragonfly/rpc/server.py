@@ -338,9 +338,9 @@ class RPCServer(object):
             def natlink_timer():
                 # Let the server's thread run for a bit.
                 if self._thread:
-                    self._thread.join(0.05)
+                    self._thread.join(0.0025)
 
-            self._timer = engine.create_timer(natlink_timer, 1)
+            self._timer = engine.create_timer(natlink_timer, 0.05)
 
         # Wait a few milliseconds to allow the server to start properly.
         time.sleep(0.1)
