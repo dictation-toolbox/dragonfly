@@ -9,5 +9,6 @@ Contents:
    config
    ccr
    cli
+   logging
    rpc
    windows
