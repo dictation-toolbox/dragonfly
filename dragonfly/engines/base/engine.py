@@ -114,10 +114,10 @@ class EngineBase(object):
     #-----------------------------------------------------------------------
     # Methods for administrating timers.
 
-    def create_timer(self, callback, interval):
+    def create_timer(self, callback, interval, repeating=True):
         """ Create and return a timer using the specified callback and
             repeat interval. """
-        return Timer(callback, interval, self._timer_manager)
+        return Timer(callback, interval, self._timer_manager, repeating)
 
     #-----------------------------------------------------------------------
     # Methods for administrating grammar wrappers.

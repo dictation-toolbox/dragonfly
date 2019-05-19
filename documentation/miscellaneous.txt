@@ -5,8 +5,9 @@ Miscellaneous topics
 Contents:
 
 .. toctree::
+   accessibility
    config
    ccr
    cli
+   rpc
    windows
-   accessibility

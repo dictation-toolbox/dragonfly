@@ -74,6 +74,27 @@ class TestTimer(unittest.TestCase):
             # Stop the timer at the end regardless of the result.
             timer.stop()
 
+    def test_non_repeating_timers(self):
+        """ Test that non-repeating timers only run once. """
+
+        callback_called = [0]
+        def callback():
+            callback_called[0] += 1
+
+        interval = 0.01
+        timer = self.engine.create_timer(callback, interval, False)
+        time.sleep(0.02)
+        timer.manager.main_callback()
+        time.sleep(0.02)
+        timer.manager.main_callback()
+
+        # Callback was only called once.
+        try:
+            self.assertEqual(callback_called[0], 1)
+        finally:
+            # Stop the timer at the end regardless of the result.
+            timer.stop()
+
 #===========================================================================
 
 if __name__ == "__main__":

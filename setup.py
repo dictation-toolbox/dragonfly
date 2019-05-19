@@ -66,7 +66,13 @@ setup(
                         "six",
                         "pyperclip >= 1.7.0",
                         "enum34;python_version<'3.4'",
-                        "regex"
+                        "regex",
+                        "decorator",
+
+                        # RPC requirements
+                        "json-rpc",
+                        "Werkzeug",
+                        "requests",
                        ],
 
       extras_require={

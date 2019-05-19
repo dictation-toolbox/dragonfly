@@ -13,15 +13,10 @@ for use with Window Speech Recognition.  It scans the
 directory it's in and loads any ``_*.py`` it finds.
 
 """
-import ctypes
-import ctypes.wintypes
-import time
-import os.path
-import logging
-import pythoncom
-import win32con
 
-from dragonfly import RecognitionObserver, get_engine, Window
+import os.path
+
+from dragonfly import RecognitionObserver, get_engine
 from dragonfly.loader import CommandModuleDirectory
 from dragonfly.log import setup_log
 
@@ -71,34 +66,9 @@ def main():
     directory = CommandModuleDirectory(path, excludes=[__file__])
     directory.load()
 
-    WinEventProcType = ctypes.WINFUNCTYPE(None, ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD, ctypes.wintypes.HWND,
-                                          ctypes.wintypes.LONG, ctypes.wintypes.LONG, ctypes.wintypes.DWORD,
-                                          ctypes.wintypes.DWORD)
+    # Recognize from WSR in a loop.
+    engine.recognize_forever()
 
-    def callback(hWinEventHook, event, hwnd, idObject, idChild, dwEventThread, dwmsEventTime):
-        window = Window.get_foreground()
-        if hwnd == window.handle:
-            for grammar in engine.grammars:
-                # Prevent 'notify_begin()' from being called.
-                if grammar.name == "_recobs_grammar":
-                    continue
-
-                grammar.process_begin(window.executable, window.title, window.handle)
-
-    def set_hook(win_event_proc, event_type):
-        return ctypes.windll.user32.SetWinEventHook(event_type, event_type, 0, win_event_proc, 0, 0, win32con.WINEVENT_OUTOFCONTEXT)
-
-
-    win_event_proc = WinEventProcType(callback)
-    ctypes.windll.user32.SetWinEventHook.restype = ctypes.wintypes.HANDLE
-
-    [set_hook(win_event_proc, et) for et in
-     {win32con.EVENT_SYSTEM_FOREGROUND, win32con.EVENT_OBJECT_NAMECHANGE, }]
-
-    engine.speak('beginning loop!')
-    while 1:
-        pythoncom.PumpWaitingMessages()
-        time.sleep(.1)
 
 if __name__ == "__main__":
     main()

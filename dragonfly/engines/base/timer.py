@@ -27,7 +27,7 @@ Multiplexing interface to a timer
 import time
 import logging
 
-from threading import Thread
+from threading import Thread, current_thread, RLock
 
 #---------------------------------------------------------------------------
 
@@ -42,6 +42,8 @@ class Timer(object):
      - *interval* (*float*) -- number of seconds between calls to the
        function.
      - *manager* (:class:`TimerManagerBase`) -- engine timer manager instance.
+     - *repeating* (*bool*) -- whether to call the function every N seconds
+       or just once (default: True).
 
     Instances of this class are normally initialised from
     :meth:`engine.create_timer`.
@@ -49,10 +51,11 @@ class Timer(object):
 
     _log = logging.getLogger("engine.timer")
 
-    def __init__(self, function, interval, manager):
+    def __init__(self, function, interval, manager, repeating=True):
         self.function = function
         self.interval = interval
         self.manager = manager
+        self.repeating = repeating
         self.active = False
         self.next_time = None
         self.start()
@@ -88,6 +91,8 @@ class Timer(object):
             self.function()
         except Exception as e:
             self._log.exception("Exception during timer callback: %s" % (e,))
+        if not self.repeating:
+            self.stop()
 
 
 class TimerManagerBase(object):
@@ -99,10 +104,12 @@ class TimerManagerBase(object):
         self.interval = interval
         self.engine = engine
         self.timers = []
+        self._lock = RLock()
 
     def add_timer(self, timer):
         """ Add a timer and activate the main callback if required. """
-        self.timers.append(timer)
+        with self._lock:
+            self.timers.append(timer)
         if len(self.timers) == 1:
             self._activate_main_callback(self.main_callback,
                                          self.interval)
@@ -110,7 +117,8 @@ class TimerManagerBase(object):
     def remove_timer(self, timer):
         """ Remove a timer and deactivate the main callback if required. """
         try:
-            self.timers.remove(timer)
+            with self._lock:
+                self.timers.remove(timer)
         except Exception as e:
             self._log.exception("Failed to remove timer: %s" % e)
             return
@@ -120,7 +128,7 @@ class TimerManagerBase(object):
     def main_callback(self):
         """ Method to call each timer's function when required. """
         now = time.time()
-        for c in self.timers:
+        for c in tuple(self.timers):
             if c.next_time < now:
                 try:
                     c.call()
@@ -149,10 +157,10 @@ class ThreadedTimerManager(TimerManagerBase):
     """
     Timer manager class using a daemon thread.
 
-    This class is used by the "text" and SAPI 5 engines.
+    This class is used by the "text" engine.
 
-    It may be used by any SR engine that doesn't have to contend with
-    Python's multi-threading limitations.
+    It may be used by any SR engine that supports engine operations on
+    multiple threads.
     """
 
     def __init__(self, interval, engine):
@@ -181,6 +189,48 @@ class ThreadedTimerManager(TimerManagerBase):
         # Stop the thread's main loop and wait until it finishes, timing out
         # after 5 seconds.
         self._running = False
-        if self._thread:
+        if self._thread and self._thread is not current_thread():
             self._thread.join(timeout=5)
             self._thread = None
+
+
+class DelegateTimerManagerInterface(object):
+    """
+    DelegateTimerManager interface.
+    """
+    def set_timer_callback(self, callback, sec):
+        """
+        Virtual method to set the timer manager's callback.
+
+        :param callback: function to call every N seconds
+        :type callback: callable | None
+        :param sec: number of seconds between calls to the callback function
+        :type sec: float | int
+        """
+        raise NotImplementedError()
+
+
+class DelegateTimerManager(TimerManagerBase):
+    """
+    Timer manager class that calls :meth:`main_callback` through an
+    engine-specific callback function.
+
+    Engines using this class must implement
+    :class:`DelegateManagerInterface`.
+
+    This class is used by the SAPI 5 engine.
+    """
+
+    def __init__(self, interval, engine):
+        TimerManagerBase.__init__(self, interval, engine)
+        if not isinstance(self.engine, DelegateTimerManagerInterface):
+            raise TypeError("engines using ProxyTimerManager must "
+                            "implement ProxyManagerInterface")
+
+    def _activate_main_callback(self, callback, sec):
+        """"""
+        self.engine.set_timer_callback(callback, sec)
+
+    def _deactivate_main_callback(self):
+        """"""
+        self.engine.set_timer_callback(None, 0)

@@ -36,17 +36,20 @@ from ctypes import Structure, c_long, c_int, c_uint, pointer
 from six import string_types, integer_types
 
 try:
+    import pythoncom
     import win32con
     from win32com.client           import Dispatch, getevents, constants
     from win32com.client.gencache  import EnsureDispatch
     from ctypes import windll, WinError
+    from ctypes.wintypes import DWORD, HANDLE, HWND, LONG, WINFUNCTYPE
 except ImportError:
     # Ignore import errors so that documentation can be built on other
     # platforms.
     pass
 
 from ..base                    import (EngineBase, EngineError,
-                                       MimicFailure, ThreadedTimerManager)
+                                       MimicFailure, DelegateTimerManager,
+                                       DelegateTimerManagerInterface)
 from .compiler                 import Sapi5Compiler
 from .dictation                import Sapi5DictationContainer
 from .recobs                   import Sapi5RecObsManager
@@ -74,6 +77,7 @@ class MimicObserver(RecognitionObserver):
     _log = logging.getLogger("SAPI5 RecObs")
 
     def __init__(self):
+        RecognitionObserver.__init__(self)
         self.status = "none"
 
     def on_recognition(self, words):
@@ -87,7 +91,7 @@ class MimicObserver(RecognitionObserver):
 
 #===========================================================================
 
-class Sapi5SharedEngine(EngineBase):
+class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     """ Speech recognition engine back-end for SAPI 5 shared recognizer. """
 
     _name = "sapi5shared"
@@ -98,6 +102,7 @@ class Sapi5SharedEngine(EngineBase):
 
     def __init__(self, retain_dir=None):
         EngineBase.__init__(self)
+        DelegateTimerManagerInterface.__init__(self)
 
         EnsureDispatch(self.recognizer_dispatch_name)
         EnsureDispatch("SAPI.SpVoice")
@@ -106,7 +111,10 @@ class Sapi5SharedEngine(EngineBase):
         self._compiler    = None
 
         self._recognition_observer_manager = Sapi5RecObsManager(self)
-        self._timer_manager = ThreadedTimerManager(0.02, self)
+        self._timer_manager = DelegateTimerManager(0.05, self)
+        self._timer_callback = None
+        self._timer_interval = None
+        self._timer_next_time = 0
 
         if isinstance(retain_dir, string_types) or retain_dir is None:
             self._retain_dir = retain_dir
@@ -286,6 +294,65 @@ class Sapi5SharedEngine(EngineBase):
     def _get_language(self):
         return "en"
 
+    def set_timer_callback(self, callback, sec):
+        self._timer_callback = callback
+        self._timer_interval = sec
+        self._timer_next_time = time.time()
+
+    def _call_timer_callback(self):
+        if not (self._timer_callback or self._timer_interval):
+            return
+
+        now = time.time()
+        if self._timer_next_time < now:
+            self._timer_next_time = now + self._timer_interval
+            self._timer_callback()
+
+    def recognize_forever(self):
+        """
+        Recognize speech in a loop.
+
+        This will also call any scheduled timer functions and ensure that
+        the correct window context is used.
+        """
+        # Register for window change events to activate/deactivate grammars
+        # and rules on window changes. This is done here because the SAPI5
+        # 'OnPhraseStart' grammar callback is called after grammar state
+        # changes are allowed.
+        WinEventProcType = WINFUNCTYPE(None, HANDLE, DWORD, HWND, LONG,
+                                       LONG, DWORD, DWORD)
+
+        def callback(hWinEventHook, event, hwnd, idObject, idChild,
+                     dwEventThread, dwmsEventTime):
+            window = Window.get_foreground()
+            if hwnd == window.handle:
+                for grammar in self.grammars:
+                    # Prevent 'notify_begin()' from being called.
+                    if grammar.name == "_recobs_grammar":
+                        continue
+
+                    grammar.process_begin(window.executable, window.title,
+                                          window.handle)
+
+        def set_hook(win_event_proc, event_type):
+            return windll.user32.SetWinEventHook(
+                event_type, event_type, 0, win_event_proc, 0, 0,
+                win32con.WINEVENT_OUTOFCONTEXT)
+
+        win_event_proc = WinEventProcType(callback)
+        windll.user32.SetWinEventHook.restype = HANDLE
+
+        [set_hook(win_event_proc, et) for et in
+         {win32con.EVENT_SYSTEM_FOREGROUND,
+          win32con.EVENT_OBJECT_NAMECHANGE, }]
+
+        # Recognize speech, call timer functions and handle window change
+        # events in a loop.
+        self.speak('beginning loop!')
+        while 1:
+            pythoncom.PumpWaitingMessages()
+            self._call_timer_callback()
+            time.sleep(0.07)
 
 #---------------------------------------------------------------------------
 # Make the shared engine available as Sapi5Engine, for backwards

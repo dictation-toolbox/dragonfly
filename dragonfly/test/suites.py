@@ -40,6 +40,7 @@ common_names = [
     "test_engine_nonexistent",
     "test_log",
     "test_parser",
+    "test_rpc",
     "test_timer",
     "doc:documentation/test_action_base_doctest.txt",
     "doc:documentation/test_grammar_elements_basic_doctest.txt",
