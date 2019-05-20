@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -22,10 +22,10 @@
 Context classes
 ============================================================================
 
-Dragonfly uses context classes to define when grammars and 
-rules should be active.  A context is an object with a 
-:meth:`Context.matches` method which returns *True* if the 
-system is currently within that context, and *False* if it 
+Dragonfly uses context classes to define when grammars and
+rules should be active.  A context is an object with a
+:meth:`Context.matches` method which returns *True* if the
+system is currently within that context, and *False* if it
 is not.
 
 The following context classes are available:
@@ -48,8 +48,8 @@ Python's standard logical operators:
    *one or more* of the contexts must match
 :logical NOT: ``~context1`` -- *inversion* of when the context matches
 
-For example, to create a context which will match when 
-Firefox is in the foreground, but only if Google Reader is 
+For example, to create a context which will match when
+Firefox is in the foreground, but only if Google Reader is
 *not* being viewed::
 
    firefox_context = AppContext(executable="firefox")
@@ -74,9 +74,9 @@ class Context(object):
     """
         Base class for other context classes.
 
-        This base class implements some basic 
-        infrastructure, including what's required for 
-        logical operations on context objects.  Derived 
+        This base class implements some basic
+        infrastructure, including what's required for
+        logical operations on context objects.  Derived
         classes should at least do the following things:
 
          - During initialization, set *self._str* to some descriptive,
@@ -85,8 +85,8 @@ class Context(object):
          - Overload the :meth:`Context.matches` method to implement
            the logic to determine when to be active.
 
-        The *self._log* logger objects should be used in methods of 
-        derived classes for logging purposes.  It is a standard logger 
+        The *self._log* logger objects should be used in methods of
+        derived classes for logging purposes.  It is a standard logger
         object from the *logger* module in the Python standard library.
 
     """
@@ -192,11 +192,13 @@ class AppContext(Context):
         certain requirements.  Which requirements must be met for this
         context to match are determined by the constructor arguments.
 
+        If multiple strings are passed in a list, True will be returned if the foreground window matches one or more of them.
+
         Constructor arguments:
-         - *executable* (*str*) --
+         - *executable* (*str* or *list*) --
            (part of) the path name of the foreground application's
            executable; case insensitive
-         - *title* (*str*) --
+         - *title* (*str* or *list*) --
            (part of) the title of the foreground window; case insensitive
 
     """
@@ -209,7 +211,9 @@ class AppContext(Context):
 
         # Allow Unicode or strings to be used for executables and titles.
         if isinstance(executable, string_types):
-            self._executable = executable.lower()
+            self._executable = [executable.lower()]
+        elif isinstance(executable, (list, tuple)):
+            self._executable = [e.lower() for e in executable]
         elif executable is None:
             self._executable = None
         else:
@@ -217,7 +221,9 @@ class AppContext(Context):
                             " received %r" % executable)
 
         if isinstance(title, string_types):
-            self._title = title.lower()
+            self._title = [title.lower()]
+        elif isinstance(title, (list, tuple)):
+            self._title = [t.lower() for t in title]
         elif title is None:
             self._title = None
         else:
@@ -237,16 +243,23 @@ class AppContext(Context):
         title = title.lower()
 
         if self._executable:
-            found = (executable.find(self._executable) != -1)
+            found = False
+            for match in self._executable:
+                if executable.find(match) != -1:
+                    found = True
+                    break
             if self._exclude == found:
-                self._log_match.debug("%s: No match, executable doesn't"
-                                      " match." % self)
+                self._log_match.debug("%s: No match, executable doesn't match." % self)
                 return False
+
         if self._title:
-            found = (title.find(self._title) != -1)
+            found = False
+            for match in self._title:
+                if title.find(match) != -1:
+                    found = True
+                    break
             if self._exclude == found:
-                self._log_match.debug("%s: No match, title doesn't match."
-                                      % self)
+                self._log_match.debug("%s: No match, title doesn't match." % self)
                 return False
 
         if self._log_match:
