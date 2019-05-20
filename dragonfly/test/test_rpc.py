@@ -25,6 +25,7 @@ import unittest
 from dragonfly import (ActionBase, CompoundRule, Grammar, Literal,
                        MappingRule, Rule, get_engine, RPCServer,
                        send_rpc_request)
+from dragonfly.engines.base.timer import ThreadedTimerManager
 
 
 class CapturingHandler(logging.Handler):
@@ -49,13 +50,26 @@ class RPCTestCase(unittest.TestCase):
         # Start the server on a different port for the tests and esure the
         # engine is connected.
         cls.server = RPCServer(port=50052)
-        get_engine().connect()
+        engine = get_engine()
+        engine.connect()
         cls.server.start()
+
+        # If the engine's timer manager is a ThreadedTimerManager, disable
+        # the main callback to prevent race conditions.
+        timer_manager = engine._timer_manager
+        if isinstance(timer_manager, ThreadedTimerManager):
+            cls.threaded_timer_manager = timer_manager
+            timer_manager.disable()
+        else:
+            cls.threaded_timer_manager = None
 
     @classmethod
     def tearDownClass(cls):
         cls.server.stop()
         get_engine().disconnect()
+        # Re-enable the timer manager's callback if necessary.
+        if cls.threaded_timer_manager:
+            cls.threaded_timer_manager.enable()
 
     def _send_request(self, request_function):
         # Send requests to the server using new threads to emulate requests

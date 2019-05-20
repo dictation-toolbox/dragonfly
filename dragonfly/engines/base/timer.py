@@ -157,16 +157,37 @@ class ThreadedTimerManager(TimerManagerBase):
     """
     Timer manager class using a daemon thread.
 
-    This class is used by the "text" engine.
+    This class is used by the "text" engine. It is only suitable for engine
+    backends with no recognition loop to execute timer functions on.
 
-    It may be used by any SR engine that supports engine operations on
-    multiple threads.
+    .. warning::
+
+       The timer interface is **not** thread-safe. Use the :meth:`enable`
+       and :meth:`disable` methods if you need finer control over timer
+       function execution.
     """
 
     def __init__(self, interval, engine):
         TimerManagerBase.__init__(self, interval, engine)
         self._running = False
         self._thread = None
+        self._enabled = True
+
+    def enable(self):
+        """
+        Method to re-enable the main timer callback.
+
+        The main timer callback is enabled by default. This method is only
+        useful if :meth:`disable` is called.
+        """
+        self._enabled = True
+
+    def disable(self):
+        """
+        Method to disable execution of the main timer callback on the
+        background thread.
+        """
+        self._enabled = False
 
     def _activate_main_callback(self, callback, sec):
         """"""
@@ -177,7 +198,8 @@ class ThreadedTimerManager(TimerManagerBase):
         def run():
             while self._running:
                 time.sleep(sec)
-                callback()
+                if self._enabled:
+                    callback()
 
         self._running = True
         self._thread = Thread(target=run)
@@ -188,10 +210,15 @@ class ThreadedTimerManager(TimerManagerBase):
         """"""
         # Stop the thread's main loop and wait until it finishes, timing out
         # after 5 seconds.
+        should_join = (self._thread and self._thread.isAlive() and
+                       self._thread is not current_thread())
         self._running = False
-        if self._thread and self._thread is not current_thread():
-            self._thread.join(timeout=5)
-            self._thread = None
+        if should_join:
+            timeout = 5
+            self._thread.join(timeout=timeout)
+            if self._thread.isAlive():
+                raise RuntimeError("failed to deactivate main callback "
+                                   "after %d seconds" % timeout)
 
 
 class DelegateTimerManagerInterface(object):
@@ -215,7 +242,7 @@ class DelegateTimerManager(TimerManagerBase):
     Timer manager class that calls :meth:`main_callback` through an
     engine-specific callback function.
 
-    Engines using this class must implement
+    Engines using this class should implement the methods in
     :class:`DelegateManagerInterface`.
 
     This class is used by the SAPI 5 engine.
@@ -223,9 +250,6 @@ class DelegateTimerManager(TimerManagerBase):
 
     def __init__(self, interval, engine):
         TimerManagerBase.__init__(self, interval, engine)
-        if not isinstance(self.engine, DelegateTimerManagerInterface):
-            raise TypeError("engines using ProxyTimerManager must "
-                            "implement ProxyManagerInterface")
 
     def _activate_main_callback(self, callback, sec):
         """"""

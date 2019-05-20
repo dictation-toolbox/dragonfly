@@ -23,6 +23,7 @@ import unittest
 import time
 import logging
 from dragonfly.engines import get_engine
+from dragonfly.engines.base.timer import ThreadedTimerManager
 
 
 #===========================================================================
@@ -40,6 +41,23 @@ class CapturingHandler(logging.Handler):
 #===========================================================================
 
 class TestTimer(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        # If the engine's timer manager is a ThreadedTimerManager, disable
+        # the main callback to prevent race conditions.
+        timer_manager = get_engine()._timer_manager
+        if isinstance(timer_manager, ThreadedTimerManager):
+            cls.threaded_timer_manager = timer_manager
+            timer_manager.disable()
+        else:
+            cls.threaded_timer_manager = None
+
+    @classmethod
+    def tearDownClass(cls):
+        # Re-enable the timer manager's callback if necessary.
+        if cls.threaded_timer_manager:
+            cls.threaded_timer_manager.enable()
 
     def setUp(self):
         self.log_capture = CapturingHandler()
