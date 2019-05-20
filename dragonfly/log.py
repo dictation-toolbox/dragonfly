@@ -39,6 +39,10 @@ By default, the function is only called near the top of the module loader
 scripts (e.g. *dragonfly/examples/dfly-loader-wsr.py*), not within dragonfly
 itself.
 
+It is not necessary to call :meth:`setup_log` at all. Standard Python
+logging functions such as :meth:`basicConfig` can be used at the top of
+module loader scripts instead.
+
 
 Functions
 ----------------------------------------------------------------------------

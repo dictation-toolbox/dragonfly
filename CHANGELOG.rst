@@ -11,6 +11,41 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add documentation on dragonfly's logging infrastructure.
+* Add dragonfly.rpc sub-package and usage example.
+* Add enable() and disable() methods to ThreadedTimerManager class.
+* Add optional "repeating" parameter to the multiplexing Timer class and
+  engine.create_timer() method.
+* Add recognize_forever() method to WSR engine class.
+
+Changed
+~~~~~~~
+* Change AppContext class to allow lists of titles and executables
+  (thanks `@mrob95`_).
+* Change WSR engine to call timer functions on the main thread.
+* Change dragonfly stdout logging formatter to include the level name.
+* Make dragonfly's multiplexing timer classes more thread safe.
+* Replace WSR module loader's PumpWaitingMessages loop with
+  engine.recognize_forever().
+
+Fixed
+~~~~~
+* Fix WSR engine context bug with a hook for foreground window changes
+  (thanks `@tylercal`_).
+* Fix a bug with Monitor objects caused by incorrect coordinate calculations
+  (thanks `@tylercal`_).
+* Fix some example files that break if used with Python 3.
+* Stop calling setup_log() in a few dragonfly modules to avoid side effects.
+* Stop encoding to windows-1252 in a few places if using Python 3
+  (thanks `@tylercal`_).
+* Stop erasing dragonfly's logging file now that setup_log() isn't always
+  used.
+
 0.13.0_ - 2019-04-24
 --------------------
 
@@ -392,5 +427,6 @@ This release is the first in the Git version control system.
 .. _@wolfmanstout: https://github.com/wolfmanstout
 .. _@calmofthestorm: https://github.com/calmofthestorm
 .. _@mrob95: https://github.com/mrob95
+.. _@tylercal: https://github.com/tylercal
 .. _Aenea: https://github.com/dictation-toolbox/aenea
 .. _pynput: https://github.com/moses-palmer/pynput
