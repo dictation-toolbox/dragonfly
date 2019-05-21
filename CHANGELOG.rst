@@ -32,6 +32,7 @@ Changed
 * Make dragonfly's multiplexing timer classes more thread safe.
 * Replace WSR module loader's PumpWaitingMessages loop with
   engine.recognize_forever().
+* Simplify sphinx engine availability checks.
 
 Fixed
 ~~~~~

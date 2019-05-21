@@ -45,11 +45,12 @@ try:
     from .misc import (EngineConfig, WaveRecognitionObserver,
                        get_decoder_config_object)
     from .recording import PyAudioRecorder
+    ENGINE_AVAILABLE = True
 except ImportError:
     # Import a few things here optionally for readability (the engine won't
     # start without them) and so that autodoc can import this module without
     # them.
-    pass
+    ENGINE_AVAILABLE = False
 
 
 class UnknownWordError(Exception):
@@ -68,11 +69,7 @@ class SphinxEngine(EngineBase):
         # Set up the engine logger
         logging.basicConfig()
 
-        try:
-            import sphinxwrapper
-            import jsgf
-            import pyaudio
-        except ImportError:
+        if not ENGINE_AVAILABLE:
             self._log.error("%s: Failed to import jsgf, pyaudio and/or "
                             "sphinxwrapper. Are they installed?" % self)
             raise EngineError("Failed to import Pocket Sphinx engine "
