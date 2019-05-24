@@ -76,6 +76,7 @@ def main():
 
     # Start the engine's main recognition loop
     try:
+        # Loop forever
         engine.do_recognition()
     except KeyboardInterrupt:
         pass

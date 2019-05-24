@@ -18,7 +18,7 @@ Make sure to install dependencies for Kaldi backend. This can be accomplished by
 pip install .[kaldi]
 ```
 
-Download a [compatible general English Kaldi nnet3 chain model](https://github.com/daanzu/kaldi-active-grammar/releases/latest/download/kaldi_model_zamia.zip) (\~172MB) from [kaldi-active-grammar](https://github.com/daanzu/kaldi-active-grammar). Unzip it into a directory within the directory with your grammar modules.
+Download a [compatible general English Kaldi nnet3 chain model](https://github.com/daanzu/kaldi-active-grammar/releases/tag/v0.2.2) from [kaldi-active-grammar](https://github.com/daanzu/kaldi-active-grammar). Unzip it into a directory within the directory with your grammar modules.
 
 Copy the `dragonfly/examples/kaldi_module_loader.py` script into the directory with your grammar modules and run it using:
 
@@ -28,8 +28,11 @@ python kaldi_module_loader.py
 
 Examine loader file for details, including optional parameters to engine.
 
+A simpler, standalone example can be found in [this gist](https://gist.github.com/daanzu/8bf5f14ed03552f8ab93c853e85de277).
+
 ## Known Issues
 
+* Dictation is not processed or formatted, just returning raw lowercase text of the recognition.
 * `ListRef` support is not implemented.
 * macOS not supported currently.
 

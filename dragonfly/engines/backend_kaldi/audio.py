@@ -23,14 +23,10 @@ Audio input/output classes for Kaldi backend
 """
 
 import collections, wave, logging, os, datetime
+
+from six.moves import queue
 import pyaudio
 import webrtcvad
-
-try:
-    import queue
-except ImportError:
-    # python 2
-    import Queue as queue
 
 _log = logging.getLogger("engine.audio")
 
