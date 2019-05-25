@@ -76,7 +76,7 @@ class KaldiEngine(EngineBase):
         self._decoder = KaldiAgfNNet3Decoder(model_dir=self._model_dir, tmp_dir=self._tmp_dir, top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file)
         words = self._compiler.load_words()
 
-        self._audio = VADAudio(aggressiveness=self._vad_aggressiveness)
+        self._audio = VADAudio(aggressiveness=self._vad_aggressiveness, start=False)
         self._audio_iter = self._audio.vad_collector(padding_ms=self._vad_padding_ms)
         self.audio_store = None
 
@@ -183,32 +183,38 @@ class KaldiEngine(EngineBase):
             timed_out = True
         phrase_started = False
 
-        while (not timeout) or (time.time() < end_time):
-            block = next(self._audio_iter)
+        self._audio.start()
 
-            if block is not None:
-                if not phrase_started:
-                    self._recognition_observer_manager.notify_begin()
-                    with debug_timer(self._log.debug, "computing activity"):
-                        kaldi_rules_activity = self._compute_kaldi_rules_activity()
-                    phrase_started = True
+        try:
+            while (not timeout) or (time.time() < end_time):
+                block = next(self._audio_iter)
+
+                if block is not None:
+                    if not phrase_started:
+                        self._recognition_observer_manager.notify_begin()
+                        with debug_timer(self._log.debug, "computing activity"):
+                            kaldi_rules_activity = self._compute_kaldi_rules_activity()
+                        phrase_started = True
+                    else:
+                        kaldi_rules_activity = None
+                    self._decoder.decode(block, False, kaldi_rules_activity)
+                    if self.audio_store: self.audio_store.add_block(block)
+
                 else:
-                    kaldi_rules_activity = None
-                self._decoder.decode(block, False, kaldi_rules_activity)
-                if self.audio_store: self.audio_store.add_block(block)
+                    # end of phrase
+                    self._decoder.decode('', True)
+                    output, likelihood = self._decoder.get_output()
+                    output = self._compiler.untranslate_output(output)
+                    kaldi_rule = self._parse_recognition(output)
+                    self._log.debug("End of utterence: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, output))
+                    if self.audio_store and kaldi_rule: self.audio_store.finalize(output, kaldi_rule.grammar.name, kaldi_rule.rule.name)
+                    phrase_started = False
+                    timed_out = False
+                    if single:
+                        break
 
-            else:
-                # end of phrase
-                self._decoder.decode('', True)
-                output, likelihood = self._decoder.get_output()
-                output = self._compiler.untranslate_output(output)
-                kaldi_rule = self._parse_recognition(output)
-                self._log.debug("End of utterence: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, output))
-                if self.audio_store and kaldi_rule: self.audio_store.finalize(output, kaldi_rule.grammar.name, kaldi_rule.rule.name)
-                phrase_started = False
-                timed_out = False
-                if single:
-                    break
+        finally:
+            self._audio.stop()
 
         return not timed_out
 

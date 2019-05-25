@@ -39,7 +39,7 @@ class MicAudio(object):
     CHANNELS = 1
     BLOCKS_PER_SECOND = 50
 
-    def __init__(self, callback=None, buffer_s=0, flush_queue=True):
+    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True):
         def proxy_callback(in_data, frame_count, time_info, status):
             callback(in_data)
             return (None, pyaudio.paContinue)
@@ -54,7 +54,8 @@ class MicAudio(object):
                                    input=True,
                                    frames_per_buffer=self.block_size,
                                    stream_callback=proxy_callback)
-        self.stream.start_stream()
+        if start:
+            self.stream.start_stream()
         self.active = True
         _log.info("%s: streaming audio from microphone: %i sample_rate, %i block_duration_ms", self, self.sample_rate, self.block_duration_ms)
 
@@ -63,6 +64,12 @@ class MicAudio(object):
         self.stream.close()
         self.pa.terminate()
         self.active = False
+
+    def start(self):
+        self.stream.start_stream()
+
+    def stop(self):
+        self.stream.stop_stream()
 
     def read(self):
         """Return a block of audio data, blocking if necessary."""
@@ -99,11 +106,11 @@ class MicAudio(object):
         wf.close()
 
 
-class VADAudio(object):
+class VADAudio(MicAudio):
     """Filter & segment audio with voice activity detection."""
 
-    def __init__(self, audio=None, aggressiveness=3, **kwargs):
-        self.audio = audio if audio is not None else MicAudio(**kwargs)
+    def __init__(self, aggressiveness=3, **kwargs):
+        super(VADAudio, self).__init__(**kwargs)
         self.vad = webrtcvad.Vad(aggressiveness)
 
     def vad_collector(self, padding_ms=300, ratio=0.75, blocks=None):
@@ -112,13 +119,13 @@ class VADAudio(object):
             Example: (block, ..., block, None, block, ..., block, None, ...)
                       |---utterence---|        |---utterence---|
         """
-        if blocks is None: blocks = iter(self.audio)
-        num_padding_blocks = padding_ms // self.audio.block_duration_ms
+        if blocks is None: blocks = iter(self)
+        num_padding_blocks = padding_ms // self.block_duration_ms
         ring_buffer = collections.deque(maxlen=num_padding_blocks)
         triggered = False
 
         for block in blocks:
-            is_speech = self.vad.is_speech(block, self.audio.sample_rate)
+            is_speech = self.vad.is_speech(block, self.sample_rate)
 
             if not triggered:
                 ring_buffer.append((block, is_speech))
