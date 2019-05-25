@@ -33,7 +33,7 @@ A simpler, standalone example can be found in [this gist](https://gist.github.co
 ## Known Issues
 
 * Dictation is not processed or formatted, just returning raw lowercase text of the recognition.
-* `ListRef` support is not implemented.
+* `ListRef` is not fully supported; will only recognize initial elements of List.
 * macOS not supported currently.
 
-Please post if this is important to you.
+Please post if any of these is important to you.

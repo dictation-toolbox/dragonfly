@@ -135,18 +135,19 @@ class KaldiEngine(EngineBase):
         self._compiler.kaldi_rule_by_rule_dict[rule].active = False
 
     def update_list(self, lst, grammar):
-        raise NotImplementedError("Method not implemented for engine %s." % self)  # FIXME
-        grammar_handle = self._get_grammar_wrapper(grammar).handle
-        list_rule_name = "__list_%s" % lst.name
-        rule_handle = grammar_handle.Rules.FindRule(list_rule_name)
+        self._log.warning("%s: %s: ListRef to List('%s') not fully supported; will not recognize updated elements of List!" % (self, grammar, lst.name))  # FIXME
+        return
+        # grammar_handle = self._get_grammar_wrapper(grammar).handle
+        # list_rule_name = "__list_%s" % lst.name
+        # rule_handle = grammar_handle.Rules.FindRule(list_rule_name)
 
-        rule_handle.Clear()
-        src_state = rule_handle.InitialState
-        dst_state = None
-        for item in lst.get_list_items():
-            src_state.AddWordTransition(dst_state, item)
+        # rule_handle.Clear()
+        # src_state = rule_handle.InitialState
+        # dst_state = None
+        # for item in lst.get_list_items():
+        #     src_state.AddWordTransition(dst_state, item)
 
-        grammar_handle.Rules.Commit()
+        # grammar_handle.Rules.Commit()
 
     def set_exclusiveness(self, grammar, exclusive):
         self._log.debug("Setting exclusiveness of grammar %s to %s." % (grammar.name, exclusive))

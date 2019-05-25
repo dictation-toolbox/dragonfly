@@ -59,6 +59,8 @@ def trace_compile(func):
 InternalGrammar = collections.namedtuple('InternalGrammar', 'name')
 InternalRule = collections.namedtuple('InternalRule', 'name gstring')
 
+MockLiteral = collections.namedtuple('MockLiteral', 'words')
+
 
 #---------------------------------------------------------------------------
 
@@ -204,15 +206,15 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
         fst.add_arc(rule_dst_state, dst_state, None)
         return matcher
 
-    # @trace_compile
-    # def _compile_list_ref(self, element, src_state, dst_state, grammar, fst):
-    #     list_rule_name = "__list_%s" % element.list.name
-    #     rule_handle = grammar_handle.Rules.FindRule(list_rule_name)
-    #     if not rule_handle:
-    #         grammar.add_list(element.list)
-    #         flags = constants.SRADynamic
-    #         rule_handle = grammar_handle.Rules.Add(list_rule_name, flags, 0)
-    #     src_state.AddRuleTransition(dst_state, rule_handle)
+    @trace_compile
+    def _compile_list_ref(self, element, src_state, dst_state, grammar, fst):
+        self._log.error("%s: %s: ListRef not fully supported; will only recognize initial elements of List!" % (self, element))
+        # list_rule_name = "__list_%s" % element.list.name
+        grammar.add_list(element.list)
+        matchers = []
+        for child_str in element.list:
+            matchers.append(self._compile_literal(MockLiteral(child_str.split()), src_state, dst_state, grammar, fst))
+        return pp.Or(tuple(matchers))
 
     @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, fst):
