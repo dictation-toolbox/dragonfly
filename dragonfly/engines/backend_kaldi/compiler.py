@@ -119,9 +119,13 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
         kaldi_rule_by_rule_dict = collections.OrderedDict()
         for rule in grammar.rules:
             if rule.exported:
+                if rule.element is None:
+                    raise CompilerError("Invalid None element for rule %s in grammar %s" % (rule, grammar))
                 kaldi_rule_id = self._num_kaldi_rules
                 self._num_kaldi_rules += 1
-                kaldi_rule = KaldiRule(self, kaldi_rule_id, name='%s::%s' % (grammar.name, rule.name), dictation=bool('<Dictation()>' in rule.gstring()))
+                kaldi_rule = KaldiRule(self, kaldi_rule_id,
+                    name='%s::%s' % (grammar.name, rule.name),
+                    dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))
                 kaldi_rule.grammar = grammar
                 kaldi_rule.rule = rule
                 matcher, _, _ = self._compile_rule(rule, grammar, kaldi_rule.fst)
@@ -223,6 +227,6 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
     @trace_compile
     def _compile_impossible(self, element, src_state, dst_state, grammar, fst):
-        # FIXME: not impossible enough
+        # FIXME: not impossible enough (lower probability?)
         fst.add_arc(src_state, dst_state, self.impossible_word.lower())
         return pp.NoMatch()
