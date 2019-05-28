@@ -26,9 +26,10 @@ Dragonfly's FAQ is available at
 Dragonfly's mailing list/discussion group is available at `Google
 Groups <https://groups.google.com/forum/#!forum/dragonflyspeech>`__.
 
-There is also a gitter channel:
+There are also bridged Gitter and Matrix channels:
 
-|Join the chat at https://gitter.im/sphinx-dragonfly|
+|Join Gitter chat|
+|Join Matrix chat|
 
 Installation
 ------------
@@ -157,5 +158,7 @@ compared to Dragonfly as follows:
    :target: https://travis-ci.org/dictation-toolbox/dragonfly
 .. |Docs Status| image:: https://readthedocs.org/projects/dragonfly2/badge/?version=latest&style=flat
    :target: https://dragonfly2.readthedocs.io
-.. |Join the chat at https://gitter.im/sphinx-dragonfly| image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/sphinx-dragonfly
+.. |Join Gitter chat| image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/dictation-toolbox/dragonfly
+.. |Join Matrix chat| image:: https://img.shields.io/matrix/dragonfly2:matrix.org.svg?label=%5Bmatrix%5D
+   :target: https://riot.im/app/#/room/#dragonfly2:matrix.org
