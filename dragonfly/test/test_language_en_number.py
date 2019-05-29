@@ -40,8 +40,11 @@ class IntegerTestCase(ElementTestCase):
         return Integer(content=IntegerContent, min=0, max=10**12 - 1)
     input_output = [
                     ("zero",       0),
+                    ("oh",         0),
                     ("one",        1),
                     ("two",        2),
+                    ("to",         2),
+                    ("too",        2),
                     ("three",      3),
                     ("four",       4),
                     ("five",       5),
@@ -71,9 +74,12 @@ class Limit3to14TestCase(ElementTestCase):
         from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=3, max=14)
     input_output = [
+                    ("oh",         RecognitionFailure),
                     ("zero",       RecognitionFailure),
                     ("one",        RecognitionFailure),
                     ("two",        RecognitionFailure),
+                    ("to",         RecognitionFailure),
+                    ("too",        RecognitionFailure),
                     ("three",      3),
                     ("four",       4),
                     ("five",       5),
@@ -160,6 +166,7 @@ class ShortIntegerTestCase(ElementTestCase):
     input_output = [
                     ("one",                           1),
                     ("ten",                           10),
+                    ("two to",                        22),
                     ("twenty three",                  23),
                     ("two three",                     23),
                     ("seventy",                       70),
@@ -170,6 +177,7 @@ class ShortIntegerTestCase(ElementTestCase):
                     ("one twenty seven",              127),
                     ("one two seven",                 127),
                     ("one hundred twenty seven",      127),
+                    ("to two too",                    222),
                     ("seven hundred",                 700),
                     ("thousand",                      1000),
                     ("seventeen hundred",             1700),
