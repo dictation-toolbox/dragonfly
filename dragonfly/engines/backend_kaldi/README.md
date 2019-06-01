@@ -34,6 +34,8 @@ A simpler, standalone example can be found in [this gist](https://gist.github.co
 
 * Dictation is not processed or formatted, just returning raw lowercase text of the recognition.
 * `ListRef` is not fully supported; will only recognize initial elements of List.
+* All grammars & rules must be loaded before starting recognition (with a call to `do_recognition()`).
+* Grammars & rules cannot be unloaded.
 * macOS not supported currently.
 
 Please post if any of these is important to you.
