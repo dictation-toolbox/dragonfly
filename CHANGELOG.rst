@@ -11,6 +11,26 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+
+* Add FuncContext class that determines context activity by callable arg
+  (thanks `@daanzu`_).
+
+Changed
+~~~~~~~
+
+* Change the dragonfly.timer._Timer class so that it works correctly for all
+  supported engines and platforms via engine.create_timer().
+
+Deprecated
+~~~~~~~~~~
+
+* Deprecate the old dragonfly.timer._Timer class.
+
 0.14.1_ - 2019-05-31
 --------------------
 
