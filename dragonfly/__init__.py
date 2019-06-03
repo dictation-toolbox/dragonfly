@@ -38,7 +38,7 @@ from .grammar.elements  import (ElementBase, Sequence, Alternative,
                                 ListRef, DictListRef, Dictation,
                                 RuleRef, RuleWrap, Empty, Compound, Choice)
 
-from .grammar.context   import Context, AppContext
+from .grammar.context   import Context, AppContext, FuncContext
 from .grammar.list      import ListBase, List, DictList
 from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
                                 PlaybackHistory)
