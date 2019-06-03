@@ -19,57 +19,65 @@
 #
 
 """
-    This file implements a basic multiplexing interface to the natlink timer.
+    This file implements a basic multiplexing interface to the current
+    engine's timer.
 """
 
 
 import time
 import logging
 
-# Optionally import natlink
-try:
-    import natlink
-except ImportError:
-    natlink = None
+from dragonfly.engines import get_engine
 
 
 class _Timer(object):
+    """
+    This class is **deprecated** and will be removed in a future release.
+
+    Please use the :meth:`engine.create_timer` method instead.
+
+    """
+
+    _log = logging.getLogger("timer")
 
     class Callback(object):
         def __init__(self, function, interval):
             self.function = function
             self.interval = interval
-            self.next_time = time.clock() + self.interval
+            self.next_time = time.time() + self.interval
+            self.timer = None
 
         def call(self):
             self.next_time += self.interval
             try:
                 self.function()
             except Exception as e:
-                logging.getLogger("timer").exception("Exception during timer callback")
+                _Timer._log.exception("Exception during timer callback")
                 print("Exception during timer callback: %s (%r)" % (e, e))
 
     def __init__(self, interval):
         self.interval = interval
         self.callbacks = []
+        self._log.warning("Dragonfly's _Timer class has been deprecated. "
+                          "Please use engine.create_timer() instead.")
 
     def add_callback(self, function, interval):
-        self.callbacks.append(self.Callback(function, interval))
-        if len(self.callbacks) == 1 and natlink:
-            natlink.setTimerCallback(self.callback, int(self.interval * 1000))
+        t = get_engine().create_timer(function, interval)
+        c = self.Callback(function, interval)
+        c.timer = t
+        self.callbacks.append(c)
 
     def remove_callback(self, function):
         for c in self.callbacks:
             if c.function == function:
                 self.callbacks.remove(c)
-        if len(self.callbacks) == 0 and natlink:
-            natlink.setTimerCallback(None, 0)
+                c.timer.stop()
 
     def callback(self):
-        now = time.clock()
+        now = time.time()
         for c in self.callbacks:
             if c.next_time < now:
-                c.call()
+                c.timer.call()
 
 
 timer = _Timer(0.025)
