@@ -33,8 +33,12 @@ The following context classes are available:
  - :class:`Context` --
    the base class from which all other context classes are derived
  - :class:`AppContext` --
-   class which based on the application context, i.e. foreground window
-   executable, title, and handle
+   class which is based on the application context, i.e. foreground
+   window executable, title, and handle
+ - :class:`FuncContext` --
+   class that evaluates a given function/lambda/callable, whose return
+   value is interpreted as a *bool*, determining whether the context is
+   active
 
 
 Logical operations
@@ -63,6 +67,7 @@ Class reference
 """
 
 import copy
+import inspect
 import logging
 
 
@@ -265,3 +270,57 @@ class AppContext(Context):
         if self._log_match:
             self._log_match.debug("%s: Match." % self)
         return True
+
+
+# --------------------------------------------------------------------------
+
+class FuncContext(Context):
+    """
+        Context class that evaluates a given function, whose return
+        value is interpreted as a *bool*, determining whether the
+        context is active.
+
+        The foreground application details are optionally passed to the
+        function as arguments named *executable*, *title*, and/or
+        *handle*, if any/each matches a so-named keyword argument of the
+        function. Default arguments may also be passed to the function,
+        through this class's constructor.
+
+    """
+
+    def __init__(self, function, **defaults):
+        """
+            Constructor arguments:
+             - *function* (callable) --
+               the function to call when this context is evaluated
+             - defaults --
+               optional default keyword-values for the arguments with
+               which the function will be called
+
+        """
+
+        Context.__init__(self)
+        self._function = function
+        self._defaults = defaults
+        self._str = "%s" % (self._function,)
+
+        (args, varargs, varkw, defaults) = inspect.getargspec(self._function)
+        if varkw:  self._filter_keywords = False
+        else:      self._filter_keywords = True
+        self._valid_keywords = set(args)
+
+    def matches(self, executable, title, handle):
+        arguments = dict(self._defaults)
+        arguments.update(executable=executable, title=title, handle=handle)
+
+        if self._filter_keywords:
+            invalid_keywords = set(arguments.keys()) - self._valid_keywords
+            for key in invalid_keywords:
+                del arguments[key]
+
+        try:
+            return bool(self._function(**arguments))
+        except:
+            self._log.exception("Exception from function %s:" % self._function.__name__)
+            # Fallback to matching
+            return True
