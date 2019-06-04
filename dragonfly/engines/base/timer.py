@@ -149,6 +149,9 @@ class TimerManagerBase(object):
 
     def main_callback(self):
         """ Method to call each timer's function when required. """
+        # Deactivate the engine's main callback if necessary. We don't
+        # return early here because this method should work if called
+        # manually.
         if not self._enabled and self._active:
             self._deactivate_main_callback()
             self._active = False
