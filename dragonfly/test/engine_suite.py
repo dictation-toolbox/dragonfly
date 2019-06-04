@@ -33,6 +33,11 @@ class EngineTestSuite(unittest.TestSuite):
     def run(self, result):
         self.engine = dragonfly.get_engine(self.engine_name)
         self.engine.connect()
+
+        # Prevent the engine from running timers on its own. This lets us
+        # avoid race conditions.
+        self.engine._timer_manager.disable()
+
         try:
             return unittest.TestSuite.run(self, result)
         finally:
