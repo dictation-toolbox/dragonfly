@@ -105,14 +105,17 @@ class TimerManagerBase(object):
         self.engine = engine
         self.timers = []
         self._lock = RLock()
+        self._enabled = True
+        self._active = False
 
     def add_timer(self, timer):
         """ Add a timer and activate the main callback if required. """
         with self._lock:
             self.timers.append(timer)
-        if len(self.timers) == 1:
+        if len(self.timers) == 1 and self._enabled:
             self._activate_main_callback(self.main_callback,
                                          self.interval)
+            self._active = True
 
     def remove_timer(self, timer):
         """ Remove a timer and deactivate the main callback if required. """
@@ -122,11 +125,34 @@ class TimerManagerBase(object):
         except Exception as e:
             self._log.exception("Failed to remove timer: %s" % e)
             return
-        if len(self.timers) == 0:
+        if len(self.timers) == 0 and self._enabled:
             self._deactivate_main_callback()
+            self._active = False
+
+    def enable(self):
+        """
+        Method to re-enable the main timer callback.
+
+        The main timer callback is enabled by default. This method is only
+        useful if :meth:`disable` is called.
+        """
+        self._enabled = True
+
+    def disable(self):
+        """
+        Method to disable execution of the main timer callback.
+
+        This method is used for testing timer-related functionality without
+        race conditions.
+        """
+        self._enabled = False
 
     def main_callback(self):
         """ Method to call each timer's function when required. """
+        if not self._enabled and self._active:
+            self._deactivate_main_callback()
+            self._active = False
+
         now = time.time()
         for c in tuple(self.timers):
             if c.next_time < now:
@@ -171,23 +197,6 @@ class ThreadedTimerManager(TimerManagerBase):
         TimerManagerBase.__init__(self, interval, engine)
         self._running = False
         self._thread = None
-        self._enabled = True
-
-    def enable(self):
-        """
-        Method to re-enable the main timer callback.
-
-        The main timer callback is enabled by default. This method is only
-        useful if :meth:`disable` is called.
-        """
-        self._enabled = True
-
-    def disable(self):
-        """
-        Method to disable execution of the main timer callback on the
-        background thread.
-        """
-        self._enabled = False
 
     def _activate_main_callback(self, callback, sec):
         """"""
@@ -198,8 +207,7 @@ class ThreadedTimerManager(TimerManagerBase):
         def run():
             while self._running:
                 time.sleep(sec)
-                if self._enabled:
-                    callback()
+                callback()
 
         self._running = True
         self._thread = Thread(target=run)
