@@ -221,8 +221,12 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         self._log.debug("Setting exclusiveness of grammar %s to %s."
                         % (grammar.name, exclusive))
         grammar_handle = self._get_grammar_wrapper(grammar).handle
-        grammar_handle.State = constants.SGSExclusive
-       # grammar_handle.SetGrammarState(constants.SPGS_EXCLUSIVE)
+        if exclusive:
+            grammar_handle.State = constants.SGSExclusive
+        else:
+            grammar_handle.State = constants.SGSEnabled
+            # Should we set this to SGSDisabled if grammar is not enabled or was deactivated before being set exclusive?
+        # grammar_handle.SetGrammarState(constants.SPGS_EXCLUSIVE)
 
 
     #-----------------------------------------------------------------------
