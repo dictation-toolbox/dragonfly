@@ -220,12 +220,13 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     def set_exclusiveness(self, grammar, exclusive):
         self._log.debug("Setting exclusiveness of grammar %s to %s."
                         % (grammar.name, exclusive))
-        grammar_handle = self._get_grammar_wrapper(grammar).handle
+        wrapper = self._get_grammar_wrapper(grammar)
         if exclusive:
-            grammar_handle.State = constants.SGSExclusive
-        else:
-            grammar_handle.State = constants.SGSEnabled
-            # Should we set this to SGSDisabled if grammar is not enabled or was deactivated before being set exclusive?
+            wrapper.state_before_exclusive = wrapper.handle.State
+            wrapper.handle.State = constants.SGSExclusive
+        elif wrapper.handle.State == constants.SGSExclusive:
+            assert wrapper.state_before_exclusive in (constants.SGSEnabled, constants.SGSDisabled)
+            wrapper.handle.State = wrapper.state_before_exclusive
         # grammar_handle.SetGrammarState(constants.SPGS_EXCLUSIVE)
 
 
@@ -356,7 +357,8 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         def callback(hWinEventHook, event, hwnd, idObject, idChild,
                      dwEventThread, dwmsEventTime):
             window = Window.get_foreground()
-            # Note: hwnd doesn't always match window.handle
+            # Note: hwnd doesn't always match window.handle, even when
+            # foreground window changed (and sometimes it didn't change)
             if window != self._last_foreground_window:
                 self.process_grammars_context(window)
                 self._last_foreground_window = window
@@ -496,6 +498,7 @@ class GrammarWrapper(object):
         self.engine = engine
         self.context = context
         self.recobs_manager = recobs_manager
+        self.state_before_exclusive = handle.State
 
         # Register callback functions which will handle recognizer events.
         base = getevents("SAPI.SpSharedRecoContext")
