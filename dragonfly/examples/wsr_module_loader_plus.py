@@ -24,9 +24,7 @@ from dragonfly.log import setup_log
 # --------------------------------------------------------------------------
 # Set up basic logging.
 
-# setup_log()
-logging.basicConfig()
-logging.getLogger('action.exec').setLevel(10)
+setup_log()
 
 
 # --------------------------------------------------------------------------
@@ -63,7 +61,7 @@ def play_sound(sound, async=True):
 
 sleeping = False
 
-def load_harness(initial_awake):
+def load_sleep_wake_grammar(initial_awake):
     sleep_grammar = Grammar("sleep")
 
     def sleep(force=False):
@@ -145,7 +143,7 @@ def main():
     observer = Observer()
     observer.register()
 
-    load_harness(True)
+    load_sleep_wake_grammar(True)
 
     directory = CommandModuleDirectory(path, excludes=[__file__])
     directory.load()
