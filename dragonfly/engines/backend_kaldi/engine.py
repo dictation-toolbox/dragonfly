@@ -161,16 +161,24 @@ class KaldiEngine(EngineBase):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        output = words if isinstance(words, string_types) else " ".join(words)
+        try:
+            output = words if isinstance(words, string_types) else " ".join(words)
+            output = self._compiler.untranslate_output(output)
+        except Exception as e:
+            raise MimicFailure("Invalid mimic input %r: %s." % (words, e))
+
         kaldi_rules_activity = self._compute_kaldi_rules_activity()
-        output = self._compiler.untranslate_output(output)
+
         kaldi_rule = self._parse_recognition(output, mimic=True)
+        if not kaldi_rule:
+            raise MimicFailure("No matching rule found for words %r." % (output,))
         self._log.debug("End of mimic: rule %s, %r" % (kaldi_rule, output))
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
-        raise NotImplementedError("Method not implemented for engine %s." % self)  # FIXME
-        self._speaker.Speak(text)
+        # FIXME
+        self._log.warning("Text-to-speech is not implemented for this engine; printing text instead.")
+        print_(text)
 
     def _get_language(self):
         return "en"
