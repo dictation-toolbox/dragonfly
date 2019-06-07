@@ -23,9 +23,9 @@ Kaldi engine classes
 """
 
 import time, collections, subprocess, threading, os, os.path
-from six import string_types, integer_types
+from six import string_types, integer_types, print_
 
-from kaldi_active_grammar import KaldiAgfNNet3Decoder
+from kaldi_active_grammar import KaldiAgfNNet3Decoder, KaldiError
 
 from ..base                     import EngineBase, EngineError #, ThreadedTimerManager
 from .compiler                  import KaldiCompiler
@@ -49,7 +49,7 @@ class KaldiEngine(EngineBase):
 
     def __init__(self, model_dir=None, tmp_dir=None, vad_aggressiveness=None, vad_padding_ms=None):
         EngineBase.__init__(self)
-        self._model_dir = model_dir if model_dir is not None else 'kaldi_model'
+        self._model_dir = model_dir if model_dir is not None else 'kaldi_model_zamia'
         self._tmp_dir = tmp_dir if tmp_dir is not None else 'kaldi_tmp'
         self._vad_aggressiveness = vad_aggressiveness if vad_aggressiveness is not None else 3
         self._vad_padding_ms = vad_padding_ms if vad_padding_ms is not None else 300
@@ -57,7 +57,6 @@ class KaldiEngine(EngineBase):
         self._compiler = None
         self._decoder = None
         self._audio = None
-        self._speaker = None
         self._recognition_observer_manager = KaldiRecObsManager(self)
         # self._timer_manager = ThreadedTimerManager(0.02, self)  # FIXME
 
@@ -84,9 +83,10 @@ class KaldiEngine(EngineBase):
 
     def disconnect(self):
         """ Disconnect from back-end SR engine. """
-        self._compiler = None
         self._audio.destroy()
         self._audio = None
+        self._compiler = None
+        self._decoder = None
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.
