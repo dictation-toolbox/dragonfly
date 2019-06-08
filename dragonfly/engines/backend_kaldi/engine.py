@@ -27,7 +27,7 @@ from six import string_types, integer_types, print_
 
 from kaldi_active_grammar import KaldiAgfNNet3Decoder, KaldiError
 
-from ..base                     import EngineBase, EngineError #, ThreadedTimerManager
+from ..base                     import EngineBase, EngineError, DelegateTimerManager, DelegateTimerManagerInterface
 from .compiler                  import KaldiCompiler
 from .audio                     import VADAudio, AudioStore
 from .dictation                 import KaldiDictationContainer
@@ -39,7 +39,7 @@ from ...windows                 import Window
 
 #===========================================================================
 
-class KaldiEngine(EngineBase):
+class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     """ Speech recognition engine back-end for Kaldi recognizer. """
 
     _name = "kaldi"
@@ -49,6 +49,8 @@ class KaldiEngine(EngineBase):
 
     def __init__(self, model_dir=None, tmp_dir=None, vad_aggressiveness=None, vad_padding_ms=None):
         EngineBase.__init__(self)
+        DelegateTimerManagerInterface.__init__(self)
+
         self._model_dir = model_dir if model_dir is not None else 'kaldi_model_zamia'
         self._tmp_dir = tmp_dir if tmp_dir is not None else 'kaldi_tmp'
         self._vad_aggressiveness = vad_aggressiveness if vad_aggressiveness is not None else 3
@@ -58,7 +60,10 @@ class KaldiEngine(EngineBase):
         self._decoder = None
         self._audio = None
         self._recognition_observer_manager = KaldiRecObsManager(self)
-        # self._timer_manager = ThreadedTimerManager(0.02, self)  # FIXME
+        self._timer_manager = DelegateTimerManager(0.05, self)
+        self._timer_callback = None
+        self._timer_interval = None
+        self._timer_next_time = 0
 
     def connect(self):
         """ Connect to back-end SR engine. """
@@ -137,17 +142,6 @@ class KaldiEngine(EngineBase):
     def update_list(self, lst, grammar):
         self._log.warning("%s: %s: ListRef to List('%s') not fully supported; will not recognize updated elements of List!" % (self, grammar, lst.name))  # FIXME
         return
-        # grammar_handle = self._get_grammar_wrapper(grammar).handle
-        # list_rule_name = "__list_%s" % lst.name
-        # rule_handle = grammar_handle.Rules.FindRule(list_rule_name)
-
-        # rule_handle.Clear()
-        # src_state = rule_handle.InitialState
-        # dst_state = None
-        # for item in lst.get_list_items():
-        #     src_state.AddWordTransition(dst_state, item)
-
-        # grammar_handle.Rules.Commit()
 
     def set_exclusiveness(self, grammar, exclusive):
         self._log.debug("Setting exclusiveness of grammar %s to %s." % (grammar.name, exclusive))
@@ -183,6 +177,20 @@ class KaldiEngine(EngineBase):
     def _get_language(self):
         return "en"
 
+    def set_timer_callback(self, callback, sec):
+        self._timer_callback = callback
+        self._timer_interval = sec
+        self._timer_next_time = time.time()
+
+    def _call_timer_callback(self):
+        if not (self._timer_callback and self._timer_interval):
+            return
+
+        now = time.time()
+        if self._timer_next_time < now:
+            self._timer_next_time = now + self._timer_interval
+            self._timer_callback()
+
     def do_recognition(self, timeout=None, single=False):
         self._log.debug("do_recognition: timeout %s" % timeout)
         self._compiler.prepare_for_recognition()
@@ -209,7 +217,7 @@ class KaldiEngine(EngineBase):
                     if self.audio_store: self.audio_store.add_block(block)
 
                 else:
-                    # end of phrase
+                    # End of phrase
                     self._decoder.decode('', True)
                     output, likelihood = self._decoder.get_output()
                     output = self._compiler.untranslate_output(output)
@@ -220,6 +228,8 @@ class KaldiEngine(EngineBase):
                     timed_out = False
                     if single:
                         break
+
+                self._call_timer_callback()
 
         finally:
             self._audio.stop()
