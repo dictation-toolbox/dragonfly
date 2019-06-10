@@ -25,7 +25,6 @@ Engine class for CMU Pocket Sphinx
 import contextlib
 import logging
 import os
-import time
 import wave
 
 from six import text_type, PY2
@@ -35,7 +34,8 @@ from .dictation import SphinxDictationContainer
 from .recobs import SphinxRecObsManager
 from .timer import SphinxTimerManager
 from .training import write_training_data, write_transcript_files
-from ..base import EngineBase, EngineError, MimicFailure
+from ..base import (EngineBase, EngineError, MimicFailure,
+                    DelegateTimerManagerInterface)
 
 try:
     from jsgf import RootGrammar, PublicRule, Literal
@@ -57,7 +57,7 @@ class UnknownWordError(Exception):
     pass
 
 
-class SphinxEngine(EngineBase):
+class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
     """ Speech recognition engine back-end for CMU Pocket Sphinx. """
 
     _name = "sphinx"
@@ -65,6 +65,7 @@ class SphinxEngine(EngineBase):
 
     def __init__(self):
         EngineBase.__init__(self)
+        DelegateTimerManagerInterface.__init__(self)
 
         # Set up the engine logger
         logging.basicConfig()
@@ -92,9 +93,6 @@ class SphinxEngine(EngineBase):
 
         # Timer-related members.
         self._timer_manager = SphinxTimerManager(0.02, self)
-        self._timer_callback = None
-        self._timer_interval = None
-        self._timer_next_time = 0
 
         # Set up keyphrase search names and valid search names for grammars.
         self._keyphrase_search_names = ["_key_phrases", "_wake_phrase"]
@@ -299,23 +297,6 @@ class SphinxEngine(EngineBase):
 
         return super(SphinxEngine, self).create_timer(callback, interval,
                                                       repeating)
-
-    def set_timer_callback(self, callback, sec):
-        """"""
-        # This method should really only be called by the timer manager, not
-        # directly.
-        self._timer_callback = callback
-        self._timer_interval = sec
-        self._timer_next_time = time.time()
-
-    def _call_timer_callback(self):
-        if not (callable(self._timer_callback) or self._timer_interval):
-            return
-
-        now = time.time()
-        if self._timer_next_time < now:
-            self._timer_next_time = now + self._timer_interval
-            self._timer_callback()
 
     # -----------------------------------------------------------------------
     # Methods for working with grammars.
@@ -915,7 +896,7 @@ class SphinxEngine(EngineBase):
         self._audio_buffers.append(buf)
 
         # Call the timer callback if it is set.
-        self._call_timer_callback()
+        self.call_timer_callback()
 
         # Process audio.
         try:
