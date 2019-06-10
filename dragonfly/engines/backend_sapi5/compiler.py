@@ -27,12 +27,11 @@
 
 #---------------------------------------------------------------------------
 
-import sys
 from win32com.client import constants
 
 from ..base                     import CompilerBase, CompilerError
 from ...grammar.rule_base       import Rule
-from ...grammar.elements_basic  import Impossible, Literal
+from ...grammar.elements_basic  import Literal
 
 
 #---------------------------------------------------------------------------
@@ -69,10 +68,11 @@ class Sapi5Compiler(CompilerBase):
         self._log.debug("%s: Compiling grammar %s." % (self, grammar.name))
         grammar_handle = context.CreateGrammar()
 
+        fake_rule = Rule(name="_FakeRule",
+                         element=Literal("impossible " *20), exported=True)
+        self._compile_rule(fake_rule, grammar, grammar_handle)
         for rule in grammar.rules:
             self._compile_rule(rule, grammar, grammar_handle)
-        fake_rule = Rule(name="_FakeRule", element=Literal("impossible " *20), exported=True)
-        self._compile_rule(fake_rule, grammar, grammar_handle)
         grammar_handle.Rules.Commit()
 
         return grammar_handle
@@ -219,5 +219,5 @@ class Sapi5Compiler(CompilerBase):
 
     @trace_compile
     def _compile_impossible(self, element, src_state, dst_state, grammar, grammar_handle):
-        src_state.AddWordTransition(dst_state, "no can do")
-        return
+        rule_handle = grammar_handle.Rules.FindRule("_FakeRule")
+        src_state.AddRuleTransition(dst_state, rule_handle)
