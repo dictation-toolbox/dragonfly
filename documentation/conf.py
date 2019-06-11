@@ -70,7 +70,7 @@ autoclass_content = "both"
 #---------------------------------------------------------------------------
 # Options for HTML output
 
-html_theme = "default"
+html_theme = "sphinx_rtd_theme"
 html_last_updated_fmt = "%Y-%m-%d"
 html_copy_source = True
 htmlhelp_basename = "Dragonflydoc"

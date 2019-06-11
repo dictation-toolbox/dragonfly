@@ -23,7 +23,6 @@ import unittest
 import time
 import logging
 from dragonfly.engines import get_engine
-from dragonfly.engines.base.timer import ThreadedTimerManager
 
 
 #===========================================================================
@@ -41,23 +40,6 @@ class CapturingHandler(logging.Handler):
 #===========================================================================
 
 class TestTimer(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        # If the engine's timer manager is a ThreadedTimerManager, disable
-        # the main callback to prevent race conditions.
-        timer_manager = get_engine()._timer_manager
-        if isinstance(timer_manager, ThreadedTimerManager):
-            cls.threaded_timer_manager = timer_manager
-            timer_manager.disable()
-        else:
-            cls.threaded_timer_manager = None
-
-    @classmethod
-    def tearDownClass(cls):
-        # Re-enable the timer manager's callback if necessary.
-        if cls.threaded_timer_manager:
-            cls.threaded_timer_manager.enable()
 
     def setUp(self):
         self.log_capture = CapturingHandler()
@@ -80,12 +62,10 @@ class TestTimer(unittest.TestCase):
         time.sleep(0.02)
         timer.manager.main_callback()
 
-        # Callback was called one or more times. The engine may or may not
-        # have called it already by the time we get here, but getting an
-        # exact call count is not required.
+        # Callback was called once.
         try:
-            self.assertTrue(callback_called[0] >= 1)
-            self.assertTrue(len(self.log_capture.records) >= 1)
+            self.assertTrue(callback_called[0] == 1)
+            self.assertTrue(len(self.log_capture.records) == 1)
             log_message = self.log_capture.records[0].msg
             self.assertTrue("Exception from timer callback" in log_message)
         finally:
@@ -116,4 +96,10 @@ class TestTimer(unittest.TestCase):
 #===========================================================================
 
 if __name__ == "__main__":
+    # Use the "text" engine by default and disable timer manager callbacks
+    # to avoid race conditions.
+    get_engine("text")._timer_manager.disable()
+
+    from dragonfly.log import setup_log
+    setup_log()  # tests require sane logging levels
     unittest.main()

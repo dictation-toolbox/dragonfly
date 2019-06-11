@@ -112,9 +112,6 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._recognition_observer_manager = Sapi5RecObsManager(self)
         self._timer_manager = DelegateTimerManager(0.05, self)
-        self._timer_callback = None
-        self._timer_interval = None
-        self._timer_next_time = 0
 
         if isinstance(retain_dir, string_types) or retain_dir is None:
             self._retain_dir = retain_dir
@@ -299,20 +296,6 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     def _get_language(self):
         return "en"
 
-    def set_timer_callback(self, callback, sec):
-        self._timer_callback = callback
-        self._timer_interval = sec
-        self._timer_next_time = time.time()
-
-    def _call_timer_callback(self):
-        if not (self._timer_callback or self._timer_interval):
-            return
-
-        now = time.time()
-        if self._timer_next_time < now:
-            self._timer_next_time = now + self._timer_interval
-            self._timer_callback()
-
     def process_grammars_context(self, window=None):
         """
             Enable/disable grammars & rules based on their current contexts.
@@ -380,7 +363,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         self.speak('beginning loop!')
         while 1:
             pythoncom.PumpWaitingMessages()
-            self._call_timer_callback()
+            self.call_timer_callback()
             time.sleep(0.07)
 
 #---------------------------------------------------------------------------
