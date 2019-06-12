@@ -121,20 +121,21 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
             if rule.exported:
                 if rule.element is None:
                     raise CompilerError("Invalid None element for rule %s in grammar %s" % (rule, grammar))
-                kaldi_rule_id = self._num_kaldi_rules
-                self._num_kaldi_rules += 1
-                kaldi_rule = KaldiRule(self, kaldi_rule_id,
+
+                kaldi_rule = KaldiRule(self, self.alloc_rule_id(),
                     name='%s::%s' % (grammar.name, rule.name),
                     dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))
                 kaldi_rule.grammar = grammar
                 kaldi_rule.rule = rule
-                matcher, _, _ = self._compile_rule(rule, grammar, kaldi_rule.fst)
-                kaldi_rule.matcher = matcher.setName(str(kaldi_rule_id)).setResultsName(str(kaldi_rule_id))
-                kaldi_rule.fst.equalize_weights()
-                kaldi_rule.compile_file()
-                self.kaldi_rule_by_id_dict[kaldi_rule_id] = kaldi_rule
+
+                self.kaldi_rule_by_id_dict[kaldi_rule.id] = kaldi_rule
                 self.kaldi_rule_by_rule_dict[rule] = kaldi_rule
                 kaldi_rule_by_rule_dict[rule] = kaldi_rule
+
+                matcher, _, _ = self._compile_rule(rule, grammar, kaldi_rule.fst)
+                kaldi_rule.matcher = matcher.setName(str(kaldi_rule.id)).setResultsName(str(kaldi_rule.id))
+                kaldi_rule.fst.equalize_weights()
+                kaldi_rule.compile_file()
 
         return kaldi_rule_by_rule_dict
 
@@ -153,6 +154,12 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
         # self._grammar_rule_states_dict[(grammar.name, rule.name)] = (matcher, src_state, dst_state)
         return (matcher, src_state, dst_state)
+
+    def unload_grammar(self, grammar, rules, engine):
+        for rule in rules:
+            kaldi_rule = self.kaldi_rule_by_rule_dict[rule]
+            kaldi_rule.destroy()
+            del self.kaldi_rule_by_rule_dict[rule]
 
     #-----------------------------------------------------------------------
     # Methods for compiling elements.

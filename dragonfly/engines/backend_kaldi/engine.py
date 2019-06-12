@@ -76,6 +76,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         dictation_fst_file = self._compiler.dictation_fst_filepath
         self._decoder = KaldiAgfNNet3Decoder(model_dir=self._model_dir, tmp_dir=self._tmp_dir, top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file)
         words = self._compiler.load_words()
+        self._compiler.decoder = self._decoder
 
         self._audio = VADAudio(aggressiveness=self._vad_aggressiveness, start=False)
         self._audio_iter = self._audio.vad_collector(padding_ms=self._vad_padding_ms)
@@ -109,12 +110,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
         wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self)
         for kaldi_rule in kaldi_rule_by_rule_dict.values():
-            self._decoder.add_grammar_fst(kaldi_rule.filepath)
+            kaldi_rule.load()
+
         return wrapper
 
     def _unload_grammar(self, grammar, wrapper):
         """ Unload the given *grammar*. """
-        raise NotImplementedError("Method not implemented for engine %s." % self)  # FIXME
+        self._log.debug("Unloading grammar %s." % grammar.name)
+        self._compiler.unload_grammar(grammar, wrapper.kaldi_rule_by_rule_dict.keys(), self)
 
     def activate_grammar(self, grammar):
         """ Activate the given *grammar*. """
@@ -190,6 +193,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
                 if block is not None:
                     if not phrase_started:
+                        # Start of phrase
                         self._recognition_observer_manager.notify_begin()
                         with debug_timer(self._log.debug, "computing activity"):
                             kaldi_rules_activity = self._compute_kaldi_rules_activity()
@@ -220,7 +224,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         return not timed_out
 
     def wait_for_recognition(self, timeout=None):
-        return do_recognition(timeout=timeout, single=True)
+        return self.do_recognition(timeout=timeout, single=True)
 
     saving_adaptation_state = property(lambda self: self._decoder.saving_adaptation_state, doc="FIXME")
 
