@@ -25,9 +25,8 @@ Compiler classes for Kaldi backend
 import collections, logging, os.path, re, subprocess
 
 from .testing                   import debug_timer
+from .dictation                 import CloudDictation, LocalDictation
 from ..base                     import CompilerBase, CompilerError
-from ...grammar.rule_base       import Rule
-from ...grammar.elements_basic  import Impossible, Literal
 
 import six
 import pyparsing as pp
@@ -124,7 +123,7 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
                 kaldi_rule = KaldiRule(self, self.alloc_rule_id(),
                     name='%s::%s' % (grammar.name, rule.name),
-                    dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))
+                    has_dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))
                 kaldi_rule.grammar = grammar
                 kaldi_rule.rule = rule
 
@@ -229,7 +228,12 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
     @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, fst):
-        fst.add_arc(src_state, dst_state, '#nonterm:dictation', olabel=WFST.eps)
+        # fst.add_arc(src_state, dst_state, '#nonterm:dictation', olabel=WFST.eps)
+        extra_state = fst.add_state()
+        cloud_dictation = isinstance(element, (CloudDictation, LocalDictation)) and element.cloud
+        cloud_dictation_nonterm = '#nonterm:dictation_cloud' if cloud_dictation else '#nonterm:dictation'
+        fst.add_arc(src_state, extra_state, '#nonterm:dictation', cloud_dictation_nonterm)
+        fst.add_arc(extra_state, dst_state, WFST.eps, '#nonterm:end')
         return pp.OneOrMore(pp.Word(pp.alphas + pp.alphas8bit + pp.printables))
 
     @trace_compile

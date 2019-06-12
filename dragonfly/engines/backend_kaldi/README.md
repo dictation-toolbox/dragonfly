@@ -18,7 +18,7 @@ Make sure to install dependencies for Kaldi backend. This can be accomplished by
 pip install .[kaldi]
 ```
 
-Download a [compatible general English Kaldi nnet3 chain model](https://github.com/daanzu/kaldi-active-grammar/releases/tag/v0.2.2) from [kaldi-active-grammar](https://github.com/daanzu/kaldi-active-grammar). Unzip it into a directory within the directory with your grammar modules.
+Download a [compatible general English Kaldi nnet3 chain model](https://github.com/daanzu/kaldi-active-grammar/releases/tag/v0.3.0) from [kaldi-active-grammar](https://github.com/daanzu/kaldi-active-grammar). Unzip it into a directory within the directory with your grammar modules.
 
 Copy the `dragonfly/examples/kaldi_module_loader_plus.py` script into the directory with your grammar modules and run it using:
 

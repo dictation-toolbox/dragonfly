@@ -26,6 +26,7 @@ Dictation container for the Kaldi engine.
 import logging
 
 from ..base import DictationContainerBase
+from ...grammar.elements_basic import Dictation as BaseDictation
 
 
 #---------------------------------------------------------------------------
@@ -42,3 +43,23 @@ class KaldiDictationContainer(DictationContainerBase):
 
     def __str__(self):
         return self.__unicode__().encode("windows-1252")
+
+
+#---------------------------------------------------------------------------
+# Cloud dictation classes -- elements capable of local or cloud dictation.
+
+class CloudDictation(BaseDictation):
+
+    cloud_default = True
+
+    def __init__(self, *args, **kwargs):
+        self.cloud = kwargs.pop('cloud', self.cloud_default)
+        BaseDictation.__init__(self, *args, **kwargs)
+
+class LocalDictation(BaseDictation):
+
+    cloud_default = False
+
+    def __init__(self, *args, **kwargs):
+        self.cloud = kwargs.pop('cloud', self.cloud_default)
+        BaseDictation.__init__(self, *args, **kwargs)

@@ -147,27 +147,29 @@ class VADAudio(MicAudio):
 
 
 class AudioStore(object):
-    """Stores last `maxlen` recognitions as tuples (audio, text, grammar_name, rule_name), indexed in reverse order (0 is most recent)"""
+    """Stores the current audio data being recognized, plus the last `maxlen` recognitions as tuples (audio, text, grammar_name, rule_name), indexed in reverse order (0 is most recent)"""
 
-    def __init__(self, audio_obj, maxlen=0, save_dir=None, auto_save_func=None):
+    def __init__(self, audio_obj, maxlen=0, save_dir=None, auto_save_predicate_func=None):
         self.audio_obj = audio_obj
         self.maxlen = maxlen
         self.save_dir = save_dir
         # if self.save_dir and not os.path.exists(self.save_dir): os.makedirs(self.save_dir)
-        self.auto_save_func = auto_save_func
-        self.deque = collections.deque(maxlen=maxlen)
+        self.auto_save_predicate_func = auto_save_predicate_func
+        self.deque = collections.deque(maxlen=maxlen) if maxlen > 0 else None
         self.blocks = []
 
+    current_audio_data = property(lambda self: ''.join(self.blocks))
+
     def add_block(self, block):
-        if self.maxlen != 0:
-            self.blocks.append(block)
+        self.blocks.append(block)
 
     def finalize(self, text, grammar_name, rule_name):
-        if self.maxlen != 0:
-            audio = ''.join(self.blocks)
-            self.deque.appendleft((audio, text, grammar_name, rule_name))
-            self.blocks = []
-            if self.auto_save_func and self.auto_save_func(*self.deque[0]): self.save(0)
+        get_recognition = lambda: (self.current_audio_data, text, grammar_name, rule_name)
+        if self.deque is not None:
+            self.deque.appendleft(get_recognition())
+        if self.auto_save_predicate_func and self.auto_save_predicate_func(*get_recognition()):
+            self.save(0)
+        self.blocks = []
 
     def save(self, index):
         if self.save_dir:

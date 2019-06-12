@@ -80,7 +80,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._audio = VADAudio(aggressiveness=self._vad_aggressiveness, start=False)
         self._audio_iter = self._audio.vad_collector(padding_ms=self._vad_padding_ms)
-        self.audio_store = None
+        self.audio_store = AudioStore(self._audio, maxlen=0)
 
         self._any_exclusive_grammars = False
 
@@ -163,9 +163,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         kaldi_rules_activity = self._compute_kaldi_rules_activity()
 
-        kaldi_rule = self._parse_recognition(output, mimic=True)
+        kaldi_rule, parsed_output = self._parse_recognition(output, mimic=True)
         if not kaldi_rule:
-            raise MimicFailure("No matching rule found for words %r." % (output,))
+            raise MimicFailure("No matching rule found for words %r." % (parsed_output,))
         self._log.debug("End of mimic: rule %s, %r" % (kaldi_rule, output))
 
     def speak(self, text):
@@ -201,16 +201,18 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     else:
                         kaldi_rules_activity = None
                     self._decoder.decode(block, False, kaldi_rules_activity)
-                    if self.audio_store: self.audio_store.add_block(block)
+                    if self.audio_store:
+                        self.audio_store.add_block(block)
 
                 else:
                     # End of phrase
                     self._decoder.decode('', True)
                     output, likelihood = self._decoder.get_output()
                     output = self._compiler.untranslate_output(output)
-                    kaldi_rule = self._parse_recognition(output)
-                    self._log.debug("End of utterence: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, output))
-                    if self.audio_store and kaldi_rule: self.audio_store.finalize(output, kaldi_rule.grammar.name, kaldi_rule.rule.name)
+                    kaldi_rule, parsed_output = self._parse_recognition(output)
+                    self._log.debug("End of utterence: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
+                    if self.audio_store and kaldi_rule:
+                        self.audio_store.finalize(parsed_output, kaldi_rule.grammar.name, kaldi_rule.rule.name)
                     phrase_started = False
                     timed_out = False
                     if single:
@@ -264,7 +266,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             with debug_timer(self._log.debug, "kaldi_rule parse time"):
                 detect_ambiguity = False
                 results = []
-                for kaldi_rule in sorted(self._active_kaldi_rules, key=lambda kr: 100 if kr.dictation else 0):
+                for kaldi_rule in sorted(self._active_kaldi_rules, key=lambda kr: 100 if kr.has_dictation else 0):
                     self._log.debug("attempting to parse %r with %s", output, kaldi_rule)
                     parsed_output = self._compiler.parse_output_for_rule(kaldi_rule, output)
                     if parsed_output is None:
@@ -278,20 +280,20 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 if not results:
                     self._log.error("unable to parse recognition: %r" % output)
                     self._recognition_observer_manager.notify_failure()
-                    return None
+                    return None, ''
                 if len(results) > 1:
                     self._log.warning("ambiguity in recognition: %r" % output)
                     # FIXME: improve sorting criterion
-                    results.sort(key=lambda result: 100 if result[0].dictation else 0)
+                    results.sort(key=lambda result: 100 if result[0].has_dictation else 0)
                 kaldi_rule, parsed_output = results[0]
 
         elif self._compiler.parsing_framework == 'token':
-            kaldi_rule, parsed_output = self._compiler.parse_output(output)
+            kaldi_rule, parsed_output = self._compiler.parse_output(output, lambda: (self.audio_store.current_audio_data, self._decoder.get_word_align(output)))
             if kaldi_rule is None:
                 if parsed_output != '':
                     self._log.error("unable to parse recognition: %r" % output)
                 self._recognition_observer_manager.notify_failure()
-                return None
+                return None, ''
 
         else:
             raise EngineError("invalid _compiler.parsing_framework")
@@ -302,7 +304,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             grammar_wrapper.recognition_callback(words, kaldi_rule.rule)
         self._recognition_observer_manager.notify_recognition(words)
 
-        return kaldi_rule
+        return kaldi_rule, parsed_output
 
 
 #===========================================================================
