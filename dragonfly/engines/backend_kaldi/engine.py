@@ -61,9 +61,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._audio = None
         self._recognition_observer_manager = KaldiRecObsManager(self)
         self._timer_manager = DelegateTimerManager(0.05, self)
-        self._timer_callback = None
-        self._timer_interval = None
-        self._timer_next_time = 0
 
     def connect(self):
         """ Connect to back-end SR engine. """
@@ -177,20 +174,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def _get_language(self):
         return "en"
 
-    def set_timer_callback(self, callback, sec):
-        self._timer_callback = callback
-        self._timer_interval = sec
-        self._timer_next_time = time.time()
-
-    def _call_timer_callback(self):
-        if not (self._timer_callback and self._timer_interval):
-            return
-
-        now = time.time()
-        if self._timer_next_time < now:
-            self._timer_next_time = now + self._timer_interval
-            self._timer_callback()
-
     def do_recognition(self, timeout=None, single=False):
         self._log.debug("do_recognition: timeout %s" % timeout)
         self._compiler.prepare_for_recognition()
@@ -229,7 +212,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     if single:
                         break
 
-                self._call_timer_callback()
+                self.call_timer_callback()
 
         finally:
             self._audio.stop()
