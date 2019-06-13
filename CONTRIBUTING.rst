@@ -43,7 +43,6 @@ requirements:
 
 .. code:: shell
 
-   $ pip install Sphinx
    $ cd documentation
    $ pip install -r requirements.txt
 

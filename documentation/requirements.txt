@@ -1,3 +1,4 @@
+Sphinx
 mock
 pyperclip>=1.7.0
 six
@@ -8,3 +9,4 @@ decorator
 json-rpc
 Werkzeug
 requests
+sphinx_rtd_theme

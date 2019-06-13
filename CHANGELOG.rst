@@ -11,6 +11,34 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+
+* Add FuncContext class that determines context activity by callable arg
+  (thanks `@daanzu`_).
+
+Changed
+~~~~~~~
+
+* Change the dragonfly.timer._Timer class so that it works correctly for all
+  supported engines and platforms via engine.create_timer().
+
+Deprecated
+~~~~~~~~~~
+
+* Deprecate the old dragonfly.timer._Timer class.
+
+0.14.1_ - 2019-05-31
+--------------------
+
+Changed
+~~~~~~~
+* Change English integers to include "too" and "to" as equivalents for
+  "two" (thanks `@lexxish`_).
+
 0.14.0_ - 2019-05-21
 --------------------
 
@@ -399,7 +427,8 @@ This release is the first in the Git version control system.
 
 
 .. Release links.
-.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.14.0...HEAD
+.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.14.1...HEAD
+.. _0.14.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.14.0...0.14.1
 .. _0.14.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.13.0...0.14.0
 .. _0.13.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.12.0...0.13.0
 .. _0.12.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.11.1...0.12.0
@@ -430,5 +459,6 @@ This release is the first in the Git version control system.
 .. _@calmofthestorm: https://github.com/calmofthestorm
 .. _@mrob95: https://github.com/mrob95
 .. _@tylercal: https://github.com/tylercal
+.. _@lexxish: https://github.com/lexxish
 .. _Aenea: https://github.com/dictation-toolbox/aenea
 .. _pynput: https://github.com/moses-palmer/pynput

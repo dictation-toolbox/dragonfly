@@ -25,10 +25,10 @@ Multiplexing interface for the CMU Pocket Sphinx engine
 
 """
 
-from ..base import TimerManagerBase
+from ..base import DelegateTimerManager
 
 
-class SphinxTimerManager(TimerManagerBase):
+class SphinxTimerManager(DelegateTimerManager):
     """
     Timer manager for the CMU Pocket Sphinx engine.
 
@@ -51,14 +51,3 @@ class SphinxTimerManager(TimerManagerBase):
     code, so there are no unusual multi-threading limitations.
 
     """
-
-    def __init__(self, interval, engine):
-        """
-        """
-        TimerManagerBase.__init__(self, interval, engine)
-
-    def _activate_main_callback(self, callback, sec):
-        self.engine.set_timer_callback(callback, sec)
-
-    def _deactivate_main_callback(self):
-        self.engine.set_timer_callback(None, 0)
