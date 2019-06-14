@@ -117,7 +117,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def _unload_grammar(self, grammar, wrapper):
         """ Unload the given *grammar*. """
         self._log.debug("Unloading grammar %s." % grammar.name)
-        self._compiler.unload_grammar(grammar, wrapper.kaldi_rule_by_rule_dict.keys(), self)
+        rules = wrapper.kaldi_rule_by_rule_dict.keys()
+        self._compiler.unload_grammar(grammar, rules, self)
 
     def activate_grammar(self, grammar):
         """ Activate the given *grammar*. """
@@ -140,8 +141,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler.kaldi_rule_by_rule_dict[rule].active = False
 
     def update_list(self, lst, grammar):
-        self._log.warning("%s: %s: ListRef to List('%s') not fully supported; will not recognize updated elements of List!" % (self, grammar, lst.name))  # FIXME
-        return
+        wrapper = self._get_grammar_wrapper(grammar)
+        rules = wrapper.kaldi_rule_by_rule_dict.keys()
+        self._compiler.update_list(lst, rules, grammar)
 
     def set_exclusiveness(self, grammar, exclusive):
         self._log.debug("Setting exclusiveness of grammar %s to %s." % (grammar.name, exclusive))
@@ -212,7 +214,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     kaldi_rule, parsed_output = self._parse_recognition(output)
                     self._log.debug("End of utterence: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
                     if self.audio_store and kaldi_rule:
-                        self.audio_store.finalize(parsed_output, kaldi_rule.grammar.name, kaldi_rule.rule.name)
+                        self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name)
                     phrase_started = False
                     timed_out = False
                     if single:
@@ -299,9 +301,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             raise EngineError("invalid _compiler.parsing_framework")
 
         words = tuple(word for word in parsed_output.split())
-        grammar_wrapper = self._get_grammar_wrapper(kaldi_rule.grammar)
+        grammar_wrapper = self._get_grammar_wrapper(kaldi_rule.parent_grammar)
         with debug_timer(self._log.debug, "dragonfly parse time"):
-            grammar_wrapper.recognition_callback(words, kaldi_rule.rule)
+            grammar_wrapper.recognition_callback(words, kaldi_rule.parent_rule)
         self._recognition_observer_manager.notify_recognition(words)
 
         return kaldi_rule, parsed_output
