@@ -27,7 +27,8 @@ from six import string_types, integer_types, print_
 
 from kaldi_active_grammar import KaldiAgfNNet3Decoder, KaldiError
 
-from ..base                     import EngineBase, EngineError, DelegateTimerManager, DelegateTimerManagerInterface
+from ..base                     import (EngineBase, EngineError, MimicFailure,
+                                        DelegateTimerManager, DelegateTimerManagerInterface)
 from .compiler                  import KaldiCompiler
 from .audio                     import VADAudio, AudioStore
 from .dictation                 import KaldiDictationContainer

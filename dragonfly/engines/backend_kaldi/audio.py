@@ -28,7 +28,7 @@ from six.moves import queue
 import pyaudio
 import webrtcvad
 
-_log = logging.getLogger("engine.audio")
+_log = logging.getLogger("engine")
 
 
 class MicAudio(object):
