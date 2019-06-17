@@ -39,7 +39,7 @@ class MicAudio(object):
     CHANNELS = 1
     BLOCKS_PER_SECOND = 50
 
-    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True):
+    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None):
         def proxy_callback(in_data, frame_count, time_info, status):
             callback(in_data)
             return (None, pyaudio.paContinue)
@@ -53,7 +53,8 @@ class MicAudio(object):
                                    rate=self.sample_rate,
                                    input=True,
                                    frames_per_buffer=self.block_size,
-                                   stream_callback=proxy_callback)
+                                   stream_callback=proxy_callback,
+                                   input_device_index=input_device_index)
         if start:
             self.stream.start_stream()
         self.active = True

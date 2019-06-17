@@ -48,7 +48,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     #-----------------------------------------------------------------------
 
-    def __init__(self, model_dir=None, tmp_dir=None, vad_aggressiveness=None, vad_padding_ms=None):
+    def __init__(self, model_dir=None, tmp_dir=None,
+        vad_aggressiveness=None, vad_padding_ms=None, input_device_index=None,
+        cloud_dictation=None,  # FIXME: cloud_dictation_lang
+        ):
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
 
@@ -56,6 +59,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._tmp_dir = tmp_dir if tmp_dir is not None else 'kaldi_tmp'
         self._vad_aggressiveness = vad_aggressiveness if vad_aggressiveness is not None else 3
         self._vad_padding_ms = vad_padding_ms if vad_padding_ms is not None else 300
+        self._input_device_index = input_device_index
+        self._cloud_dictation = cloud_dictation
 
         self._compiler = None
         self._decoder = None
@@ -70,7 +75,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._log.debug("Loading KaldiEngine in process %s." % os.getpid())
 
-        self._compiler = KaldiCompiler(self._model_dir, self._tmp_dir)
+        self._compiler = KaldiCompiler(self._model_dir, tmp_dir=self._tmp_dir, cloud_dictation=self._cloud_dictation)
         # self._compiler.fst_cache.invalidate()
 
         top_fst = self._compiler.compile_top_fst()
@@ -79,7 +84,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         words = self._compiler.load_words()
         self._compiler.decoder = self._decoder
 
-        self._audio = VADAudio(aggressiveness=self._vad_aggressiveness, start=False)
+        self._audio = VADAudio(aggressiveness=self._vad_aggressiveness, start=False, input_device_index=self._input_device_index)
         self._audio_iter = self._audio.vad_collector(padding_ms=self._vad_padding_ms)
         self.audio_store = AudioStore(self._audio, maxlen=0)
 

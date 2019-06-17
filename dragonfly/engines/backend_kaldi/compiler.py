@@ -65,9 +65,9 @@ MockLiteral = collections.namedtuple('MockLiteral', 'words')
 
 class KaldiCompiler(CompilerBase, KAGCompiler):
 
-    def __init__(self, model_dir, tmp_dir):
+    def __init__(self, model_dir, tmp_dir, **kwargs):
         CompilerBase.__init__(self)
-        KAGCompiler.__init__(self, model_dir, tmp_dir)
+        KAGCompiler.__init__(self, model_dir, tmp_dir=tmp_dir, **kwargs)
 
         self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
         self._grammar_rule_states_dict = dict()  # FIXME: disabled!
