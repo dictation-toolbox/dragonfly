@@ -22,7 +22,7 @@
 Kaldi engine classes
 """
 
-import time, collections, subprocess, threading, os, os.path
+import collections, os, subprocess, threading, time
 from six import string_types, integer_types, print_
 
 from kaldi_active_grammar import KaldiAgfNNet3Decoder, KaldiError
@@ -66,7 +66,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._decoder = None
         self._audio = None
         self._recognition_observer_manager = KaldiRecObsManager(self)
-        self._timer_manager = DelegateTimerManager(0.05, self)
+        self._timer_manager = DelegateTimerManager(0.02, self)
 
     def connect(self):
         """ Connect to back-end SR engine. """
@@ -85,7 +85,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler.decoder = self._decoder
 
         self._audio = VADAudio(aggressiveness=self._vad_aggressiveness, start=False, input_device_index=self._input_device_index)
-        self._audio_iter = self._audio.vad_collector(padding_ms=self._vad_padding_ms)
+        self._audio_iter = self._audio.vad_collector(padding_ms=self._vad_padding_ms, nowait=True)
         self.audio_store = AudioStore(self._audio, maxlen=0)
 
         self._any_exclusive_grammars = False
@@ -187,7 +187,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def do_recognition(self, timeout=None, single=False):
         self._log.debug("do_recognition: timeout %s" % timeout)
+
         self._compiler.prepare_for_recognition()
+
         if timeout != None:
             end_time = time.time() + timeout
             timed_out = True
@@ -199,7 +201,11 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             while (not timeout) or (time.time() < end_time):
                 block = next(self._audio_iter)
 
-                if block is not None:
+                if block is False:
+                    # No audio block available
+                    time.sleep(0.001)
+
+                elif block is not None:
                     if not phrase_started:
                         # Start of phrase
                         self._recognition_observer_manager.notify_begin()
@@ -207,6 +213,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                             kaldi_rules_activity = self._compute_kaldi_rules_activity()
                         phrase_started = True
                     else:
+                        # Continuing phrase
                         kaldi_rules_activity = None
                     self._decoder.decode(block, False, kaldi_rules_activity)
                     if self.audio_store:

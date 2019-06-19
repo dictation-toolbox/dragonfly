@@ -72,10 +72,16 @@ class MicAudio(object):
     def stop(self):
         self.stream.stop_stream()
 
-    def read(self):
-        """Return a block of audio data, blocking if necessary."""
+    def read(self, nowait=False):
+        """Return a block of audio data. If nowait==False, waits for a block if necessary; else, returns False immediately if no block is available."""
         if self.active or (self.flush_queue and not self.buffer_queue.empty()):
-            return self.buffer_queue.get()
+            if nowait:
+                try:
+                    return self.buffer_queue.get_nowait()
+                except queue.Empty as e:
+                    return False
+            else:
+                return self.buffer_queue.get()
         else:
             return None
 
@@ -84,13 +90,17 @@ class MicAudio(object):
         for block in iter(self):
             callback(block)
 
-    def __iter__(self):
+    def iter(self, nowait=False):
         """Generator that yields all audio blocks from microphone."""
         while True:
-            block = self.read()
+            block = self.read(nowait=nowait)
             if block is None:
                 break
             yield block
+
+    def __iter__(self):
+        """Generator that yields all audio blocks from microphone."""
+        return self.iter()
 
     block_size = property(lambda self: int(self.sample_rate / float(self.BLOCKS_PER_SECOND)))
     block_duration_ms = property(lambda self: 1000 * self.block_size // self.sample_rate)
@@ -114,37 +124,41 @@ class VADAudio(MicAudio):
         super(VADAudio, self).__init__(**kwargs)
         self.vad = webrtcvad.Vad(aggressiveness)
 
-    def vad_collector(self, padding_ms=300, ratio=0.75, blocks=None):
+    def vad_collector(self, padding_ms=300, ratio=0.75, blocks=None, nowait=False):
         """Generator that yields series of consecutive audio blocks comprising each utterence, separated by yielding a single None.
             Determines voice activity by ratio of blocks in padding_ms. Uses a buffer to include padding_ms prior to being triggered.
             Example: (block, ..., block, None, block, ..., block, None, ...)
                       |---utterence---|        |---utterence---|
         """
-        if blocks is None: blocks = iter(self)
+        if blocks is None: blocks = self.iter(nowait=nowait)
         num_padding_blocks = padding_ms // self.block_duration_ms
         ring_buffer = collections.deque(maxlen=num_padding_blocks)
         triggered = False
 
         for block in blocks:
-            is_speech = self.vad.is_speech(block, self.sample_rate)
-
-            if not triggered:
-                ring_buffer.append((block, is_speech))
-                num_voiced = len([f for f, speech in ring_buffer if speech])
-                if num_voiced > ratio * ring_buffer.maxlen:
-                    triggered = True
-                    for f, s in ring_buffer:
-                        yield f
-                    ring_buffer.clear()
+            if block is False or block is None:
+                yield block
 
             else:
-                yield block
-                ring_buffer.append((block, is_speech))
-                num_unvoiced = len([f for f, speech in ring_buffer if not speech])
-                if num_unvoiced > ratio * ring_buffer.maxlen:
-                    triggered = False
-                    yield None
-                    ring_buffer.clear()
+                is_speech = self.vad.is_speech(block, self.sample_rate)
+
+                if not triggered:
+                    ring_buffer.append((block, is_speech))
+                    num_voiced = len([f for f, speech in ring_buffer if speech])
+                    if num_voiced > ratio * ring_buffer.maxlen:
+                        triggered = True
+                        for f, s in ring_buffer:
+                            yield f
+                        ring_buffer.clear()
+
+                else:
+                    yield block
+                    ring_buffer.append((block, is_speech))
+                    num_unvoiced = len([f for f, speech in ring_buffer if not speech])
+                    if num_unvoiced > ratio * ring_buffer.maxlen:
+                        triggered = False
+                        yield None
+                        ring_buffer.clear()
 
 
 class AudioStore(object):
