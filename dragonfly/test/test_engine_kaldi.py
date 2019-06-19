@@ -5,7 +5,7 @@ Most engine functionality is tested here, although the tests are done
 entirely via `mimic`, so there are some things which have to be tested
 manually.
 
-These tests assume the the `kaldi_model_zamia` model is used.
+These tests assume that the `kaldi_model_zamia` model is used.
 
 Adapted from `test_engine_sphinx.py`.
 """
@@ -15,7 +15,6 @@ import unittest
 import logging
 
 from dragonfly.engines import (EngineBase, EngineError, MimicFailure, get_engine)
-from dragonfly.engines.backend_kaldi.engine import KaldiError
 from dragonfly.grammar.elements import Literal, Sequence, ListRef
 from dragonfly.grammar.list import List
 from dragonfly.grammar.grammar_base import Grammar
@@ -23,6 +22,11 @@ from dragonfly.grammar.rule_base import Rule
 from dragonfly.grammar.recobs import RecognitionObserver
 from dragonfly.grammar.rule_compound import CompoundRule
 from dragonfly.test import (ElementTester, RuleTestGrammar)
+
+try:
+    from dragonfly.engines.backend_kaldi.engine import KaldiError
+except ImportError:
+    KaldiError = Exception
 
 
 class MockLoggingHandler(logging.Handler):
