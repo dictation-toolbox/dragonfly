@@ -125,7 +125,7 @@ def get_engine(name=None, **kwargs):
                 _default_engine = get_specific_engine(**kwargs)
                 _engines_by_name["kaldi"] = _default_engine
                 return _default_engine
-        except Exception, e:
+        except Exception as e:
             message = ("Exception while initializing kaldi engine:"
                        " %s" % (e,))
             log.exception(message)
