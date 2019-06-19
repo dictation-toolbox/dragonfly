@@ -111,7 +111,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler    = None
 
         self._recognition_observer_manager = Sapi5RecObsManager(self)
-        self._timer_manager = DelegateTimerManager(0.05, self)
+        self._timer_manager = DelegateTimerManager(0.02, self)
 
         if isinstance(retain_dir, string_types) or retain_dir is None:
             self._retain_dir = retain_dir
@@ -335,7 +335,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         while 1:
             pythoncom.PumpWaitingMessages()
             self.call_timer_callback()
-            time.sleep(0.07)
+            time.sleep(0.005)
 
 #---------------------------------------------------------------------------
 # Make the shared engine available as Sapi5Engine, for backwards

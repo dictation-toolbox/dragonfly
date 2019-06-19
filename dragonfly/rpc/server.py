@@ -340,7 +340,7 @@ class RPCServer(object):
                 if self._thread:
                     self._thread.join(0.0025)
 
-            self._timer = engine.create_timer(natlink_timer, 0.05)
+            self._timer = engine.create_timer(natlink_timer, 0.025)
 
         # Wait a few milliseconds to allow the server to start properly.
         time.sleep(0.1)
