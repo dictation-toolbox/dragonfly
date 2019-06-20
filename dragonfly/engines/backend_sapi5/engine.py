@@ -217,9 +217,14 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     def set_exclusiveness(self, grammar, exclusive):
         self._log.debug("Setting exclusiveness of grammar %s to %s."
                         % (grammar.name, exclusive))
-        grammar_handle = self._get_grammar_wrapper(grammar).handle
-        grammar_handle.State = constants.SGSExclusive
-       # grammar_handle.SetGrammarState(constants.SPGS_EXCLUSIVE)
+        wrapper = self._get_grammar_wrapper(grammar)
+        if exclusive:
+            wrapper.state_before_exclusive = wrapper.handle.State
+            wrapper.handle.State = constants.SGSExclusive
+        elif wrapper.handle.State == constants.SGSExclusive:
+            assert wrapper.state_before_exclusive in (constants.SGSEnabled, constants.SGSDisabled)
+            wrapper.handle.State = wrapper.state_before_exclusive
+        # grammar_handle.SetGrammarState(constants.SPGS_EXCLUSIVE)
 
 
     #-----------------------------------------------------------------------
@@ -291,13 +296,38 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     def _get_language(self):
         return "en"
 
+    def process_grammars_context(self, window=None):
+        """
+            Enable/disable grammars & rules based on their current contexts.
+
+            This must be done preemptively because WSR doesn't allow doing it
+            upon/after the utterance start has been detected. The engine
+            should call this automatically whenever the foreground application
+            (or its title) changes. But the user may want to call this
+            manually to update when custom contexts.
+
+            The *window* parameter is optional window information, which can
+            be passed in as an optimization if it has already been gathered.
+
+        """
+
+        if window is None: window = Window.get_foreground()
+        for grammar in self.grammars:
+            # Prevent 'notify_begin()' from being called.
+            if grammar.name == "_recobs_grammar":
+                continue
+            grammar.process_begin(window.executable, window.title,
+                                  window.handle)
+
     def recognize_forever(self):
         """
-        Recognize speech in a loop.
+            Recognize speech in a loop.
 
-        This will also call any scheduled timer functions and ensure that
-        the correct window context is used.
+            This will also call any scheduled timer functions and ensure that
+            the correct window context is used.
+
         """
+
         # Register for window change events to activate/deactivate grammars
         # and rules on window changes. This is done here because the SAPI5
         # 'OnPhraseStart' grammar callback is called after grammar state
@@ -305,17 +335,16 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         WinEventProcType = WINFUNCTYPE(None, HANDLE, DWORD, HWND, LONG,
                                        LONG, DWORD, DWORD)
 
+        self._last_foreground_window = None
+
         def callback(hWinEventHook, event, hwnd, idObject, idChild,
                      dwEventThread, dwmsEventTime):
             window = Window.get_foreground()
-            if hwnd == window.handle:
-                for grammar in self.grammars:
-                    # Prevent 'notify_begin()' from being called.
-                    if grammar.name == "_recobs_grammar":
-                        continue
-
-                    grammar.process_begin(window.executable, window.title,
-                                          window.handle)
+            # Note: hwnd doesn't always match window.handle, even when
+            # foreground window changed (and sometimes it didn't change)
+            if window != self._last_foreground_window:
+                self.process_grammars_context(window)
+                self._last_foreground_window = window
 
         def set_hook(win_event_proc, event_type):
             return windll.user32.SetWinEventHook(
@@ -452,6 +481,7 @@ class GrammarWrapper(object):
         self.engine = engine
         self.context = context
         self.recobs_manager = recobs_manager
+        self.state_before_exclusive = handle.State
 
         # Register callback functions which will handle recognizer events.
         base = getevents("SAPI.SpSharedRecoContext")
