@@ -169,6 +169,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         except Exception as e:
             raise MimicFailure("Invalid mimic input %r: %s." % (words, e))
 
+        self._recognition_observer_manager.notify_begin()
         kaldi_rules_activity = self._compute_kaldi_rules_activity()
 
         kaldi_rule, parsed_output = self._parse_recognition(output, mimic=True)
@@ -293,19 +294,23 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                         break
 
                 if not results:
-                    self._log.error("unable to parse recognition: %r" % output)
+                    if not mimic:
+                        # We should never receive an unparsable recognition from kaldi, only from mimic
+                        self._log.error("unable to parse recognition: %r" % output)
                     self._recognition_observer_manager.notify_failure()
                     return None, ''
                 if len(results) > 1:
                     self._log.warning("ambiguity in recognition: %r" % output)
                     # FIXME: improve sorting criterion
                     results.sort(key=lambda result: 100 if result[0].has_dictation else 0)
+
                 kaldi_rule, parsed_output = results[0]
 
         elif self._compiler.parsing_framework == 'token':
             kaldi_rule, parsed_output = self._compiler.parse_output(output, lambda: (self.audio_store.current_audio_data, self._decoder.get_word_align(output)))
             if kaldi_rule is None:
                 if parsed_output != '':
+                    # We should never receive an unparsable recognition from kaldi, unless it's empty (from noise)
                     self._log.error("unable to parse recognition: %r" % output)
                 self._recognition_observer_manager.notify_failure()
                 return None, ''
@@ -314,10 +319,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             raise EngineError("invalid _compiler.parsing_framework")
 
         words = tuple(word for word in parsed_output.split())
+        self._recognition_observer_manager.notify_recognition(words)
         grammar_wrapper = self._get_grammar_wrapper(kaldi_rule.parent_grammar)
         with debug_timer(self._log.debug, "dragonfly parse time"):
             grammar_wrapper.recognition_callback(words, kaldi_rule.parent_rule)
-        self._recognition_observer_manager.notify_recognition(words)
 
         return kaldi_rule, parsed_output
 
