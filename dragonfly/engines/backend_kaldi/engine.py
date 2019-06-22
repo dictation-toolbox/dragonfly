@@ -214,7 +214,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                             kaldi_rules_activity = self._compute_kaldi_rules_activity()
                         phrase_started = True
                     else:
-                        # Continuing phrase
+                        # Ongoing phrase
                         kaldi_rules_activity = None
                     self._decoder.decode(block, False, kaldi_rules_activity)
                     if self.audio_store:

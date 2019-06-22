@@ -82,9 +82,11 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
     #-----------------------------------------------------------------------
     # Methods for handling lexicon translation.
 
+    # FIXME: documentation
     translation_dict = {
     }
 
+    # FIXME: documentation
     untranslation_dict = { v: k for k, v in translation_dict.items() }
     translation_dict.update({
     })

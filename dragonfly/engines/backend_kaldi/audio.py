@@ -130,6 +130,7 @@ class VADAudio(MicAudio):
             Example: (block, ..., block, None, block, ..., block, None, ...)
                       |---utterence---|        |---utterence---|
         """
+        # FIXME: error reporting for invalid padding_ms
         if blocks is None: blocks = self.iter(nowait=nowait)
         num_padding_blocks = padding_ms // self.block_duration_ms
         ring_buffer = collections.deque(maxlen=num_padding_blocks)
@@ -146,16 +147,19 @@ class VADAudio(MicAudio):
                     ring_buffer.append((block, is_speech))
                     num_voiced = len([f for f, speech in ring_buffer if speech])
                     if num_voiced > ratio * ring_buffer.maxlen:
+                        # Start of phrase
                         triggered = True
                         for f, s in ring_buffer:
                             yield f
                         ring_buffer.clear()
 
                 else:
+                    # Ongoing phrase
                     yield block
                     ring_buffer.append((block, is_speech))
                     num_unvoiced = len([f for f, speech in ring_buffer if not speech])
                     if num_unvoiced > ratio * ring_buffer.maxlen:
+                        # End of phrase
                         triggered = False
                         yield None
                         ring_buffer.clear()
