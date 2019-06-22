@@ -12,21 +12,19 @@ read more about the CMU Sphinx speech recognition projects on the
 Setup
 ----------------------------------------------------------------------------
 
-There are three dependencies for using the Pocket Sphinx engine:
+There are three Pocket Sphinx engine dependencies:
 
 - `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_
 - `pyjsgf <https://github.com/Danesprite/pyjsgf>`_
 - `sphinxwrapper <https://github.com/Danesprite/sphinxwrapper>`_
 
-*sphinxwrapper* must be installed manually at the moment. You can install
-it from the git submodule by running the following::
-  
-  git clone --recursive https://github.com/dictation-toolbox/dragonfly.git
-  git submodule foreach python setup.py install
+You can install these by running the following command::
 
-You can install the other packages using::
+  pip install dragonfly[sphinx]
 
-  pip install pyjsgf pyaudio
+If you are installing to *develop* dragonfly, use the following instead::
+
+  pip install -e .[sphinx]
 
 Once the dependencies are installed, you'll need to copy the
 `dragonfly/examples/sphinx_module_loader.py`_ script into the folder
