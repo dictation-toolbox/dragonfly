@@ -42,7 +42,10 @@ class KaldiDictationContainer(DictationContainerBase):
         return " ".join(self._words)
 
     def __str__(self):
-        return self.__unicode__().encode("windows-1252")
+        if PY2:
+            return self.__unicode__().encode(locale.getpreferredencoding())
+        else:
+            return self.__unicode__()
 
 
 #---------------------------------------------------------------------------
