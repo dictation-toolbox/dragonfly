@@ -20,7 +20,7 @@ There are three Pocket Sphinx engine dependencies:
 
 You can install these by running the following command::
 
-  pip install dragonfly[sphinx]
+  pip install dragonfly2[sphinx]
 
 If you are installing to *develop* dragonfly, use the following instead::
 
