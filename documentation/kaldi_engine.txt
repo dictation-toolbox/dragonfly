@@ -51,10 +51,14 @@ There are three dependencies for using the Kaldi engine:
 - `webrtcvad <https://github.com/wiseman/py-webrtcvad>`_
 
 Installing the correct versions of these dependencies can be most easily
-done by installing the ``kaldi`` sub-package of ``dragonfly2`` using (or
-similarly for how you installed ``dragonfly2``)::
+done by installing the ``kaldi`` sub-package of ``dragonfly2`` using::
 
   pip install dragonfly2[kaldi]
+
+If you are installing to *develop* dragonfly2, use the following instead
+(from your dragonfly2 git repository)::
+
+  pip install -e .[kaldi]
 
 You will also need a model to use. You can download a `compatible
 general English Kaldi nnet3 chain model
@@ -226,7 +230,7 @@ If you want to replace all uses of standard ``Dictation`` in a file::
   from dragonfly.engines.backend_kaldi.dictation import LocalDictation as Dictation
 
 
-Limitations
+Limitations & Future Work
 ----------------------------------------------------------------------------
 
 .. contents:: :local:
@@ -237,6 +241,11 @@ Known Issues
 
 * Unloading grammars can cause subsequent errors. Avoid for now.
 * All grammars & rules must be loaded before starting recognition (with a call to ``do_recognition()``).
+
+* Dragonfly :class:`Lists` and :class:`DictLists` function as normal.
+  Upon updating a dragonfly list or dictionary, the rules they are part of
+  will be recompiled & reloaded. This will add some delay, which I hope to
+  optimize.
 
 
 Unknown Words
@@ -269,23 +278,25 @@ complex. However, the *cloud dictation* feature avoids this problem by
 using the formatting & punctuation applied by cloud provider.
 
 
-Spoken Language Support
+Models: Other Languages, Other Sizes, & Training
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``kaldi-active-grammar`` library currently only supplies a general
-English model. Many standard Kaldi models (of varying quality) are
-available online for various languages. Although such standard Kaldi
+The ``kaldi-active-grammar`` library currently only supplies a single
+general English model. Many standard Kaldi models (of varying quality)
+are available online for various languages. Although such standard Kaldi
 models must be first modified to work with this framework, the process
 is not difficult and could be automated (future work).
 
+There are also various sizes of Kaldi model, with a trade-off between
+size/speed and accuracy. Generally, the smaller and faster the model,
+the lower the accuracy. The included model is relatively large. Let me
+know if you need a smaller one.
 
-Dragonfly Lists and DictLists
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Dragonfly :class:`Lists` and :class:`DictLists` function as normal. Upon
-updating a dragonfly list or dictionary, the rules they are part of will
-be recompiled & reloaded. This will add some delay. I hope to optimize
-this.
+Training (personalizing) Kaldi models is possible but complicated. In
+addition to requiring many steps using a specialized software
+environment, training these models currently requires using a GPU for an
+extended period. This may be a case where providing a service for
+training is more feasible.
 
 
 Text-to-speech

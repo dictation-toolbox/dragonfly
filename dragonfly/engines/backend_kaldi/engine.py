@@ -23,19 +23,28 @@ Kaldi engine classes
 """
 
 import collections, os, subprocess, threading, time
-from six import string_types, integer_types, print_
 
-from kaldi_active_grammar import KaldiAgfNNet3Decoder, KaldiError
+from six import string_types, integer_types, print_
 
 from ..base                     import (EngineBase, EngineError, MimicFailure,
                                         DelegateTimerManager, DelegateTimerManagerInterface)
-from .compiler                  import KaldiCompiler
-from .audio                     import VADAudio, AudioStore
 from .dictation                 import KaldiDictationContainer
 from .recobs                    import KaldiRecObsManager
 from .testing                   import debug_timer
 from ...grammar.state           import State
 from ...windows                 import Window
+
+try:
+    from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
+    from .compiler                  import KaldiCompiler
+    from .audio                     import VADAudio, AudioStore
+    ENGINE_AVAILABLE = True
+except ImportError:
+    # Import a few things here optionally for readability (the engine won't
+    # start without them) and so that autodoc can import this module without
+    # them.
+    ENGINE_AVAILABLE = False
+
 
 
 #===========================================================================
@@ -54,6 +63,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         ):
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
+
+        if not ENGINE_AVAILABLE:
+            self._log.error("%s: Failed to import Kaldi engine dependencies. Are they installed?" % self)
+            raise EngineError("Failed to import Kaldi engine dependencies.")
 
         self._model_dir = model_dir if model_dir is not None else 'kaldi_model_zamia'
         self._tmp_dir = tmp_dir if tmp_dir is not None else 'kaldi_tmp'

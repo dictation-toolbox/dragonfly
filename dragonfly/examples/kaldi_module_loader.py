@@ -62,6 +62,8 @@ def main():
         # tmp_dir='kaldi_tmp',  # default for temporary directory
         # vad_aggressiveness=3,  # default aggressiveness of VAD
         # vad_padding_ms=300,  # default ms of required silence surrounding VAD
+        # input_device_index=None,  # set to an int to choose a non-default microphone
+        # cloud_dictation=None,  # set to 'gcloud' to use cloud dictation
     )
 
     # Call connect() now that the engine configuration is set.

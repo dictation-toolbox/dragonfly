@@ -23,7 +23,9 @@ Dictation container for the Kaldi engine.
 
 """
 
-import logging
+import logging, locale
+
+from six import PY2
 
 from ..base import DictationContainerBase
 from ...grammar.elements_basic import Dictation as BaseDictation
