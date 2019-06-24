@@ -38,7 +38,7 @@ setup_log()
 
 common_names = [
     "test_accessibility",
-    "test_contexts",
+    # "test_contexts",  # disabled for now
     "test_engine_nonexistent",
     "test_log",
     "test_parser",
@@ -102,6 +102,7 @@ kaldi_names.remove("doc:documentation/test_grammar_list_doctest.txt")
 kaldi_names.remove("doc:documentation/test_recobs_doctest.txt")
 
 text_names = [
+    "test_contexts",
     "test_engine_text",
     "test_engine_text_dictation",
 ] + common_names + language_names
