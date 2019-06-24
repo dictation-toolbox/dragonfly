@@ -94,6 +94,13 @@ sphinx_names = [
     "test_language_en_number",
 ] + common_names
 
+kaldi_names = [
+    "test_engine_kaldi",
+    # "test_language_en_number",
+] + common_names
+kaldi_names.remove("doc:documentation/test_grammar_list_doctest.txt")
+kaldi_names.remove("doc:documentation/test_recobs_doctest.txt")
+
 text_names = [
     "test_engine_text",
     "test_engine_text_dictation",
@@ -128,6 +135,7 @@ def build_suite(suite, names):
 sapi5_suite       = build_suite(EngineTestSuite("sapi5"), sapi5_names)
 sapi5inproc_suite = build_suite(EngineTestSuite("sapi5inproc"), sapi5_names)
 sphinx_suite      = build_suite(EngineTestSuite("sphinx"), sphinx_names)
+kaldi_suite       = build_suite(EngineTestSuite("kaldi"), kaldi_names)
 text_suite        = build_suite(EngineTestSuite("text"), text_names)
 
 

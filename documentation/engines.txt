@@ -12,6 +12,7 @@ There is a separate page on the CMU Pocket Sphinx engine:
     :titlesonly:
     :maxdepth: 1
 
+    kaldi_engine
     sphinx_engine
 
 EngineBase class
@@ -42,6 +43,9 @@ Engine backends
    :members: connect, disconnect
 
 .. autoclass:: dragonfly.engines.backend_sapi5.engine.Sapi5InProcEngine
+   :members:
+
+.. automodule:: dragonfly.engines.backend_kaldi
    :members:
 
 .. automodule:: dragonfly.engines.backend_sphinx

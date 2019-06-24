@@ -14,7 +14,8 @@ It currently supports the following speech recognition engines:
 
 -  *Dragon NaturallySpeaking* (DNS), a product of *Nuance*
 -  *Windows Speech Recognition* (WSR), included with Microsoft Windows
-   Vista, Windows 7, and freely available for Windows XP
+   Vista, Windows 7+, and freely available for Windows XP
+-  *Kaldi* (under development)
 -  *CMU Pocket Sphinx* (with caveats)
 
 Dragonfly's documentation is available online at `Read the
@@ -90,8 +91,9 @@ results.
   engines at the back end, while still providing a single front end
   interface to its users. This means that a program that uses Dragonfly
   can be run on any of the supported back end engines without any
-  modification. Currently Dragonfly supports Dragon NaturallySpeaking
-  and Windows Speech Recognition (included with Windows Vista).
+  modification. Currently Dragonfly supports Dragon NaturallySpeaking,
+  Windows Speech Recognition (included with Windows Vista & above),
+  Kaldi (cross-platform), and CMU Pocket Sphinx (cross-platform).
 
 |
 | *Built-in action framework*
