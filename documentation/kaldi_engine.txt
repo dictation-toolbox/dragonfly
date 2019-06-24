@@ -60,6 +60,10 @@ If you are installing to *develop* dragonfly2, use the following instead
 
   pip install -e .[kaldi]
 
+**Note:** If you have errors installing the kaldi-active-grammar
+package, make sure you're using a 64-bit Python, and update your ``pip``
+by executing ``pip install --upgrade pip``.
+
 You will also need a model to use. You can download a `compatible
 general English Kaldi nnet3 chain model
 <https://github.com/daanzu/kaldi-active-grammar/releases/tag/v0.4.0>`_
