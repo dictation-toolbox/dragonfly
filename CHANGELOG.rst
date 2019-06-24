@@ -16,20 +16,45 @@ Unreleased_
 
 Added
 ~~~~~
-
-* Add FuncContext class that determines context activity by callable arg
+* Add new `Kaldi engine`_ backend for Linux & Windows, including
+  documentation and module loaders  (thanks `@daanzu`_).
+* Add more featureful loader for WSR with sleep/wake functionality
   (thanks `@daanzu`_).
+* Add FuncContext class that determines context activity by callable
+  argument (thanks `@daanzu`_).
+* Allow all timer manager callbacks to be manually disabled (used in tests).
 
 Changed
 ~~~~~~~
-
+* Change RunCommand action to use a member for the process_command argument.
+* Change how Sapi5Compiler compiles Impossible elements (more impossible
+  now).
+* Change sphinx engine install instructions and required dependency
+  versions.
 * Change the dragonfly.timer._Timer class so that it works correctly for all
   supported engines and platforms via engine.create_timer().
+* Make local development documentation use read_the_docs theme (thanks
+  `@daanzu`_).
+* Move timer-related engine code into DelegateTimerManagerInterface so it is
+  re-used by multiple engines.
 
 Deprecated
 ~~~~~~~~~~
-
 * Deprecate the old dragonfly.timer._Timer class.
+
+Fixed
+~~~~~
+* Fix SAPI5 engine setting grammars as not exclusive (thanks `@daanzu`_).
+* Fix SAPI5 window change detection and allow manually processing (thanks
+  `@daanzu`_).
+* Fix slow RPC response times for WSR and natlink by adjusting engine timer
+  intervals.
+* Preserve Dragon mic state in the NatlinkEngine.speak() method (thanks
+  `@lexxish`_).
+
+Removed
+~~~~~~~
+* Remove sphinxwrapper Git sub-module from project.
 
 0.14.1_ - 2019-05-31
 --------------------
@@ -462,3 +487,4 @@ This release is the first in the Git version control system.
 .. _@lexxish: https://github.com/lexxish
 .. _Aenea: https://github.com/dictation-toolbox/aenea
 .. _pynput: https://github.com/moses-palmer/pynput
+.. _Kaldi engine: https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html
