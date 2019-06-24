@@ -136,8 +136,8 @@ class RunCommand(ActionBase):
                if it is a list. Command arguments can be included.
              - *process_command* (callable) -- optional callable to invoke
                with the :class:`Popen` object after successfully starting
-               the subprocess. Using this argument effectively overrides
-               the :meth:`process_command` method.
+               the subprocess. Using this argument overrides the
+               :meth:`process_command` method.
              - *synchronous* (bool, default *False*) -- whether to wait
                until :meth:`process_command` has finished executing before
                continuing.
@@ -156,11 +156,12 @@ class RunCommand(ActionBase):
                             "not %s" % self.command)
         if synchronous is not False:
             self.synchronous = synchronous
-        if callable(process_command):
-            self.process_command = process_command
-        if not callable(self.process_command):
+
+        if not (process_command is None or callable(process_command)):
             raise TypeError("process_command must be a callable object or "
                             "None")
+
+        self._process_command = process_command
 
         # Set the string used for representing actions.
         if isinstance(self.command, list):
@@ -216,7 +217,11 @@ class RunCommand(ActionBase):
         # Call process_command either synchronously or asynchronously.
         def call():
             try:
-                self.process_command(self._proc)
+                if self._process_command:
+                    process_func = self._process_command
+                else:
+                    process_func = self.process_command
+                process_func(self._proc)
                 return_code = self._proc.wait()
                 if return_code != 0:
                     self._log.error("Command %s failed with return code "
