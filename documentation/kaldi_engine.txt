@@ -50,6 +50,12 @@ There are three dependencies for using the Kaldi engine:
 - `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_
 - `webrtcvad <https://github.com/wiseman/py-webrtcvad>`_
 
+**Note:** If you're installing on Windows and don't have the Microsoft
+Python compiler package installed (assume you don't), you should install
+a binary wheel for webrtcvad with ``pip install
+https://github.com/daanzu/kaldi-active-grammar/releases/download/v0.4.0/webrtcvad-2.0.10-cp27-cp27m-win_amd64.whl``
+before proceeding.
+
 Installing the correct versions of these dependencies can be most easily
 done by installing the ``kaldi`` sub-package of ``dragonfly2`` using::
 
