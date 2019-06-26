@@ -31,7 +31,8 @@ simplifies processing recognition results.
    program that uses Dragonfly can be run on any of the 
    supported back end engines without any modification. 
    Currently Dragonfly supports Dragon NaturallySpeaking and 
-   Windows Speech Recognition (included with Windows Vista).
+   Windows Speech Recognition (included with Windows Vista & above),
+   Kaldi (cross-platform), and CMU Pocket Sphinx (cross-platform).
 
 *Built-in action framework*
    Dragonfly contains its own powerful framework for defining 
@@ -57,7 +58,7 @@ some of Dragonfly's users were introduced to writing software.
 Dragonfly also offers a robust and unified platform for people 
 using speech recognition to increase their productivity and 
 efficiency.  An `entire repository
-<http://dragonfly-modules.googlecode.com/svn/trunk/command-modules/documentation/index.html>`_
+<https://github.com/t4ngo/dragonfly-modules>`_
 of Dragonfly command-modules is available which contains command 
 grammars for controlling common applications and automating 
 frequent desktop activities.

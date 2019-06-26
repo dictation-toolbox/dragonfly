@@ -12,6 +12,7 @@ It currently supports the following speech recognition engines:
  - *Dragon NaturallySpeaking* (DNS), a product of *Nuance*
  - *Windows Speech Recognition* (WSR), included with Microsoft 
    Windows Vista, Windows 7, and freely available for Windows XP
+ - *Kaldi* (under development)
  - *CMU Pocket Sphinx* (with caveats)
 
 Dragonfly's documentation is available online at
@@ -69,10 +70,7 @@ command is spoken.  This is done as follows: ::
    grammar.load()                                      # Load the grammar.
 
 The example above is very basic and doesn't show any of 
-Dragonfly's exciting features, such as dynamic speech elements. 
-To learn more about these, please take a look at the project's 
-documentation `here
-<http://dragonfly.googlecode.com/svn/trunk/dragonfly/documentation/index.html>`_.
+Dragonfly's exciting features, such as dynamic speech elements.
 
 
 Rationale behind Dragonfly
