@@ -70,15 +70,25 @@ If you are installing to *develop* dragonfly2, use the following instead
 package, make sure you're using a 64-bit Python, and update your ``pip``
 by executing ``pip install --upgrade pip``.
 
-You will also need a model to use. You can download a `compatible
+You will also need a **model** to use. You can download a `compatible
 general English Kaldi nnet3 chain model
 <https://github.com/daanzu/kaldi-active-grammar/releases/tag/v0.4.0>`_
 from `kaldi-active-grammar
 <https://github.com/daanzu/kaldi-active-grammar>`_. Unzip it into a
 directory within the directory containing your grammar modules.
 
-Once the dependencies and model are installed, you'll need to copy the
-`dragonfly/examples/kaldi_module_loader_plus.py
+Once the dependencies and model are installed, you're ready to go!
+
+**A simple, single-file, standalone demo/example** can be found in the
+`dragonfly/examples/kaldi_demo.py
+<https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_demo.py>`_
+script. Simply run it from the directory containing the above model (or
+modify the configuration paths in the file) using::
+
+  python path/to/kaldi_demo.py
+
+For more structured and long-term use, you'll want to use a **module
+loader**. Copy the `dragonfly/examples/kaldi_module_loader_plus.py
 <https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_module_loader_plus.py>`_
 script into the folder with your grammar modules and run it using::
 
@@ -94,8 +104,6 @@ recognition (simply say "start listening" or "halt listening").
 
 A more basic loader is in `dragonfly/examples/kaldi_module_loader.py
 <https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_module_loader.py>`_.
-A simple, single-file, standalone example can be found in `this gist
-<https://gist.github.com/daanzu/8bf5f14ed03552f8ab93c853e85de277>`_.
 
 
 Engine configuration
@@ -171,7 +179,7 @@ there was dictation spoken. This gives you the best of both worlds:
 * Unbeatable general recognition of free-form dictation with the cloud
 
 The downsides of this is that each dictation request actually sent to
-the cloud (once it has been detected by Kaldi) incurs (1) high latency
+the cloud (once it has been detected by Kaldi) incurs: (1) high latency
 (~1-2s) of Internet access, and (2) a monetary cost and relationship to
 the cloud provider.
 
@@ -197,6 +205,10 @@ you're interested such a service.
 
 Using Cloud Dictation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+First, you must install the Google Cloud Speech-to-Text client library::
+
+  pip install google-cloud-speech==0.36.3
 
 To use cloud dictation, you *must both* pass the ``cloud_dictation``
 option *and* use a specialized ``Dictation`` element. The standard
