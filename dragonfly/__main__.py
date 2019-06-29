@@ -25,6 +25,10 @@ def test_with_engine(args):
         args.log_level = "WARNING"
     logging.root.setLevel(getattr(logging, args.log_level))
 
+    # Set the engine language if necessary.
+    if engine.name == "text":
+        engine.language = args.language
+
     # Connect to the engine, load grammar modules, take input from stdin and
     # disconnect from the engine if interrupted or if EOF is received.
     with engine.connection():
@@ -95,6 +99,11 @@ def make_arg_parser():
     parser_test.add_argument(
         "-e", "--engine", default="text",
         help="Name of the engine to use for testing."
+    )
+    parser_test.add_argument(
+        "--language", default="en",
+        help="Speaker language to use for testing. Only applies if using "
+             "the \"text\" engine."
     )
     parser_test.add_argument(
         "-l", "--log-level", default="INFO",
