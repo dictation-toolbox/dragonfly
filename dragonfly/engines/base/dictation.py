@@ -26,9 +26,15 @@ This class is used to store the recognized results of dictation elements
 within voice-commands.  It offers access to both the raw spoken-form words
 and be formatted written-form text.
 
+The object can be expected to behave like a string,
+responding as you would expect to string methods like :meth:`replace`.
 The formatted text can be retrieved using
 :meth:`~DictationContainerBase.format` or simply by  calling ``str(...)``
-on a dictation container object. A tuple of the raw  spoken words can be
+on a dictation container object.
+By default, formatting returns the words joined with
+spaces, but custom formatting can be applied by calling
+string methods on the :class:`Dictation` object.
+A tuple of the raw  spoken words can be
 retrieved using :attr:`~DictationContainerBase.words`.
 
 """
@@ -62,6 +68,9 @@ class DictationContainerBase(object):
 
             :param words: A sequence of Unicode strings.
             :type words: sequence-of-unicode
+
+            :param methods: Tuples describing string methods to call on the output.
+            :type methods: list-of-triples
 
         """
         self._words = tuple(words)
@@ -111,6 +120,9 @@ class DictationContainerBase(object):
         return self.apply_methods(u" ".join(self._words))
 
     def apply_methods(self, joined_words):
+        """
+        Apply any string methods called on the :class:`Dictation` object to a given string. Called during :meth:`format`.
+        """
         result = joined_words
         for method in self._methods:
             result = getattr(result, method[0])(*method[1], **method[2])
