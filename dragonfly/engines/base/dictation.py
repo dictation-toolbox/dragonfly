@@ -54,7 +54,7 @@ class DictationContainerBase(object):
 
     """
 
-    def __init__(self, words):
+    def __init__(self, words, methods=None):
         """
             A dictation container is created by passing it a sequence
             of words as recognized by the backend SR engine.
@@ -66,6 +66,7 @@ class DictationContainerBase(object):
         """
         self._words = tuple(words)
         self._formatted = None
+        self._methods = methods
 
     def __str__(self):
         if self._formatted is None:
@@ -97,6 +98,9 @@ class DictationContainerBase(object):
     def __mul__(self, other):
         return self.__str__() * other
 
+    def __rmul__(self, other):
+        return self.__str__() * other
+
     @property
     def words(self):
         """ Sequence of the words forming this dictation. """
@@ -104,4 +108,10 @@ class DictationContainerBase(object):
 
     def format(self):
         """ Format and return this dictation as a Unicode object. """
-        return u" ".join(self._words)
+        return self.apply_methods(u" ".join(self._words))
+
+    def apply_methods(self, joined_words):
+        result = joined_words
+        for method in self._methods:
+            result = getattr(result, method[0])(*method[1], **method[2])
+        return result
