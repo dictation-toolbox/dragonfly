@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -22,8 +22,8 @@
 Dictation container base class
 ============================================================================
 
-This class is used to store the recognized results of dictation elements 
-within voice-commands.  It offers access to both the raw spoken-form words 
+This class is used to store the recognized results of dictation elements
+within voice-commands.  It offers access to both the raw spoken-form words
 and be formatted written-form text.
 
 The formatted text can be retrieved using
@@ -47,8 +47,8 @@ class DictationContainerBase(object):
         Container class for dictated words as recognized by the
         :class:`Dictation` element.
 
-        This base class implements the general functionality of dictation 
-        container classes.  Each supported engine should have a derived 
+        This base class implements the general functionality of dictation
+        container classes.  Each supported engine should have a derived
         dictation container class which performs the actual engine-
         specific formatting of dictated text.
 
@@ -84,6 +84,18 @@ class DictationContainerBase(object):
             return message.encode(locale.getpreferredencoding())
         else:
             return message
+
+    def __getattr__(self, name):
+        return getattr(self.__str__(), name)
+
+    def __add__(self, other):
+        return self.__str__() + other
+
+    def __radd__(self, other):
+        return other + self.__str__()
+
+    def __mul__(self, other):
+        return self.__str__() * other
 
     @property
     def words(self):
