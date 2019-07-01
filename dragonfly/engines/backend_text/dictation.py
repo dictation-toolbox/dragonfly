@@ -22,8 +22,8 @@
 Dictation container class for the text engine
 ============================================================================
 
-This class is used to store the recognized results of dictation elements 
-within voice-commands.  It offers access to both the raw spoken-form words 
+This class is used to store the recognized results of dictation elements
+within voice-commands.  It offers access to both the raw spoken-form words
 and be formatted written-form text.
 
 The formatted text can be retrieved using
@@ -38,27 +38,4 @@ from six import PY2
 
 from ..base import DictationContainerBase
 
-
-class TextDictationContainer(DictationContainerBase):
-    """
-        Container class for dictated words as recognized by the
-        :class:`Dictation` element.
-
-    """
-
-    def __init__(self, words):
-        DictationContainerBase.__init__(self, words=words)
-
-    def __str__(self):
-        if PY2:
-            return self.__unicode__().encode("utf-8")
-        else:
-            return self.__unicode__()
-
-    def __repr__(self):
-        message = u"%s(%s)" % (self.__class__.__name__,
-                               u", ".join(self._words))
-        if PY2:
-            return message.encode(locale.getpreferredencoding())
-        else:
-            return message
+TextDictationContainer = DictationContainerBase

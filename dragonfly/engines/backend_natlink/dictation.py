@@ -69,9 +69,3 @@ class NatlinkDictationContainer(DictationContainerBase):
         formatter = WordFormatter()
         formatted = formatter.format_dictation(self._words)
         return self.apply_methods(formatted)
-
-    def __str__(self):
-        if PY2:
-            return self.__unicode__().encode(locale.getpreferredencoding())
-        else:
-            return self.__unicode__()

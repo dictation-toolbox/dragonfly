@@ -78,9 +78,10 @@ class DictationContainerBase(object):
         self._methods = methods
 
     def __str__(self):
-        if self._formatted is None:
-            self._formatted = self.format()
-        return self._formatted
+        if PY2:
+            return self.__unicode__().encode(locale.getpreferredencoding())
+        else:
+            return self.__unicode__()
 
     def __unicode__(self):
         if self._formatted is None:
