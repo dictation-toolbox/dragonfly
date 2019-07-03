@@ -51,7 +51,6 @@ from ..base                    import (EngineBase, EngineError,
                                        MimicFailure, DelegateTimerManager,
                                        DelegateTimerManagerInterface, DictationContainerBase)
 from .compiler                 import Sapi5Compiler
-from .dictation                import Sapi5DictationContainer
 from .recobs                   import Sapi5RecObsManager
 from ...grammar.state          import State
 from ...grammar.recobs         import RecognitionObserver

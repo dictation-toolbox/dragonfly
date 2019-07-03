@@ -30,7 +30,6 @@ import wave
 from six import text_type, PY2
 
 from dragonfly import Window
-from .dictation import SphinxDictationContainer
 from .recobs import SphinxRecObsManager
 from .timer import SphinxTimerManager
 from .training import write_training_data, write_transcript_files
