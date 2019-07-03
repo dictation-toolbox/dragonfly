@@ -915,7 +915,17 @@ class Empty(ElementBase):
 # Slightly more complex element classes.
 
 class Dictation(ElementBase):
+    """
+        Element class representing free dictation.
 
+        Constructor arguments:
+            - *name* (*str*, default: *None*) --
+              the name of this element
+
+        Returns a string-like :class:`DictationContainerBase` object containing the recognised words.
+        By default this is formatted as a lowercase sentence, but alternative formatting can be applied by calling string methods
+        like `replace` or `upper` on a :class:`Dictation` object.
+    """
     def __init__(self, name=None, format=True, default=None):
         ElementBase.__init__(self, name, default=default)
         self._format_words = format
