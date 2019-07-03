@@ -27,14 +27,7 @@ import logging, locale
 
 from six import PY2
 
-from ..base import DictationContainerBase
 from ...grammar.elements_basic import Dictation as BaseDictation
-
-
-#---------------------------------------------------------------------------
-# Kaldi dictation class -- container for a series of dictated words.
-KaldiDictationContainer = DictationContainerBase
-
 
 #---------------------------------------------------------------------------
 # Cloud dictation classes -- elements capable of local or cloud dictation.

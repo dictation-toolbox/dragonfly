@@ -28,7 +28,7 @@ from dragonfly import Window
 from .dictation import TextDictationContainer
 from .recobs import TextRecobsManager
 from ..base import (EngineBase, EngineError, MimicFailure,
-                    ThreadedTimerManager)
+                    ThreadedTimerManager, DictationContainerBase)
 
 
 def _map_word(word):
@@ -45,7 +45,7 @@ class TextInputEngine(EngineBase):
     """Text-input Engine class. """
 
     _name = "text"
-    DictationContainer = TextDictationContainer
+    DictationContainer = DictationContainerBase
 
     # -----------------------------------------------------------------------
 
