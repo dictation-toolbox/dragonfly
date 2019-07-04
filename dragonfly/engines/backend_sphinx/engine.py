@@ -30,12 +30,12 @@ import wave
 from six import text_type, PY2
 
 from dragonfly import Window
-from .dictation import SphinxDictationContainer
 from .recobs import SphinxRecObsManager
 from .timer import SphinxTimerManager
 from .training import write_training_data, write_transcript_files
 from ..base import (EngineBase, EngineError, MimicFailure,
-                    DelegateTimerManagerInterface)
+                    DelegateTimerManagerInterface,
+                    DictationContainerBase)
 
 try:
     from jsgf import RootGrammar, PublicRule, Literal
@@ -61,7 +61,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
     """ Speech recognition engine back-end for CMU Pocket Sphinx. """
 
     _name = "sphinx"
-    DictationContainer = SphinxDictationContainer
+    DictationContainer = DictationContainerBase
 
     def __init__(self):
         EngineBase.__init__(self)

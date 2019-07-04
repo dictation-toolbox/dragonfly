@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -49,9 +49,8 @@ except ImportError:
 
 from ..base                    import (EngineBase, EngineError,
                                        MimicFailure, DelegateTimerManager,
-                                       DelegateTimerManagerInterface)
+                                       DelegateTimerManagerInterface, DictationContainerBase)
 from .compiler                 import Sapi5Compiler
-from .dictation                import Sapi5DictationContainer
 from .recobs                   import Sapi5RecObsManager
 from ...grammar.state          import State
 from ...grammar.recobs         import RecognitionObserver
@@ -96,7 +95,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
 
     _name = "sapi5shared"
     recognizer_dispatch_name = "SAPI.SpSharedRecognizer"
-    DictationContainer = Sapi5DictationContainer
+    DictationContainer = DictationContainerBase
 
     #-----------------------------------------------------------------------
 
@@ -251,7 +250,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         if timeout != None:
             begin_time = time.time()
             windll.user32.SetTimer(NULL, NULL, int(timeout * 1000), NULL)
-    
+
         message = MSG()
         message_pointer = pointer(message)
         while (not timeout) or (time.time() - begin_time < timeout):

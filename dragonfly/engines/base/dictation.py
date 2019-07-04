@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -22,13 +22,19 @@
 Dictation container base class
 ============================================================================
 
-This class is used to store the recognized results of dictation elements 
-within voice-commands.  It offers access to both the raw spoken-form words 
+This class is used to store the recognized results of dictation elements
+within voice-commands.  It offers access to both the raw spoken-form words
 and be formatted written-form text.
 
+The object can be expected to behave like a string,
+responding as you would expect to string methods like :meth:`replace`.
 The formatted text can be retrieved using
 :meth:`~DictationContainerBase.format` or simply by  calling ``str(...)``
-on a dictation container object. A tuple of the raw  spoken words can be
+on a dictation container object.
+By default, formatting returns the words joined with
+spaces, but custom formatting can be applied by calling
+string methods on the :class:`Dictation` object.
+A tuple of the raw  spoken words can be
 retrieved using :attr:`~DictationContainerBase.words`.
 
 """
@@ -47,14 +53,14 @@ class DictationContainerBase(object):
         Container class for dictated words as recognized by the
         :class:`Dictation` element.
 
-        This base class implements the general functionality of dictation 
-        container classes.  Each supported engine should have a derived 
+        This base class implements the general functionality of dictation
+        container classes.  Each supported engine should have a derived
         dictation container class which performs the actual engine-
         specific formatting of dictated text.
 
     """
 
-    def __init__(self, words):
+    def __init__(self, words, methods=None):
         """
             A dictation container is created by passing it a sequence
             of words as recognized by the backend SR engine.
@@ -63,14 +69,19 @@ class DictationContainerBase(object):
             :param words: A sequence of Unicode strings.
             :type words: sequence-of-unicode
 
+            :param methods: Tuples describing string methods to call on the output.
+            :type methods: list-of-triples
+
         """
         self._words = tuple(words)
         self._formatted = None
+        self._methods = methods
 
     def __str__(self):
-        if self._formatted is None:
-            self._formatted = self.format()
-        return self._formatted
+        if PY2:
+            return self.__unicode__().encode(locale.getpreferredencoding())
+        else:
+            return self.__unicode__()
 
     def __unicode__(self):
         if self._formatted is None:
@@ -85,6 +96,21 @@ class DictationContainerBase(object):
         else:
             return message
 
+    def __getattr__(self, name):
+        return getattr(self.__str__(), name)
+
+    def __add__(self, other):
+        return self.__str__() + other
+
+    def __radd__(self, other):
+        return other + self.__str__()
+
+    def __mul__(self, other):
+        return self.__str__() * other
+
+    def __rmul__(self, other):
+        return self.__str__() * other
+
     @property
     def words(self):
         """ Sequence of the words forming this dictation. """
@@ -92,4 +118,13 @@ class DictationContainerBase(object):
 
     def format(self):
         """ Format and return this dictation as a Unicode object. """
-        return u" ".join(self._words)
+        return self.apply_methods(u" ".join(self._words))
+
+    def apply_methods(self, joined_words):
+        """
+        Apply any string methods called on the :class:`Dictation` object to a given string. Called during :meth:`format`.
+        """
+        result = joined_words
+        for method in self._methods:
+            result = getattr(result, method[0])(*method[1], **method[2])
+        return result
