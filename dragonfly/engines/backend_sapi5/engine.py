@@ -35,17 +35,12 @@ from datetime import datetime
 from ctypes import Structure, c_long, c_int, c_uint, pointer
 from six import string_types, integer_types
 
-try:
-    import pythoncom
-    import win32con
-    from win32com.client           import Dispatch, getevents, constants
-    from win32com.client.gencache  import EnsureDispatch
-    from ctypes import windll, WinError
-    from ctypes.wintypes import DWORD, HANDLE, HWND, LONG, WINFUNCTYPE
-except ImportError:
-    # Ignore import errors so that documentation can be built on other
-    # platforms.
-    pass
+import pythoncom
+import win32con
+from win32com.client           import Dispatch, getevents, constants
+from win32com.client.gencache  import EnsureDispatch
+from ctypes import windll, WinError
+from ctypes.wintypes import DWORD, HANDLE, HWND, LONG, WINFUNCTYPE
 
 from ..base                    import (EngineBase, EngineError,
                                        MimicFailure, DelegateTimerManager,
