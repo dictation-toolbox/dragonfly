@@ -11,6 +11,28 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add enhancements to 'Dictation' objects (see `PR #96
+  <https://github.com/dictation-toolbox/dragonfly/pull/96>`__)
+  (thanks `@mrob95`_).
+* Add optional '--language' argument to dragonfly's 'test' command (CLI).
+
+Changed
+~~~~~~~
+* Improve Kaldi documentation and add an example demo script
+  (thanks `@daanzu`_).
+
+Fixed
+~~~~~
+* Fix DragonflyError raised if importing ShortIntegerContent whilst using a
+  speaker language that isn't English.
+* Fix problem with building documentation when kaldi_active_grammar is
+  installed.
+
 0.15.0_ - 2019-06-24
 --------------------
 
