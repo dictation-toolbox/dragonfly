@@ -303,7 +303,7 @@ class RPCServer(object):
         before the main thread terminates.
         """
         # Handle a previous Thread.join() timeout.
-        if self._thread and not self._thread.isAlive():
+        if self._thread and not self._thread.is_alive():
             self._thread = None
 
         # Return if the server thread is already running.
@@ -350,7 +350,7 @@ class RPCServer(object):
         Stop the server if it is running.
         """
         # Handle a previous Thread.join() timeout.
-        if self._thread and not self._thread.isAlive():
+        if self._thread and not self._thread.is_alive():
             self._thread = None
 
         # Return if the server isn't currently running.
@@ -366,7 +366,7 @@ class RPCServer(object):
         self.send_request("shutdown_rpc_server", [])
         timeout = 5
         self._thread.join(timeout)
-        if self._thread.isAlive():
+        if self._thread.is_alive():
             self._log.warning("RPC server thread failed to stop after %d "
                               "seconds" % timeout)
         else:

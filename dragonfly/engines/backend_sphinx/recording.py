@@ -102,7 +102,7 @@ class PyAudioRecorder(object):
         self._recording = False
         if self._thread:
             self._thread.join(5)
-            if not self._thread.isAlive():
+            if not self._thread.is_alive():
                 self._thread = None
 
     def _record(self):

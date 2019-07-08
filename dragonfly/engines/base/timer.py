@@ -221,13 +221,13 @@ class ThreadedTimerManager(TimerManagerBase):
         """"""
         # Stop the thread's main loop and wait until it finishes, timing out
         # after 5 seconds.
-        should_join = (self._thread and self._thread.isAlive() and
+        should_join = (self._thread and self._thread.is_alive() and
                        self._thread is not current_thread())
         self._running = False
         if should_join:
             timeout = 5
             self._thread.join(timeout=timeout)
-            if self._thread.isAlive():
+            if self._thread.is_alive():
                 raise RuntimeError("failed to deactivate main callback "
                                    "after %d seconds" % timeout)
 
