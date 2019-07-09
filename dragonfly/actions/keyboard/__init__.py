@@ -37,14 +37,24 @@ doc_build = bool(os.environ.get("SPHINX_BUILD_RUNNING"))
 if sys.platform.startswith("win") and not doc_build:
     # Import classes for Windows.
     from ._win32 import Keyboard, Typeable, Win32KeySymbols as KeySymbols
+
 elif sys.platform == "darwin" and not doc_build:
     # Import classes for Mac OS.
     from ._pynput import Keyboard, Typeable, DarwinKeySymbols as KeySymbols
+
 elif os.environ.get("XDG_SESSION_TYPE") == "x11" and not doc_build:
     # Import classes for X11 (typically used on Linux systems).
     # The XDG_SESSION_TYPE environment variable may not be set in some
     # circumstances, in which case it can be set manually in ~/.profile.
-    from ._pynput import Keyboard, Typeable, X11KeySymbols as KeySymbols
+    from ._x11_base import XdoKeySymbols as KeySymbols, Typeable
+
+    # Import the keyboard for typing through xdotool.
+    from ._x11_xdotool import XdotoolKeyboard as Keyboard
+
+    # libxdo does work and is a bit faster, but doesn't work with Python 3.
+    # Unfortunately python-libxdo also hasn't been updated recently.
+    # from ._x11_libxdo import LibxdoKeyboard as Keyboard
+
 else:
     from ._base import (BaseKeyboard as Keyboard, Typeable,
                         MockKeySymbols as KeySymbols)
