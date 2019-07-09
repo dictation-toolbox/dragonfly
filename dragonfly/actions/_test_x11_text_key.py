@@ -17,6 +17,8 @@ import subprocess
 import sys
 import threading
 import time
+import logging
+logging.basicConfig()
 
 from dragonfly import Key, Text
 
@@ -52,13 +54,14 @@ def main():
         # Navigation keys
         "up", "down", "left", "right", "pageup", "pagedown", "home", "end",
 
-        # Number pad keys (except npsep)
-        "npmul", "npadd", "npsub", "npdec", "npdiv", "np0", "np1",
+        # Number pad keys
+        "npmul", "npadd", "npsub", "npdec", "npdiv", "npsep", "np0", "np1",
         "np2", "np3", "np4", "np5", "np6", "np7", "np8", "np9",
 
-        # Function keys (not including F13-24)
+        # Function keys
         "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11",
-        "f11", "f12",
+        "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19",
+        "f20", "f21", "f22", "f23", "f24",
 
         # Multimedia keys (press toggle keys twice)
         "volumeup", "volup", "volumedown", "voldown", "volumemute",
