@@ -46,7 +46,7 @@ elif os.environ.get("XDG_SESSION_TYPE") == "x11" and not doc_build:
     # Import classes for X11 (typically used on Linux systems).
     # The XDG_SESSION_TYPE environment variable may not be set in some
     # circumstances, in which case it can be set manually in ~/.profile.
-    from ._x11_base import XdoKeySymbols as KeySymbols, Typeable
+    from ._x11_base import Typeable, XdoKeySymbols as KeySymbols
 
     # Import the keyboard for typing through xdotool.
     from ._x11_xdotool import XdotoolKeyboard as Keyboard

@@ -20,18 +20,10 @@
 import logging
 import subprocess
 
-from ._base import BaseKeyboard
-from ._x11_base import Typeable, KEY_TRANSLATION
+from ._x11_base import BaseX11Keyboard, KEY_TRANSLATION
 
 
-_KEY_PRESSES = {
-    'press': '',
-    'up': 'up',
-    'down': 'down'
-}
-
-
-class XdotoolKeyboard(BaseKeyboard):
+class XdotoolKeyboard(BaseX11Keyboard):
     """Static class for typing keys with xdotool."""
 
     _log = logging.getLogger("keyboard")
@@ -87,7 +79,3 @@ class XdotoolKeyboard(BaseKeyboard):
         except Exception as e:
             cls._log.exception("Failed to execute xdotool command '%s': %s",
                                arguments, e)
-
-    @classmethod
-    def get_typeable(cls, char, is_text=False):
-        return Typeable(char, is_text=is_text)

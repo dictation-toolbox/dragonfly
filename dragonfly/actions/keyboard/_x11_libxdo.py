@@ -24,11 +24,10 @@ import time
 import xdo
 import Xlib.display
 
-from ._base import BaseKeyboard
-from ._x11_base import Typeable, KEY_TRANSLATION
+from ._x11_base import BaseX11Keyboard, KEY_TRANSLATION
 
 
-class LibxdoKeyboard(BaseKeyboard):
+class LibxdoKeyboard(BaseX11Keyboard):
     """Static class for typing keys with python-libxdo."""
 
     _log = logging.getLogger("keyboard")
@@ -58,11 +57,10 @@ class LibxdoKeyboard(BaseKeyboard):
         for event in events:
             (key, down, timeout) = event
             delay_micros = int(timeout * 1000.0)
+            key = KEY_TRANSLATION.get(key, key)
 
             # Press/release the key, catching any errors.
             try:
-                key = KEY_TRANSLATION.get(key, key)
-
                 if down:
                     cls.libxdo.send_keysequence_window_down(0, key, delay_micros)
                 else:
@@ -74,7 +72,3 @@ class LibxdoKeyboard(BaseKeyboard):
             # Sleep after the keyboard event if necessary.
             if timeout:
                 time.sleep(timeout)
-
-    @classmethod
-    def get_typeable(cls, char, is_text=False):
-        return Typeable(char, is_text=is_text)
