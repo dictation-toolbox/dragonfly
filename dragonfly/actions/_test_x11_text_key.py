@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# encoding: utf-8
 
 """
 Script to test the Key and Text action on X11 using the "xev" program.
@@ -68,6 +69,11 @@ def main():
         "volmute", "tracknext", "trackprev", "playpause", "playpause",
         "browserback", "browserforward",
 
+        # Include some keys not defined in typeables.py. There are a lot of
+        # these in X11. The first two are browser-specific media keys. The
+        # others are the Cyrillic л and Japanese ぁ letters.
+        "XF86Refresh", "XF86HomePage", "Cyrillic_el", "U3041",
+
         # Modifiers.
         "shift:down", "shift:up",
         "ctrl:down", "ctrl:up",
@@ -87,8 +93,9 @@ def main():
     ])
 
     # Define text to type using all alphanumeric characters and valid
-    # symbols.
-    text = alphas + digits + symbols + ",:-/ \n\t"
+    # symbols. Also test some Unicode characters.
+    other_symbols = u"é—…ôêěèźżėфй№😱ß°⌷⅕€¨§™ぁ"
+    text = alphas + digits + symbols + ",:-/ \n\t" + other_symbols
 
     # Start xev and selectively print lines from it in the background.
     # Exit if the command fails.
@@ -99,7 +106,7 @@ def main():
                                 stdin=subprocess.PIPE)
         def print_key_events():
             for line in iter(proc.stdout.readline, b''):
-                line = line.decode()
+                line = line.decode('utf-8')
                 if "keysym" in line:
                     print(line.strip())
 
@@ -115,6 +122,7 @@ def main():
     time.sleep(5)
 
     print("--------------------Starting Key tests--------------------")
+    keys.extend(other_symbols)
     Key("/10,".join(keys)).execute()
     print("Done.")
 
