@@ -73,7 +73,7 @@ Text class reference
 
 import sys
 
-from six import text_type
+from six import PY2
 
 from ..engines import get_engine
 from ..util.clipboard import Clipboard
@@ -200,7 +200,9 @@ class Text(DynStrActionBase):
         unicode_events = []
         hardware_error_message = None
         unicode_error_message = None
-        for character in text_type(spec):
+        if PY2 and isinstance(spec, str):
+            spec = spec.decode('utf-8')
+        for character in spec:
             if character in self._specials:
                 typeable = self._specials[character]
                 hardware_events.extend(typeable.events(self._pause))
