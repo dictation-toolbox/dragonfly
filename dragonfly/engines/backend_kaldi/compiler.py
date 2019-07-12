@@ -65,18 +65,18 @@ MockLiteral = collections.namedtuple('MockLiteral', 'words')
 
 class KaldiCompiler(CompilerBase, KAGCompiler):
 
-    def __init__(self, model_dir, tmp_dir, **kwargs):
+    def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, **kwargs):
         CompilerBase.__init__(self)
         KAGCompiler.__init__(self, model_dir, tmp_dir=tmp_dir, **kwargs)
+
+        self.auto_add_to_user_lexicon = auto_add_to_user_lexicon
 
         self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
         self._grammar_rule_states_dict = dict()  # FIXME: disabled!
         self.kaldi_rules_by_listreflist_dict = collections.defaultdict(set)
         self.internal_grammar = InternalGrammar('!kaldi_engine_internal')
 
-        self._compile_base_fsts()
-
-    impossible_word = property(lambda self: self._longest_word)
+    impossible_word = property(lambda self: self._longest_word)  # FIXME
     unknown_word = '<unk>'
 
     #-----------------------------------------------------------------------
@@ -106,11 +106,21 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
         words = new_words
         new_words = []
         for word in words:
-            if word not in self._lexicon_words:
-                self._log.warning("%s: Word not in lexicon (will not be recognized): %r" % (self, word))
-                word = self.impossible_word
+            if word not in self.lexicon_words:
+                word = self.handle_oov_word(word)
             new_words.append(word)
         return new_words
+
+    def handle_oov_word(self, word):
+        if not self.auto_add_to_user_lexicon:
+            self._log.warning("%s: Word not in lexicon (will not be recognized): %r" % (self, word))
+            word = self.impossible_word
+        else:
+            phones = self.model.add_word(word)
+            self.model.load_words()
+            self.decoder.load_lexicon()
+            self._log.warning("%s: Word not in lexicon (generated automatic pronunciation): %r [%s]" % (self, word, ' '.join(phones)))
+        return word
 
     #-----------------------------------------------------------------------
     # Methods for compiling grammars.

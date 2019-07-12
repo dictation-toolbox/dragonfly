@@ -58,6 +58,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def __init__(self, model_dir=None, tmp_dir=None,
         vad_aggressiveness=None, vad_padding_ms=None, input_device_index=None,
+        auto_add_to_user_lexicon=None,
         cloud_dictation=None,  # FIXME: cloud_dictation_lang
         ):
         EngineBase.__init__(self)
@@ -72,6 +73,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._vad_aggressiveness = vad_aggressiveness if vad_aggressiveness is not None else 3
         self._vad_padding_ms = vad_padding_ms if vad_padding_ms is not None else 300
         self._input_device_index = input_device_index
+        self._auto_add_to_user_lexicon = auto_add_to_user_lexicon
         self._cloud_dictation = cloud_dictation
 
         self._compiler = None
@@ -86,14 +88,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             return
 
         self._log.debug("Loading KaldiEngine in process %s." % os.getpid())
+        # subprocess.call(['vsjitdebugger', '-p', str(os.getpid())]); time.sleep(5)
 
-        self._compiler = KaldiCompiler(self._model_dir, tmp_dir=self._tmp_dir, cloud_dictation=self._cloud_dictation)
+        self._compiler = KaldiCompiler(self._model_dir, tmp_dir=self._tmp_dir, auto_add_to_user_lexicon=self._auto_add_to_user_lexicon, cloud_dictation=self._cloud_dictation)
         # self._compiler.fst_cache.invalidate()
 
         top_fst = self._compiler.compile_top_fst()
         dictation_fst_file = self._compiler.dictation_fst_filepath
         self._decoder = KaldiAgfNNet3Decoder(model_dir=self._model_dir, tmp_dir=self._tmp_dir, top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file)
-        words = self._compiler.load_words()
         self._compiler.decoder = self._decoder
 
         self._audio = VADAudio(aggressiveness=self._vad_aggressiveness, start=False, input_device_index=self._input_device_index)
