@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
@@ -29,6 +30,9 @@ type of action is used for sending keystrokes to the foreground
 application.  This works on Windows, Mac OS and with X11 (e.g. on Linux).
 Examples of how to use this class are given in :ref:`RefKeySpecExamples`.
 
+To use this class on X11/Linux, the
+`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
+installed.
 
 .. _RefKeySpec:
 
@@ -176,6 +180,43 @@ The following code locks the screen by pressing the *Windows* key together
 with the *l*: ::
 
     Key("w-l").execute()
+
+
+X11 key support
+............................................................................
+
+This class can be used to type arbitrary keys and Unicode characters on
+X11/Linux. It is not limited to the key names listed above, although all of
+them will work too.
+
+Unicode characters are supported by passing their Unicode code point to the
+keyboard implementation. For example, the character ``'€'`` is converted to
+``'U20AC'``. The Unicode code point can also be passed directly, e.g. with
+``Key('U20AC')``.
+
+
+
+Example X11 key actions
+----------------------------------------------------------------------------
+
+In addition to the examples in the previous section, the following example
+will work on X11/Linux.
+
+The following code will type 'σμ' into the foreground application and then
+press ctrl+z: ::
+
+    Key("σ,μ,c-z").execute()
+
+The following code will press 'µ' while holding control and alt: ::
+
+    Key("ca-μ").execute()
+
+The following code will press the browser refresh multimedia key: ::
+
+    Key("XF86Refresh").execute()
+
+Although this key is not defined in dragonfly's typeables list, it still
+works because it is passed directly to xdotool.
 
 
 Key class reference

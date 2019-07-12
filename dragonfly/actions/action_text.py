@@ -26,6 +26,10 @@ This section describes the :class:`Text` action object. This type of
 action is used for typing text into the foreground application.  This works
 on Windows, Mac OS and with X11 (e.g. on Linux).
 
+To use this class on X11/Linux, the
+`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
+installed.
+
 It differs from the :class:`Key` action in that :class:`Text` is used for
 typing literal text, while :class:`dragonfly.actions.action_key.Key`
 emulates pressing keys on the keyboard.  An example of this is that the
@@ -55,7 +59,8 @@ parameter for :class:`Text` as follows:
 
 .. code:: python
 
-   Text(u"σμ") + Key("ctrl:down") + Text("]", use_hardware=True) + Key("ctrl:up")
+   action = Text("σμ") + Key("ctrl:down") + Text("]", use_hardware=True) + Key("ctrl:up")
+   action.execute()
 
 
 Some applications require hardware emulation versus Unicode keyboard
@@ -64,6 +69,30 @@ emulation. If you use such applications, add their executable names to the
 dragonfly always use hardware emulation for them.
 
 These settings and parameters have no effect on other platforms.
+
+
+X11/Linux Unicode Keyboard Support
+............................................................................
+
+The :class:`Text` action can also type arbitrary Unicode characters on X11.
+This works regardless of the ``use_hardware`` parameter or
+``unicode_keyboard`` setting.
+
+Unlike on Windows, modifier keys will be respected by :class:`Text` actions
+on X11. As such, the previous Windows example will work and can even be
+simplified a little:
+
+.. code:: python
+
+   action = Text("σμ") + Key("ctrl:down") + Text("]") + Key("ctrl:up")
+   action.execute()
+
+
+It can also be done with one :class:`Key` action:
+
+.. code:: python
+
+   Key("σ,μ,c-]").execute()
 
 
 Text class reference
