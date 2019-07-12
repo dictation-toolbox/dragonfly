@@ -213,6 +213,23 @@ def get_recognition_history():
 
 
 @_add_method
+def is_in_speech():
+    """
+    Whether the user is currently speaking.
+
+    The :meth:`register_history` method **must** be called to register the
+    observer first.
+
+    :rtype: bool
+    """
+    obs = _history_closure[0]
+    if obs is None:
+        raise RuntimeError("the recognition observer is not registered")
+
+    return not obs.complete
+
+
+@_add_method
 def unregister_history():
     """
     Unregister the internal recognition observer.
