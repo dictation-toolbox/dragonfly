@@ -131,7 +131,7 @@ def main():
         # when this module is run from PythonWin.  In this case we
         # simply use the current working directory.
         path = os.getcwd()
-        __file__ = os.path.join(path, "kaldi_module_loader.py")
+        __file__ = os.path.join(path, "wsr_module_loader_plus.py")
 
     # Set any configuration options here as keyword arguments.
     engine = get_engine("sapi5inproc")
