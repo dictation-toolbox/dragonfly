@@ -923,8 +923,17 @@ class Dictation(ElementBase):
               the name of this element
 
         Returns a string-like :class:`DictationContainerBase` object containing the recognised words.
-        By default this is formatted as a lowercase sentence, but alternative formatting can be applied by calling string methods
-        like `replace` or `upper` on a :class:`Dictation` object.
+        By default this is formatted as a lowercase sentence.
+        Alternative formatting can be applied by calling string methods like `replace` or `upper` on a :class:`Dictation` object, or
+        by passing an arbitrary formatting function (taking and returning a string) to the `apply` method.
+        Camel case text can be produced using the `camel` method. For example:
+
+        .. code:: python
+
+            str_func = lambda s: s.upper()
+            Dictation("formattedtext").apply(str_func)
+            Dictation("snake_text").lower().replace(" ", "_")
+            Dictation("camelText").camel()
     """
     def __init__(self, name=None, format=True, default=None):
         ElementBase.__init__(self, name, default=default)
@@ -942,6 +951,7 @@ class Dictation(ElementBase):
             self._string_methods.append((name, args, kwargs))
             return self
         return call
+
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
