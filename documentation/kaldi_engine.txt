@@ -261,7 +261,6 @@ Limitations & Future Work
 Known Issues
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Unloading grammars can cause subsequent errors. Avoid for now.
 * All grammars & rules must be loaded before starting recognition (with a call to ``do_recognition()``).
 
 * Dragonfly :class:`Lists` and :class:`DictLists` function as normal.
