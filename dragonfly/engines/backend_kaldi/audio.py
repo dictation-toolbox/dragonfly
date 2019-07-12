@@ -24,6 +24,7 @@ Audio input/output classes for Kaldi backend
 
 import collections, wave, logging, os, datetime
 
+from six import print_
 from six.moves import queue
 import pyaudio
 import webrtcvad
@@ -115,6 +116,34 @@ class MicAudio(object):
         wf.setframerate(self.sample_rate)
         wf.writeframes(data)
         wf.close()
+
+    @staticmethod
+    def print_list():
+        pa = pyaudio.PyAudio()
+
+        print_("")
+        print_("LISTING ALL INPUT DEVICES SUPPORTED BY PORTAUDIO")
+        print_("(any device numbers not shown are for output only)")
+        print_("")
+
+        for i in range(0, pa.get_device_count()):
+            info = pa.get_device_info_by_index(i)
+
+            if info['maxInputChannels'] > 0:  # microphone? or just speakers
+                print_("DEVICE #%d" % info['index'])
+                print_("    %s" % info['name'])
+                print_("    input channels = %d, output channels = %d, defaultSampleRate = %d" %
+                    (info['maxInputChannels'], info['maxOutputChannels'], info['defaultSampleRate']))
+                # print_(info)
+                try:
+                  supports16k = pa.is_format_supported(16000,  # sample rate
+                      input_device = info['index'],
+                      input_channels = info['maxInputChannels'],
+                      input_format = pyaudio.paInt16)
+                except ValueError:
+                  print_("    NOTE: 16k sampling not supported, configure pulseaudio to use this device")
+
+        print_("")
 
 
 class VADAudio(MicAudio):

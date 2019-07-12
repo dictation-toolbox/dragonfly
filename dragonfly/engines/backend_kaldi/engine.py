@@ -36,7 +36,7 @@ from ...windows                 import Window
 try:
     from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
     from .compiler                  import KaldiCompiler
-    from .audio                     import VADAudio, AudioStore
+    from .audio                     import MicAudio, VADAudio, AudioStore
     ENGINE_AVAILABLE = True
 except ImportError:
     # Import a few things here optionally for readability (the engine won't
@@ -110,6 +110,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._audio = None
         self._compiler = None
         self._decoder = None
+
+    @staticmethod
+    def print_mic_list():
+        MicAudio.print_list()
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.
