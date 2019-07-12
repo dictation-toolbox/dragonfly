@@ -111,6 +111,18 @@ class DictationContainerBase(object):
     def __rmul__(self, other):
         return self.__str__() * other
 
+    def __getitem__(self, key):
+        return self.__str__()[key]
+
+    def __nonzero__(self):
+        return bool(self.__str__())
+
+    def __len__(self):
+        return len(self.__str__())
+
+    def __contains__(self, item):
+        return item in self.__str__()
+
     @property
     def words(self):
         """ Sequence of the words forming this dictation. """
@@ -126,5 +138,17 @@ class DictationContainerBase(object):
         """
         result = joined_words
         for method in self._methods:
-            result = getattr(result, method[0])(*method[1], **method[2])
+            if method[0] == "camel":
+                result = result[0] + (
+                    result.title().replace(" ", "")[1:]
+                    if len(result)>1 else "")
+            elif method[0] == "apply":
+                if len(method[1])>0 and callable(method[1][0]):
+                    result = method[1][0](result)
+                else:
+                    raise TypeError("Argument passed to 'Dictation.%s' method must be callable, taking and returning a string." % method[0])
+            elif hasattr(result, method[0]):
+                result = getattr(result, method[0])(*method[1], **method[2])
+            else:
+                raise AttributeError("'%s' is not a valid string method" % method[0])
         return result
