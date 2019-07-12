@@ -130,7 +130,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
         wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self)
         for kaldi_rule in kaldi_rule_by_rule_dict.values():
-            kaldi_rule.load()
+            kaldi_rule.load_fst()
 
         return wrapper
 
@@ -203,7 +203,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def do_recognition(self, timeout=None, single=False):
         self._log.debug("do_recognition: timeout %s" % timeout)
 
-        self._compiler.prepare_for_recognition()
+        self._prepare_for_recognition()
 
         if timeout != None:
             end_time = time.time() + timeout
@@ -271,6 +271,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     #-----------------------------------------------------------------------
     # Internal processing methods.
+
+    def _prepare_for_recognition(self):
+        self._compiler.prepare_for_recognition()
 
     def _compute_kaldi_rules_activity(self, phrase_start=True):
         self._active_kaldi_rules = []

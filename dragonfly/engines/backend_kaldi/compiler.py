@@ -148,13 +148,11 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
         return kaldi_rule_by_rule_dict
 
-    def _compile_rule_root(self, rule, grammar, kaldi_rule, reloading=False):
-        # if reloading:
-        #     kaldi_rule.fst.clear()
+    def _compile_rule_root(self, rule, grammar, kaldi_rule):
         matcher, _, _ = self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
         kaldi_rule.matcher = matcher.setName(str(kaldi_rule.id)).setResultsName(str(kaldi_rule.id))
         kaldi_rule.fst.equalize_weights()
-        kaldi_rule.compile_file(reloading=reloading)
+        kaldi_rule.compile_file()
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
         # Determine whether this rule has already been compiled.
@@ -185,7 +183,7 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
             kaldi_rule = self.kaldi_rule_by_rule_dict[rule]
             if kaldi_rule in lst_kaldi_rules:
                 with kaldi_rule.reloading():
-                    self._compile_rule_root(rule, grammar, kaldi_rule, reloading=True)
+                    self._compile_rule_root(rule, grammar, kaldi_rule)
 
     #-----------------------------------------------------------------------
     # Methods for compiling elements.
