@@ -39,8 +39,8 @@ import pythoncom
 import win32con
 from win32com.client           import Dispatch, getevents, constants
 from win32com.client.gencache  import EnsureDispatch
-from ctypes import windll, WinError
-from ctypes.wintypes import DWORD, HANDLE, HWND, LONG, WINFUNCTYPE
+from ctypes import windll, WinError, WINFUNCTYPE
+from ctypes.wintypes import DWORD, HANDLE, HWND, LONG
 
 from ..base                    import (EngineBase, EngineError,
                                        MimicFailure, DelegateTimerManager,
