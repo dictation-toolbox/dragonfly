@@ -41,6 +41,10 @@ upload releases to PyPI.org, but everything can still be imported using
 replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
 altogether.
 
+If you are installing this on X11/Linux, you will also need to install the
+`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program for the
+``Key`` and ``Text`` actions to work.
+
 If you have dragonfly installed under the original *dragonfly*
 distribution name, you'll need to remove the old version using:
 
