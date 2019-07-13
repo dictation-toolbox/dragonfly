@@ -127,13 +127,16 @@ class CamelDictationTestCase(ElementTestCase):
 
 class ApplyDictationTestCase(ElementTestCase):
     """ Verify handling of arbitrary formatting applied to Dictation objects using apply() """
-    f = lambda s: "".join("_".join(s.split(" ")[:-1] + [s.split(" ")[-1].upper()]))
+
+    f = lambda self, s: "".join(
+        "_".join(s.split(" ")[:-1] + [s.split(" ")[-1].upper()])
+    )
 
     def _build_element(self):
         def value_func(node, extras):
             return str(extras["text"])
         return Compound("test <text>",
-                        extras=[Dictation(name="text").apply(f)],
+                        extras=[Dictation(name="text").apply(self.f)],
                         value_func=value_func)
 
     input_output = [
