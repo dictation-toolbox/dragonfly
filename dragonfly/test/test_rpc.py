@@ -274,6 +274,44 @@ class RPCTestCase(unittest.TestCase):
         self.assertIn("result", response)
         self.assertEqual(response["result"], "en")
 
+    def test_recognition_history_methods(self):
+        """ Verify that the recognition history RPC methods work correctly.
+        """
+        # Load a grammar for testing that recognitions are saved.
+        g = Grammar("history_test")
+        g.add_rule(CompoundRule(name="compound", spec="test history",
+                                exported=True))
+        g.load()
+        g.set_exclusiveness(True)
+        try:
+            # Test 'register_history()'.
+            response = self.send_request("register_history", [])
+            self.assertIn("result", response)
+
+            # Test that the method raises an error if used when the observer
+            # is already registered.
+            self.assertRaises(RuntimeError, self.send_request,
+                              "register_history", [])
+
+            # Send a mimic and check that it is returned by the
+            # 'get_recognition_history()' method.
+            self.send_request("mimic", ["test history"])
+            response = self.send_request("get_recognition_history", [])
+            self.assertIn("result", response)
+            self.assertListEqual(response["result"], [["test", "history"]])
+
+            # Test 'unregister_observer()'.
+            response = self.send_request("unregister_history", [])
+            self.assertIn("result", response)
+
+            # Test that the method raises an error if used when the observer
+            # is not registered.
+            self.assertRaises(RuntimeError, self.send_request,
+                              "unregister_history", [])
+        finally:
+            g.set_exclusiveness(False)
+            g.unload()
+
 
 if __name__ == '__main__':
     # Use the "text" engine by default and disable timer manager callbacks

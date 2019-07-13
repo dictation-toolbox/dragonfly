@@ -68,6 +68,7 @@ Built-in RPC methods
 
 from six import string_types
 
+from dragonfly.grammar.recobs import RecognitionHistory
 from .. import get_engine, CompoundRule, MappingRule
 from ..engines.base import MimicFailure
 
@@ -153,3 +154,88 @@ def get_engine_language():
     :rtype: str
     """
     return get_engine().language
+
+
+_history_closure = [None]
+
+class RPCRecognitionHistory(RecognitionHistory):
+    """"""
+
+    def __init__(self, length=10, record_failures=False):
+        RecognitionHistory.__init__(self, length)
+        self._record_failures = record_failures
+
+    def on_failure(self):
+        # Include recognition failures if requested.
+        if self._record_failures:
+            self.append(False)
+            if self._length:
+                while len(self) > self._length:
+                    self.pop(0)
+
+
+@_add_method
+def register_history(length=10, record_failures=False):
+    """
+    Register an internal recognition observer.
+
+    :param length: length to initialize the ``RecognitionHistory`` instance
+        with (default ``10``).
+    :param record_failures: whether to record recognition failures
+        (default ``False``).
+    :type record_failures: bool
+    :type length: int
+    """
+    if _history_closure[0] is not None:
+        raise RuntimeError("history has already been registered")
+
+    obs = RPCRecognitionHistory(length, record_failures)
+    obs.register()
+    _history_closure[0] = obs
+
+
+@_add_method
+def get_recognition_history():
+    """
+    Get the recognition history if an observer is registered.
+
+    The :meth:`register_history` method **must** be called to register the
+    observer first.
+
+    :returns: history
+    :rtype: list
+    """
+    obs = _history_closure[0]
+    if obs is None:
+        raise RuntimeError("the recognition observer is not registered")
+
+    return list(obs)
+
+
+@_add_method
+def is_in_speech():
+    """
+    Whether the user is currently speaking.
+
+    The :meth:`register_history` method **must** be called to register the
+    observer first.
+
+    :rtype: bool
+    """
+    obs = _history_closure[0]
+    if obs is None:
+        raise RuntimeError("the recognition observer is not registered")
+
+    return not obs.complete
+
+
+@_add_method
+def unregister_history():
+    """
+    Unregister the internal recognition observer.
+    """
+    if _history_closure[0] is None:
+        raise RuntimeError("the recognition observer is not registered")
+
+    _history_closure[0].unregister()
+    _history_closure[0] = None
