@@ -26,6 +26,10 @@ This section describes the :class:`Text` action object. This type of
 action is used for typing text into the foreground application.  This works
 on Windows, Mac OS and with X11 (e.g. on Linux).
 
+To use this class on X11/Linux, the
+`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
+installed.
+
 It differs from the :class:`Key` action in that :class:`Text` is used for
 typing literal text, while :class:`dragonfly.actions.action_key.Key`
 emulates pressing keys on the keyboard.  An example of this is that the
@@ -55,7 +59,8 @@ parameter for :class:`Text` as follows:
 
 .. code:: python
 
-   Text(u"σμ") + Key("ctrl:down") + Text("]", use_hardware=True) + Key("ctrl:up")
+   action = Text("σμ") + Key("ctrl:down") + Text("]", use_hardware=True) + Key("ctrl:up")
+   action.execute()
 
 
 Some applications require hardware emulation versus Unicode keyboard
@@ -66,6 +71,30 @@ dragonfly always use hardware emulation for them.
 These settings and parameters have no effect on other platforms.
 
 
+X11/Linux Unicode Keyboard Support
+............................................................................
+
+The :class:`Text` action can also type arbitrary Unicode characters on X11.
+This works regardless of the ``use_hardware`` parameter or
+``unicode_keyboard`` setting.
+
+Unlike on Windows, modifier keys will be respected by :class:`Text` actions
+on X11. As such, the previous Windows example will work and can even be
+simplified a little:
+
+.. code:: python
+
+   action = Text("σμ") + Key("ctrl:down") + Text("]") + Key("ctrl:up")
+   action.execute()
+
+
+It can also be done with one :class:`Key` action:
+
+.. code:: python
+
+   Key("σ,μ,c-]").execute()
+
+
 Text class reference
 ............................................................................
 
@@ -73,7 +102,7 @@ Text class reference
 
 import sys
 
-from six import text_type
+from six import PY2
 
 from ..engines import get_engine
 from ..util.clipboard import Clipboard
@@ -200,7 +229,9 @@ class Text(DynStrActionBase):
         unicode_events = []
         hardware_error_message = None
         unicode_error_message = None
-        for character in text_type(spec):
+        if PY2 and isinstance(spec, str):
+            spec = spec.decode('utf-8')
+        for character in spec:
             if character in self._specials:
                 typeable = self._specials[character]
                 hardware_events.extend(typeable.events(self._pause))

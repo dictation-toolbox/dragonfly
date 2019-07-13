@@ -60,14 +60,22 @@ setup(
 
       install_requires=[
                         "setuptools >= 0.6c7",
-                        "comtypes;platform_system=='Windows'",
-                        "pywin32;platform_system=='Windows'",
-                        "pynput >= 1.4.2;platform_system!='Windows'",
                         "six",
                         "pyperclip >= 1.7.0",
                         "enum34;python_version<'3.4'",
                         "regex",
                         "decorator",
+
+                        # Windows-only dependencies.
+                        "comtypes;platform_system=='Windows'",
+                        "pywin32;platform_system=='Windows'",
+
+                        # Linux dependencies.
+                        # "python-libxdo;platform_system=='Linux'",
+                        # "Xlib;platform_system=='Linux'",
+
+                        # Mac OS dependencies.
+                        "pynput >= 1.4.2;platform_system=='Darwin'",
 
                         # RPC requirements
                         "json-rpc",
