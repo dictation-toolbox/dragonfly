@@ -94,7 +94,7 @@ class NonAsciiStrDictationTestCase(ElementTestCase):
 
 
 class FormattedDictationTestCase(ElementTestCase):
-    """ Verify handling of formatting applied to Dictation objects """
+    """ Verify handling of string methods applied to Dictation objects """
 
     def _build_element(self):
         def value_func(node, extras):
@@ -106,6 +106,42 @@ class FormattedDictationTestCase(ElementTestCase):
     input_output = [
                     ("test some random dictation", "SOME/RANDOM/DICTATION"),
                     ("test touché jalapeño",       "TOUCHÉ/JALAPEÑO"),
+                   ]
+
+
+class CamelDictationTestCase(ElementTestCase):
+    """ Verify handling of camelCase formatting applied to Dictation objects """
+
+    def _build_element(self):
+        def value_func(node, extras):
+            return str(extras["text"])
+        return Compound("test <text>",
+                        extras=[Dictation(name="text").camel()],
+                        value_func=value_func)
+
+    input_output = [
+                    ("test some random dictation", "someRandomDictation"),
+                    ("test touché jalapeño",       "touchéJalapeño"),
+                   ]
+
+
+class ApplyDictationTestCase(ElementTestCase):
+    """ Verify handling of arbitrary formatting applied to Dictation objects using apply() """
+
+    f = lambda self, s: "".join(
+        "_".join(s.split(" ")[:-1] + [s.split(" ")[-1].upper()])
+    )
+
+    def _build_element(self):
+        def value_func(node, extras):
+            return str(extras["text"])
+        return Compound("test <text>",
+                        extras=[Dictation(name="text").apply(self.f)],
+                        value_func=value_func)
+
+    input_output = [
+                    ("test some random dictation", "some_random_DICTATION"),
+                    ("test touché jalapeño",       "touché_JALAPEÑO"),
                    ]
 
 #===========================================================================

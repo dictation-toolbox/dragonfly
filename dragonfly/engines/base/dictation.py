@@ -111,6 +111,18 @@ class DictationContainerBase(object):
     def __rmul__(self, other):
         return self.__str__() * other
 
+    def __getitem__(self, key):
+        return self.__str__()[key]
+
+    def __nonzero__(self):
+        return bool(self.__str__())
+
+    def __len__(self):
+        return len(self.__str__())
+
+    def __contains__(self, item):
+        return item in self.__str__()
+
     @property
     def words(self):
         """ Sequence of the words forming this dictation. """
@@ -125,6 +137,24 @@ class DictationContainerBase(object):
         Apply any string methods called on the :class:`Dictation` object to a given string. Called during :meth:`format`.
         """
         result = joined_words
-        for method in self._methods:
-            result = getattr(result, method[0])(*method[1], **method[2])
+        if result: # Do nothing for empty string
+            for method in self._methods:
+                if hasattr(result, method[0]):
+                    result = getattr(result, method[0])(*method[1], **method[2])
+                elif hasattr(self, method[0]):
+                    result = getattr(self, method[0])(result, *method[1], **method[2])
+                else:
+                    raise AttributeError("'%s' is not a valid dictation or string method" % method[0])
         return result
+
+    def apply(self, str_input, format_func):
+        if callable(format_func):
+            return format_func(str_input)
+        else:
+            raise TypeError("Argument passed to 'Dictation.apply' method must be callable, taking and returning a string.")
+
+    def camel(self, str_input):
+        def f(s):
+            return s[0] + (s.title().replace(" ", "")[1:]
+                    if len(s)>1 else "")
+        return self.apply(str_input, f)
