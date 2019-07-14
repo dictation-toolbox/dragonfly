@@ -34,13 +34,13 @@ from .typeables           import typeables
 from .action_key          import Key
 from .action_text         import Text
 from .action_paste        import Paste
+from .action_waitwindow   import WaitWindow
+from .action_focuswindow  import FocusWindow
+from .action_startapp     import StartApp, BringApp
 
 if sys.platform.startswith("win"):
     # Import Windows only classes and functions.
     from .action_mouse        import Mouse
-    from .action_waitwindow   import WaitWindow
-    from .action_focuswindow  import FocusWindow
-    from .action_startapp     import StartApp, BringApp
     from .action_playsound    import PlaySound
     from .sendinput           import (KeyboardInput, MouseInput,
                                       HardwareInput, make_input_array,
@@ -48,7 +48,4 @@ if sys.platform.startswith("win"):
 else:
     # Import mocked classes and functions for other platforms.
     from ..os_dependent_mock import Mouse
-    from ..os_dependent_mock import WaitWindow
-    from ..os_dependent_mock import FocusWindow
-    from ..os_dependent_mock import StartApp, BringApp
     from ..os_dependent_mock import PlaySound

@@ -41,11 +41,9 @@ class Mouse(DynStrActionBase):
         DynStrActionBase.__init__(self, spec, static)
 
 
-WaitWindow = MockAction
-FocusWindow = MockAction
-StartApp = MockAction
-BringApp = MockAction
-PlaySound = MockAction
+class PlaySound(ActionBase):
+    def __init__(self, name=None, file=None):
+        ActionBase.__init__(self)
 
 
 class _WindowInfo(object):

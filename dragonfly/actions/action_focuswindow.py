@@ -25,9 +25,8 @@ FocusWindow action
 """
 
 
-import win32con
 from .action_base      import ActionBase, ActionError
-from ..windows.window  import Window
+from ..windows  import Window
 
 
 #---------------------------------------------------------------------------
