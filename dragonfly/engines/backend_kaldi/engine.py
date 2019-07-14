@@ -111,8 +111,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler = None
         self._decoder = None
 
-    @staticmethod
-    def print_mic_list():
+    def print_mic_list(self):
         MicAudio.print_list()
 
     #-----------------------------------------------------------------------
