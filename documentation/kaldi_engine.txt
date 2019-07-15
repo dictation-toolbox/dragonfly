@@ -179,7 +179,7 @@ default model comes with a large dictionary, but obviously cannot
 include all possible words. There are multiple ways of handling this.
 
 **Ignoring unknown words:** If you use words in your grammars that are *not* in the
-dictionary, a message similar to the following will be printed:
+dictionary, a message similar to the following will be printed::
 
   Word not in lexicon (will not be recognized): 'notaword'
 
@@ -193,37 +193,44 @@ splitting up the words or using to similar words, e.g. changing
 **Automatically adding words to User Lexicon:** Set the engine parameter
 ``auto_add_to_user_lexicon=True`` to enable. If an unknown word is
 encountered while loading a grammar, its pronunciation is predicted
-based on its spelling. This uses either a local library or a free cloud
-service. 
+based on its spelling. This uses either a local library, or a free cloud
+service if the library is not installed. The library can be installed
+with ``pip install g2p_en==2.0.0`` but has dependencies that can be
+difficult, so it is recommended to just not install it and instead let
+the cloud be used.
 
 **Manually editing User Lexicon:** You can add a word without specifying
 a pronunciation, and let it be predicted as above, by running at the
-command line:
+command line::
 
   python -m kaldi_active_grammar add_word cromulent
 
-Or you can add a word with a specified pronunciation:
+Or you can add a word with a specified pronunciation::
 
   python -m kaldi_active_grammar add_word cromulent "K R OW M Y UW L AH N T"
 
 You can also directly edit your ``user_lexicon.txt`` file, which is
 located in the model directory. You may add words (with pronunciation!)
 or modify or remove words that you have already added. The format is
-simple and whitespace-based:
+simple and whitespace-based::
 
   cromulent k r A m j V l V n t
-
   embiggen I m b I g V n
 
 **Note:** Currently, adding words only accepts pronunciations using the
-`"CMU"/"ARPABET" <https://en.wikipedia.org/wiki/ARPABET>`_ phone set,
-but the model and ``user_lexicon.txt`` file store pronunciations using
-`"X-SAMPA" <https://en.wikipedia.org/wiki/X-SAMPA>`_ phone set.
+`"CMU"/"ARPABET" <https://en.wikipedia.org/wiki/ARPABET>`_ phone set
+(with or without stress), but the model and ``user_lexicon.txt`` file
+store pronunciations using `"X-SAMPA"
+<https://en.wikipedia.org/wiki/X-SAMPA>`_ phone set.
 
 To empty your user lexicon, you can simply delete ``user_lexicon.txt``,
-or run:
+or run::
 
   python -m kaldi_active_grammar reset_user_lexicon
+
+**Note:** When changing models, you can (and probably should) copy your
+``user_lexicon.txt`` file from your old model directory to the new one.
+This will let you keep your additions.
 
 
 Cloud Dictation
