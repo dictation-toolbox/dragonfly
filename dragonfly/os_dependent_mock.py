@@ -46,18 +46,6 @@ class PlaySound(ActionBase):
         ActionBase.__init__(self)
 
 
-class _WindowInfo(object):
-    executable = ""
-    title = ""
-    handle = ""
-
-
-class Window(object):
-    @staticmethod
-    def get_foreground():
-        return _WindowInfo
-
-
 monitors = []
 
 
