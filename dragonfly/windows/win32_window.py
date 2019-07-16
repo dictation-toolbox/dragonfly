@@ -24,6 +24,8 @@ Window class for Windows
 
 """
 
+import os
+
 import win32gui
 import win32con
 from ctypes          import windll, pointer, c_wchar, c_ulong
@@ -60,6 +62,33 @@ class Win32Window(BaseWindow):
         argument = []
         win32gui.EnumWindows(function, argument)
         return argument
+
+    @classmethod
+    def get_matching_windows(cls, executable=None, title=None):
+        matching = []
+        for window in cls.get_all_windows():
+            if not window.is_visible:
+                continue
+            if (os.name == 'nt'
+                    and window.executable.endswith("natspeak.exe")
+                    and window.classname == "#32770"
+                    and window.get_position().dy < 50):
+                # If a window matches the above, it is very probably
+                #  the results-box of DNS.  We ignore this because
+                #  its title is the words of the last recognition,
+                #  which will often interfere with a search for
+                #  a window with a spoken title.
+                continue
+
+            if executable:
+                if window.executable.lower().find(executable) == -1:
+                    continue
+            if title:
+                if window.title.lower().find(title) == -1:
+                    continue
+            matching.append(window)
+
+        return matching
 
 #    @classmethod
 #    def get_window_by_executable(cls, executable):

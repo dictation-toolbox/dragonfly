@@ -24,8 +24,6 @@ FocusWindow action
 
 """
 
-import os
-
 from .action_base      import ActionBase, ActionError
 from ..windows  import Window
 
@@ -67,27 +65,9 @@ class FocusWindow(ActionBase):
             if executable:  executable = (executable % data).lower()
             if title:       title = (title % data).lower()
 
-        windows = Window.get_all_windows()
-        for window in windows:
-            if not window.is_visible:
-                continue
-            if (os.name == 'nt'
-                and window.executable.endswith("natspeak.exe")
-                and window.classname == "#32770"
-                and window.get_position().dy < 50):
-                # If a window matches the above, it is very probably
-                #  the results-box of DNS.  We ignore this because
-                #  its title is the words of the last recognition,
-                #  which will often interfere with a search for
-                #  a window with a spoken title.
-                continue
-
-            if executable:
-                if window.executable.lower().find(executable) == -1:
-                    continue
-            if title:
-                if window.title.lower().find(title) == -1:
-                    continue
-            window.set_foreground()
-            return
-        raise ActionError("Failed to find window (%s)."  % self._str)
+        # Get the first matching window and bring it to the foreground.
+        windows = Window.get_matching_windows(executable, title)
+        if windows:
+            windows[0].set_foreground()
+        else:
+            raise ActionError("Failed to find window (%s)." % self._str)

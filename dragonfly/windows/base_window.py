@@ -47,9 +47,51 @@ class BaseWindow(object):
     # Class methods to create new Window objects.
 
     @classmethod
+    def get_window(cls, id):
+        """
+        Get a :class:`Window` object given a window id.
+
+        Given the same id, this method will return the same object.
+        """
+        if id in cls._windows_by_id:
+            window = cls._windows_by_id[id]
+        else:
+            window = cls(id)
+            cls._windows_by_id[id] = window
+        return window
+
+    @classmethod
     def get_foreground(cls):
         """ Get the foreground window. """
         raise NotImplementedError()
+
+    @classmethod
+    def get_matching_windows(cls, executable=None, title=None):
+        """
+        Find windows with a matching executable or title.
+
+        If neither parameter is be specified, then it is effectively the
+        same as calling :meth:`get_all_windows`.
+
+        :param executable: -- part of the filename of the application's
+           executable to which the target window belongs; not case
+           sensitive.
+        :param title: -- part of the title of the target window; not case
+           sensitive.
+        :type executable: str
+        :type title: str
+        :rtype: list
+        """
+        matching = []
+        for window in cls.get_all_windows():
+            if executable:
+                if window.executable.lower().find(executable) == -1:
+                    continue
+            if title:
+                if window.title.lower().find(title) == -1:
+                    continue
+            matching.append(window)
+        return matching
 
     @classmethod
     def get_all_windows(cls):

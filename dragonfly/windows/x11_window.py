@@ -33,16 +33,6 @@ from .base_window import BaseWindow
 from .rectangle import Rectangle
 
 
-_XPROP_PROPERTIES = {
-    '_NET_WM_DESKTOP(CARDINAL)': 'desktop',
-    'WM_WINDOW_ROLE(STRING)': 'role',
-    '_NET_WM_WINDOW_TYPE(ATOM)': 'type',
-    '_NET_WM_PID(CARDINAL)': 'pid',
-    'WM_NAME(STRING)': 'name',
-    '_NET_WM_STATE(ATOM)': 'state',
-}
-
-
 class X11Window(BaseWindow):
     """
         The Window class is an interface to the window control and
@@ -79,6 +69,7 @@ class X11Window(BaseWindow):
         :returns: stdout, stderr, return_code
         :rtype: tuple
         """
+        arguments = [str(arg) for arg in arguments]
         full_command = [command] + arguments
         full_readable_command = ' '.join(full_command)
         cls._log.debug(full_readable_command)
@@ -111,24 +102,48 @@ class X11Window(BaseWindow):
     @classmethod
     def get_foreground(cls):
         window_id, _, _ = cls._run_xdotool_command(["getactivewindow"])
-        window_id = int(window_id)
-        if window_id in cls._windows_by_id:
-            return cls._windows_by_id[window_id]
-        return X11Window(window_id)
+        return cls.get_window(int(window_id))
 
     @classmethod
     def get_all_windows(cls):
-        # Get all window IDs using 'xdotool search' and return new or
-        # existing Window objects.
+        # Get all window IDs using 'xdotool search'.
+        output, _, _ = cls._run_xdotool_command(['search', '--onlyvisible',
+                                                 '--name', ''])
+        lines = [line for line in output.split('\n') if line]
+        windows = [cls.get_window(int(line)) for line in lines]
+
+        # Exclude window IDs that have no associated process ID.
         result = []
-        output, _, _ = cls._run_xdotool_command(['search', '--name', ''])
-        for line in output.split('\n'):
-            window_id = int(line)
-            if window_id in cls._windows_by_id:
-                result.append(cls._windows_by_id[window_id])
-            else:
-                result.append(X11Window(window_id))
+        for window in windows:
+            props = cls._get_properties_from_xprop(window, '_NET_WM_PID')
+            if '_NET_WM_PID' not in props:
+                continue
+            result.append(window)
+
         return result
+
+    @classmethod
+    def get_matching_windows(cls, executable=None, title=None):
+        # Get matching window IDs using 'xdotool search'.
+        args = ['search', '--onlyvisible', '--name']
+        if title:
+            args.append(title)
+        else:
+            args.append('')
+        output, _, _ = cls._run_xdotool_command(args, False)
+        lines = [line for line in output.split('\n') if line]
+        windows = [cls.get_window(int(line)) for line in lines]
+        matching = []
+        for window in windows:
+            if executable:
+                if window.executable.lower().find(executable) == -1:
+                    continue
+            if title:
+                if window.title.lower().find(title) == -1:
+                    continue
+            matching.append(window)
+
+        return matching
 
     #-----------------------------------------------------------------------
     # Methods for initialization and introspection.
@@ -145,46 +160,54 @@ class X11Window(BaseWindow):
     #-----------------------------------------------------------------------
     # Methods and properties for window attributes.
 
-    def _get_property_from_xprop(self, property):
-        properties = {}
-        output, _, return_code = self._run_xprop_command(
-            ['-id', '%i' % self.id], False)
+    def _get_properties_from_xprop(self, *properties):
+        # This method retrieves windows properties by shelling out to xprop.
+        result = {}
+        args = ['-id', self.id] + list(properties)
+        output, _, return_code = self._run_xprop_command(args, False)
         if return_code > 0:
-            return None
-        for line in output.split('\n'):
-            line = line.split(' = ', 1)
-            if len(line) == 2:
-                raw_key, value = line
-                if raw_key in _XPROP_PROPERTIES:
-                    if '(STRING)' in raw_key:
-                        property_value = value[1:-1]
-                    else:
-                        property_value = value
-                    property_name = _XPROP_PROPERTIES[raw_key]
-                    properties[property_name] = property_value
-                elif raw_key == 'WM_CLASS(STRING)':
-                    window_class_name, window_class = value.split('", "')
-                    properties['cls_name'] = window_class_name[1:]
-                    properties['cls'] = window_class[:-1]
+            return {}
 
-        # Return the requested property.
-        result = properties.get(property, None)
-        if result is None:
-            self._log.debug('window has no "%s" property' % property)
+        for line in output.split('\n'):
+            line = line.split(' =', 1)
+            if len(line) != 2:
+                continue
+
+            raw_key, value = line
+            if 'STRING)' in raw_key:  # This also handles (UTF8_STRING).
+                value = value[1:-1]
+
+                # Use a list if there are multiple strings.
+                if '", "' in value:
+                    value = [string for string in value.split('", "')]
+
+            # Get the key without the property type.
+            key = raw_key[0:raw_key.find('(')]
+            result[key] = value
+
+        # Split up class and class name.
+        if 'WM_CLASS' in result:
+            window_class_name, window_class = result.pop('WM_CLASS')
+            result['cls_name'] = window_class_name
+            result['cls'] = window_class
+
+        # Return the requested properties.
         return result
 
     def _get_window_text(self):
         # Get the title text.
-        args = ['getwindowname', '%i' % self.id]
+        args = ['getwindowname', self.id]
         return self._run_xdotool_command(args)[0]
 
     def _get_class_name(self):
-        return self._get_property_from_xprop("cls_name") or ''
+        return (self._get_properties_from_xprop("WM_CLASS")
+                .get('cls_name', ''))
 
     @property
     def cls(self):
         """ Read-only access to the window's class. """
-        return self._get_property_from_xprop("cls") or ''
+        return (self._get_properties_from_xprop("WM_CLASS")
+                .get('cls', ''))
 
     @property
     def pid(self):
@@ -201,9 +224,9 @@ class X11Window(BaseWindow):
         """
         # Set the pid once when it is needed.
         if self._pid == -1:
-            pid, _, return_code = self._run_xdotool_command(
-                ['getwindowpid', '%i' % self.id], False)
-            if return_code == 0:
+            p = '_NET_WM_PID'
+            pid = self._get_properties_from_xprop(p).get(p)
+            if pid:
                 pid = int(pid)
             self._pid = pid
 
@@ -217,17 +240,19 @@ class X11Window(BaseWindow):
         :returns: role
         :rtype: str
         """
-        return self._get_property_from_xprop('role') or ''
+        p = 'WM_WINDOW_ROLE'
+        return self._get_properties_from_xprop(p).get(p, '')
 
     @property
     def type(self):
         """
-        Read-only access to the window's X11 type attribute.
+        Read-only access to the window's X11 type property, if it is set.
 
         :returns: type
         :rtype: str
         """
-        return self._get_property_from_xprop('type') or ''
+        p = '_NET_WM_WINDOW_TYPE'
+        return self._get_properties_from_xprop(p).get(p, '')
 
     @property
     def state(self):
@@ -245,7 +270,8 @@ class X11Window(BaseWindow):
         :return: window state (if any)
         :rtype: tuple | None
         """
-        net_wm_state = self._get_property_from_xprop('state')
+        p = '_NET_WM_STATE'
+        net_wm_state = self._get_properties_from_xprop(p).get(p)
         if net_wm_state is None:
             # Indicate to callers that _NET_WM_STATE was missing.
             return None
@@ -328,7 +354,7 @@ class X11Window(BaseWindow):
 
     def get_position(self):
         output, _, _ = self._run_xdotool_command(
-            ['getwindowgeometry', '--shell', '%i' % self.id])
+            ['getwindowgeometry', '--shell', self.id])
         geometry = output.strip().split('\n')
         geo = dict([val.lower()
                     for val in line.split('=')]
@@ -345,7 +371,7 @@ class X11Window(BaseWindow):
     # Methods for miscellaneous window control.
 
     def minimize(self):
-        self._run_xdotool_command(['windowminimize', '%i' % self.id])
+        self._run_xdotool_command(['windowminimize', self.id])
 
     def _toggle_maximize(self):
         # Doesn't seem possible with xdotool. We'll try pressing a-f10
@@ -361,7 +387,7 @@ class X11Window(BaseWindow):
     def restore(self):
         state = self.state
         if self._is_minimized(state):
-            self._run_xdotool_command(['windowactivate', '%i' % self.id])
+            self._run_xdotool_command(['windowactivate', self.id])
         elif self._is_maximized(state):
             self._toggle_maximize()
 
@@ -380,4 +406,4 @@ class X11Window(BaseWindow):
         This method will set the input focus, but will not necessarily bring
         the window to the front.
         """
-        self._run_xdotool_command(['windowfocus', '%i' % self.id])
+        self._run_xdotool_command(['windowfocus', self.id])
