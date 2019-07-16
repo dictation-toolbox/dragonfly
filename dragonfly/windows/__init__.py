@@ -20,15 +20,17 @@
 
 import sys
 
-from .rectangle import Rectangle, unit
-from .point     import Point
+# Import classes that work on all platforms.
+from .rectangle   import Rectangle, unit
+from .point       import Point
+from .window      import Window
+from .fake_window import FakeWindow
 
 # Windows-specific
 if sys.platform.startswith("win"):
-    from .window    import Window
-    from .monitor   import Monitor, monitors
-    from .clipboard import Clipboard
-else:  # Mock imports
-    from ..os_dependent_mock      import Window
-    from ..os_dependent_mock      import Monitor, monitors
-    from ..util import Clipboard
+    from .monitor      import Monitor, monitors
+    from .clipboard    import Clipboard
+
+# Import mock classes.
+else:
+    from ..os_dependent_mock import Monitor, monitors
