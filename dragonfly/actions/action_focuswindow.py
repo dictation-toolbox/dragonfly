@@ -24,6 +24,7 @@ FocusWindow action
 
 """
 
+import os
 
 from .action_base      import ActionBase, ActionError
 from ..windows  import Window
@@ -70,7 +71,8 @@ class FocusWindow(ActionBase):
         for window in windows:
             if not window.is_visible:
                 continue
-            if (window.executable.endswith("natspeak.exe")
+            if (os.name == 'nt'
+                and window.executable.endswith("natspeak.exe")
                 and window.classname == "#32770"
                 and window.get_position().dy < 50):
                 # If a window matches the above, it is very probably
