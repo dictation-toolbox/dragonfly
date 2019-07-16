@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -259,7 +259,7 @@ class Repeat(object):
 
         Integer Repeat factors ignore any supply data::
 
-            >>> integer = Repeat(3)
+            >>> integer = Repeat(count=3)
             >>> integer.factor()
             3
             >>> integer.factor({"foo": 4})  # Non-related data is ignored.
@@ -268,7 +268,7 @@ class Repeat(object):
         Named Repeat factors retrieved their factor-value from the
         supplied data::
 
-            >>> named = Repeat(extra="foo")
+            >>> named = Repeat("foo")
             >>> named.factor()
             Traceback (most recent call last):
               ...
@@ -279,7 +279,7 @@ class Repeat(object):
         Repeat factors with both integer count and named extra values set
         combined (add) these together to determine their factor-value::
 
-            >>> combined = Repeat(count=3, extra="foo")
+            >>> combined = Repeat(extra="foo", count=3)
             >>> combined.factor()
             Traceback (most recent call last):
               ...
@@ -289,10 +289,15 @@ class Repeat(object):
 
     """
 
-    def __init__(self, count=None, extra=None):
-        if count is not None:  self._count = count
-        else:                  self._count = 0
-        self._extra = extra
+    def __init__(self, extra=None, count=None):
+        # Backward compatibility for swapped arguments
+        # (#103)
+        if isinstance(extra, int):
+            self._count = extra
+            self._extra = count
+        else:
+            self._extra = extra
+            self._count = count if count is not None else 0
 
     def factor(self, data=None):
         count = self._count
