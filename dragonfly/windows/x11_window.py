@@ -363,9 +363,11 @@ class X11Window(BaseWindow):
         return Rectangle(geo['x'], geo['y'], geo['width'], geo['height'])
 
     def set_position(self, rectangle):
-        l, t, _, _ = rectangle.ltwh
+        l, t, w, h = rectangle.ltwh
+        id = self.id
         self._run_xdotool_command(
-            ['windowmove', '%i' % self.id, '%i' % l, '%i' % t])
+            ['windowmove', id, l, t,
+             'windowsize', id, w, h])
 
     #-----------------------------------------------------------------------
     # Methods for miscellaneous window control.
