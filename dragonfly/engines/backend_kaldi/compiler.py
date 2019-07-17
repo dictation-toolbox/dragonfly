@@ -112,14 +112,19 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
         return new_words
 
     def handle_oov_word(self, word):
-        if not self.auto_add_to_user_lexicon:
-            self._log.warning("%s: Word not in lexicon (will not be recognized): %r" % (self, word))
-            word = self.impossible_word
-        else:
-            phones = self.model.add_word(word)
-            self.model.load_words()
-            self.decoder.load_lexicon()
-            self._log.warning("%s: Word not in lexicon (generated automatic pronunciation): %r [%s]" % (self, word, ' '.join(phones)))
+        if self.auto_add_to_user_lexicon:
+            try:
+                phones = self.model.add_word(word)
+            except Exception as e:
+                self._log.exception("%s: exception automatically adding word")
+            else:
+                self.model.load_words()
+                self.decoder.load_lexicon()
+                self._log.warning("%s: Word not in lexicon (generated automatic pronunciation): %r [%s]" % (self, word, ' '.join(phones)))
+                return word
+
+        self._log.warning("%s: Word not in lexicon (will not be recognized): %r" % (self, word))
+        word = self.impossible_word
         return word
 
     #-----------------------------------------------------------------------
