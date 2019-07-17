@@ -49,15 +49,16 @@ class MicAudio(object):
         self.flush_queue = flush_queue
         self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.block_duration_ms))
         self.pa = pyaudio.PyAudio()
-        self.stream = self.pa.open(format=self.FORMAT,
-                                   channels=self.CHANNELS,
-                                   rate=self.sample_rate,
-                                   input=True,
-                                   frames_per_buffer=self.block_size,
-                                   stream_callback=proxy_callback,
-                                   input_device_index=input_device_index)
-        if start:
-            self.stream.start_stream()
+        self.stream = self.pa.open(
+            format=self.FORMAT,
+            channels=self.CHANNELS,
+            rate=self.sample_rate,
+            input=True,
+            frames_per_buffer=self.block_size,
+            stream_callback=proxy_callback,
+            input_device_index=input_device_index,
+            start=bool(start),
+        )
         self.active = True
         _log.info("%s: streaming audio from microphone: %i sample_rate, %i block_duration_ms", self, self.sample_rate, self.block_duration_ms)
 

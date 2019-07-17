@@ -182,7 +182,7 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
         for rule in rules:
             kaldi_rule = self.kaldi_rule_by_rule_dict[rule]
             if kaldi_rule in lst_kaldi_rules:
-                with kaldi_rule.reloading():
+                with kaldi_rule.reload():
                     self._compile_rule_root(rule, grammar, kaldi_rule)
 
     #-----------------------------------------------------------------------
