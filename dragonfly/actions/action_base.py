@@ -265,6 +265,18 @@ class Repeat(object):
             >>> integer.factor({"foo": 4})  # Non-related data is ignored.
             3
 
+        Integer Repeat factors can be specified with the ``*`` operator::
+
+            >>> from dragonfly import Function
+            >>> def func():
+            ...     print("executing 'func'")
+            ...
+            >>> action = Function(func) * 3
+            >>> action.execute()
+            executing 'func'
+            executing 'func'
+            executing 'func'
+
         Named Repeat factors retrieved their factor-value from the
         supplied data::
 
