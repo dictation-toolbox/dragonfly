@@ -31,7 +31,7 @@ from dragonfly.engines.backend_voxhub import is_engine_available
 from compiler import VoxhubCompiler
 from ..base import EngineBase, EngineError, MimicFailure
 from .dictation import VoxhubDictationContainer
-from network import connect_to_server
+from network import VoxhubAudioProcess
 from multiprocessing import Process, Queue
 from ...grammar.state import State
 from recobs import VoxhubRecObsManager
@@ -70,7 +70,7 @@ class VoxhubEngine(EngineBase):
     def connect(self):
         """ Connect to back-end Voxhub server. """
         self._queue = Queue()
-        self._process = Process(target=connect_to_server, args=(self._queue,))
+        self._process = Process(target=VoxhubAudioProcess.connect_to_server, args=(self._queue,))
         self._process.start()
         self._connected = True
         self.process_speech()

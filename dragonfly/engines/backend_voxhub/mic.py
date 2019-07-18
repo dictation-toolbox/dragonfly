@@ -3,13 +3,23 @@ import audioop
 import threading
 
 class VoxhubMicrophoneManager:
+    # Note: this will get created once per process.
+    pyaudio_instance = None
+
+    @staticmethod
+    def get_pa():
+        if not VoxhubMicrophoneManager.pyaudio_instance:
+            # prints a lot of junk, but no avoiding it
+            VoxhubMicrophoneManager.pyaudio_instance = pyaudio.PyAudio()
+        return VoxhubMicrophoneManager.pyaudio_instance
+
     @staticmethod
     def dump_list():
-        pa = pyaudio.PyAudio()  # prints a lot of junk
+        pa = VoxhubMicrophoneManager.get_pa()
 
         print ""
         print "LISTING OF ALL INPUT DEVICES SUPPORTED BY PORTAUDIO."
-        print "Device can be configured by adding <DEVICE_NUMBER> under device in backend_voxhub/config.py"
+        print "Device can be configured by adding <DEVICE_NUMBER> under device in voxhub_config.py"
         print "(any device numbers not shown are for output only)"
         print ""
 
@@ -24,8 +34,43 @@ class VoxhubMicrophoneManager:
                 #print info
 
     @staticmethod
+    def lookup_microphone_helper(name):
+        pa = VoxhubMicrophoneManager.get_pa()
+
+        for i in range(0, pa.get_device_count()):
+            info = pa.get_device_info_by_index(i)
+            if(name in info['name']):
+                return info['index']
+        return -1  # use default microphone
+
+    @staticmethod
+    def lookup_microphone(name):
+        try:
+            # if the user gave us a number, no conversion necessary
+            return int(name)
+        except ValueError:
+            pass
+        except TypeError:
+            pass
+
+        if(isinstance(name, list)):
+            for value in name:
+                print "Trying microphone '" + value + "'..."
+                m = VoxhubMicrophoneManager.lookup_microphone_helper(value)
+                if(m != -1):
+                    print "    found!"
+                    return m
+            print "WARNING: no specified microphones found, trying default"
+        else:
+            m = VoxhubMicrophoneManager.lookup_microphone_helper(name)
+            if(m != -1): return m
+            print "WARNING: specified microphone '" + name + "' not found, trying default"
+
+        return -1  # use default microphone
+
+    @staticmethod
     def open(mic_index, byte_rate, chunk):
-        pa = pyaudio.PyAudio()
+        pa = VoxhubMicrophoneManager.get_pa()
         stream = None
         original_byte_rate = byte_rate
 
@@ -68,25 +113,19 @@ class VoxhubMicrophone:
     def start_thread(self, data_callback, finished_callback=None):
         print "Starting microphone thread..."
         def listen_to_mic():  # uses self.stream
-            try:
-                print "\nLISTENING TO MICROPHONE"
-                last_state = None
-                while True:
-                    data = self.stream.read(self.chunk * self.byte_rate / self.original_byte_rate)
-                    if self.audio_gate > 0:
-                        rms = audioop.rms(data, 2)
-                        if rms < self.audio_gate:
-                            data = '\00' * len(data)
-                    if self.byte_rate != self.original_byte_rate:
-                        (data, last_state) = audioop.ratecv(data, 2, 1, sample_rate, self.byterate, last_state)
+            print "\nLISTENING TO MICROPHONE"
+            last_state = None
+            running = True
+            while running:
+                data = self.stream.read(self.chunk * self.byte_rate / self.original_byte_rate)
+                if self.audio_gate > 0:
+                    rms = audioop.rms(data, 2)
+                    if rms < self.audio_gate:
+                        data = '\00' * len(data)
+                if self.byte_rate != self.original_byte_rate:
+                    (data, last_state) = audioop.ratecv(data, 2, 1, sample_rate, self.byterate, last_state)
 
-                    data_callback(data)
-            except IOError, e:
-                # usually a broken pipe
-                print e
-            except AttributeError:
-                # currently raised when the socket gets closed by main thread
-                pass
+                running = data_callback(data)
 
             try:
                 self.stream.stop_stream()
@@ -94,10 +133,7 @@ class VoxhubMicrophone:
             except:
                 pass
 
-            try:
-                if finished_callback:
-                    finished_callback()
-            except IOError:
-                pass
+            if finished_callback:
+                finished_callback()
 
         threading.Thread(target=listen_to_mic).start()

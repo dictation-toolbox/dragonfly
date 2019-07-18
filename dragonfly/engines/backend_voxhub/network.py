@@ -14,6 +14,29 @@ reconnect_mode = True
 fatal_error = False
 
 
+class VoxhubAudioProcess:
+    # This is meant to be invoked from a separate process. It loops forever.
+    @staticmethod
+    def connect_to_server(queue=None):
+        uri = VoxhubAudioProcess.create_connection_uri()
+
+        while True:
+            print >> sys.stderr, "Connecting to", uri
+            ws = MyClient(uri, byte_rate=MISC_CONFIG["byte_rate"],
+                mic=VoxhubMicrophoneManager.lookup_microphone(MISC_CONFIG["device"]),
+                show_hypotheses=MISC_CONFIG["hypotheses"],
+                save_adaptation_state_filename=MISC_CONFIG.get("save_adaptation_state", None),
+                send_adaptation_state_filename=MISC_CONFIG.get("send_adaptation_state", None),
+                audio_gate=MISC_CONFIG["audio_gate"], chunk=MISC_CONFIG['chunk'],
+                queue=queue)
+            ws.connect()
+            ws.run_forever()
+
+    @staticmethod
+    def create_connection_uri():
+        uri = "ws://%s:%s/%s?%s" % (SERVER, PORT, PATH, urllib.urlencode([("content-type", CONTENT_TYPE)]))
+        return uri
+
 class MyClient(WebSocketClient):
 
     def __init__(self, url, mic=1, protocols=None, extensions=None, heartbeat_freq=None, byte_rate=16000,
@@ -40,11 +63,29 @@ class MyClient(WebSocketClient):
             fatal_error = True
             return
 
+        def try_send_data(data):
+            try:
+                self.send_data(data)
+                return True
+            except IOError, e:
+                # usually a broken pipe
+                print e
+            except AttributeError:
+                # currently raised when the socket gets closed by main thread
+                pass
+            return False
+
+        def skip_io_error(invoke):
+            try:
+                invoke()
+            except IOError:
+                pass
+
         try:
             mic.set_audio_gate(self.audio_gate)
             mic.start_thread(
-                lambda data: self.send_data(data),
-                lambda : self.close())
+                try_send_data,
+                lambda : skip_io_error(self.close))
         except e:
             print e
 
@@ -79,23 +120,3 @@ class MyClient(WebSocketClient):
             if reconnect_mode:
                 print >> sys.stderr, "Sleeping for five seconds before reconnecting"
                 time.sleep(5)
-
-
-def connect_to_server(queue=None):
-    uri = create_connection_uri()
-
-    while True:
-        print >> sys.stderr, "Connecting to", uri
-        ws = MyClient(uri, byte_rate=MISC_CONFIG["byte_rate"], mic=MISC_CONFIG["device"],
-                      show_hypotheses=MISC_CONFIG["hypotheses"],
-                      save_adaptation_state_filename=MISC_CONFIG.get("save_adaptation_state", None),
-                      send_adaptation_state_filename=MISC_CONFIG.get("send_adaptation_state", None),
-                      audio_gate=MISC_CONFIG["audio_gate"], chunk=MISC_CONFIG['chunk'],
-                      queue=queue)
-        ws.connect()
-        ws.run_forever()
-
-
-def create_connection_uri():
-    uri = "ws://%s:%s/%s?%s" % (SERVER, PORT, PATH, urllib.urlencode([("content-type", CONTENT_TYPE)]))
-    return uri
