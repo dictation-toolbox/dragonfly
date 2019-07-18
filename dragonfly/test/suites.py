@@ -45,17 +45,13 @@ common_names = [
     "test_parser",
     "test_rpc",
     "test_timer",
+    "test_window",
     "doc:documentation/test_action_base_doctest.txt",
     "doc:documentation/test_grammar_elements_basic_doctest.txt",
     "doc:documentation/test_grammar_elements_compound_doctest.txt",
     "doc:documentation/test_grammar_list_doctest.txt",
     "doc:documentation/test_recobs_doctest.txt",
 ]
-
-# Only include common Windows-only tests on Windows.
-if os.name == "nt":
-    common_names.extend(["test_window"])
-
 
 # Define spoken language test files. All of them work with the natlink and
 # text engines. The English tests should work with sapi5 and sphinx by

@@ -69,13 +69,14 @@ class XdotoolKeyboard(BaseX11Keyboard):
                 arguments += ['sleep', '%.3f' % timeout]
 
         # Press/release the keys using xdotool, catching any errors.
+        command = [cls.xdotool] + arguments
+        readable_command = ' '.join(command)
+        cls._log.debug(readable_command)
         try:
-            command = [cls.xdotool] + arguments
-            cls._log.debug(' '.join(command))
-            success = subprocess.call(command) > 0
-            if success:
+            return_code = subprocess.call(command)
+            if return_code > 0:
                 raise RuntimeError("xdotool command exited with non-zero "
-                                   "return code %d" % success)
+                                   "return code %d" % return_code)
         except Exception as e:
-            cls._log.exception("Failed to execute xdotool command '%s': %s",
-                               arguments, e)
+            cls._log.exception("Failed to execute xdotool command '%s': "
+                               "%s", readable_command, e)
