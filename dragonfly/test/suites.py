@@ -38,6 +38,7 @@ setup_log()
 
 common_names = [
     "test_accessibility",
+    "test_actions",
     # "test_contexts",  # disabled for now
     "test_engine_nonexistent",
     "test_log",
@@ -53,7 +54,7 @@ common_names = [
 
 # Only include common Windows-only tests on Windows.
 if os.name == "nt":
-    common_names.extend(["test_window", "test_actions"])
+    common_names.extend(["test_window"])
 
 
 # Define spoken language test files. All of them work with the natlink and
