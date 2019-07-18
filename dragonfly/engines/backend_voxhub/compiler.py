@@ -20,6 +20,7 @@
 
 """
     This file implements the compiler class for Voxhub.
+    Currently, it is only used to dump a representation of the grammar.
 """
 
 

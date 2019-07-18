@@ -8,7 +8,7 @@ import time
 
 from ws4py.client.threadedclient import WebSocketClient
 from dragonfly.engines.backend_voxhub.config import *
-from dragonfly.engines.backend_voxhub.mic import *
+from dragonfly.engines.backend_voxhub.microphone import *
 
 reconnect_mode = True
 fatal_error = False

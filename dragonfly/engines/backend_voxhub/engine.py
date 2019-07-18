@@ -35,7 +35,7 @@ from network import VoxhubAudioProcess
 from multiprocessing import Process, Queue
 from ...grammar.state import State
 from recobs import VoxhubRecObsManager
-from mic import VoxhubMicrophoneManager
+from microphone import VoxhubMicrophoneManager
 from config import *
 import re
 
@@ -89,26 +89,26 @@ class VoxhubEngine(EngineBase):
     @staticmethod
     def validate_config():
         connection_attributes = ["SERVER","PORT","CONTENT_TYPE","PATH"]
-        not_preset = []
+        not_present = []
         for a_connection_attribute in connection_attributes:
             if a_connection_attribute not in globals():
-                not_preset.append(a_connection_attribute)
+                not_present.append(a_connection_attribute)
 
         if "MISC_CONFIG" not in globals():
-            not_preset.append("MISC_CONFIG completely missing")
+            not_present.append("MISC_CONFIG completely missing")
         else:
             misc_attributes = ["device", "keep_going", "hypotheses", "audio_gate",
                                "byte_rate", "chunk"]
             for a_misc_attribute in misc_attributes:
                 if a_misc_attribute not in MISC_CONFIG:
-                    not_preset.append('MISC_CONFIG["'+a_misc_attribute+'"]')
+                    not_present.append('MISC_CONFIG["'+a_misc_attribute+'"]')
 
-        if not_preset:
+        if not_present:
             # Raise an error with the attributes that weren't set.
-            not_preset.sort()
+            not_present.sort()
             raise EngineError("Invalid engine configuration. Please check backend_voxhub/config.py. The following "
                               "attributes were not present: %s"
-                              % ", ".join(not_preset))
+                              % ", ".join(not_present))
 
 
     #-----------------------------------------------------------------------
