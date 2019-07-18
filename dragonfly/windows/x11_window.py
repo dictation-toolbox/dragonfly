@@ -174,6 +174,7 @@ class X11Window(BaseWindow):
                 continue
 
             raw_key, value = line
+            raw_key, value = raw_key.strip(), value.strip()
             if 'STRING)' in raw_key:  # This also handles (UTF8_STRING).
                 value = value[1:-1]
 
