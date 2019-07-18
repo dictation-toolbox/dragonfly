@@ -11,5 +11,3 @@ Werkzeug
 requests
 sphinx_rtd_theme
 lark-parser
-ws4py
-pyaudio

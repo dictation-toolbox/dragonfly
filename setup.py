@@ -132,6 +132,10 @@ setup(
                     "sounddevice == 0.3.*",
                     "webrtcvad-wheels == 2.0.*",
                    ],
+          "voxhub": [
+                    "pyaudio",
+                    "ws4py"
+                    ]
       },
 
       cmdclass={
