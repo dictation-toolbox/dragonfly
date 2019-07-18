@@ -39,16 +39,8 @@ def is_engine_available():
     if _engine:
         return True
 
-#    try:
-#        import sphinxwrapper
-#    except ImportError as e:
-#        _log.info("Failed to import sphinxwrapper package: %s. Is it installed?" % (e,))
-#        return False
-#    except Exception as e:
-#        _log.info("Exception during import of sphinxwrapper package: %s" % (e,))
-#        return False
-
-    print "Voxhub engine is always available..."
+    # Voxhub engine should always be available if there is a network
+    # connection.
     return True
 
 

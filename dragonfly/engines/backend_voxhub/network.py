@@ -1,16 +1,14 @@
 # Silvius microphone client based on Tanel's client.py
 __author__ = 'dwk'
-import threading
 import sys
 import urllib
 import json
-import audioop
 import time
 
 
 from ws4py.client.threadedclient import WebSocketClient
 from dragonfly.engines.backend_voxhub.config import *
-from dragonfly.engines.backend_voxhub.mic import setup_microphone
+from dragonfly.engines.backend_voxhub.mic import *
 
 reconnect_mode = True
 fatal_error = False
@@ -29,7 +27,6 @@ class MyClient(WebSocketClient):
         self.save_adaptation_state_filename = save_adaptation_state_filename
         self.send_adaptation_state_filename = send_adaptation_state_filename
         self.chunk = chunk
-        self.byterate = byte_rate
         self.audio_gate = audio_gate
         self.queue = queue
 
@@ -37,47 +34,21 @@ class MyClient(WebSocketClient):
         self.send(data, binary=True)
 
     def opened(self):
-        (mic_stream, sample_rate) = setup_microphone(self.mic, self.byte_rate, self.chunk)
-        if not mic_stream:
+        mic = VoxhubMicrophoneManager.open(self.mic, self.byte_rate, self.chunk)
+        if not mic:
             global fatal_error
             fatal_error = True
             return
 
-        def mic_to_ws():  # uses stream
-            try:
-                print "\nLISTENING TO MICROPHONE"
-                last_state = None
-                while True:
-                    data = mic_stream.read(self.chunk * sample_rate / self.byterate)
-                    if self.audio_gate > 0:
-                        rms = audioop.rms(data, 2)
-                        if rms < self.audio_gate:
-                            data = '\00' * len(data)
-                    if sample_rate != self.byterate:
-                        (data, last_state) = audioop.ratecv(data, 2, 1, sample_rate, self.byterate, last_state)
+        try:
+            mic.set_audio_gate(self.audio_gate)
+            mic.start_thread(
+                lambda data: self.send_data(data),
+                lambda : self.close())
+        except e:
+            print e
 
-                    self.send_data(data)
-            except IOError, e:
-                # usually a broken pipe
-                print e
-            except AttributeError:
-                # currently raised when the socket gets closed by main thread
-                pass
-
-            try:
-                mic_stream.stop_stream()
-                mic_stream.close()
-            except:
-                pass
-
-            try:
-                self.close()
-            except IOError:
-                pass
-
-        threading.Thread(target=mic_to_ws).start()
-
-    def received_message(self, m):  # TODO : Discuss with David
+    def received_message(self, m):
         response = json.loads(str(m))
         #print >> sys.stderr, "RESPONSE:", response
         if response['status'] == 0:

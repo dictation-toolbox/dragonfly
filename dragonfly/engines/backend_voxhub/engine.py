@@ -31,11 +31,11 @@ from dragonfly.engines.backend_voxhub import is_engine_available
 from compiler import VoxhubCompiler
 from ..base import EngineBase, EngineError, MimicFailure
 from .dictation import VoxhubDictationContainer
-from server import connect_to_server
+from network import connect_to_server
 from multiprocessing import Process, Queue
 from ...grammar.state import State
 from recobs import VoxhubRecObsManager
-import mic
+from mic import VoxhubMicrophoneManager
 from config import *
 import re
 
@@ -304,4 +304,4 @@ class VoxhubEngine(EngineBase):
                     print("Waking up...")
 
     def list_available_microphones(self):
-        mic.list_available_microphones()
+        VoxhubMicrophoneManager.dump_list()
