@@ -65,18 +65,18 @@ MockLiteral = collections.namedtuple('MockLiteral', 'words')
 
 class KaldiCompiler(CompilerBase, KAGCompiler):
 
-    def __init__(self, model_dir, tmp_dir, **kwargs):
+    def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, **kwargs):
         CompilerBase.__init__(self)
         KAGCompiler.__init__(self, model_dir, tmp_dir=tmp_dir, **kwargs)
+
+        self.auto_add_to_user_lexicon = auto_add_to_user_lexicon
 
         self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
         self._grammar_rule_states_dict = dict()  # FIXME: disabled!
         self.kaldi_rules_by_listreflist_dict = collections.defaultdict(set)
         self.internal_grammar = InternalGrammar('!kaldi_engine_internal')
 
-        self._compile_base_fsts()
-
-    impossible_word = property(lambda self: self._longest_word)
+    impossible_word = property(lambda self: self._longest_word)  # FIXME
     unknown_word = '<unk>'
 
     #-----------------------------------------------------------------------
@@ -106,11 +106,26 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
         words = new_words
         new_words = []
         for word in words:
-            if word not in self._lexicon_words:
-                self._log.warning("%s: Word not in lexicon (will not be recognized): %r" % (self, word))
-                word = self.impossible_word
+            if word not in self.lexicon_words:
+                word = self.handle_oov_word(word)
             new_words.append(word)
         return new_words
+
+    def handle_oov_word(self, word):
+        if self.auto_add_to_user_lexicon:
+            try:
+                phones = self.model.add_word(word)
+            except Exception as e:
+                self._log.exception("%s: exception automatically adding word")
+            else:
+                self.model.load_words()
+                self.decoder.load_lexicon()
+                self._log.warning("%s: Word not in lexicon (generated automatic pronunciation): %r [%s]" % (self, word, ' '.join(phones)))
+                return word
+
+        self._log.warning("%s: Word not in lexicon (will not be recognized): %r" % (self, word))
+        word = self.impossible_word
+        return word
 
     #-----------------------------------------------------------------------
     # Methods for compiling grammars.
@@ -138,13 +153,11 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
         return kaldi_rule_by_rule_dict
 
-    def _compile_rule_root(self, rule, grammar, kaldi_rule, reloading=False):
-        # if reloading:
-        #     kaldi_rule.fst.clear()
+    def _compile_rule_root(self, rule, grammar, kaldi_rule):
         matcher, _, _ = self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
         kaldi_rule.matcher = matcher.setName(str(kaldi_rule.id)).setResultsName(str(kaldi_rule.id))
         kaldi_rule.fst.equalize_weights()
-        kaldi_rule.compile_file(reloading=reloading)
+        kaldi_rule.compile_file()
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
         # Determine whether this rule has already been compiled.
@@ -174,8 +187,8 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
         for rule in rules:
             kaldi_rule = self.kaldi_rule_by_rule_dict[rule]
             if kaldi_rule in lst_kaldi_rules:
-                with kaldi_rule.reloading():
-                    self._compile_rule_root(rule, grammar, kaldi_rule, reloading=True)
+                with kaldi_rule.reload():
+                    self._compile_rule_root(rule, grammar, kaldi_rule)
 
     #-----------------------------------------------------------------------
     # Methods for compiling elements.

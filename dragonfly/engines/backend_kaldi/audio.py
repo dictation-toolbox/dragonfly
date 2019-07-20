@@ -24,6 +24,7 @@ Audio input/output classes for Kaldi backend
 
 import collections, wave, logging, os, datetime
 
+from six import print_
 from six.moves import queue
 import pyaudio
 import webrtcvad
@@ -48,15 +49,16 @@ class MicAudio(object):
         self.flush_queue = flush_queue
         self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.block_duration_ms))
         self.pa = pyaudio.PyAudio()
-        self.stream = self.pa.open(format=self.FORMAT,
-                                   channels=self.CHANNELS,
-                                   rate=self.sample_rate,
-                                   input=True,
-                                   frames_per_buffer=self.block_size,
-                                   stream_callback=proxy_callback,
-                                   input_device_index=input_device_index)
-        if start:
-            self.stream.start_stream()
+        self.stream = self.pa.open(
+            format=self.FORMAT,
+            channels=self.CHANNELS,
+            rate=self.sample_rate,
+            input=True,
+            frames_per_buffer=self.block_size,
+            stream_callback=proxy_callback,
+            input_device_index=input_device_index,
+            start=bool(start),
+        )
         self.active = True
         _log.info("%s: streaming audio from microphone: %i sample_rate, %i block_duration_ms", self, self.sample_rate, self.block_duration_ms)
 
@@ -115,6 +117,34 @@ class MicAudio(object):
         wf.setframerate(self.sample_rate)
         wf.writeframes(data)
         wf.close()
+
+    @staticmethod
+    def print_list():
+        pa = pyaudio.PyAudio()
+
+        print_("")
+        print_("LISTING ALL INPUT DEVICES SUPPORTED BY PORTAUDIO")
+        print_("(any device numbers not shown are for output only)")
+        print_("")
+
+        for i in range(0, pa.get_device_count()):
+            info = pa.get_device_info_by_index(i)
+
+            if info['maxInputChannels'] > 0:  # microphone? or just speakers
+                print_("DEVICE #%d" % info['index'])
+                print_("    %s" % info['name'])
+                print_("    input channels = %d, output channels = %d, defaultSampleRate = %d" %
+                    (info['maxInputChannels'], info['maxOutputChannels'], info['defaultSampleRate']))
+                # print_(info)
+                try:
+                  supports16k = pa.is_format_supported(16000,  # sample rate
+                      input_device = info['index'],
+                      input_channels = info['maxInputChannels'],
+                      input_format = pyaudio.paInt16)
+                except ValueError:
+                  print_("    NOTE: 16k sampling not supported, configure pulseaudio to use this device")
+
+        print_("")
 
 
 class VADAudio(MicAudio):

@@ -36,7 +36,7 @@ from ...windows                 import Window
 try:
     from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
     from .compiler                  import KaldiCompiler
-    from .audio                     import VADAudio, AudioStore
+    from .audio                     import MicAudio, VADAudio, AudioStore
     ENGINE_AVAILABLE = True
 except ImportError:
     # Import a few things here optionally for readability (the engine won't
@@ -58,6 +58,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def __init__(self, model_dir=None, tmp_dir=None,
         vad_aggressiveness=None, vad_padding_ms=None, input_device_index=None,
+        auto_add_to_user_lexicon=None,
         cloud_dictation=None,  # FIXME: cloud_dictation_lang
         ):
         EngineBase.__init__(self)
@@ -72,6 +73,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._vad_aggressiveness = vad_aggressiveness if vad_aggressiveness is not None else 3
         self._vad_padding_ms = vad_padding_ms if vad_padding_ms is not None else 300
         self._input_device_index = input_device_index
+        self._auto_add_to_user_lexicon = auto_add_to_user_lexicon
         self._cloud_dictation = cloud_dictation
 
         self._compiler = None
@@ -86,14 +88,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             return
 
         self._log.debug("Loading KaldiEngine in process %s." % os.getpid())
+        # subprocess.call(['vsjitdebugger', '-p', str(os.getpid())]); time.sleep(5)
 
-        self._compiler = KaldiCompiler(self._model_dir, tmp_dir=self._tmp_dir, cloud_dictation=self._cloud_dictation)
+        self._compiler = KaldiCompiler(self._model_dir, tmp_dir=self._tmp_dir, auto_add_to_user_lexicon=self._auto_add_to_user_lexicon, cloud_dictation=self._cloud_dictation)
         # self._compiler.fst_cache.invalidate()
 
         top_fst = self._compiler.compile_top_fst()
         dictation_fst_file = self._compiler.dictation_fst_filepath
         self._decoder = KaldiAgfNNet3Decoder(model_dir=self._model_dir, tmp_dir=self._tmp_dir, top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file)
-        words = self._compiler.load_words()
         self._compiler.decoder = self._decoder
 
         self._audio = VADAudio(aggressiveness=self._vad_aggressiveness, start=False, input_device_index=self._input_device_index)
@@ -108,6 +110,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._audio = None
         self._compiler = None
         self._decoder = None
+
+    def print_mic_list(self):
+        MicAudio.print_list()
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.
@@ -128,7 +133,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
         wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self)
         for kaldi_rule in kaldi_rule_by_rule_dict.values():
-            kaldi_rule.load()
+            kaldi_rule.load_fst()
 
         return wrapper
 
@@ -201,7 +206,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def do_recognition(self, timeout=None, single=False):
         self._log.debug("do_recognition: timeout %s" % timeout)
 
-        self._compiler.prepare_for_recognition()
+        self._prepare_for_recognition()
 
         if timeout != None:
             end_time = time.time() + timeout
@@ -269,6 +274,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     #-----------------------------------------------------------------------
     # Internal processing methods.
+
+    def _prepare_for_recognition(self):
+        self._compiler.prepare_for_recognition()
 
     def _compute_kaldi_rules_activity(self, phrase_start=True):
         self._active_kaldi_rules = []
