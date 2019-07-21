@@ -16,22 +16,48 @@ Unreleased_
 
 Added
 ~~~~~
-* Add enhancements to 'Dictation' objects (see `PR #96
-  <https://github.com/dictation-toolbox/dragonfly/pull/96>`__)
-  (thanks `@mrob95`_).
+* Add FakeWindow class imported as 'Window' on unsupported platforms.
+* Add RPC methods for getting speech state & recognition history.
+* Add Window.get_matching_windows() and Window.get_window class methods.
+* Add X11Window class for interacting with windows on X11 (adapted from
+  `Aenea`_).
+* Add alternative dragonfly module loader for natlink.
+* Add documentation for X11 keyboard and window support.
+* Add enhancements to Dictation and DictationContainer objects (thanks `@mrob95`_).
+* Add missing Integer Repeat factor example into documentation.
 * Add optional '--language' argument to dragonfly's 'test' command (CLI).
+* Add xdotool & libxdo keyboard implementations to replace pynput on X11
+  (adapted from `Aenea`_).
 
 Changed
 ~~~~~~~
+* Change the dragonfly.windows.window module to import the current
+  platform's Window class.
 * Improve Kaldi documentation and add an example demo script
   (thanks `@daanzu`_).
+* Make test_actions.py and test_window.py files run with all test suites and
+  on all platforms.
+* Move some code from FocusWindow into Window classes.
+* Rename dragonfly's Window class to Win32Window and move it into
+  win32_window.py.
+* Swap Repeat class's constructor arguments so that 'extra' is first
+  (backwards-compatible) (thanks `@mrob95`_).
+* Unmock the Window, WaitWindow, FocusWindow, BringApp and StartApp classes
+  for all platforms.
+* Update Kaldi engine backend with user lexicon support, microphone listing,
+  other improvements and bug fixes (thanks `@daanzu`_).
 
 Fixed
 ~~~~~
 * Fix DragonflyError raised if importing ShortIntegerContent whilst using a
   speaker language that isn't English.
+* Fix Thread.isAlive() deprecation warnings in Python 3.7.
+* Fix import error in SAPI5 engine file (specific to Python 3).
+* Fix incorrect file names in the 'plus' module loaders.
 * Fix problem with building documentation when kaldi_active_grammar is
   installed.
+* Fix spec string decoding in the Text action class.
+
 
 0.15.0_ - 2019-06-24
 --------------------
