@@ -75,7 +75,7 @@ by executing ``pip install --upgrade pip``.
 
 You will also need a **model** to use. You can download a `compatible
 general English Kaldi nnet3 chain model
-<https://github.com/daanzu/kaldi-active-grammar/releases/tag/v0.4.0>`_
+<https://github.com/daanzu/kaldi-active-grammar/releases>`_
 from `kaldi-active-grammar
 <https://github.com/daanzu/kaldi-active-grammar>`_. Unzip it into a
 directory within the directory containing your grammar modules.
