@@ -241,24 +241,32 @@ class DictationContainerBase(object):
 
     def apply_methods(self, joined_words):
         """
-        Apply any string methods called on the :class:`Dictation` object to a given string. Called during :meth:`format`.
+        Apply any string methods called on the :class:`Dictation` object to
+        a given string.
+
+        Called during :meth:`format`.
         """
         result = joined_words
         if result: # Do nothing for empty string
             for method in self._methods:
                 if hasattr(result, method[0]):
-                    result = getattr(result, method[0])(*method[1], **method[2])
+                    function = getattr(result, method[0])
+                    result = function(*method[1], **method[2])
                 elif hasattr(self, method[0]):
-                    result = getattr(self, method[0])(result, *method[1], **method[2])
+                    function = getattr(self, method[0])
+                    result = function(result, *method[1], **method[2])
                 else:
-                    raise AttributeError("'%s' is not a valid dictation or string method" % method[0])
+                    raise AttributeError("'%s' is not a valid dictation or "
+                                         "string method" % method[0])
         return result
 
     def apply(self, str_input, format_func):
         if callable(format_func):
             return format_func(str_input)
         else:
-            raise TypeError("Argument passed to 'Dictation.apply' method must be callable, taking and returning a string.")
+            raise TypeError("Argument passed to 'Dictation.apply' method "
+                            "must be callable, taking and returning a "
+                            "string.")
 
     def camel(self, str_input):
         def f(s):
