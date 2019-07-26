@@ -25,14 +25,15 @@ Window class for Windows
 """
 
 import os
+from ctypes          import windll, pointer, c_wchar, c_ulong
 
 import win32gui
 import win32con
-from ctypes          import windll, pointer, c_wchar, c_ulong
 
 from .base_window    import BaseWindow
 from .rectangle      import Rectangle, unit
 from .monitor        import monitors
+from ..actions.action_key import Key
 
 
 #===========================================================================
@@ -215,6 +216,16 @@ class Win32Window(BaseWindow):
     # Methods for miscellaneous window control.
 
     def set_foreground(self):
-        if self.is_minimized:
-            self.restore()
-        self._set_foreground()
+        # Bring this window into the foreground if it isn't already the
+        # current foreground window.
+        if self.handle != win32gui.GetForegroundWindow():
+            if self.is_minimized:
+                self.restore()
+
+            # Press a key so Windows allows us to use SetForegroundWindow()
+            # (received last input event). See Microsoft's documentation on
+            # SetForegroundWindow() for why this works.
+            Key("control:down,control:up").execute()
+
+            # Set the foreground window.
+            self._set_foreground()
