@@ -27,6 +27,7 @@ import collections, logging, os.path, re, subprocess
 from .testing                   import debug_timer
 from .dictation                 import CloudDictation, LocalDictation
 from ..base                     import CompilerBase, CompilerError
+from ...grammar                 import elements as elements_
 
 import six
 import pyparsing as pp
@@ -204,14 +205,32 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
     @trace_compile
     def _compile_sequence(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        # "insert" new states for individual children elements
-        states = [src_state] + [fst.add_state() for i in range(len(element.children)-1)] + [dst_state]
-        matchers = []
-        for i, child in enumerate(element.children):
-            s1 = states[i]
-            s2 = states[i + 1]
-            matchers.append(self.compile_element(child, s1, s2, grammar, kaldi_rule, fst))
-        return pp.And(tuple(matchers))
+        children = element.children
+        if len(children) > 1:
+            # Compile Sequence and Repetition elements differently.
+            is_rep = isinstance(element, elements_.Repetition)
+            if is_rep and element.optimize:
+                # Repetition...
+                matcher = self.compile_element(children[0], src_state, dst_state, grammar, kaldi_rule, fst)
+                fst.add_arc(dst_state, src_state, fst.eps_disambig, fst.eps)
+                return pp.OneOrMore(matcher)
+
+            else:
+                # Sequence...
+                # "Insert" new states for individual children elements
+                states = [src_state] + [fst.add_state() for i in range(len(children)-1)] + [dst_state]
+                matchers = []
+                for i, child in enumerate(children):
+                    s1 = states[i]
+                    s2 = states[i + 1]
+                    matchers.append(self.compile_element(child, s1, s2, grammar, kaldi_rule, fst))
+                return pp.And(tuple(matchers))
+
+        elif len(children) == 1:
+            return self.compile_element(children[0], src_state, dst_state, grammar, kaldi_rule, fst)
+
+        else:  # len(children) == 0
+            return pp.Empty()
 
     @trace_compile
     def _compile_alternative(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
