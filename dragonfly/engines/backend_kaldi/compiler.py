@@ -117,14 +117,14 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
             try:
                 phones = self.model.add_word(word)
             except Exception as e:
-                self._log.exception("%s: exception automatically adding word")
+                self._log.exception("%s: exception automatically adding word %r" % (self, word))
             else:
                 self.model.load_words()
                 self.decoder.load_lexicon()
                 self._log.warning("%s: Word not in lexicon (generated automatic pronunciation): %r [%s]" % (self, word, ' '.join(phones)))
                 return word
 
-        self._log.warning("%s: Word not in lexicon (will not be recognized): %r" % (self, word))
+        self._log.warning("%s: Word %r not in lexicon (will not be recognized; see documentation about user lexicon and auto_add_to_user_lexicon)" % (self, word))
         word = self.impossible_word
         return word
 
@@ -249,6 +249,7 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
     def _compile_literal(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # "insert" new states for individual words
         words = element.words
+        words = map(str, words)  # FIXME: handle unicode
         matcher = pp.CaselessLiteral(' '.join(words))
         words = self.translate_words(words)
         states = [src_state] + [fst.add_state() for i in range(len(words)-1)] + [dst_state]
