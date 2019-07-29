@@ -207,17 +207,23 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
     def _compile_sequence(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         children = element.children
         if len(children) > 1:
-            # Compile Sequence and Repetition elements differently.
+            # Handle Repetition elements differently as a special case.
             is_rep = isinstance(element, elements_.Repetition)
             if is_rep and element.optimize:
                 # Repetition...
-                matcher = self.compile_element(children[0], src_state, dst_state, grammar, kaldi_rule, fst)
-                fst.add_arc(dst_state, src_state, fst.eps_disambig, fst.eps)
+                # Insert new states, so back arc only affects child
+                s1 = fst.add_state()
+                s2 = fst.add_state()
+                fst.add_arc(src_state, s1, None)
+                fst.add_arc(s2, dst_state, None)
+                # NOTE: to avoid creating an un-decodable epsilon loop, we must not allow an all-epsilon child here (compile_graph_agf should check)
+                matcher = self.compile_element(children[0], s1, s2, grammar, kaldi_rule, fst)
+                fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # back arc
                 return pp.OneOrMore(matcher)
 
             else:
                 # Sequence...
-                # "Insert" new states for individual children elements
+                # Insert new states for individual children elements
                 states = [src_state] + [fst.add_state() for i in range(len(children)-1)] + [dst_state]
                 matchers = []
                 for i, child in enumerate(children):
