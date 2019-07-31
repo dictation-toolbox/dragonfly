@@ -24,7 +24,15 @@ from dragonfly.log import setup_log
 # --------------------------------------------------------------------------
 # Set up basic logging.
 
-setup_log()
+if False:
+    # Debugging logging for reporting trouble
+    logging.basicConfig(level=10)
+    logging.getLogger('grammar.decode').setLevel(20)
+    logging.getLogger('grammar.begin').setLevel(20)
+    logging.getLogger('compound').setLevel(20)
+    logging.getLogger('kaldi.compiler').setLevel(10)
+else:
+    setup_log()
 
 
 # --------------------------------------------------------------------------
@@ -63,6 +71,7 @@ def main():
         # vad_aggressiveness=3,  # default aggressiveness of VAD
         # vad_padding_ms=300,  # default ms of required silence surrounding VAD
         # input_device_index=None,  # set to an int to choose a non-default microphone
+        # auto_add_to_user_lexicon=True,  # set to True to possibly use cloud for pronunciations
         # cloud_dictation=None,  # set to 'gcloud' to use cloud dictation
     )
 

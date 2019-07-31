@@ -39,6 +39,13 @@ affiliated with the dragonfly project itself).
 Setup
 ----------------------------------------------------------------------------
 
+Want to get started **quickly & easily on Windows**? A self-contained,
+portable, batteries-included (python & libraries & model) distribution
+of kaldi-active-grammar + dragonfly2 is available at the
+`kaldi-active-grammar project releases page
+<https://github.com/daanzu/kaldi-active-grammar/releases>`_.
+Otherwise...
+
 **Requirements:**
 
 * Python 2.7 (3.x support planned); *64-bit required!*
