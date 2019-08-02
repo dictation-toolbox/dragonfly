@@ -32,7 +32,7 @@ from ...grammar                 import elements as elements_
 import six
 import pyparsing as pp
 from kaldi_active_grammar import WFST, KaldiRule
-from kaldi_active_grammar import Compiler as KAGCompiler
+from kaldi_active_grammar import Compiler as KaldiAGCompiler
 
 _log = logging.getLogger("engine.compiler")
 
@@ -64,11 +64,11 @@ MockLiteral = collections.namedtuple('MockLiteral', 'words')
 
 #---------------------------------------------------------------------------
 
-class KaldiCompiler(CompilerBase, KAGCompiler):
+class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, **kwargs):
         CompilerBase.__init__(self)
-        KAGCompiler.__init__(self, model_dir, tmp_dir=tmp_dir, **kwargs)
+        KaldiAGCompiler.__init__(self, model_dir, tmp_dir=tmp_dir, **kwargs)
 
         self.auto_add_to_user_lexicon = auto_add_to_user_lexicon
 
@@ -140,13 +140,12 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
                 if rule.element is None:
                     raise CompilerError("Invalid None element for rule %s in grammar %s" % (rule, grammar))
 
-                kaldi_rule = KaldiRule(self, self.alloc_rule_id(),
+                kaldi_rule = KaldiRule(self,
                     name='%s::%s' % (grammar.name, rule.name),
                     has_dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))
                 kaldi_rule.parent_grammar = grammar
                 kaldi_rule.parent_rule = rule
 
-                self.kaldi_rule_by_id_dict[kaldi_rule.id] = kaldi_rule
                 self.kaldi_rule_by_rule_dict[rule] = kaldi_rule
                 kaldi_rule_by_rule_dict[rule] = kaldi_rule
 
@@ -156,7 +155,7 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
     def _compile_rule_root(self, rule, grammar, kaldi_rule):
         matcher, _, _ = self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
-        kaldi_rule.matcher = matcher.setName(str(kaldi_rule.id)).setResultsName(str(kaldi_rule.id))
+        kaldi_rule.matcher = matcher.setName(str(kaldi_rule.name)).setResultsName(str(kaldi_rule.name))
         kaldi_rule.fst.equalize_weights()
         kaldi_rule.compile_file()
 

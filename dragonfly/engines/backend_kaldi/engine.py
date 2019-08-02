@@ -180,6 +180,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
+        self._log.debug("Start of mimic: %r" % words)
         try:
             output = words if isinstance(words, string_types) else " ".join(words)
             output = self._compiler.untranslate_output(output)
@@ -290,7 +291,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     if kaldi_rule.active:
                         self._active_kaldi_rules.append(kaldi_rule)
                         self._kaldi_rules_activity[kaldi_rule.id] = True
-        self._log.debug("active kaldi rules: %s", [kr.name for kr in self._active_kaldi_rules])
+        self._log.debug("active kaldi_rules: %s", [kr.name for kr in self._active_kaldi_rules])
         return self._kaldi_rules_activity
 
     def _parse_recognition(self, output, mimic=False):
@@ -298,7 +299,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         #     self._log.warning("attempted to parse empty recognition")
         #     return None
 
-        if self._compiler.parsing_framework == 'text' or mimic:
+        if mimic or self._compiler.parsing_framework == 'text':
             with debug_timer(self._log.debug, "kaldi_rule parse time"):
                 detect_ambiguity = False
                 results = []
