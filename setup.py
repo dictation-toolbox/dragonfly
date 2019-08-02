@@ -91,7 +91,7 @@ setup(
                      "pyaudio"
                     ],
           "kaldi": [
-                    "kaldi-active-grammar ~= 0.5.3",
+                    "kaldi-active-grammar ~= 0.6.0",
                     "pyaudio == 0.2.*",
                     "webrtcvad == 2.0.*",
                    ],
