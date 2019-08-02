@@ -214,11 +214,24 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
                 s1 = fst.add_state()
                 s2 = fst.add_state()
                 fst.add_arc(src_state, s1, None)
-                fst.add_arc(s2, dst_state, None)
                 # NOTE: to avoid creating an un-decodable epsilon loop, we must not allow an all-epsilon child here (compile_graph_agf should check)
                 matcher = self.compile_element(children[0], s1, s2, grammar, kaldi_rule, fst)
-                fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # back arc
-                return pp.OneOrMore(matcher)
+                # NOTE: has_eps_path is ~3-5x faster than matcher.parseString() inside try/except block
+                if not fst.has_eps_path(s1, s2):
+                    fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # back arc
+                    fst.add_arc(s2, dst_state, None)
+                    return pp.OneOrMore(matcher)
+
+                else:
+                    # Cannot do optimize path, because of epsilon loop, so finish up with Sequence path
+                    self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string; falling back inefficient non-optimize path!" % self)
+                    states = [src_state, s2] + [fst.add_state() for i in range(len(children)-2)] + [dst_state]
+                    matchers = [matcher]
+                    for i, child in enumerate(children[1:], start=1):
+                        s1 = states[i]
+                        s2 = states[i + 1]
+                        matchers.append(self.compile_element(child, s1, s2, grammar, kaldi_rule, fst))
+                    return pp.And(tuple(matchers))
 
             else:
                 # Sequence...
