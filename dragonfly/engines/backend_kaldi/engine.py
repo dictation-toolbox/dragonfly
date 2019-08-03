@@ -119,7 +119,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar*. """
-        self._log.debug("Loading grammar %s." % grammar.name)
+        self._log.info("Loading grammar %s..." % grammar.name)
         if not self._decoder:
             self.connect()
         grammar.engine = self
@@ -135,6 +135,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         for kaldi_rule in kaldi_rule_by_rule_dict.values():
             kaldi_rule.load_fst()
 
+        self._log.info("...Done loading grammar %s." % grammar.name)
         return wrapper
 
     def _unload_grammar(self, grammar, wrapper):
