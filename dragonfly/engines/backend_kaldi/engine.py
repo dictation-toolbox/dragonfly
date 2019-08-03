@@ -305,12 +305,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 results = []
                 for kaldi_rule in sorted(self._active_kaldi_rules, key=lambda kr: 100 if kr.has_dictation else 0):
                     self._log.debug("attempting to parse %r with %s", output, kaldi_rule)
-                    parsed_output = self._compiler.parse_output_for_rule(kaldi_rule, output)
-                    if parsed_output is None:
+                    words = self._compiler.parse_output_for_rule(kaldi_rule, output)
+                    if words is None:
                         continue
                     # self._log.debug("success %d", kaldi_rule_id)
-                    # Pass (kaldi_rule, parsed_output) to below.
-                    results.append((kaldi_rule, parsed_output))
+                    # Pass (kaldi_rule, words) to below.
+                    results.append((kaldi_rule, words))
                     if not detect_ambiguity:
                         break
 
@@ -325,12 +325,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     # FIXME: improve sorting criterion
                     results.sort(key=lambda result: 100 if result[0].has_dictation else 0)
 
-                kaldi_rule, parsed_output = results[0]
+                kaldi_rule, words = results[0]
+                words_are_dictation = [True] * len(words)  # FIXME: hack, but seems to work fine? only a problem for ambiguous rules containing dictation, which should be handled above
 
         elif self._compiler.parsing_framework == 'token':
-            kaldi_rule, parsed_output = self._compiler.parse_output(output, lambda: (self.audio_store.current_audio_data, self._decoder.get_word_align(output)))
+            kaldi_rule, words, words_are_dictation = self._compiler.parse_output(output,
+                dictation_info_func=lambda: (self.audio_store.current_audio_data, self._decoder.get_word_align(output)))
             if kaldi_rule is None:
-                if parsed_output != '':
+                if words != []:
                     # We should never receive an unparsable recognition from kaldi, unless it's empty (from noise)
                     self._log.error("unable to parse recognition: %r" % output)
                 self._recognition_observer_manager.notify_failure()
@@ -339,12 +341,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         else:
             raise EngineError("invalid _compiler.parsing_framework")
 
-        words = tuple(word for word in parsed_output.split())
         self._recognition_observer_manager.notify_recognition(words)
         grammar_wrapper = self._get_grammar_wrapper(kaldi_rule.parent_grammar)
         with debug_timer(self._log.debug, "dragonfly parse time"):
-            grammar_wrapper.recognition_callback(words, kaldi_rule.parent_rule)
+            grammar_wrapper.recognition_callback(words, kaldi_rule.parent_rule, words_are_dictation)
 
+        parsed_output = ' '.join(words)
         return kaldi_rule, parsed_output
 
 
@@ -363,12 +365,12 @@ class GrammarWrapper(object):
     def phrase_start_callback(self, fg_window):
         self.grammar.process_begin(fg_window.executable, fg_window.title, fg_window.handle)
 
-    def recognition_callback(self, words, rule):
+    def recognition_callback(self, words, rule, words_are_dictation):
         try:
             # Prepare the words and rule names for the element parsers
-            # rule_names = (rule.name,)
-            rule_names = ('dgndictation',)  # FIXME: hack, but seems to work fine?
-            words_rules = tuple((word, 0) for word in words)
+            rule_names = (rule.name,) + (('dgndictation',) if any(words_are_dictation) else ())
+            words_rules = tuple((word, 0 if not is_dictation else 1)
+                for (word, is_dictation) in zip(words, words_are_dictation))
 
             # Attempt to parse the recognition
             func = getattr(self.grammar, "process_recognition", None)
