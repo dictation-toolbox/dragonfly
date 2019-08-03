@@ -75,6 +75,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
         self._grammar_rule_states_dict = dict()  # FIXME: disabled!
         self.kaldi_rules_by_listreflist_dict = collections.defaultdict(set)
+        self.added_word = False
         self.internal_grammar = InternalGrammar('!kaldi_engine_internal')
 
     impossible_word = property(lambda self: self._longest_word)  # FIXME
@@ -115,16 +116,15 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def handle_oov_word(self, word):
         if self.auto_add_to_user_lexicon:
             try:
-                phones = self.model.add_word(word)
+                phones = self.model.add_word(word, lazy_compilation=True)
+                self.added_word = True
             except Exception as e:
                 self._log.exception("%s: exception automatically adding word %r" % (self, word))
             else:
-                self.model.load_words()
-                self.decoder.load_lexicon()
                 self._log.warning("%s: Word not in lexicon (generated automatic pronunciation): %r [%s]" % (self, word, ' '.join(phones)))
                 return word
 
-        self._log.warning("%s: Word %r not in lexicon (will not be recognized; see documentation about user lexicon and auto_add_to_user_lexicon)" % (self, word))
+        self._log.warning("%s: Word %r not in lexicon (will NOT be recognized; see documentation about user lexicon and auto_add_to_user_lexicon)" % (self, word))
         word = self.impossible_word
         return word
 
@@ -157,6 +157,11 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         matcher, _, _ = self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
         kaldi_rule.matcher = matcher.setName(str(kaldi_rule.name)).setResultsName(str(kaldi_rule.name))
         kaldi_rule.fst.equalize_weights()
+        if self.added_word:
+            self.model.load_words()
+            self.model.generate_lexicon_files()
+            self.decoder.load_lexicon()
+            self.added_word = False
         kaldi_rule.compile_file()
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
