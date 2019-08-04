@@ -75,15 +75,22 @@ class JSGFCompiler(CompilerBase):
         self._log.debug("%s: Compiling grammar %s." % (self, grammar.name))
 
         # Create a new JSGF Grammar object.
+        unknown_words = set()
         result = self.GrammarClass(name=self.get_reference_name(grammar))
 
         # Compile each dragonfly rule and add it to the new grammar.
         for rule in grammar.rules:
-            result.add_rule(self.compile_rule(rule, result))
+            result.add_rule(self.compile_rule(rule, result, unknown_words))
 
         # Also compile and add any dragonfly Lists.
         for lst in grammar.lists:
-            result.add_rule(self.compile_list(lst))
+            result.add_rule(self.compile_list(lst, result, unknown_words))
+
+        # Log a warning about unknown words if necessary.
+        if unknown_words:
+            self._log.warning("Grammar '%s' used words not found in the "
+                              "pronunciation dictionary: %s", result.name,
+                              ", ".join(sorted(unknown_words)))
 
         # Return None for empty grammars.
         if not result.rules:
@@ -99,11 +106,11 @@ class JSGFCompiler(CompilerBase):
         )
 
     # ----------------------------------------------------------------------
-    # Method for compiling dragonfly lists and dictionary lists.
+    # Methods for compiling dragonfly lists and dictionary lists.
     # These have no equivalent in JSGF, so hidden/private rules are used
     # instead.
 
-    def compile_list(self, lst):
+    def compile_list(self, lst, *args, **kwargs):
         if isinstance(lst, List):
             literal_list = [elements_.Literal(item) for item in lst]
         elif isinstance(lst, DictList):
@@ -116,8 +123,16 @@ class JSGFCompiler(CompilerBase):
 
         return jsgf.HiddenRule(
             self.get_reference_name(lst),
-            self.compile_element(elements_.Alternative(literal_list))
+            self.compile_element(elements_.Alternative(literal_list), *args,
+                                 **kwargs)
         )
+
+    def recompile_list(self, lst, jsgf_grammar):
+        # Used from the GrammarWrapper class to get an updated list and any
+        # unknown words.
+        unknown_words = set()
+        return (self.compile_list(lst, jsgf_grammar, unknown_words),
+                unknown_words)
 
     # ----------------------------------------------------------------------
     # Methods for compiling elements.
@@ -223,7 +238,15 @@ class SphinxJSGFCompiler(JSGFCompiler):
     JSGF compiler sub-class used by the CMU Pocket Sphinx backend.
     """
 
-    impossible_literal = "impossible " * 20
+    def __init__(self, engine):
+        JSGFCompiler.__init__(self)
+        self.engine = engine
+
+        # Use a very unlikely phrase to replace unknown words. NullRefs are
+        # used instead if words aren't in the vocabulary.
+        self.impossible_literal = {
+            "en": "impossible " * 20,
+        }.get(engine.language, "")
 
     # ----------------------------------------------------------------------
     # Methods for compiling elements.
@@ -240,15 +263,45 @@ class SphinxJSGFCompiler(JSGFCompiler):
         compiled_child = self.compile_element(children[0], *args, **kwargs)
         return PatchedRepeat(compiled_child)
 
+    def _compile_literal(self, element, *args, **kwargs):
+        # Build literals as sequences and use <NULL> for unknown words.
+        children = []
+        for word in element.words:
+            if self.engine.check_valid_word(word):
+                children.append(jsgf.Literal(word))
+            else:
+                children.append(self.compile_element(
+                    elements_.Impossible(), *args, **kwargs
+                ))
+
+                # Save the unknown word.
+                args[1].add(word)
+
+        return jsgf.Sequence(*children)
+
     def _compile_impossible(self, element, *args, **kwargs):
         # Override this to avoid VoidRefs disabling entire rules/grammars.
         # Use a special <_impossible> private rule instead. Only add the
         # special rule if it isn't in the result grammar.
         grammar = args[0]
         if "_impossible" not in grammar.rule_names:
+            # Check that the impossible literal contains only valid words.
+            words = set(self.impossible_literal.split())
+            valid_literal = bool(words)
+            for word in words:
+                if not valid_literal:
+                    break
+                if not self.engine.check_valid_word(word):
+                    valid_literal = False
+
+            if valid_literal:
+                expansion = jsgf.Literal(self.impossible_literal)
+            else:
+                # Fallback on a NullRef. There are some problems with using
+                # these, but they get the job done for simple rules.
+                expansion = jsgf.NullRef()
             grammar.add_rule(jsgf.Rule(
-                name="_impossible", visible=False,
-                expansion=jsgf.Literal(self.impossible_literal)
+                name="_impossible", visible=False, expansion=expansion
             ))
 
         return jsgf.NamedRuleRef("_impossible")

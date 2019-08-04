@@ -71,6 +71,7 @@ class SphinxEngineCase(unittest.TestCase):
     """
 
     log = logging.getLogger("engine")
+    compile_log = logging.getLogger("engine.compiler")
 
     def setUp(self):
         self.engine = get_engine("sphinx")
@@ -353,28 +354,41 @@ class EngineTests(SphinxEngineCase):
         self.assertIn("trainingsession", errors[3])
 
     def test_unknown_grammar_words(self):
-        """ Verify that errors are logged for a grammar with unknown words.
+        """ Verify that warnings are logged for grammars with unknown words.
         """
         grammar = Grammar("test")
         grammar.add_rule(CompoundRule(name="r1", spec="testing unknownword"))
         grammar.add_rule(CompoundRule(name="r2", spec="wordz|natlink"))
 
-        # Catch log messages.
-        handler = MockLoggingHandler()
-        self.log.addHandler(handler)
-        try:
-            self.assertRaises(EngineError, grammar.load)
-            self.assertFalse(grammar.loaded)
-        finally:
-            self.log.removeHandler(handler)
+        # Test with a list too.
+        lst = List("lst", ["anotherunknownword", "testing multiplewords"])
+        grammar.add_rule(CompoundRule(name="r3", spec="<lst>",
+                                      extras=[ListRef("lst", lst)]))
 
-        # Check the logged messages.
-        errors = handler.messages["error"]
-        self.assertEqual(len(errors), 1)
-        self.assertIn("natlink", errors[0])
-        self.assertIn("unknownword", errors[0])
-        self.assertIn("wordz", errors[0])
-        self.assertNotIn("testing", errors[0])
+        # Catch log messages and make some assertions.
+        handler = MockLoggingHandler()
+        self.compile_log.addHandler(handler)
+        try:
+            grammar.load()
+            self.assertTrue(grammar.loaded)
+
+            # Check the logged messages.
+            warnings = handler.messages["warning"]
+            self.assertEqual(len(warnings), 1)
+            self.assertNotIn("testing", warnings[0])
+            unknown_words = ["natlink", "unknownword", "anotherunknownword",
+                             "wordz", "multiplewords"]
+            for word in unknown_words:
+                self.assertIn(word, warnings[0])
+
+            # Test that list updates also produce warnings.
+            lst.extend(("hello", "onemoreunknownword"))
+            self.assertEqual(len(warnings), 2)
+            self.assertNotIn("hello", warnings[1])
+            self.assertIn("onemoreunknownword", warnings[1])
+        finally:
+            self.compile_log.removeHandler(handler)
+            grammar.unload()
 
     def test_reference_names_with_spaces(self):
         """ Verify that reference names with spaces are accepted. """

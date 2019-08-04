@@ -51,15 +51,25 @@ class GrammarWrapper(object):
 
     def update_list(self, lst):
         # Recompile the list again.
+        grammar = self._jsgf_grammar
         name = self._get_reference_name(lst.name)
-        old_rule = self._jsgf_grammar.get_rule_from_name(name)
-        new_rule = self.engine.compiler.compile_list(lst)
+        old_rule = grammar.get_rule_from_name(name)
+        new_rule, unknown_words = self.engine.compiler.recompile_list(
+            lst, grammar
+        )
 
         # Only replace the old rule if the list has changed.
         if old_rule != new_rule:
-            self._jsgf_grammar.remove_rule(old_rule, ignore_dependent=True)
-            self._jsgf_grammar.add_rule(new_rule)
+            grammar.remove_rule(old_rule, ignore_dependent=True)
+            grammar.add_rule(new_rule)
             self.set_search = True
+
+            # Log a warning about unknown words if necessary.
+            if unknown_words:
+                logger = logging.getLogger("engine.compiler")
+                logger.warning("List '%s' used words not found in the "
+                               "pronunciation dictionary: %s", name,
+                               ", ".join(sorted(unknown_words)))
 
     def compile_jsgf(self):
         return self._jsgf_grammar.compile_as_root_grammar()

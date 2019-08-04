@@ -84,7 +84,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Set other variables
         self._decoder = None
         self._audio_buffers = []
-        self.compiler = SphinxJSGFCompiler()
+        self.compiler = SphinxJSGFCompiler(self)
         self._recognition_observer_manager = SphinxRecObsManager(self)
         self._keyphrase_thresholds = {}
         self._keyphrase_functions = {}
@@ -305,14 +305,12 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         """
         Check if a word is in the current Sphinx pronunciation dictionary.
 
-        This will always return False if :meth:`connect` hasn't been called.
-
         :rtype: bool
         """
-        if self._decoder:
-            return bool(self._decoder.lookup_word(word))
+        if not self._decoder:
+            self.connect()
 
-        return False
+        return bool(self._decoder.lookup_word(word.lower()))
 
     def _validate_words(self, words, search_type):
         unknown_words = []
@@ -327,7 +325,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             unknown_words.sort()
             raise UnknownWordError(
                 "%s used words not found in the pronunciation dictionary: "
-                "%s" % (search_type, ", ".join(unknown_words)))
+                "%s" % (search_type, ", ".join(unknown_words))
+            )
 
     def _build_grammar_wrapper(self, grammar):
         return GrammarWrapper(grammar, self,
@@ -361,16 +360,11 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Compile and set the jsgf search.
         compiled = wrapper.compile_jsgf()
+        self._log.debug(compiled)
 
         # Raise an error if there are no active public rules.
         if "public <root> = " not in compiled:
             raise EngineError("no public rules found in the grammar")
-
-        # Check that each word in the grammar is in the pronunciation
-        # dictionary. This will raise an UnknownWordError if one or more
-        # aren't.
-        self._validate_words(wrapper.grammar_words,
-                             "grammar '%s'" % wrapper.grammar.name)
 
         # Set the JSGF search.
         self._decoder.end_utterance()
@@ -491,12 +485,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Attempt to set the grammar search.
         try:
             self._set_grammar(wrapper, False)
-        except UnknownWordError as e:
-            # Unknown words should be logged as plain error messages, not
-            # exception stack traces.
-            self._log.error(e)
-            raise EngineError("Failed to load grammar %s: %s."
-                              % (grammar, e))
         except Exception as e:
             self._log.exception("Failed to load grammar %s: %s."
                                 % (grammar, e))
@@ -531,8 +519,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         try:
             wrapper.enable_rule(rule.name)
             self._set_grammar(wrapper, False, True)
-        except UnknownWordError as e:
-            self._log.error(e)
         except Exception as e:
             self._log.exception("Failed to activate grammar %s: %s."
                                 % (grammar, e))
@@ -546,8 +532,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         try:
             wrapper.disable_rule(rule.name)
             self._set_grammar(wrapper, False, True)
-        except UnknownWordError as e:
-            self._log.error(e)
         except Exception as e:
             self._log.exception("Failed to activate grammar %s: %s."
                                 % (grammar, e))
