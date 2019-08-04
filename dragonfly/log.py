@@ -64,7 +64,7 @@ _error     = logging.ERROR
 _critical  = logging.CRITICAL
 default_levels = {
                   "":                     (_warning, _warning),
-                  "engine":               (_warning, _info), 
+                  "engine":               (_info, _info), 
                   "engine.compiler":      (_warning, _info), 
                   "engine.timer":         (_warning, _info),
                   "grammar":              (_warning, _critical), 

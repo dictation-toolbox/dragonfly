@@ -27,11 +27,12 @@ import collections, logging, os.path, re, subprocess
 from .testing                   import debug_timer
 from .dictation                 import CloudDictation, LocalDictation
 from ..base                     import CompilerBase, CompilerError
+from ...grammar                 import elements as elements_
 
 import six
 import pyparsing as pp
 from kaldi_active_grammar import WFST, KaldiRule
-from kaldi_active_grammar import Compiler as KAGCompiler
+from kaldi_active_grammar import Compiler as KaldiAGCompiler
 
 _log = logging.getLogger("engine.compiler")
 
@@ -63,17 +64,18 @@ MockLiteral = collections.namedtuple('MockLiteral', 'words')
 
 #---------------------------------------------------------------------------
 
-class KaldiCompiler(CompilerBase, KAGCompiler):
+class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, **kwargs):
         CompilerBase.__init__(self)
-        KAGCompiler.__init__(self, model_dir, tmp_dir=tmp_dir, **kwargs)
+        KaldiAGCompiler.__init__(self, model_dir, tmp_dir=tmp_dir, **kwargs)
 
         self.auto_add_to_user_lexicon = auto_add_to_user_lexicon
 
         self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
         self._grammar_rule_states_dict = dict()  # FIXME: disabled!
         self.kaldi_rules_by_listreflist_dict = collections.defaultdict(set)
+        self.added_word = False
         self.internal_grammar = InternalGrammar('!kaldi_engine_internal')
 
     impossible_word = property(lambda self: self._longest_word)  # FIXME
@@ -114,16 +116,15 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
     def handle_oov_word(self, word):
         if self.auto_add_to_user_lexicon:
             try:
-                phones = self.model.add_word(word)
+                phones = self.model.add_word(word, lazy_compilation=True)
+                self.added_word = True
             except Exception as e:
-                self._log.exception("%s: exception automatically adding word")
+                self._log.exception("%s: exception automatically adding word %r" % (self, word))
             else:
-                self.model.load_words()
-                self.decoder.load_lexicon()
                 self._log.warning("%s: Word not in lexicon (generated automatic pronunciation): %r [%s]" % (self, word, ' '.join(phones)))
                 return word
 
-        self._log.warning("%s: Word not in lexicon (will not be recognized): %r" % (self, word))
+        self._log.warning("%s: Word %r not in lexicon (will NOT be recognized; see documentation about user lexicon and auto_add_to_user_lexicon)" % (self, word))
         word = self.impossible_word
         return word
 
@@ -139,13 +140,12 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
                 if rule.element is None:
                     raise CompilerError("Invalid None element for rule %s in grammar %s" % (rule, grammar))
 
-                kaldi_rule = KaldiRule(self, self.alloc_rule_id(),
+                kaldi_rule = KaldiRule(self,
                     name='%s::%s' % (grammar.name, rule.name),
                     has_dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))
                 kaldi_rule.parent_grammar = grammar
                 kaldi_rule.parent_rule = rule
 
-                self.kaldi_rule_by_id_dict[kaldi_rule.id] = kaldi_rule
                 self.kaldi_rule_by_rule_dict[rule] = kaldi_rule
                 kaldi_rule_by_rule_dict[rule] = kaldi_rule
 
@@ -155,8 +155,13 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
     def _compile_rule_root(self, rule, grammar, kaldi_rule):
         matcher, _, _ = self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
-        kaldi_rule.matcher = matcher.setName(str(kaldi_rule.id)).setResultsName(str(kaldi_rule.id))
+        kaldi_rule.matcher = matcher.setName(str(kaldi_rule.name)).setResultsName(str(kaldi_rule.name))
         kaldi_rule.fst.equalize_weights()
+        if self.added_word:
+            self.model.load_words()
+            self.model.generate_lexicon_files()
+            self.decoder.load_lexicon()
+            self.added_word = False
         kaldi_rule.compile_file()
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
@@ -204,14 +209,51 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
 
     @trace_compile
     def _compile_sequence(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        # "insert" new states for individual children elements
-        states = [src_state] + [fst.add_state() for i in range(len(element.children)-1)] + [dst_state]
-        matchers = []
-        for i, child in enumerate(element.children):
-            s1 = states[i]
-            s2 = states[i + 1]
-            matchers.append(self.compile_element(child, s1, s2, grammar, kaldi_rule, fst))
-        return pp.And(tuple(matchers))
+        children = element.children
+        if len(children) > 1:
+            # Handle Repetition elements differently as a special case.
+            is_rep = isinstance(element, elements_.Repetition)
+            if is_rep and element.optimize:
+                # Repetition...
+                # Insert new states, so back arc only affects child
+                s1 = fst.add_state()
+                s2 = fst.add_state()
+                fst.add_arc(src_state, s1, None)
+                # NOTE: to avoid creating an un-decodable epsilon loop, we must not allow an all-epsilon child here (compile_graph_agf should check)
+                matcher = self.compile_element(children[0], s1, s2, grammar, kaldi_rule, fst)
+                # NOTE: has_eps_path is ~3-5x faster than matcher.parseString() inside try/except block
+                if not fst.has_eps_path(s1, s2):
+                    fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # back arc
+                    fst.add_arc(s2, dst_state, None)
+                    return pp.OneOrMore(matcher)
+
+                else:
+                    # Cannot do optimize path, because of epsilon loop, so finish up with Sequence path
+                    self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string; falling back inefficient non-optimize path!" % self)
+                    states = [src_state, s2] + [fst.add_state() for i in range(len(children)-2)] + [dst_state]
+                    matchers = [matcher]
+                    for i, child in enumerate(children[1:], start=1):
+                        s1 = states[i]
+                        s2 = states[i + 1]
+                        matchers.append(self.compile_element(child, s1, s2, grammar, kaldi_rule, fst))
+                    return pp.And(tuple(matchers))
+
+            else:
+                # Sequence...
+                # Insert new states for individual children elements
+                states = [src_state] + [fst.add_state() for i in range(len(children)-1)] + [dst_state]
+                matchers = []
+                for i, child in enumerate(children):
+                    s1 = states[i]
+                    s2 = states[i + 1]
+                    matchers.append(self.compile_element(child, s1, s2, grammar, kaldi_rule, fst))
+                return pp.And(tuple(matchers))
+
+        elif len(children) == 1:
+            return self.compile_element(children[0], src_state, dst_state, grammar, kaldi_rule, fst)
+
+        else:  # len(children) == 0
+            return pp.Empty()
 
     @trace_compile
     def _compile_alternative(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
@@ -230,6 +272,7 @@ class KaldiCompiler(CompilerBase, KAGCompiler):
     def _compile_literal(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # "insert" new states for individual words
         words = element.words
+        words = map(str, words)  # FIXME: handle unicode
         matcher = pp.CaselessLiteral(' '.join(words))
         words = self.translate_words(words)
         states = [src_state] + [fst.add_state() for i in range(len(words)-1)] + [dst_state]
