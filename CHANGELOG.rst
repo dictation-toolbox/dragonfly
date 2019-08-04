@@ -11,6 +11,31 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+
+* Add Dictation string formatting examples into documentation.
+* Add Kaldi informational messages during grammar loading pauses.
+
+Changed
+~~~~~~~
+
+* Clean up code style in engines/base/dictation.py.
+* Bump required kaldi-active-grammar version to 0.6.0.
+* Update Kaldi engine documentation (thanks `@daanzu`_ and `@LexiconCode`_).
+
+Fixed
+~~~~~
+
+* Fix Win32Window.set_foreground() failures by forcing the interpreter's
+  main thread to "receive" the last input event (press & release control).
+* Fix quite a few bugs with the Kaldi engine. (thanks `@daanzu`_).
+* Make the Sphinx engine ignore unknown words in grammars instead of raising
+  errors.
+
 
 0.16.0_ - 2019-07-21
 --------------------
@@ -536,6 +561,7 @@ This release is the first in the Git version control system.
 .. _@mrob95: https://github.com/mrob95
 .. _@tylercal: https://github.com/tylercal
 .. _@lexxish: https://github.com/lexxish
+.. _@LexiconCode: https://github.com/LexiconCode
 .. _Aenea: https://github.com/dictation-toolbox/aenea
 .. _pynput: https://github.com/moses-palmer/pynput
 .. _Kaldi engine: https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html
