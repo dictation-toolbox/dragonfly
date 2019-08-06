@@ -60,11 +60,15 @@ There are three package dependencies for using the Kaldi engine:
 - `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_
 - `webrtcvad <https://github.com/wiseman/py-webrtcvad>`_
 
-**Note:** If you're installing on Windows and don't have the Microsoft
-Python compiler package installed (assume you don't), you should install
-a binary wheel for webrtcvad with ``pip install
+**Note for Windows:** Before proceeding, if you don't have the Microsoft
+Python compiler package installed (assume you don't), you should first
+install a binary wheel for ``webrtcvad`` with ``pip install
 https://github.com/daanzu/kaldi-active-grammar/releases/download/v0.4.0/webrtcvad-2.0.10-cp27-cp27m-win_amd64.whl``
-before proceeding.
+
+**Note for Linux:** Before proceeding, you'll need ``portaudio`` headers
+in order to install/compile the ``pyaudio`` package. Under ``apt``-based
+distributions, you can get them by running ``sudo apt install
+portaudio19-dev``
 
 Installing the correct versions of these dependencies can be most easily
 done by installing the ``kaldi`` sub-package of ``dragonfly2`` using::
@@ -131,6 +135,7 @@ the ``get_engine()`` function, which passes them to the
     tmp_dir='kaldi_tmp',
     vad_aggressiveness=3,
     vad_padding_ms=300,
+    auto_add_to_user_lexicon=True,
   )
 
 .. autofunction:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
@@ -139,16 +144,18 @@ the ``get_engine()`` function, which passes them to the
 
 * ``model_dir`` (``str``) -- Directory containing model.
 
-* ``tmp_dir`` (``str``) -- Directory to use for temporary storage and cache.
+* ``tmp_dir`` (``str``) -- Directory to use for temporary storage and
+  cache (used both during execution and between executions but safe to
+  delete).
 
-* ``vad_aggressiveness`` (``int``) -- Aggressiveness of Voice Activity
+* ``vad_aggressiveness`` (``int``) -- Aggressiveness of the Voice Activity
   Detector: an integer between ``0`` and ``3``, where ``0`` is the least
   aggressive about filtering out non-speech, and ``3`` is the most
   aggressive.
 
-* ``vad_padding_ms`` (``int``) -- Length of padding (in milliseconds) at
-  beginning & ending of each utterance by Voice Activity Detector. Smaller
-  values result in lower latency recognition, but possibly higher
+* ``vad_padding_ms`` (``int``) -- Length of padding/debouncing window (in milliseconds) at
+  beginning & ending of each utterance for the Voice Activity Detector. Smaller
+  values result in lower latency recognition (faster reactions), but possibly higher
   likelihood of false positives/negatives at beginning/ending of utterances.
 
 * ``input_device_index`` (``int``) -- Microphone PortAudio input device
@@ -238,6 +245,13 @@ or run::
 **Note:** When changing models, you can (and probably should) copy your
 ``user_lexicon.txt`` file from your old model directory to the new one.
 This will let you keep your additions.
+
+**Note:** New pronunciations for existing words already in the dictation
+language model will not be recognized during dictation elements
+specifically until the dictation model is recompiled. Entirely new words
+added to the user lexicon will not be recognized during dictation
+elements specifically at all currently. Please let me know if this is a
+significant problem for you.
 
 
 Cloud Dictation
@@ -335,13 +349,16 @@ If you want to replace all uses of standard ``Dictation`` in a file::
 Limitations & Future Work
 ----------------------------------------------------------------------------
 
+Please let me know if anything is a significant problem for you.
+
 .. contents:: :local:
 
 
 Known Issues
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* All grammars & rules must be loaded before starting recognition (with a call to ``do_recognition()``).
+* Entirely new words added to the user lexicon will not be recognized
+  during dictation elements specifically at all currently.
 
 * Dragonfly :class:`Lists` and :class:`DictLists` function as normal.
   Upon updating a dragonfly list or dictionary, the rules they are part of
