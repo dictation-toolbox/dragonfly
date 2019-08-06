@@ -325,7 +325,6 @@ class WordParserDns11(WordParserBase):
         "uppercase-letter": WordFlags("no_space_after"),
 
         "period":           WordFlags("two_spaces_after", "cap_next", "no_space_before", "not_after_period"),
-        "karp":           WordFlags("two_spaces_after", "cap_next", "no_space_before", "not_after_period"),
         "question-mark":    WordFlags("two_spaces_after", "cap_next", "no_space_before"),
         "exclamation-mark": WordFlags("two_spaces_after", "cap_next", "no_space_before"),
         "point":            WordFlags("no_space_after", "no_space_between", "no_space_before"),
@@ -342,8 +341,10 @@ class WordParserDns11(WordParserBase):
         "open paren":       WordFlags("no_space_after"),
         "slash":            WordFlags("no_space_after", "no_space_before"),
         
-        "len":              WordFlags("no_space_after"),
-        "ren":              WordFlags("no_space_before"),
+        # below are two examples of Dragon custom vocabulary with formatting
+        # these would have to be added to the Dragon vocabulary for users to use them
+        "len":              WordFlags("no_space_after"), # shorter name for (
+        "ren":              WordFlags("no_space_before"), # shorter name for )
     }
     
     def create_word_flags(self, property):
@@ -369,12 +370,7 @@ class WordParserDns11(WordParserBase):
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
             input = text_type(input).encode("windows-1252")
-        # Alex
-        print("input: ", input)
-
         parts = input.split("\\")
-        # Alex
-        print("parts: ", parts)
         if len(parts) == 1:
             # Word doesn't have "written\property\spoken" form, so
             # written and spoken forms are equal to input and there are
@@ -399,9 +395,9 @@ class WordParserDns11(WordParserBase):
             written = "\\".join(parts[:-2])
             property = parts[-2]
             spoken = parts[-1]
-        # this allows users to add the spoken form (or the written form if and only if there isn't a spoken form)
-        # of their own custom Dragon vocabulary words into the property_mapping
-         
+        """ The if statement below allows users to add the spoken form
+        # (or the written form if and only if there isn't a spoken form)
+        # of their own custom Dragon vocabulary words into the property_mapping """
         if spoken in self.property_map:
             property = spoken
 
