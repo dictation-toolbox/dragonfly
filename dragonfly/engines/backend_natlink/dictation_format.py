@@ -343,8 +343,8 @@ class WordParserDns11(WordParserBase):
         
         # below are two examples of Dragon custom vocabulary with formatting
         # these would have to be added to the Dragon vocabulary for users to use them
-        "len":              WordFlags("no_space_after"), # shorter name for (
-        "ren":              WordFlags("no_space_before"), # shorter name for )
+        # "len":              WordFlags("no_space_after"), # shorter name for (
+        # "ren":              WordFlags("no_space_before"), # shorter name for )
     }
     
     def create_word_flags(self, property):
