@@ -325,6 +325,7 @@ class WordParserDns11(WordParserBase):
         "uppercase-letter": WordFlags("no_space_after"),
 
         "period":           WordFlags("two_spaces_after", "cap_next", "no_space_before", "not_after_period"),
+        "karp":           WordFlags("two_spaces_after", "cap_next", "no_space_before", "not_after_period"),
         "question-mark":    WordFlags("two_spaces_after", "cap_next", "no_space_before"),
         "exclamation-mark": WordFlags("two_spaces_after", "cap_next", "no_space_before"),
         "point":            WordFlags("no_space_after", "no_space_between", "no_space_before"),
@@ -338,8 +339,13 @@ class WordParserDns11(WordParserBase):
         "apostrophe-ess":   WordFlags("no_space_before"),
         "left-*":           WordFlags("no_cap_reset", "no_space_after"),
         "right-*":          WordFlags("no_cap_reset", "no_space_before", "no_space_reset"),
+        "open paren":       WordFlags("no_space_after"),
+        "slash":            WordFlags("no_space_after", "no_space_before"),
+        
+        "len":              WordFlags("no_space_after"),
+        "ren":              WordFlags("no_space_before"),
     }
-
+    
     def create_word_flags(self, property):
         if not property:
             # None indicates the word is not in DNS' vocabulary.
@@ -355,6 +361,7 @@ class WordParserDns11(WordParserBase):
             flags = WordFlags()
         return flags
 
+    
     def parse_input(self, input):
         # Not unicode (Python 2) or str (Python 3)
         if not isinstance(input, text_type):
@@ -362,8 +369,12 @@ class WordParserDns11(WordParserBase):
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
             input = text_type(input).encode("windows-1252")
+        # Alex
+        print("input: ", input)
 
         parts = input.split("\\")
+        # Alex
+        print("parts: ", parts)
         if len(parts) == 1:
             # Word doesn't have "written\property\spoken" form, so
             # written and spoken forms are equal to input and there are
@@ -388,6 +399,11 @@ class WordParserDns11(WordParserBase):
             written = "\\".join(parts[:-2])
             property = parts[-2]
             spoken = parts[-1]
+        # this allows users to add the spoken form (or the written form if and only if there isn't a spoken form)
+        # of their own custom Dragon vocabulary words into the property_mapping
+         
+        if spoken in self.property_map:
+            property = spoken
 
         word_flags = self.create_word_flags(property)
 
