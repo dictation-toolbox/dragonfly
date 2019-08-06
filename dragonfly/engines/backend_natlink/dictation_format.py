@@ -339,6 +339,7 @@ class WordParserDns11(WordParserBase):
         "left-*":           WordFlags("no_cap_reset", "no_space_after"),
         "right-*":          WordFlags("no_cap_reset", "no_space_before", "no_space_reset"),
         "open paren":       WordFlags("no_space_after"),
+        "close paren":       WordFlags("no_space_before"),
         "slash":            WordFlags("no_space_after", "no_space_before"),
         
         # below are two examples of Dragon custom vocabulary with formatting
