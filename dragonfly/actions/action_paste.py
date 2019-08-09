@@ -24,15 +24,22 @@ Paste action
 
 """
 
+import sys
+
 from six import text_type, string_types, PY2
 
 from ..actions.action_base import DynStrActionBase
 from ..actions.action_key import Key
-from ..windows.clipboard import Clipboard
 
-from win32con import CF_UNICODETEXT, CF_TEXT
-import pywintypes
+if sys.platform.startswith("win"):
+    from ..windows.clipboard import Clipboard
+else:
+    from ..util import Clipboard
 
+
+# Define some win32 constants so that this module can work on other
+# platforms.
+CF_UNICODETEXT, CF_TEXT = 13, 1
 
 #---------------------------------------------------------------------------
 
@@ -54,20 +61,28 @@ class Paste(DynStrActionBase):
         This action inserts the given *contents* into the Windows system 
         clipboard, and then performs the *paste* action to paste it into 
         the foreground application.  By default, the *paste* action is the 
-        :kbd:`Shift-insert` keystroke. The default clipboard format to use
-        is the *Unicode* text format.
+        :kbd:`Ctrl-v` keystroke or :kbd`Super-v` on a mac. The default
+        clipboard format to use is the *Unicode* text format.
+
+        Clipboard formats are not used if not running on Windows.
 
     """
 
     _default_format = CF_UNICODETEXT
 
     # Default paste action.
-    _default_paste = Key("s-insert/20")
+    # Fallback on Shift-insert if 'v' isn't available. Use Super-v on macs.
+    try:
+        _default_paste = (Key("w-v/20") if sys.platform == "darwin"
+                          else Key("c-v/20"))
+    except:
+        print("Falling back to Shift+insert for Paste's action.")
+        _default_paste = Key("s-insert/20")
 
     def __init__(self, contents, format=None, paste=None, static=False):
         if not format:
             format = self._default_format
-        if not paste:
+        if paste is None:
             paste = self._default_paste
         if isinstance(contents, string_types):
             spec = contents
@@ -89,13 +104,16 @@ class Paste(DynStrActionBase):
         original = Clipboard()
         try:
             original.copy_from_system()
-        except pywintypes.error as e:
+        except Exception as e:
             self._log.warning("Failed to store original clipboard contents:"
-                              " %s" % e)
+                              " %s", e)
         if (self.format == CF_UNICODETEXT and
                 not isinstance(events, text_type)):
             if PY2:
-                events = text_type(events, encoding='windows-1252',
+                # Use a Unicode object with the correct encoding.
+                on_windows = sys.platform.startswith("win32")
+                encoding = 'windows-1252' if on_windows else 'utf-8'
+                events = text_type(events, encoding=encoding,
                                    errors='ignore')
             else:
                 events = text_type(events)

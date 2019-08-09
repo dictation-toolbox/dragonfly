@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -22,8 +22,8 @@
 Fundamental element classes
 ============================================================================
 
-Dragonfly grammars are built up out of a small set of fundamental building 
-blocks.  These building blocks are implemented by the following *element* 
+Dragonfly grammars are built up out of a small set of fundamental building
+blocks.  These building blocks are implemented by the following *element*
 classes:
 
  - :class:`ElementBase` --
@@ -44,7 +44,7 @@ classes:
  - :class:`ListRef` --
    reference to a :class:`dragonfly.grammar.list.List` object
 
-The following *element* classes are built up out of the fundamental 
+The following *element* classes are built up out of the fundamental
 classes listed above:
 
  - :class:`Dictation` --
@@ -214,8 +214,8 @@ class ElementBase(object):
 
     def _copy_sequence(self, sequence, name, item_types=None):
         """
-            Utility function for derived classes that checks that a given 
-            object is a sequence, copies its contents into a new tuple, 
+            Utility function for derived classes that checks that a given
+            object is a sequence, copies its contents into a new tuple,
             and checks that each item is of a given type.
 
         """
@@ -539,15 +539,24 @@ class Repetition(Sequence):
            exactly *min* times (i.e. *max = min + 1*)
          - *name* (*str*, default: *None*) --
            the name of this element
+         - *optimize* (*bool*, default: *True*) --
+           whether the engine's compiler should compile the element
+           optimally
 
         For a recognition to match, at least one of the child elements
         must match the recognition.  The first matching child is
         used.  Child elements are searched in the order they are given
         in the *children* constructor argument.
 
+        If the *optimize* argument is set to *True*, the compiler will
+        ignore the *min* and *max* limits to reduce grammar complexity. If
+        the number of repetitions recognized is more than the *max* value,
+        the rule will fail to match.
+
     """
 
-    def __init__(self, child, min=1, max=None, name=None, default=None):
+    def __init__(self, child, min=1, max=None, name=None, default=None,
+                 optimize=True):
         if not isinstance(child, ElementBase):
             raise TypeError("Child of %s object must be an"
                             " ElementBase instance." % self)
@@ -559,6 +568,7 @@ class Repetition(Sequence):
         self._min = min
         if max is None: self._max = min + 1
         else:           self._max = max
+        self._optimize = optimize
 
         optional_length = self._max - self._min - 1
         if optional_length > 0:
@@ -577,15 +587,25 @@ class Repetition(Sequence):
 
         Sequence.__init__(self, children, name=name, default=default)
 
-    min = property(lambda self: self._min,
-                   doc="The minimum number of times that the child element must be"
-                       "recognized; may be 0. (Read-only)")
+    min = property(
+        lambda self: self._min,
+        doc="The minimum number of times that the child element must be "
+        "recognized; may be 0. (Read-only)"
+    )
 
-    max = property(lambda self: self._max,
-                   doc="The maximum number of times that the child element must be"
-                       "recognized; if *None*, the child element must be "
-                       "recognized exactly *min* times (i.e. *max = min + 1*). "
-                       "(Read-only)")
+    max = property(
+        lambda self: self._max,
+        doc="The maximum number of times that the child element must be "
+        "recognized; if *None*, the child element must be "
+        "recognized exactly *min* times (i.e. *max = min + 1*). "
+        "(Read-only)"
+    )
+
+    optimize = property(
+        lambda self: self._optimize,
+        doc="Whether the engine's compiler should compile the element "
+        "optimally. (Read-only)"
+    )
 
     def dependencies(self, memo):
         if self in memo:
@@ -895,16 +915,42 @@ class Empty(ElementBase):
 # Slightly more complex element classes.
 
 class Dictation(ElementBase):
+    """
+        Element class representing free dictation.
 
+        Constructor arguments:
+            - *name* (*str*, default: *None*) --
+              the name of this element
+
+        Returns a string-like :class:`DictationContainerBase` object containing the recognised words.
+        By default this is formatted as a lowercase sentence.
+        Alternative formatting can be applied by calling string methods like `replace` or `upper` on a :class:`Dictation` object, or
+        by passing an arbitrary formatting function (taking and returning a string) to the `apply` method.
+        Camel case text can be produced using the `camel` method. For example:
+
+        .. code:: python
+
+            str_func = lambda s: s.upper()
+            Dictation("formattedtext").apply(str_func)
+            Dictation("snake_text").lower().replace(" ", "_")
+            Dictation("camelText").camel()
+    """
     def __init__(self, name=None, format=True, default=None):
         ElementBase.__init__(self, name, default=default)
         self._format_words = format
+        self._string_methods = []
 
     def __str__(self):
         if self.name:
             return "%s(%r)" % (self.__class__.__name__, self.name)
         else:
             return "%s()" % (self.__class__.__name__)
+
+    def __getattr__(self, name):
+        def call(*args, **kwargs):
+            self._string_methods.append((name, args, kwargs))
+            return self
+        return call
 
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
@@ -942,7 +988,7 @@ class Dictation(ElementBase):
         return
 
     def value(self, node):
-        return node.engine.DictationContainer(node.words())
+        return node.engine.DictationContainer(node.words(), self._string_methods)
 
 
 #---------------------------------------------------------------------------

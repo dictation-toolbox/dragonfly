@@ -12,16 +12,20 @@ objects which contain written and spoken forms together with formatting
 information. For example::
 
     >>> from dragonfly.engines.backend_natlink.dictation_format import WordParserDns10
+    >>> # Make sure the engine is connected before using WordParserDns10.
+    >>> from dragonfly import get_engine
+    >>> engine = get_engine("natlink")
+    >>> engine.connect()
     >>> parser_dns10 = WordParserDns10()
-    >>> print parser_dns10.parse_input("hello")
-    Word(u'hello')
-    >>> print parser_dns10.parse_input(".\\full-stop")
-    Word(u'.', u'full-stop', no_space_before, two_spaces_after, cap_next, not_after_period)
+    >>> print(parser_dns10.parse_input("hello"))
+    Word('hello')
+    >>> print(parser_dns10.parse_input(".\\full-stop"))
+    Word('.', 'full-stop', no_space_before, two_spaces_after, cap_next, not_after_period)
 
 Nonexistent words can be parsed, but don't have any formatting info::
 
-    >>> print parser_dns10.parse_input("nonexistent-word")
-    Word(u'nonexistent-word')
+    >>> print(parser_dns10.parse_input("nonexistent-word"))
+    Word('nonexistent-word')
 
 This helper function allows for a compact notation of input string tests::
 

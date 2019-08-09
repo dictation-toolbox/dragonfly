@@ -1,0 +1,421 @@
+.. _RefKaldiEngine:
+
+Kaldi dragonfly engine
+============================================================================
+
+This version of dragonfly contains an engine implementation using the
+free, open source, cross-platform Kaldi speech recognition toolkit. You
+can read more about the Kaldi project on the `Kaldi project site
+<https://kaldi-asr.org/>`_.
+
+This backend relies greatly on the `kaldi-active-grammar
+<https://github.com/daanzu/kaldi-active-grammar>`_ library, which
+extends Kaldi's standard decoding for use in a dragonfly-style
+environment, allowing combining many dynamic grammars that can be set
+active/inactive based on contexts in real-time. It also provides basic
+infrastructure for compiling, recognizing, and parsing grammars with
+Kaldi, plus a compatible model. For more information, see its page.
+
+Both this backend and kaldi-active-grammar are under **active
+development** by `@daanzu <https://github.com/daanzu>`_.
+Kaldi-backend-specific issues, suggestions, and feature requests are
+welcome & encouraged, but are probably better sent to the
+`kaldi-active-grammar repository
+<https://github.com/daanzu/kaldi-active-grammar>`_. If you value this
+work and want to encourage development of a free, open source,
+cross-platform engine for dragonfly as a competitive alternative to
+commercial offerings, kaldi-active-grammar accepts donations (not
+affiliated with the dragonfly project itself).
+
+**Sections:**
+
+* `Setup`_
+* `Engine Configuration`_
+* `Cross-platform`_
+* `User Lexicon`_
+* `Cloud Dictation`_
+
+
+Setup
+----------------------------------------------------------------------------
+
+Want to get started **quickly & easily on Windows**? A self-contained,
+portable, batteries-included (python & libraries & model) distribution
+of kaldi-active-grammar + dragonfly2 is available at the
+`kaldi-active-grammar project releases page
+<https://github.com/daanzu/kaldi-active-grammar/releases>`_.
+Otherwise...
+
+**Requirements:**
+
+* Python 2.7 (3.x support planned); *64-bit required!*
+* OS: *Linux or Windows*; macOS planned if there is interest
+* Only supports Kaldi left-biphone models, specifically *nnet3 chain* models, with specific modifications
+* ~1GB+ disk space for model plus temporary storage and cache, depending on your grammar complexity
+* ~500MB+ RAM for model and grammars, depending on your model and grammar complexity
+
+There are three package dependencies for using the Kaldi engine:
+
+- `kaldi-active-grammar <https://github.com/daanzu/kaldi-active-grammar>`_
+- `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_
+- `webrtcvad <https://github.com/wiseman/py-webrtcvad>`_
+
+**Note for Windows:** Before proceeding, if you don't have the Microsoft
+Python compiler package installed (assume you don't), you should first
+install a binary wheel for ``webrtcvad`` with ``pip install
+https://github.com/daanzu/kaldi-active-grammar/releases/download/v0.4.0/webrtcvad-2.0.10-cp27-cp27m-win_amd64.whl``
+
+**Note for Linux:** Before proceeding, you'll need ``portaudio`` headers
+in order to install/compile the ``pyaudio`` package. Under ``apt``-based
+distributions, you can get them by running ``sudo apt install
+portaudio19-dev``
+
+Installing the correct versions of these dependencies can be most easily
+done by installing the ``kaldi`` sub-package of ``dragonfly2`` using::
+
+  pip install dragonfly2[kaldi]
+
+If you are installing to *develop* dragonfly2, use the following instead
+(from your dragonfly2 git repository)::
+
+  pip install -e .[kaldi]
+
+**Note:** If you have errors installing the kaldi-active-grammar
+package, make sure you're using a 64-bit Python, and update your ``pip``
+by executing ``pip install --upgrade pip``.
+
+You will also need a **model** to use. You can download a `compatible
+general English Kaldi nnet3 chain model
+<https://github.com/daanzu/kaldi-active-grammar/releases>`_
+from `kaldi-active-grammar
+<https://github.com/daanzu/kaldi-active-grammar>`_. Unzip it into a
+directory within the directory containing your grammar modules.
+
+Once the dependencies and model are installed, you're ready to go!
+
+**A simple, single-file, standalone demo/example** can be found in the
+`dragonfly/examples/kaldi_demo.py
+<https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_demo.py>`_
+script. Simply run it from the directory containing the above model (or
+modify the configuration paths in the file) using::
+
+  python path/to/kaldi_demo.py
+
+For more structured and long-term use, you'll want to use a **module
+loader**. Copy the `dragonfly/examples/kaldi_module_loader_plus.py
+<https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_module_loader_plus.py>`_
+script into the folder with your grammar modules and run it using::
+
+  python kaldi_module_loader_plus.py
+
+This file is the equivalent to the 'core' directory that NatLink uses to
+load grammar modules. When run, it will scan the directory it's in for files
+beginning with ``_`` and ending with ``.py``, then try to load them as
+command-modules.
+
+This file also includes a basic sleep/wake grammar to control
+recognition (simply say "start listening" or "halt listening").
+
+A more basic loader is in `dragonfly/examples/kaldi_module_loader.py
+<https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_module_loader.py>`_.
+
+
+Engine Configuration
+----------------------------------------------------------------------------
+
+This engine can be configured by passing (optional) keyword arguments to
+the ``get_engine()`` function, which passes them to the
+:class:`KaldiEngine` constructor (documented below). For example, from
+*kaldi_module_loader_plus.py*:
+
+.. code:: Python
+
+  engine = get_engine("kaldi",
+    model_dir='kaldi_model_zamia',
+    tmp_dir='kaldi_tmp',
+    vad_aggressiveness=3,
+    vad_padding_ms=300,
+    auto_add_to_user_lexicon=True,
+  )
+
+.. autofunction:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
+
+**Arguments (all optional):**
+
+* ``model_dir`` (``str``) -- Directory containing model.
+
+* ``tmp_dir`` (``str``) -- Directory to use for temporary storage and
+  cache (used both during execution and between executions but safe to
+  delete).
+
+* ``vad_aggressiveness`` (``int``) -- Aggressiveness of the Voice Activity
+  Detector: an integer between ``0`` and ``3``, where ``0`` is the least
+  aggressive about filtering out non-speech, and ``3`` is the most
+  aggressive.
+
+* ``vad_padding_ms`` (``int``) -- Length of padding/debouncing window (in milliseconds) at
+  beginning & ending of each utterance for the Voice Activity Detector. Smaller
+  values result in lower latency recognition (faster reactions), but possibly higher
+  likelihood of false positives/negatives at beginning/ending of utterances.
+
+* ``input_device_index`` (``int``) -- Microphone PortAudio input device
+  index: the default of ``None`` chooses the default input device. To see
+  a list your available input devices and their corresponding indexes, call
+  ``get_engine('kaldi').print_mic_list()``
+
+* ``auto_add_to_user_lexicon`` (``bool``) -- Enables automatically
+  adding unknown words to the `User Lexicon`_. This may make requests to
+  the cloud, to predict pronunciations, depending on your installed
+  packages.
+
+* ``cloud_dictation`` (``str``) -- Enables cloud dictation and chooses
+  the provider. Possible values:
+
+  * ``None`` -- Disabled
+  * ``"gcloud"`` -- Google Cloud Speech-to-Text
+
+
+Cross-platform
+----------------------------------------------------------------------------
+
+Although Kaldi & this dragonfly engine implementation can run on
+multiple platforms, including on architectures other than x86, not all
+other dragonfly components are currently fully cross-platform. This is
+an area ongoing work.
+
+
+User Lexicon
+----------------------------------------------------------------------------
+
+Kaldi uses pronunciation dictionaries to lookup phonetic representations
+for words in grammars & language models in order to recognize them. The
+default model comes with a large dictionary, but obviously cannot
+include all possible words. There are multiple ways of handling this.
+
+**Ignoring unknown words:** If you use words in your grammars that are *not* in the
+dictionary, a message similar to the following will be printed::
+
+  Word not in lexicon (will not be recognized): 'notaword'
+
+These messages are only warnings, and the engine will continue to load
+your grammars and run. However, the unknown words will effectively be
+impossible to be recognized, so the rules using them will not function
+as intended. To fix this, try changing the words in your grammars by
+splitting up the words or using to similar words, e.g. changing
+"natlink" to "nat link".
+
+**Automatically adding words to User Lexicon:** Set the engine parameter
+``auto_add_to_user_lexicon=True`` to enable. If an unknown word is
+encountered while loading a grammar, its pronunciation is predicted
+based on its spelling. This uses either a local library, or a free cloud
+service if the library is not installed. The library can be installed
+with ``pip install g2p_en==2.0.0`` but has dependencies that can be
+difficult, so it is recommended to just not install it and instead let
+the cloud be used.
+
+**Manually editing User Lexicon:** You can add a word without specifying
+a pronunciation, and let it be predicted as above, by running at the
+command line::
+
+  python -m kaldi_active_grammar add_word cromulent
+
+Or you can add a word with a specified pronunciation::
+
+  python -m kaldi_active_grammar add_word cromulent "K R OW M Y UW L AH N T"
+
+You can also directly edit your ``user_lexicon.txt`` file, which is
+located in the model directory. You may add words (with pronunciation!)
+or modify or remove words that you have already added. The format is
+simple and whitespace-based::
+
+  cromulent k r A m j V l V n t
+  embiggen I m b I g V n
+
+**Note:** Currently, adding words only accepts pronunciations using the
+`"CMU"/"ARPABET" <https://en.wikipedia.org/wiki/ARPABET>`_ phone set
+(with or without stress), but the model and ``user_lexicon.txt`` file
+store pronunciations using `"X-SAMPA"
+<https://en.wikipedia.org/wiki/X-SAMPA>`_ phone set.
+
+To empty your user lexicon, you can simply delete ``user_lexicon.txt``,
+or run::
+
+  python -m kaldi_active_grammar reset_user_lexicon
+
+**Note:** When changing models, you can (and probably should) copy your
+``user_lexicon.txt`` file from your old model directory to the new one.
+This will let you keep your additions.
+
+**Note:** New pronunciations for existing words already in the dictation
+language model will not be recognized during dictation elements
+specifically until the dictation model is recompiled. Entirely new words
+added to the user lexicon will not be recognized during dictation
+elements specifically at all currently. Please let me know if this is a
+significant problem for you.
+
+
+Cloud Dictation
+----------------------------------------------------------------------------
+
+**Note:** This feature is completely optional and disabled by default!
+
+Although the Kaldi engine has full native/local/offline dictation
+support, and can produce competitive state-of-the-art results with
+comparable training data, this backend also supports cloud dictation.
+This feature lets you transparently send audio to a cloud speech-to-text
+provider for *only the dictation portion* of your commands, while
+continuing to use Kaldi to recognize the commands themselves and whether
+there was dictation spoken. This gives you the best of both worlds:
+
+* Fast, low-latency, highly-accurate, grammar-exact recognition of
+  grammatical commands with Kaldi
+
+* Unbeatable general recognition of free-form dictation with the cloud
+
+The downsides of this is that each dictation request actually sent to
+the cloud (once it has been detected by Kaldi) incurs: (1) high latency
+(~1-2s) of Internet access, and (2) a monetary cost and relationship to
+the cloud provider.
+
+Google Cloud Speech-to-Text is currently the only supported provider.
+You can test its accuracy for free on its `product page
+<https://cloud.google.com/speech-to-text/>`_ and see its pricing there
+as well.
+
+The process to enable your access to GCloud is nontrivial: set up an
+account with billing, set up a project, enable the Google Speech-to-Text
+API for that project, create a service account, download a private key
+as JSON, and set an environment variable
+``GOOGLE_APPLICATION_CREDENTIALS`` to the path to the JSON file. Details
+are in `Google's documentation
+<https://cloud.google.com/speech-to-text/docs/quickstart>`_. Then, run
+the Kaldi backend with the ``cloud_dictation='gcloud'`` option.
+
+If this is too cumbersome for you and there is sufficient interest, I
+could set up a paid service where you pay me via PayPal/Stripe to fund
+an account with me, and I could send you a simple API key to pass as a
+keyword argument just like other normal engine options. Let me know if
+you're interested such a service.
+
+Using Cloud Dictation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+First, you must install the Google Cloud Speech-to-Text client library::
+
+  pip install google-cloud-speech==0.36.3
+
+To use cloud dictation, you *must both* pass the ``cloud_dictation``
+option *and* use a specialized ``Dictation`` element. The standard
+dragonfly ``Dictation`` does not support cloud dictation. Instead, this
+backend provides two subclasses of it: ``CloudDictation`` and
+``LocalDictation``. These two subclasses both support cloud dictation;
+they differ only in whether they do cloud dictation by default.
+
+``CloudDictation`` and ``LocalDictation`` can be used as follows. Assume
+we are defining a variable ``element`` that is used by the code::
+
+  class TestDictationRule(MappingRule):
+    mapping = { "dictate <text>": Text("%(text)s") }
+    extras = [ element ]
+
+Examples::
+
+  element = CloudDictation("text")              # cloud dictation
+  element = LocalDictation("text")              # no cloud dictation
+  element = CloudDictation("text", cloud=False) # no cloud dictation
+  element = LocalDictation("text", cloud=True)  # cloud dictation
+
+  # all CloudDictation instances instantiated after this (in any file!) will default to cloud=False
+  CloudDictation.cloud_default = False
+  element = CloudDictation("text")              # no cloud dictation
+  element = CloudDictation("text", cloud=True)  # cloud dictation
+
+  # all LocalDictation instances instantiated after this (in any file!) will default to cloud=True
+  LocalDictation.cloud_default = True
+  element = LocalDictation("text")              # cloud dictation
+  element = LocalDictation("text", cloud=False) # no cloud dictation
+
+  CloudDictation.cloud_default = True
+  LocalDictation.cloud_default = False
+  # all CloudDictation and LocalDictation instances instantiated after this are back to normal
+
+If you want to replace all uses of standard ``Dictation`` in a file::
+
+  from dragonfly.engines.backend_kaldi.dictation import CloudDictation as Dictation
+  # OR
+  from dragonfly.engines.backend_kaldi.dictation import LocalDictation as Dictation
+
+
+Limitations & Future Work
+----------------------------------------------------------------------------
+
+Please let me know if anything is a significant problem for you.
+
+.. contents:: :local:
+
+
+Known Issues
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* Entirely new words added to the user lexicon will not be recognized
+  during dictation elements specifically at all currently.
+
+* Dragonfly :class:`Lists` and :class:`DictLists` function as normal.
+  Upon updating a dragonfly list or dictionary, the rules they are part of
+  will be recompiled & reloaded. This will add some delay, which I hope to
+  optimize.
+
+
+Dictation Formatting & Punctuation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The native dictation only provides recognitions as unformatted lowercase
+text without punctuation. Improving this generally is multifaceted and
+complex. However, the *cloud dictation* feature avoids this problem by
+using the formatting & punctuation applied by cloud provider.
+
+
+Models: Other Languages, Other Sizes, & Training
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``kaldi-active-grammar`` library currently only supplies a single
+general English model. Many standard Kaldi models (of varying quality)
+are available online for various languages. Although such standard Kaldi
+models must be first modified to work with this framework, the process
+is not difficult and could be automated (future work).
+
+There are also various sizes of Kaldi model, with a trade-off between
+size/speed and accuracy. Generally, the smaller and faster the model,
+the lower the accuracy. The included model is relatively large. Let me
+know if you need a smaller one.
+
+Training (personalizing) Kaldi models is possible but complicated. In
+addition to requiring many steps using a specialized software
+environment, training these models currently requires using a GPU for an
+extended period. This may be a case where providing a service for
+training is more feasible.
+
+
+Text-to-speech
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This isn't a limitation of Kaldi; text-to-speech is not a project goal
+for them, although as the natlink and WSR engines both support
+text-to-speech, there might as well be some suggestions if this
+functionality is desired, perhaps utilized by a custom dragonfly action.
+The Jasper project contains `a number of Python interface classes
+<https://github.com/jasperproject/jasper-client/blob/master/client/tts.py>`_
+to popular open source text-to-speech software such as *eSpeak*,
+*Festival* and *CMU Flite*.
+
+
+Engine API
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
+   :members:
+
+.. autoclass:: dragonfly.engines.backend_kaldi.dictation.CloudDictation
+   :members:
+.. autoclass:: dragonfly.engines.backend_kaldi.dictation.LocalDictation
+   :members:

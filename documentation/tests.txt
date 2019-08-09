@@ -40,19 +40,27 @@ Running the test suite
 Using DNS
 ----------------------------------------------------------------------------
 
-Follow the following steps to run the test suite for the DNS backend Aland
+Follow the following steps to run the test suite for the DNS backend:
 
  #. Start DNS.  (And ensure that NatLink is also automatically started.)
  #. Extract the Dragonfly source code in a directory ``<dir>``.
  #. Run the tests with the following commands:
 
-    * ``cd <dir>``
-    * ``C:\Python26\python.exe <dir>\setup.py test``
+    .. code:: shell
+
+        cd <dir>
+        python setup.py test --test-suite=dragonfly.test.suites.natlink_suite
+
+
+Different tests need to be run for different DNS versions. The natlink test
+suite will attempt to run the correct tests for the version of DNS you are
+using.
+
 
 Using WSR
 ----------------------------------------------------------------------------
 
-Follow the following steps to run the test suite for the DNS backend Aland
+Follow the following steps to run the test suite for the WSR backend:
 
  #. Start WSR.
  #. Wake WSR up, so that it is *not* in sleeping state, and then turn the
@@ -62,5 +70,33 @@ Follow the following steps to run the test suite for the DNS backend Aland
  #. Extract the Dragonfly source code in a directory ``<dir>``.
  #. Run the tests with the following commands:
 
-    * ``cd <dir>``
-    * ``C:\Python26\python.exe <dir>\setup.py test --test-suite=dragonfly.test.suites.sapi5_suite``
+    .. code:: shell
+
+        cd <dir>
+        python setup.py test --test-suite=dragonfly.test.suites.sapi5_suite
+
+You can also run the test suite for the in process engine class. It has no
+GUI for the moment. Run the tests with the following commands:
+
+    .. code:: shell
+
+        cd <dir>
+        python setup.py test --test-suite=dragonfly.test.suites.sapi5inproc_suite
+
+Using the text-input engine
+----------------------------------------------------------------------------
+
+Follow the following steps to run the test suite for the "text" backend:
+
+ #. Extract the Dragonfly source code in a directory ``<dir>``.
+ #. Run the tests with the following commands:
+
+    .. code:: shell
+
+        cd <dir>
+        python setup.py test
+
+
+This is the default test suite for dragonfly and has no additional
+dependencies. The ``--test-suite`` argument does not need to be specified
+in this case.

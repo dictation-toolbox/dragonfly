@@ -4,18 +4,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -25,7 +25,6 @@ from six import string_types, text_type
 
 from dragonfly.engines.base.dictation   import DictationContainerBase
 from dragonfly.grammar.elements         import Compound, Dictation
-from dragonfly.test.infrastructure      import RecognitionFailure
 from dragonfly.test.element_testcase    import ElementTestCase
 from dragonfly.test.element_tester      import ElementTester
 
@@ -93,6 +92,57 @@ class NonAsciiStrDictationTestCase(ElementTestCase):
                     ("test jalapeño",      "jalapeño"),
                    ]
 
+
+class FormattedDictationTestCase(ElementTestCase):
+    """ Verify handling of string methods applied to Dictation objects """
+
+    def _build_element(self):
+        def value_func(node, extras):
+            return str(extras["text"])
+        return Compound("test <text>",
+                        extras=[Dictation(name="text").upper().replace(" ", "/")],
+                        value_func=value_func)
+
+    input_output = [
+                    ("test some random dictation", "SOME/RANDOM/DICTATION"),
+                    ("test touché jalapeño",       "TOUCHÉ/JALAPEÑO"),
+                   ]
+
+
+class CamelDictationTestCase(ElementTestCase):
+    """ Verify handling of camelCase formatting applied to Dictation objects """
+
+    def _build_element(self):
+        def value_func(node, extras):
+            return str(extras["text"])
+        return Compound("test <text>",
+                        extras=[Dictation(name="text").camel()],
+                        value_func=value_func)
+
+    input_output = [
+                    ("test some random dictation", "someRandomDictation"),
+                    ("test touché jalapeño",       "touchéJalapeño"),
+                   ]
+
+
+class ApplyDictationTestCase(ElementTestCase):
+    """ Verify handling of arbitrary formatting applied to Dictation objects using apply() """
+
+    f = lambda self, s: "".join(
+        "_".join(s.split(" ")[:-1] + [s.split(" ")[-1].upper()])
+    )
+
+    def _build_element(self):
+        def value_func(node, extras):
+            return str(extras["text"])
+        return Compound("test <text>",
+                        extras=[Dictation(name="text").apply(self.f)],
+                        value_func=value_func)
+
+    input_output = [
+                    ("test some random dictation", "some_random_DICTATION"),
+                    ("test touché jalapeño",       "touché_JALAPEÑO"),
+                   ]
 
 #===========================================================================
 

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Command-module loader for CMU Pocket Sphinx.
 
 This script is based on 'dfly-loader-wsr.py' written by Christo Butcher and
@@ -10,58 +10,41 @@ the CMU Pocket Sphinx engine. It scans the directory it's in and loads any
 """
 
 
+# TODO Have a simple GUI for pausing, resuming, cancelling and stopping
+# recognition, etc
+
 import os.path
 import logging
 
 
-from dragonfly import RecognitionObserver, EngineError
-from dragonfly.engines import get_engine
-from dragonfly.engines.backend_sphinx.engine import SphinxEngine
+from dragonfly import RecognitionObserver, get_engine
 from dragonfly.loader import CommandModuleDirectory
+from dragonfly.log import setup_log
 
 # --------------------------------------------------------------------------
 # Set up basic logging.
 
-logging.basicConfig(level=logging.INFO)
-logging.getLogger("compound.parse").setLevel(logging.INFO)
+setup_log()
 
 
 # --------------------------------------------------------------------------
 # Simple recognition observer class.
 
 class Observer(RecognitionObserver):
-    def __init__(self, engine):
-        self.engine = engine
-        super(Observer, self).__init__()
-
     def on_begin(self):
-        if self.engine.recognising_dictation:
-            print("Speech started. Processing as dictation.")
-        else:
-            print("Speech started using grammar search.")
+        print("Speech started.")
 
-    @staticmethod
-    def _get_words(words_list):
-        # Get just the words from the tuple list
-        return " ".join([word for word, _ in words_list])
-
-    def on_recognition(self, words_list):
-        print(self._get_words(words_list))
+    def on_recognition(self, words):
+        print(" ".join(words))
 
     def on_failure(self):
         print("Sorry, what was that?")
-
-    def on_next_rule_part(self, words_list):
-        print("Current words: %s" % self._get_words(words_list))
-        print("Awaiting next rule part...")
 
 
 # --------------------------------------------------------------------------
 # Main event driving loop.
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-
     try:
         path = os.path.dirname(__file__)
     except NameError:
@@ -72,7 +55,6 @@ def main():
         __file__ = os.path.join(path, "sphinx_module_loader.py")
 
     engine = get_engine("sphinx")
-    assert isinstance(engine, SphinxEngine)
 
     # Try to import the local engine configuration object first. If there isn't one,
     # use the default engine configuration.
@@ -83,24 +65,24 @@ def main():
         log.info("Using local engine configuration module 'config.py'")
     except ImportError:
         pass
-    except EngineError as e:
-        # Log EngineErrors caught when setting the configuration.
-        log.warning(e)
-        log.warning("Falling back to using the default engine configuration "
-                    "instead of 'config.py'")
+    except Exception as e:
+        # Log errors caught when setting the configuration.
+        log.exception("Failed to set config using 'config.py': %s" % e)
+        log.warning("Falling back to the default engine configuration")
+
+    # You can also set any configuration options here instead of using a
+    # config.py file. For example:
+    # engine.config.START_ASLEEP = False
 
     # Call connect() now that the engine configuration is set.
     engine.connect()
 
     # Register a recognition observer
-    observer = Observer(engine)
+    observer = Observer()
     observer.register()
 
     directory = CommandModuleDirectory(path, excludes=[__file__])
     directory.load()
-
-    # TODO Have a simple GUI for pausing, resuming, cancelling and stopping recognition, etc
-    # TODO Change script to import all modules before loading the grammars into Pocket Sphinx
 
     # Start the engine's main recognition loop
     try:

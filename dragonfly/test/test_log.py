@@ -29,7 +29,6 @@ import logging
 import logging.handlers
 import unittest
 import dragonfly.log as log
-from dragonfly import *
 
 
 #===========================================================================
@@ -95,8 +94,8 @@ class LogTestCase(unittest.TestCase):
         logger.info("test_filtering - info")
         logger.warning("test_filtering - warning")
         logger.error("test_filtering - error")
-        expected = ["grammar: test_filtering - warning",
-                    "grammar: test_filtering - error"]
+        expected = ["grammar (WARNING): test_filtering - warning",
+                    "grammar (ERROR): test_filtering - error"]
         self.assertEqual(self._output.lines, expected)
 
         self._output.clear()
@@ -105,9 +104,9 @@ class LogTestCase(unittest.TestCase):
         logger.info("test_filtering - info")
         logger.warning("test_filtering - warning")
         logger.error("test_filtering - error")
-        expected = ["grammar.begin: test_filtering - info",
-                    "grammar.begin: test_filtering - warning",
-                    "grammar.begin: test_filtering - error"]
+        expected = ["grammar.begin (INFO): test_filtering - info",
+                    "grammar.begin (WARNING): test_filtering - warning",
+                    "grammar.begin (ERROR): test_filtering - error"]
         self.assertEqual(self._output.lines, expected)
 
         self._output.clear()
@@ -116,8 +115,8 @@ class LogTestCase(unittest.TestCase):
         logger.info("test_filtering - info")
         logger.warning("test_filtering - warning")
         logger.error("test_filtering - error")
-        expected = ["grammar.load: test_filtering - warning",
-                    "grammar.load: test_filtering - error"]
+        expected = ["grammar.load (WARNING): test_filtering - warning",
+                    "grammar.load (ERROR): test_filtering - error"]
         self.assertEqual(self._output.lines, expected)
 
     def _new_lines(self):

@@ -80,8 +80,15 @@ class LanguageSpecificLoader(object):
         try:
             return getattr(self._module, name)
         except AttributeError:
-            raise DragonflyError("Language %r does not implement %r."
-                                 % (self._language, name))
+            # Raise an error unless getting ShortIntegerContent.
+            if name != "ShortIntegerContent":
+                raise DragonflyError("Language %r does not implement %r."
+                                     % (self._language, name))
+            else:
+                self._log.warning("Language %r does not implement %r, "
+                                  "falling back on %r."
+                                  %(self._language, name, "IntegerContent"))
+                return getattr(self._module, "IntegerContent")
 
     def _load_module(self):
         if not self._language:

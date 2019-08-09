@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -32,18 +32,18 @@ from ..base.digits_internal   import DigitsContentBase
 #---------------------------------------------------------------------------
 
 int_0           = MapIntBuilder({
-                                 "zero":       0,
+                                 "(zero | oh)":         0,
                                })
 int_1_9         = MapIntBuilder({
-                                 "one":        1,
-                                 "two":        2,
-                                 "three":      3,
-                                 "four":       4,
-                                 "five":       5,
-                                 "six":        6,
-                                 "seven":      7,
-                                 "eight":      8,
-                                 "nine":       9,
+                                 "one":                 1,
+                                 "(two | too | to)":    2,
+                                 "three":               3,
+                                 "four":                4,
+                                 "five":                5,
+                                 "six":                 6,
+                                 "seven":               7,
+                                 "eight":               8,
+                                 "nine":                9,
                                })
 int_10_19       = MapIntBuilder({
                                  "ten":       10,
@@ -110,5 +110,5 @@ class IntegerContent(IntegerContentBase):
                 int_100s, int_100big, int_1000s, int_1000000s]
 
 class DigitsContent(DigitsContentBase):
-    digits = [("zero", "oh"), "one", "two", "three", "four",
-              "five", "six", "seven", "eight", "nine"]
+    digits = [("zero", "oh"), "one", ("two", "too", "to"), "three",
+              "four", "five", "six", "seven", "eight", "nine"]

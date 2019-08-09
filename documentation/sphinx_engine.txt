@@ -12,21 +12,19 @@ read more about the CMU Sphinx speech recognition projects on the
 Setup
 ----------------------------------------------------------------------------
 
-There are three dependencies for using the Pocket Sphinx engine:
+There are three Pocket Sphinx engine dependencies:
 
 - `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_
 - `pyjsgf <https://github.com/Danesprite/pyjsgf>`_
 - `sphinxwrapper <https://github.com/Danesprite/sphinxwrapper>`_
 
-*sphinxwrapper* must be installed manually at the moment. You can install
-it from the git submodule by running the following::
-  
-  git clone --recursive https://github.com/Danesprite/dragonfly.git
-  git submodule foreach python setup.py install
+You can install these by running the following command::
 
-You can install the other packages using::
+  pip install dragonfly2[sphinx]
 
-  pip install pyjsgf pyaudio
+If you are installing to *develop* dragonfly, use the following instead::
+
+  pip install -e .[sphinx]
 
 Once the dependencies are installed, you'll need to copy the
 `dragonfly/examples/sphinx_module_loader.py`_ script into the folder
@@ -35,8 +33,10 @@ with your grammar modules and run it using::
   python sphinx_module_loader.py
 
 
-This is the equivalent to the 'core' directory that NatLink uses to load
-grammar modules.
+This file is the equivalent to the 'core' directory that NatLink uses to
+load grammar modules. When run, it will scan the directory it's in for files
+beginning with ``_`` and ending with ``.py``, then try to load them as
+command-modules.
 
 
 Cross-platform Engine
@@ -55,80 +55,128 @@ separate Windows system running *NatLink* and *DNS* over a network
 connection and has server support for Linux (using X11), macOS, and Windows.
 
 
-Engine Configuration
+Engine configuration
 ----------------------------------------------------------------------------
 
-This engine is configurable via the engine configuration module (see the
-`default engine config module`_).
+This engine can be configured by changing the engine configuration.
 
-To change the engine configuration, create a *config.py* file in the same
-directory as *sphinx_engine_loader.py* and make your config changes.
+You can make changes to the ``engine.config`` object directly in your
+*sphinx_engine_loader.py* file before :meth:`connect` is called or create a
+*config.py* module in the same directory using .
 
-The config module should have each of the following attributes defined:
+The ``LANGUAGE`` option specifies the engine's user language. This is
+English (``"en"``) by default.
 
-- ``DECODER_CONFIG`` -- configuration object for the Pocket Sphinx decoder.
-- ``LANGUAGE`` -- user language for the engine to use (default: ``"en"``).
-- ``NEXT_PART_TIMEOUT`` -- timeout in seconds for speaking the next part of
-  a rule involving dictation. If set to 0, there will be no timeout.
-- ``PYAUDIO_STREAM_KEYWORD_ARGS`` -- keyword arguments dictionary given to
-  :meth:`PyAudio.open` in :meth:`recognise_forever`. Some values are
-  also used in :meth:`process_wave_file`. The default values
-  assume a 16kHz acoustic model is used.
-- ``START_ASLEEP`` -- boolean value for whether the engine should start in
-  a sleep state (default: ``True``).
-- ``TRAINING_DATA_DIR`` -- directory to store recorded utterances and
-  transcriptions for training (default: ``"training/"``). Relative paths
-  will be interpreted as relative to the module loader's directory. Set to
-  ``None`` to disable training data recording.
+Audio configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Audio configuration options used to record from the microphone, validate
+input wave files in and write wave files if the training data directory is
+set.
+
+These options must match the requirements for the acoustic model being used.
+The default values match the requirements for the 16kHz CMU US English
+models.
+
+- ``CHANNELS`` -- number of audio input channels (default: ``1``).
+- ``SAMPLE_WIDTH`` -- sample width for audio input in bytes
+  (default: ``2``).
+- ``RATE`` -- sample rate for audio input in Hz (default: ``16000``).
+- ``FRAMES_PER_BUFFER`` -- frames per recorded audio buffer
+  (default: ``2048``).
+
+
+Keyphrase configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following configuration options control the engine's built-in
+keyphrases:
+
 - ``WAKE_PHRASE`` -- the keyphrase to listen for when in sleep mode
   (default: ``"wake up"``).
 - ``WAKE_PHRASE_THRESHOLD`` -- threshold value* for the wake keyphrase
   (default: ``1e-20``).
 - ``SLEEP PHRASE`` -- the keyphrase to listen for to enter sleep mode
-  (default: ``"go to sleep"``)
+  (default: ``"go to sleep"``).
 - ``SLEEP_PHRASE_THRESHOLD`` -- threshold value* for the sleep keyphrase
-  (default: ``1e-40``). 
+  (default: ``1e-40``).
+- ``START_ASLEEP`` -- boolean value for whether the engine should start in
+  a sleep state (default: ``True``).
 - ``START_TRAINING_PHRASE`` -- keyphrase to listen for to start a training
-  session where no processing occurs.
+  session where no processing occurs
   (default: ``"start training session"``).
-- ``START_TRAINING_THRESHOLD`` -- threshold value* for the start training
-  keyphrase.
-  (default: ``1e-48``). 
+- ``START_TRAINING_PHRASE_THRESHOLD`` -- threshold value* for the start
+  training keyphrase (default: ``1e-48``).
 - ``END_TRAINING_PHRASE`` -- keyphrase to listen for to end a training
-  session if one is in progress.
-  (default: ``"end training session"``).
-- ``END_TRAINING_THRESHOLD`` -- threshold value* for the end training
-  keyphrase.
-  (default: ``1e-45``). 
-  
+  session if one is in progress (default: ``"end training session"``).
+- ``END_TRAINING_PHRASE_THRESHOLD`` -- threshold value* for the end training
+  keyphrase (default: ``1e-45``).
+
 \* Threshold values need to be set for each keyphrase. The `CMU Sphinx LM
 tutorial`_ has some advice on keyphrase threshold values.
 
+If your language isn't set to English, all built-in keyphrases will be
+disabled by default if they are not specified in your configuration.
 
-Pocket Sphinx Decoder Configuration
+Any keyphrase can be disabled by setting the phrase and threshold values to
+``""`` and ``0`` respectively.
+
+Decoder configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``DECODER_CONFIG`` object initialised in the engine config module can be
-used to set various Pocket Sphinx decoder options. For instance, the
-following line silences the decoder's log output::
+used to set various Pocket Sphinx decoder options.
 
-  DECODER_CONFIG.set_string("-logfn", os.devnull)
+The following is the default decoder configuration:
+
+..  code:: Python
+
+    import os
+
+    from sphinxwrapper import DefaultConfig
+
+    # Configuration for the Pocket Sphinx decoder.
+    DECODER_CONFIG = DefaultConfig()
+
+    # Silence the decoder output by default.
+    DECODER_CONFIG.set_string("-logfn", os.devnull)
+
+    # Set voice activity detection configuration options for the decoder.
+    # You may wish to experiment with these if noise in the background
+    # triggers speech start and/or false recognitions (e.g. of short words)
+    # frequently.
+    # Descriptions for VAD configuration options were retrieved from:
+    # https://cmusphinx.github.io/doc/sphinxbase/fe_8h_source.html
+
+    # Number of silence frames to keep after from speech to silence.
+    DECODER_CONFIG.set_int("-vad_postspeech", 30)
+
+    # Number of speech frames to keep before silence to speech.
+    DECODER_CONFIG.set_int("-vad_prespeech", 20)
+
+    # Number of speech frames to trigger vad from silence to speech.
+    DECODER_CONFIG.set_int("-vad_startspeech", 10)
+
+    # Threshold for decision between noise and silence frames.
+    # Log-ratio between signal level and noise level.
+    DECODER_CONFIG.set_float("-vad_threshold", 3.0)
+
 
 There does not appear to be much documentation on these options outside of
 the `pocketsphinx/cmdln_macro.h`_ and `sphinxbase/fe.h`_ header files.
 If this is incorrect or has changed, feel free to suggest an edit.
 
-Probably the easiest way of seeing the available options and their default
-and current values is to comment the above line in the engine config module
-and examine the decoder log output.
+The easiest way of seeing the available decoder options as well as their
+default values is to run the ``pocketsphinx_continuous`` command with no
+arguments.
 
 
 Changing Models and Dictionaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``DECODER_CONFIG`` object can be used to configure the pronunciation
-dictionary as well as the acoustic and language models. To do this, add
-something like the following in the config module::
+dictionary as well as the acoustic and language models. You can do this with
+something like::
 
   DECODER_CONFIG.set_string('-hmm', '/path/to/acoustic-model-folder')
   DECODER_CONFIG.set_string('-lm', '/path/to/lm-file.lm')
@@ -138,12 +186,32 @@ The language model, acoustic model and pronunciation dictionary should all
 use the same language or language variant. See the `CMU Sphinx wiki`_ for
 a more detailed explanation of these components.
 
+
+Training configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The engine can save *.wav* and *.txt* training files into a directory for
+later use. The following are the configuration options associated with this
+functionality:
+
+- ``TRAINING_DATA_DIR`` -- directory to save training files into
+  (default: ``""``).
+- ``TRANSCRIPT_NAME`` -- common name of files saved into the training data
+  directory (default: ``"training"``).
+
+Set ``TRAINING_DATA_DIR`` to a valid directory path to enable recording of
+*.txt* and *.wav* files. If the path is a relative path, it will be
+interpreted as relative to the module loader's directory.
+
+The engine will **not** attempt to make the directory for you as it did in
+previous versions of *dragonfly*.
+
+
 Engine API
 ----------------------------------------------------------------------------
 
 .. autoclass:: dragonfly.engines.backend_sphinx.engine.SphinxEngine
    :members:
-
 
 
 Improving Speech Recognition Accuracy
@@ -159,63 +227,82 @@ Adapting your model may not be necessary; there might be other issues with
 your setup. There is more information on tuning the recognition accuracy in
 the CMU Sphinx `tuning tutorial`_.
 
-By default, the engine will record what you say into wave and transcription
-files compatible with the Sphinx accoustic model adaption process. The files
-are placed in the directory specified by the engine's ``TRAINING_DATA_DIR``
-configuration option.
+The engine can record what you say into *.wav* and *.txt* files if the
+``TRAINING_DATA_DIR`` configuration option mentioned above is set to an
+existing directory. To get files compatible with the Sphinx accoustic model
+adaption process, you can use the :meth:`write_transcript_files` engine
+method.
+
+Mismatched words may use the engine decoder's default search, typically a
+language model search.
 
 There are built-in key phrases for starting and ending training sessions
 where no grammar rule processing will occur. Key phrases will still be
 processed. See the ``START_TRAINING_PHRASE`` and ``END_TRAINING_PHRASE``
 engine configuration options. One use case for the training mode is training
-commands that take a long time to execute their actions or are dangerous.
-Perhaps such commands keep getting falsely recognised and they need more
-training.
+potentially destructive commands or commands that take a long time to
+execute their actions.
 
-To use the training files, you will need to correct any incorrect phrases
-in the *training.transcription* file and then use the
+To use the training files, you will need to correct any incorrect phrases in
+the *.transcription* or *.txt* files. You can then use the
 `SphinxTrainingHelper`_ bash script to adapt your model. This script makes
 the process considerably easier, although you may still encounter problems.
 You should be able to play the wave files using most media players (e.g.
 VLC, Windows Media Player, aplay) if you need to.
 
-You will want to remove the wave and transcription files after a successful
-adaption without the engine running or with ``TRAINING_DATA_DIR`` set to
-``None``.
+You will want to remove the training files after a successful adaption. This
+must be done manually for the moment.
 
 
 Limitations
 ----------------------------------------------------------------------------
 
-This engine has a few limitations, most notably with the spoken language
-support and dragonfly's :class:`Dictation` functionality. That said, most of
-the grammar functionality will work perfectly.
+This engine has a few limitations, most notably with spoken language support
+and dragonfly's :class:`Dictation` functionality.
 
 
 Dictation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Unfortunately, the 'Dictation' support that DNS and WSR provide is difficult
-to reproduce with the CMU Sphinx engines. They don't support speaking grammar
-rules that include :class:`Dictation` elements, although they will work for
-this engine, you'll just have to pause between speaking the grammar and
-dictation parts of rules that use :class:`Dictation` extras.
+Mixing free-form dictation with grammar rules is difficult to reproduce with
+the CMU Sphinx engines. It is either dictation or grammar rules, not both.
+Speaking [parts of] grammar rules that include :class:`Dictation` elements
+is not supported for this reason.
 
-For those interested, this is done by segmenting rules and using a Pocket
-Sphinx language model search to recognise the dictation parts.
+This engine's previous :class:`Dictation` element support using utterance
+breaks has been removed for the moment because it didn't really work very
+well. Support will be added in again at some point in the future. It will
+involve using the default decoder search.
 
-There is a timeout period for the next parts of such rules. If the timeout
-is reached the engine will process any other matched rules or fail to
-recognise altogether. The timeout peroid is set by the
-``NEXT_PART_TIMEOUT`` engine configuration option. If set to 0, the engine
-will wait until speech starts again and process the next part if it is
-spoken.
+Please note that grammar rules can still use :class:`Dictation` elements,
+you just can't match them by speaking. You can use :meth:`engine.mimic` to
+match :class:`Dictation` elements by using all uppercase words.
+For example:
 
-'Dictation' output also won't have words properly capitalised as they
-are when using DNS, all words will be in lowercase. Additionally,
-punctuation words like "comma" or "apostrophe" won't have special output,
-although such functionality can be added either through grammars or
-processing of the dictation output.
+
+..  code:: Python
+
+    from dragonfly import Grammar, CompoundRule, Dictation, get_engine
+
+    engine = get_engine("sphinx")
+    engine.config.START_ASLEEP = False
+
+
+    class MyRule(CompoundRule):
+        spec = "hello <text>"
+        extras = [Dictation("text")]
+        def _process_recognition(self, node, extras):
+            # "world" will be printed in lowercase to be consistent with
+            # normal output from CMU Pocket Sphinx.
+            print(extras["text"])
+
+
+    grammar = Grammar("dictation grammar")
+    grammar.add_rule(MyRule())
+    grammar.load()
+
+    engine.mimic("hello WORLD")
+
 
 Unknown words
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -248,6 +335,10 @@ pronunciation dictionary `using lextool
 <http://www.speech.cs.cmu.edu/tools/lextool.html>`_.
 There is also a CMU Sphinx tutorial on `building language models
 <https://cmusphinx.github.io/wiki/tutoriallm/>`_.
+
+If the language you want to use requires non-ascii characters
+(e.g. a Cyrillic language), you will need to use Python version 3.4 or
+higher because of Unicode issues.
 
 
 Dragonfly Lists and DictLists
@@ -283,8 +374,7 @@ to popular open source text-to-speech software such as `eSpeak`_,
 .. _SphinxTrainingHelper: https://github.com/ExpandingDev/SphinxTrainingHelper
 .. _YouTube video on model adaption: https://www.youtube.com/watch?v=IAHH6-t9jK0
 .. _adaption tutorial: https://cmusphinx.github.io/wiki/tutorialadapt/
-.. _default engine config module: https://github.com/Danesprite/dragonfly/blob/master/dragonfly/engines/backend_sphinx/config.py
-.. _dragonfly/examples/sphinx_module_loader.py: https://github.com/Danesprite/dragonfly/blob/master/dragonfly/examples/sphinx_module_loader.py
+.. _dragonfly/examples/sphinx_module_loader.py: https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/sphinx_module_loader.py
 .. _eSpeak: http://espeak.sourceforge.net/
 .. _pocketsphinx/cmdln_macro.h: https://github.com/cmusphinx/pocketsphinx/blob/master/include/cmdln_macro.h
 .. _ps_add_word: https://cmusphinx.github.io/doc/pocketsphinx/pocketsphinx_8h.html#a5f3c4fcdbef34915c4e785ac9a1c6005

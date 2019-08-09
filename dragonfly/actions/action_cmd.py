@@ -26,7 +26,30 @@ The :class:`RunCommand` action takes a command-line program to run including
 any required arguments. On execution, the program will be started as a
 subprocess.
 
-This action should work correctly on Windows and other platforms.
+Processing will occur asynchronously by default. Commands running
+asynchronously should not normally prevent the Python process from exiting.
+
+It may sometimes be necessary to use a list for the action's *command*
+argument instead of a string. This is because some command-line shells may
+not work 100% correctly with Python's built-in :meth:`shlex.split` function.
+
+This action should work on Windows and other platforms.
+
+Example using the ping command::
+
+    from dragonfly import RunCommand
+
+    # Ping localhost for 4 seconds.
+    RunCommand('ping -w 4 localhost').execute()
+
+
+Example using a command list instead of a string::
+
+    from dragonfly import RunCommand
+
+    # Ping localhost for 4 seconds.
+    RunCommand(['ping', '-w', '4', 'localhost']).execute()
+
 
 Example using the optional function parameter::
 
@@ -37,7 +60,26 @@ Example using the optional function parameter::
         for line in iter(proc.stdout.readline, b''):
             print(line)
 
-    RunCommand('ping localhost', func).execute()
+    RunCommand('ping -w 4 localhost', func).execute()
+
+
+Example using the optional synchronous parameter::
+
+    from dragonfly import RunCommand
+
+    RunCommand('ping -w 4 localhost', synchronous=True).execute()
+
+
+Example using the subprocess's :class:`Popen` object::
+
+    from dragonfly import RunCommand
+
+    # Initialise and execute a command asynchronously.
+    cmd = RunCommand('ping -w 4 localhost')
+    cmd.execute()
+
+    # Wait until the subprocess finishes.
+    cmd.process.wait()
 
 
 Example using a subclass::
@@ -45,7 +87,8 @@ Example using a subclass::
     from dragonfly import RunCommand
 
     class Ping(RunCommand):
-        command = "ping localhost"
+        command = "ping -w 4 localhost"
+        synchronous = True
         def process_command(self, proc):
             # Read lines from the process.
             for line in iter(proc.stdout.readline, b''):
@@ -62,6 +105,7 @@ Class reference
 import os
 import shlex
 import subprocess
+import threading
 
 from six import string_types
 
@@ -80,38 +124,69 @@ class RunCommand(ActionBase):
 
     """
     command = None
+    synchronous = False
 
-    def __init__(self, command=None, process_command=None):
+    def __init__(self, command=None, process_command=None,
+                 synchronous=False):
         """
             Constructor arguments:
-             - *command* (str) -- the command to run when this action is
-               executed. The command may include arguments and will be
-               parsed by :meth:`shlex.split`.
+             - *command* (str or list) -- the command to run when this
+               action is executed. It will be parsed by :meth:`shlex.split`
+               if it is a string and passed directly to ``subprocess.Popen``
+               if it is a list. Command arguments can be included.
              - *process_command* (callable) -- optional callable to invoke
                with the :class:`Popen` object after successfully starting
-               the subprocess. Using this argument effectively overrides
-               the :meth:`process_command` method.
+               the subprocess. Using this argument overrides the
+               :meth:`process_command` method.
+             - *synchronous* (bool, default *False*) -- whether to wait
+               until :meth:`process_command` has finished executing before
+               continuing.
 
         """
         ActionBase.__init__(self)
+        self._proc = None
 
         # Complex handling of arguments because of clashing use of the names
         # at the class level: property & class-value.
         if command is not None:
             self.command = command
-        if not (self.command and isinstance(self.command, string_types)):
-            raise TypeError("command must be a non-empty string, not %s"
-                            % self.command)
-        if callable(process_command):
-            self.process_command = process_command
-        if not callable(self.process_command):
-            raise TypeError("process_command must be a callable object or None")
+        command_types = (string_types, list)
+        if not (self.command and isinstance(self.command, command_types)):
+            raise TypeError("command must be a non-empty string or list, "
+                            "not %s" % self.command)
+        if synchronous is not False:
+            self.synchronous = synchronous
+
+        if not (process_command is None or callable(process_command)):
+            raise TypeError("process_command must be a callable object or "
+                            "None")
+
+        self._process_command = process_command
+
+        # Set the string used for representing actions.
+        if isinstance(self.command, list):
+            self._str = "'%s'" % " ".join(self.command)
+        else:
+            self._str = "'%s'" % self.command
+
+    @property
+    def process(self):
+        """
+            The :class:`Popen` object for the current subprocess if one has
+            been started, otherwise ``None``.
+        """
+        return self._proc
 
     def process_command(self, proc):
         """
-        Virtual method to override for custom handling of the command's
-        :class:`Popen` object.
+            Method to override for custom handling of the command's
+            :class:`Popen` object.
+
+            By default this method prints lines from the subprocess until it
+            exits.
         """
+        for line in iter(proc.stdout.readline, b''):
+            print(line)
 
     def _execute(self, data=None):
         self._log.info("Executing: %s" % self.command)
@@ -121,15 +196,49 @@ class RunCommand(ActionBase):
         if os.name == 'nt':
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
+        # Pre-process self.command before passing it to subprocess.Popen.
+        command = self.command
+        if isinstance(command, string_types):
+            # Split command strings using shlex before passing it to Popen.
+            # Use POSIX mode only if on a POSIX platform.
+            command = shlex.split(command, posix=os.name == "posix")
         try:
-            proc = subprocess.Popen(shlex.split(self.command),
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
-                                    stdin=subprocess.PIPE,
-                                    startupinfo=startupinfo)
+            self._proc = subprocess.Popen(command,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.STDOUT,
+                                          stdin=subprocess.PIPE,
+                                          startupinfo=startupinfo)
         except Exception as e:
-            self._log.exception("Exception from starting subprocess %s: %s"
-                                % (self.command, e))
+            self._log.exception("Exception from starting subprocess %s: "
+                                "%s" % (self._str, e))
             return False
 
-        self.process_command(proc)
+        # Call process_command either synchronously or asynchronously.
+        def call():
+            try:
+                if self._process_command:
+                    process_func = self._process_command
+                else:
+                    process_func = self.process_command
+                process_func(self._proc)
+                return_code = self._proc.wait()
+                if return_code != 0:
+                    self._log.error("Command %s failed with return code "
+                                    "%d" % (self._str, return_code))
+                    return False
+            except Exception as e:
+                self._log.exception("Exception processing command %s: %s"
+                                    % (self._str, e))
+                return False
+            finally:
+                self._proc = None
+
+        if self.synchronous:
+            return call()
+        else:
+            # Execute in a new daemonized thread so that the command cannot
+            # stop the SR engine from exiting.
+            t = threading.Thread(target=call)
+            t.setDaemon(True)
+            t.start()

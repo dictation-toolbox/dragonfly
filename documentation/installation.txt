@@ -41,6 +41,10 @@ upload releases to PyPI.org, but everything can still be imported using
 replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
 altogether.
 
+If you are installing this on X11/Linux, you will also need to install the
+`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program for the
+``Key`` and ``Text`` actions to work.
+
 If you have dragonfly installed under the original *dragonfly*
 distribution name, you'll need to remove the old version using:
 
@@ -50,7 +54,7 @@ distribution name, you'll need to remove the old version using:
 
 Dragonfly can also be installed by cloning this repository or
 downloading it from `the releases
-page <https://github.com/Danesprite/dragonfly/releases>`__ and running
+page <https://github.com/dictation-toolbox/dragonfly/releases>`__ and running
 the following (or similar) command in the project's root directory:
 
 .. code:: shell
@@ -61,10 +65,9 @@ the following (or similar) command in the project's root directory:
 Installation for Dragon NaturallySpeaking
 ----------------------------------------------------------------------------
 
-Dragonfly uses Natlink to communicate with DNS.  Natlink is 
-available in various forms, including Daniel Rocco's efficient 
-and tidy pure-Python package.  It is available `here 
-<https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`_.
+Dragonfly uses Natlink to communicate with DNS.  The latest versions of
+Natlink are available from `SourceForge
+<https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`__.
 
 Once Natlink is up and running, Dragonfly command-modules can be 
 treated as any other Natlink macro files.  Natlink automatically 
@@ -93,11 +96,21 @@ If you would like to use Dragonfly command-modules with WSR,
 then you must run a *loader* program which will load and manage 
 the command-modules.  A simple *loader* is available in the 
 ``dragonfly/examples/dfly-loader-wsr.py`` file.  When run, it 
-will scan the directory it's in for other ``*.py`` files and try 
-to load them as command-modules.
+will scan the directory it's in for files beginning with ``_`` and ending
+with ``.py``, then try to load them as command-modules.
+
+A *more full-featured loader* is available in the 
+``dragonfly/examples/wsr_module_loader_plus.py`` file. It includes a
+basic sleep/wake grammar to control recognition (simply say "start
+listening" or "halt listening"), along with a rudimentary user interface
+via sound effects and console text (easily modified in the file). It
+otherwise operates like the above loader.
+
 
 Installation for CMU Pocket Sphinx
 ----------------------------------------------------------------------------
 
 Please see the :ref:`Pocket Sphinx engine page <RefSphinxEngine>` for
-installation and usage information.
+installation and usage information. There is a *loader* program for
+the Sphinx engine available in the
+``dragonfly/examples/sphinx_module_loader.py.py`` file.

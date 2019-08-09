@@ -1,4 +1,3 @@
-﻿
 """
 NatLink importable rules dgndictation, dgnletters and dgnwords
 ===============================================================================

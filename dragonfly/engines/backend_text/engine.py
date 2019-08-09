@@ -18,18 +18,21 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from six import string_types, text_type
+import logging
+
+from six import string_types, text_type, PY2
 
 import dragonfly.grammar.state as state_
 from dragonfly import Window
 
-from .dictation import TextDictationContainer
 from .recobs import TextRecobsManager
-from ..base import EngineBase, EngineError, MimicFailure
+from ..base import (EngineBase, EngineError, MimicFailure,
+                    ThreadedTimerManager, DictationContainerBase)
 
 
 def _map_word(word):
-    word = text_type(word)
+    if PY2 and isinstance(word, str):
+        word = text_type(word, encoding="utf-8")
     if word.isupper():
         # Convert dictation words to lowercase for consistent output.
         return word.lower(), 1000000
@@ -41,7 +44,7 @@ class TextInputEngine(EngineBase):
     """Text-input Engine class. """
 
     _name = "text"
-    DictationContainer = TextDictationContainer
+    DictationContainer = DictationContainerBase
 
     # -----------------------------------------------------------------------
 
@@ -49,6 +52,7 @@ class TextInputEngine(EngineBase):
         EngineBase.__init__(self)
         self._language = "en"
         self._recognition_observer_manager = TextRecobsManager(self)
+        self._timer_manager = ThreadedTimerManager(0.02, self)
 
     def connect(self):
         pass
@@ -58,10 +62,25 @@ class TextInputEngine(EngineBase):
         self._grammar_wrappers.clear()
 
     # -----------------------------------------------------------------------
+    # Methods for administrating timers.
+
+    def create_timer(self, callback, interval, repeating=True):
+        """
+        Create and return a timer using the specified callback and repeat
+        interval.
+
+        Timers created using this engine will be run in a separate daemon
+        thread, meaning that their callbacks will **not** be thread safe.
+        :meth:`threading.Timer` may be used instead with no blocking issues.
+        """
+        return EngineBase.create_timer(self, callback, interval, repeating)
+
+    # -----------------------------------------------------------------------
     # Methods for working with grammars.
 
     def _build_grammar_wrapper(self, grammar):
-        return GrammarWrapper(grammar, self)
+        return GrammarWrapper(grammar, self,
+                              self._recognition_observer_manager)
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar* and return a wrapper. """
@@ -148,10 +167,6 @@ class TextInputEngine(EngineBase):
             wrapper.process_begin(fg_window)
             processing_occurred = wrapper.process_words(words_rules)
             if processing_occurred:
-                # Notify observers of the recognition.
-                self._recognition_observer_manager.notify_recognition(
-                    [word for word, _ in words_rules]
-                )
                 break
 
         # If no processing occurred, then the mimic failed.
@@ -187,9 +202,13 @@ class TextInputEngine(EngineBase):
 
 
 class GrammarWrapper(object):
-    def __init__(self, grammar, engine):
+
+    _log = logging.getLogger("engine")
+
+    def __init__(self, grammar, engine, observer_manager):
         self.grammar = grammar
         self.engine = engine
+        self._observer_manager = observer_manager
 
     def process_begin(self, fg_window):
         self.grammar.process_begin(fg_window.executable, fg_window.title,
@@ -201,8 +220,8 @@ class GrammarWrapper(object):
         if not (self.grammar.enabled and self.grammar.active_rules):
             return
 
-        TextInputEngine._log.debug("Grammar %s: received recognition %r."
-                                   % (self.grammar.name, words))
+        self._log.debug("Grammar %s: received recognition %r."
+                        % (self.grammar.name, words))
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
             if func:
@@ -232,11 +251,19 @@ class GrammarWrapper(object):
             s.initialize_decoding()
             for _ in r.decode(s):
                 if s.finished():
-                    root = s.build_parse_tree()
-                    r.process_recognition(root)
+                    # Notify observers using the manager *before* processing.
+                    self._observer_manager.notify_recognition(
+                        tuple([word for word, _ in words])
+                    )
+
+                    try:
+                        root = s.build_parse_tree()
+                        r.process_recognition(root)
+                    except Exception as e:
+                        self._log.exception("Failed to process rule "
+                                            "'%s': %s" % (r.name, e))
                     return True
 
-        TextInputEngine._log.debug("Grammar %s: failed to decode "
-                                   "recognition %r."
-                                   % (self.grammar.name, words))
+        self._log.debug("Grammar %s: failed to decode recognition %r."
+                        % (self.grammar.name, words))
         return False

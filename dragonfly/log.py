@@ -19,22 +19,42 @@
 #
 
 """
-Logging framework
-============================================================================
+Dragonfly's logging infrastructure is defined in the ``dragonfly.log``
+module. It defines sane defaults for the various loggers used in the library
+as well as functions for setting up logging and tracing.
+
+Adjusting logger levels
+----------------------------------------------------------------------------
+
+Dragonfly's logger levels can be adjusted much like Python logger levels:
+
+..  code::
+
+    import logging
+    logging.getLogger("engine").setLevel(logging.DEBUG)
+
+The one caveat is that this must be done *after* the :meth:`setup_log`
+function is called, otherwise the levels you set will be overridden.
+By default, the function is only called near the top of the module loader
+scripts (e.g. *dragonfly/examples/dfly-loader-wsr.py*), not within dragonfly
+itself.
+
+It is not necessary to call :meth:`setup_log` at all. Standard Python
+logging functions such as :meth:`basicConfig` can be used at the top of
+module loader scripts instead.
+
+
+Functions
+----------------------------------------------------------------------------
 
 """
 
 import sys
 import os.path
 import logging
-try:
-    from win32com.shell import shell, shellcon
-except ImportError:
-    shell = None
-    shellcon = None
 
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 # Sane defaults for logger names and associated levels.
 
 _debug     = logging.DEBUG
@@ -44,7 +64,7 @@ _error     = logging.ERROR
 _critical  = logging.CRITICAL
 default_levels = {
                   "":                     (_warning, _warning),
-                  "engine":               (_warning, _info), 
+                  "engine":               (_info, _info), 
                   "engine.compiler":      (_warning, _info), 
                   "engine.timer":         (_warning, _info),
                   "grammar":              (_warning, _critical), 
@@ -62,19 +82,25 @@ default_levels = {
                   "action.exec":          (_warning, _warning),
                   "context":              (_warning, _info),
                   "context.match":        (_warning, _info),
+                  "rpc.server":           (_warning, _info),
+                  "rpc.methods":          (_warning, _info),
                   "rule":                 (_warning, _info),
                   "config":               (_warning, _info),
+                  "module":               (_info, _info),
                   "monitor.init":         (_warning, _info),
                   "dfly.test":            (_debug, _debug),
                   "accessibility":        (_info, _info),
+                  "keyboard":             (_warning, _warning),
+                  "typeables":            (_warning, _warning),
                  }
 
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 # Logging filter class which filters out messages of a given name below
 #  a given level.
 
 class NameLevelFilter(logging.Filter):
+    """"""
     def __init__(self, name, level):
         self.name = name
         self.level = level
@@ -90,9 +116,10 @@ class NameLevelFilter(logging.Filter):
             return True
 
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 class DispatchingHandler(logging.Handler):
+    """"""
 
     def __init__(self, level=logging.NOTSET):
         logging.Handler.__init__(self, level)
@@ -109,23 +136,16 @@ class DispatchingHandler(logging.Handler):
         # import traceback; print traceback.extract_stack()
         # import traceback; traceback.print_stack()
         for handler, filter in self.handler_filter_pairs:
-            if filter.filter(record) and sys.platform.startswith("win"):
+            if filter.filter(record):
                 handler.handle(record)
 
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 def _setup_stdout_handler():
-    class _OutputStream(object):
-        def __init__(self, write):
-            self.write = write
-
-        def flush(self):
-            pass
-
-    stdout_handler = logging.StreamHandler(_OutputStream(sys.stdout.write))
+    stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(name)s: %(message)s")
+    formatter = logging.Formatter("%(name)s (%(levelname)s): %(message)s")
     stdout_handler.setFormatter(formatter)
     return stdout_handler
 
@@ -136,20 +156,17 @@ def _setup_file_handler():
     global _file_handler
 #    import traceback; traceback.print_stack()
     if not _file_handler:
-        # Lookup path the user's personal folder in which
-        # to log Dragonfly messages.
-        if shell and shellcon:
-            mydocs_pidl = shell.SHGetFolderLocation(0, shellcon.CSIDL_PERSONAL, 0, 0)
-            mydocs_path = shell.SHGetPathFromIDList(mydocs_pidl)
-            log_file_path = os.path.join(mydocs_path, "dragonfly.txt")
-            _file_handler = logging.FileHandler(log_file_path)
-            formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
-                                          " %(message)s")
-            _file_handler.setFormatter(formatter)
+        # Use ~/.dragonfly.log as the file for Dragonfly's log messages.
+        home_path = os.path.expanduser("~")
+        log_file_path = os.path.join(home_path, ".dragonfly.log")
+        _file_handler = logging.FileHandler(log_file_path)
+        formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s):"
+                                      " %(message)s")
+        _file_handler.setFormatter(formatter)
     return _file_handler
 
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 _stdout_handler = None
 _dispatching_handlers = {}
@@ -159,7 +176,14 @@ _file_filters = {}
 
 def setup_log(use_stdout=True, use_file=True):
     """
-        Setup Dragonfly's logging infrastructure with sane defaults.
+    Setup Dragonfly's logging infrastructure with sane defaults.
+
+    :param use_stdout: whether to output log messages to stdout
+      (default: True).
+    :param use_file: whether to output log messages to the
+      *~/.dragonfly.log* log file (default: True).
+    :type use_stdout: bool
+    :type use_file: bool
 
     """
     global _dispatching_handlers
@@ -196,10 +220,18 @@ def setup_log(use_stdout=True, use_file=True):
         logger.propagate = False
 
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 # Function for setting up call tracing for low-level debugging.
 
 def setup_tracing(output, limit=None):
+    """
+    Setup call tracing for low-level debugging.
+
+    :param output: the file to write tracing messages to.
+    :type output: file
+    :param limit: the recursive depth limit for tracing (default: None).
+    :type limit: int|None
+    """
     from pkg_resources import resource_filename
     library_prefix = os.path.dirname(resource_filename(__name__, "setup.py"))
     print("prefix:", library_prefix)

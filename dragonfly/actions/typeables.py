@@ -20,20 +20,28 @@
 
 """
     This file builds the mapping from key-name to Typeable instances.
+
+    To make changes/additions to the mappings, use the _generate_typeables.py
+    script to generate the list and copy-paste the relevant section into
+    this file.
+
+    The script also generates documentation for the :class:`Key` action.
+
 """
 
 import logging
-import win32con
-from dragonfly.actions.keyboard import keyboard, Typeable
 
-logging.basicConfig()
-_log = logging.getLogger("actions.typeables")
+from .keyboard import keyboard, Typeable, KeySymbols
+
+
+_log = logging.getLogger("typeables")
 
 
 # --------------------------------------------------------------------------
 # Mapping of name -> typeable.
 
 typeables = {}
+key_symbols = KeySymbols()
 
 
 def _add_typeable(name, char):
@@ -176,173 +184,208 @@ _add_typeable(name="9", char='9')
 _add_typeable(name="nine", char='9')
 
 # Symbol keys
+# All symbols can be referred to by their printable representation.
+# Reserved characters for the Key action spec -,:/ are Typeable objects,
+# but Key requires use of the longer character names.
+_add_typeable(name="!", char='!')
 _add_typeable(name="bang", char='!')
 _add_typeable(name="exclamation", char='!')
+_add_typeable(name="@", char='@')
 _add_typeable(name="at", char='@')
+_add_typeable(name="#", char='#')
 _add_typeable(name="hash", char='#')
+_add_typeable(name="$", char='$')
 _add_typeable(name="dollar", char='$')
+_add_typeable(name="%", char='%')
 _add_typeable(name="percent", char='%')
+_add_typeable(name="^", char='^')
 _add_typeable(name="caret", char='^')
+_add_typeable(name="&", char='&')
 _add_typeable(name="and", char='&')
 _add_typeable(name="ampersand", char='&')
+_add_typeable(name="*", char='*')
 _add_typeable(name="star", char='*')
 _add_typeable(name="asterisk", char='*')
+_add_typeable(name="(", char='(')
 _add_typeable(name="leftparen", char='(')
 _add_typeable(name="lparen", char='(')
+_add_typeable(name=")", char=')')
 _add_typeable(name="rightparen", char=')')
 _add_typeable(name="rparen", char=')')
+_add_typeable(name="-", char='-')
 _add_typeable(name="minus", char='-')
 _add_typeable(name="hyphen", char='-')
+_add_typeable(name="_", char='_')
 _add_typeable(name="underscore", char='_')
+_add_typeable(name="+", char='+')
 _add_typeable(name="plus", char='+')
+_add_typeable(name="`", char='`')
 _add_typeable(name="backtick", char='`')
+_add_typeable(name="~", char='~')
 _add_typeable(name="tilde", char='~')
+_add_typeable(name="[", char='[')
 _add_typeable(name="leftbracket", char='[')
 _add_typeable(name="lbracket", char='[')
+_add_typeable(name="]", char=']')
 _add_typeable(name="rightbracket", char=']')
 _add_typeable(name="rbracket", char=']')
+_add_typeable(name="{", char='{')
 _add_typeable(name="leftbrace", char='{')
 _add_typeable(name="lbrace", char='{')
+_add_typeable(name="}", char='}')
 _add_typeable(name="rightbrace", char='}')
 _add_typeable(name="rbrace", char='}')
+_add_typeable(name="\\", char='\\')
 _add_typeable(name="backslash", char='\\')
+_add_typeable(name="|", char='|')
 _add_typeable(name="bar", char='|')
+_add_typeable(name=":", char=':')
 _add_typeable(name="colon", char=':')
+_add_typeable(name=";", char=';')
 _add_typeable(name="semicolon", char=';')
-_add_typeable(name="apostrophe", char="'")
-_add_typeable(name="singlequote", char="'")
-_add_typeable(name="squote", char="'")
-_add_typeable(name="quote", char='"')
-_add_typeable(name="doublequote", char='"')
-_add_typeable(name="dquote", char='"')
+_add_typeable(name="\'", char='\'')
+_add_typeable(name="apostrophe", char='\'')
+_add_typeable(name="singlequote", char='\'')
+_add_typeable(name="squote", char='\'')
+_add_typeable(name="\"", char='\"')
+_add_typeable(name="quote", char='\"')
+_add_typeable(name="doublequote", char='\"')
+_add_typeable(name="dquote", char='\"')
+_add_typeable(name=",", char=',')
 _add_typeable(name="comma", char=',')
+_add_typeable(name=".", char='.')
 _add_typeable(name="dot", char='.')
+_add_typeable(name="/", char='/')
 _add_typeable(name="slash", char='/')
+_add_typeable(name="<", char='<')
 _add_typeable(name="lessthan", char='<')
 _add_typeable(name="leftangle", char='<')
 _add_typeable(name="langle", char='<')
+_add_typeable(name=">", char='>')
 _add_typeable(name="greaterthan", char='>')
 _add_typeable(name="rightangle", char='>')
 _add_typeable(name="rangle", char='>')
+_add_typeable(name="?", char='?')
 _add_typeable(name="question", char='?')
+_add_typeable(name="=", char='=')
 _add_typeable(name="equal", char='=')
 _add_typeable(name="equals", char='=')
 
 typeables.update({
     # Whitespace and editing keys
-    "enter":            Typeable(code=win32con.VK_RETURN, name='enter'),
-    "tab":              Typeable(code=win32con.VK_TAB, name='tab'),
-    "space":            Typeable(code=win32con.VK_SPACE, name='space'),
-    "backspace":        Typeable(code=win32con.VK_BACK, name='backspace'),
-    "delete":           Typeable(code=win32con.VK_DELETE, name='delete'),
-    "del":              Typeable(code=win32con.VK_DELETE, name='del'),
+    "enter":            Typeable(code=key_symbols.RETURN, name='enter'),
+    "tab":              Typeable(code=key_symbols.TAB, name='tab'),
+    "space":            Typeable(code=key_symbols.SPACE, name='space'),
+    "backspace":        Typeable(code=key_symbols.BACK, name='backspace'),
+    "delete":           Typeable(code=key_symbols.DELETE, name='delete'),
+    "del":              Typeable(code=key_symbols.DELETE, name='del'),
 
     # Main modifier keys
-    "shift":            Typeable(code=win32con.VK_SHIFT, name='shift'),
-    "control":          Typeable(code=win32con.VK_CONTROL, name='control'),
-    "ctrl":             Typeable(code=win32con.VK_CONTROL, name='ctrl'),
-    "alt":              Typeable(code=win32con.VK_MENU, name='alt'),
+    "shift":            Typeable(code=key_symbols.SHIFT, name='shift'),
+    "control":          Typeable(code=key_symbols.CONTROL, name='control'),
+    "ctrl":             Typeable(code=key_symbols.CONTROL, name='ctrl'),
+    "alt":              Typeable(code=key_symbols.ALT, name='alt'),
 
     # Right modifier keys
-    "ralt":             Typeable(code=win32con.VK_RMENU, name='ralt'),
-    "rshift":           Typeable(code=win32con.VK_RSHIFT, name='rshift'),
-    "rcontrol":         Typeable(code=win32con.VK_RCONTROL, name='rcontrol'),
-    "rctrl":            Typeable(code=win32con.VK_RCONTROL, name='rctrl'),
+    "rshift":           Typeable(code=key_symbols.RSHIFT, name='rshift'),
+    "rcontrol":         Typeable(code=key_symbols.RCONTROL, name='rcontrol'),
+    "rctrl":            Typeable(code=key_symbols.RCONTROL, name='rctrl'),
+    "ralt":             Typeable(code=key_symbols.RALT, name='ralt'),
 
     # Special keys
-    "escape":           Typeable(code=win32con.VK_ESCAPE, name='escape'),
-    "insert":           Typeable(code=win32con.VK_INSERT, name='insert'),
-    "pause":            Typeable(code=win32con.VK_PAUSE, name='pause'),
-    "win":              Typeable(code=win32con.VK_LWIN, name='win'),
-    "rwin":             Typeable(code=win32con.VK_RWIN, name='rwin'),
-    "apps":             Typeable(code=win32con.VK_APPS, name='apps'),
-    "popup":            Typeable(code=win32con.VK_APPS, name='popup'),
-    "snapshot":         Typeable(code=win32con.VK_SNAPSHOT, name='snapshot'),
-    "printscreen":      Typeable(code=win32con.VK_SNAPSHOT, name='printscreen'),
+    "escape":           Typeable(code=key_symbols.ESCAPE, name='escape'),
+    "insert":           Typeable(code=key_symbols.INSERT, name='insert'),
+    "pause":            Typeable(code=key_symbols.PAUSE, name='pause'),
+    "win":              Typeable(code=key_symbols.LSUPER, name='win'),
+    "rwin":             Typeable(code=key_symbols.RSUPER, name='rwin'),
+    "apps":             Typeable(code=key_symbols.APPS, name='apps'),
+    "popup":            Typeable(code=key_symbols.APPS, name='popup'),
+    "snapshot":         Typeable(code=key_symbols.SNAPSHOT, name='snapshot'),
+    "printscreen":      Typeable(code=key_symbols.SNAPSHOT, name='printscreen'),
 
     # Lock keys
     # win32api.GetKeyState(code) could be used to toggle lock keys sensibly
     # instead of using the up/down modifiers.
-    "scrolllock":       Typeable(code=win32con.VK_SCROLL, name='scrolllock'),
-    "numlock":          Typeable(code=win32con.VK_NUMLOCK, name='numlock'),
-    "capslock":         Typeable(code=win32con.VK_CAPITAL, name='capslock'),
+    "scrolllock":       Typeable(code=key_symbols.SCROLL_LOCK, name='scrolllock'),
+    "numlock":          Typeable(code=key_symbols.NUM_LOCK, name='numlock'),
+    "capslock":         Typeable(code=key_symbols.CAPS_LOCK, name='capslock'),
 
     # Navigation keys
-    "up":               Typeable(code=win32con.VK_UP, name='up'),
-    "down":             Typeable(code=win32con.VK_DOWN, name='down'),
-    "left":             Typeable(code=win32con.VK_LEFT, name='left'),
-    "right":            Typeable(code=win32con.VK_RIGHT, name='right'),
-    "pageup":           Typeable(code=win32con.VK_PRIOR, name='pageup'),
-    "pgup":             Typeable(code=win32con.VK_PRIOR, name='pgup'),
-    "pagedown":         Typeable(code=win32con.VK_NEXT, name='pagedown'),
-    "pgdown":           Typeable(code=win32con.VK_NEXT, name='pgdown'),
-    "home":             Typeable(code=win32con.VK_HOME, name='home'),
-    "end":              Typeable(code=win32con.VK_END, name='end'),
+    "up":               Typeable(code=key_symbols.UP, name='up'),
+    "down":             Typeable(code=key_symbols.DOWN, name='down'),
+    "left":             Typeable(code=key_symbols.LEFT, name='left'),
+    "right":            Typeable(code=key_symbols.RIGHT, name='right'),
+    "pageup":           Typeable(code=key_symbols.PAGE_UP, name='pageup'),
+    "pgup":             Typeable(code=key_symbols.PAGE_UP, name='pgup'),
+    "pagedown":         Typeable(code=key_symbols.PAGE_DOWN, name='pagedown'),
+    "pgdown":           Typeable(code=key_symbols.PAGE_DOWN, name='pgdown'),
+    "home":             Typeable(code=key_symbols.HOME, name='home'),
+    "end":              Typeable(code=key_symbols.END, name='end'),
 
     # Number pad keys
-    "npmul":            Typeable(code=win32con.VK_MULTIPLY, name='npmul'),
-    "npadd":            Typeable(code=win32con.VK_ADD, name='npadd'),
-    "npsep":            Typeable(code=win32con.VK_SEPARATOR, name='npsep'),
-    "npsub":            Typeable(code=win32con.VK_SUBTRACT, name='npsub'),
-    "npdec":            Typeable(code=win32con.VK_DECIMAL, name='npdec'),
-    "npdiv":            Typeable(code=win32con.VK_DIVIDE, name='npdiv'),
-    "numpad0":          Typeable(code=win32con.VK_NUMPAD0, name='numpad0'),
-    "np0":              Typeable(code=win32con.VK_NUMPAD0, name='np0'),
-    "numpad1":          Typeable(code=win32con.VK_NUMPAD1, name='numpad1'),
-    "np1":              Typeable(code=win32con.VK_NUMPAD1, name='np1'),
-    "numpad2":          Typeable(code=win32con.VK_NUMPAD2, name='numpad2'),
-    "np2":              Typeable(code=win32con.VK_NUMPAD2, name='np2'),
-    "numpad3":          Typeable(code=win32con.VK_NUMPAD3, name='numpad3'),
-    "np3":              Typeable(code=win32con.VK_NUMPAD3, name='np3'),
-    "numpad4":          Typeable(code=win32con.VK_NUMPAD4, name='numpad4'),
-    "np4":              Typeable(code=win32con.VK_NUMPAD4, name='np4'),
-    "numpad5":          Typeable(code=win32con.VK_NUMPAD5, name='numpad5'),
-    "np5":              Typeable(code=win32con.VK_NUMPAD5, name='np5'),
-    "numpad6":          Typeable(code=win32con.VK_NUMPAD6, name='numpad6'),
-    "np6":              Typeable(code=win32con.VK_NUMPAD6, name='np6'),
-    "numpad7":          Typeable(code=win32con.VK_NUMPAD7, name='numpad7'),
-    "np7":              Typeable(code=win32con.VK_NUMPAD7, name='np7'),
-    "numpad8":          Typeable(code=win32con.VK_NUMPAD8, name='numpad8'),
-    "np8":              Typeable(code=win32con.VK_NUMPAD8, name='np8'),
-    "numpad9":          Typeable(code=win32con.VK_NUMPAD9, name='numpad9'),
-    "np9":              Typeable(code=win32con.VK_NUMPAD9, name='np9'),
+    "npmul":            Typeable(code=key_symbols.MULTIPLY, name='npmul'),
+    "npadd":            Typeable(code=key_symbols.ADD, name='npadd'),
+    "npsep":            Typeable(code=key_symbols.SEPARATOR, name='npsep'),
+    "npsub":            Typeable(code=key_symbols.SUBTRACT, name='npsub'),
+    "npdec":            Typeable(code=key_symbols.DECIMAL, name='npdec'),
+    "npdiv":            Typeable(code=key_symbols.DIVIDE, name='npdiv'),
+    "numpad0":          Typeable(code=key_symbols.NUMPAD0, name='numpad0'),
+    "np0":              Typeable(code=key_symbols.NUMPAD0, name='np0'),
+    "numpad1":          Typeable(code=key_symbols.NUMPAD1, name='numpad1'),
+    "np1":              Typeable(code=key_symbols.NUMPAD1, name='np1'),
+    "numpad2":          Typeable(code=key_symbols.NUMPAD2, name='numpad2'),
+    "np2":              Typeable(code=key_symbols.NUMPAD2, name='np2'),
+    "numpad3":          Typeable(code=key_symbols.NUMPAD3, name='numpad3'),
+    "np3":              Typeable(code=key_symbols.NUMPAD3, name='np3'),
+    "numpad4":          Typeable(code=key_symbols.NUMPAD4, name='numpad4'),
+    "np4":              Typeable(code=key_symbols.NUMPAD4, name='np4'),
+    "numpad5":          Typeable(code=key_symbols.NUMPAD5, name='numpad5'),
+    "np5":              Typeable(code=key_symbols.NUMPAD5, name='np5'),
+    "numpad6":          Typeable(code=key_symbols.NUMPAD6, name='numpad6'),
+    "np6":              Typeable(code=key_symbols.NUMPAD6, name='np6'),
+    "numpad7":          Typeable(code=key_symbols.NUMPAD7, name='numpad7'),
+    "np7":              Typeable(code=key_symbols.NUMPAD7, name='np7'),
+    "numpad8":          Typeable(code=key_symbols.NUMPAD8, name='numpad8'),
+    "np8":              Typeable(code=key_symbols.NUMPAD8, name='np8'),
+    "numpad9":          Typeable(code=key_symbols.NUMPAD9, name='numpad9'),
+    "np9":              Typeable(code=key_symbols.NUMPAD9, name='np9'),
 
     # Function keys
-    "f1":               Typeable(code=win32con.VK_F1, name='f1'),
-    "f2":               Typeable(code=win32con.VK_F2, name='f2'),
-    "f3":               Typeable(code=win32con.VK_F3, name='f3'),
-    "f4":               Typeable(code=win32con.VK_F4, name='f4'),
-    "f5":               Typeable(code=win32con.VK_F5, name='f5'),
-    "f6":               Typeable(code=win32con.VK_F6, name='f6'),
-    "f7":               Typeable(code=win32con.VK_F7, name='f7'),
-    "f8":               Typeable(code=win32con.VK_F8, name='f8'),
-    "f9":               Typeable(code=win32con.VK_F9, name='f9'),
-    "f10":              Typeable(code=win32con.VK_F10, name='f10'),
-    "f11":              Typeable(code=win32con.VK_F11, name='f11'),
-    "f12":              Typeable(code=win32con.VK_F12, name='f12'),
-    "f13":              Typeable(code=win32con.VK_F13, name='f13'),
-    "f14":              Typeable(code=win32con.VK_F14, name='f14'),
-    "f15":              Typeable(code=win32con.VK_F15, name='f15'),
-    "f16":              Typeable(code=win32con.VK_F16, name='f16'),
-    "f17":              Typeable(code=win32con.VK_F17, name='f17'),
-    "f18":              Typeable(code=win32con.VK_F18, name='f18'),
-    "f19":              Typeable(code=win32con.VK_F19, name='f19'),
-    "f20":              Typeable(code=win32con.VK_F20, name='f20'),
-    "f21":              Typeable(code=win32con.VK_F21, name='f21'),
-    "f22":              Typeable(code=win32con.VK_F22, name='f22'),
-    "f23":              Typeable(code=win32con.VK_F23, name='f23'),
-    "f24":              Typeable(code=win32con.VK_F24, name='f24'),
+    "f1":               Typeable(code=key_symbols.F1, name='f1'),
+    "f2":               Typeable(code=key_symbols.F2, name='f2'),
+    "f3":               Typeable(code=key_symbols.F3, name='f3'),
+    "f4":               Typeable(code=key_symbols.F4, name='f4'),
+    "f5":               Typeable(code=key_symbols.F5, name='f5'),
+    "f6":               Typeable(code=key_symbols.F6, name='f6'),
+    "f7":               Typeable(code=key_symbols.F7, name='f7'),
+    "f8":               Typeable(code=key_symbols.F8, name='f8'),
+    "f9":               Typeable(code=key_symbols.F9, name='f9'),
+    "f10":              Typeable(code=key_symbols.F10, name='f10'),
+    "f11":              Typeable(code=key_symbols.F11, name='f11'),
+    "f12":              Typeable(code=key_symbols.F12, name='f12'),
+    "f13":              Typeable(code=key_symbols.F13, name='f13'),
+    "f14":              Typeable(code=key_symbols.F14, name='f14'),
+    "f15":              Typeable(code=key_symbols.F15, name='f15'),
+    "f16":              Typeable(code=key_symbols.F16, name='f16'),
+    "f17":              Typeable(code=key_symbols.F17, name='f17'),
+    "f18":              Typeable(code=key_symbols.F18, name='f18'),
+    "f19":              Typeable(code=key_symbols.F19, name='f19'),
+    "f20":              Typeable(code=key_symbols.F20, name='f20'),
+    "f21":              Typeable(code=key_symbols.F21, name='f21'),
+    "f22":              Typeable(code=key_symbols.F22, name='f22'),
+    "f23":              Typeable(code=key_symbols.F23, name='f23'),
+    "f24":              Typeable(code=key_symbols.F24, name='f24'),
 
     # Multimedia keys
-    "volumeup":         Typeable(code=win32con.VK_VOLUME_UP, name='volumeup'),
-    "volup":            Typeable(code=win32con.VK_VOLUME_UP, name='volup'),
-    "volumedown":       Typeable(code=win32con.VK_VOLUME_DOWN, name='volumedown'),
-    "voldown":          Typeable(code=win32con.VK_VOLUME_DOWN, name='voldown'),
-    "volumemute":       Typeable(code=win32con.VK_VOLUME_MUTE, name='volumemute'),
-    "volmute":          Typeable(code=win32con.VK_VOLUME_MUTE, name='volmute'),
-    "tracknext":        Typeable(code=win32con.VK_MEDIA_NEXT_TRACK, name='tracknext'),
-    "trackprev":        Typeable(code=win32con.VK_MEDIA_PREV_TRACK, name='trackprev'),
-    "playpause":        Typeable(code=win32con.VK_MEDIA_PLAY_PAUSE, name='playpause'),
-    "browserback":      Typeable(code=win32con.VK_BROWSER_BACK, name='browserback'),
-    "browserforward":   Typeable(code=win32con.VK_BROWSER_FORWARD, name='browserforward'),
+    "volumeup":         Typeable(code=key_symbols.VOLUME_UP, name='volumeup'),
+    "volup":            Typeable(code=key_symbols.VOLUME_UP, name='volup'),
+    "volumedown":       Typeable(code=key_symbols.VOLUME_DOWN, name='volumedown'),
+    "voldown":          Typeable(code=key_symbols.VOLUME_DOWN, name='voldown'),
+    "volumemute":       Typeable(code=key_symbols.VOLUME_MUTE, name='volumemute'),
+    "volmute":          Typeable(code=key_symbols.VOLUME_MUTE, name='volmute'),
+    "tracknext":        Typeable(code=key_symbols.MEDIA_NEXT_TRACK, name='tracknext'),
+    "trackprev":        Typeable(code=key_symbols.MEDIA_PREV_TRACK, name='trackprev'),
+    "playpause":        Typeable(code=key_symbols.MEDIA_PLAY_PAUSE, name='playpause'),
+    "browserback":      Typeable(code=key_symbols.BROWSER_BACK, name='browserback'),
+    "browserforward":   Typeable(code=key_symbols.BROWSER_FORWARD, name='browserforward'),
 })

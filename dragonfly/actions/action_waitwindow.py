@@ -26,9 +26,9 @@ WaitWindow action
 
 
 import time
-import win32con
+
 from dragonfly.actions.action_base import ActionBase, ActionError
-from dragonfly.windows.window import Window
+from ..windows import Window
 
 
 #---------------------------------------------------------------------------

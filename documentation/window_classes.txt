@@ -1,0 +1,21 @@
+﻿
+Window classes
+============================================================================
+
+Dragonfly's Window classes are interfaces to the window control and
+placement APIs for the current platform. Currently the Windows and X11
+(Linux) platforms are supported.
+
+The :class:`FakeWindow` class will be used on unsupported platforms.
+
+.. automodule:: dragonfly.windows.base_window
+   :members:
+
+.. automodule:: dragonfly.windows.fake_window
+   :members:
+
+.. automodule:: dragonfly.windows.win32_window
+   :members:
+
+.. automodule:: dragonfly.windows.x11_window
+   :members:

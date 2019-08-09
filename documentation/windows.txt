@@ -12,3 +12,4 @@ Contents of Dragonfly's windows sub-package:
    :maxdepth: 2
 
    clipboard
+   window_classes

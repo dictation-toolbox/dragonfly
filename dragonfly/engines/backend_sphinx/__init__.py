@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -39,35 +39,19 @@ _engine = None
 
 def is_engine_available():
     """ Check whether the Sphinx engine is available. """
-    global _engine
     if _engine:
         return True
 
+    # Check the value of ENGINE_AVAILABLE. This will be False if a
+    # dependency or sub-dependency isn't available.
     try:
-        import sphinxwrapper
+        from .engine import ENGINE_AVAILABLE
+        return ENGINE_AVAILABLE
     except ImportError as e:
-        _log.info("Failed to import sphinxwrapper package: %s. Is it installed?" % (e,))
+        _log.info("Failed to import from Sphinx engine module: %s", e)
         return False
     except Exception as e:
-        _log.info("Exception during import of sphinxwrapper package: %s" % (e,))
-        return False
-
-    try:
-        import jsgf
-    except ImportError as e:
-        _log.info("Failed to import jsgf package: %s. Is pyjsgf installed?" % (e,))
-        return False
-    except Exception as e:
-        _log.info("Exception during import of jsgf package: %s" % (e,))
-        return False
-
-    try:
-        import pyaudio
-    except ImportError as e:
-        _log.info("Failed to import pyaudio package: %s. Is it installed?" % (e,))
-        return False
-    except Exception as e:
-        _log.info("Exception during import of pyaudio package: %s" % (e,))
+        _log.info("Exception during import of Sphinx engine module: %s", e)
         return False
 
     return True

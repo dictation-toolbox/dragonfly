@@ -55,10 +55,6 @@ Applications
 
 The following applications integrate Dragonfly for speech recognition:
 
- * `Caster <https://github.com/synkarius/caster/>`_
-   --- A collection of Dragonfly-based tools aimed at enabling programming
-   entirely by voice
-
  * `Damselfly <https://github.com/TristenHayfield/damselfly>`_
    --- Tristen Hayfield's system for using Dragonfly voice commands to
    control Linux apps
@@ -70,6 +66,10 @@ The following applications integrate Dragonfly for speech recognition:
      --- A client-server library for using voice commands from a
      Windows system running Dragonfly to one or more other systems,
      e.g. running Linux
+
+   * `Caster <https://github.com/dictation-toolbox/caster/>`_
+     --- A collection of Dragonfly-based tools aimed at enabling programming
+     entirely by voice
 
  * `Dragonfluid <https://github.com/chajadan/dragonfluid>`_
    --- A Dragonfly extension to allow voice commands to be spoken together
@@ -104,9 +104,6 @@ Dragonfly:
  * `Dictation Toolbox' Dragonfly Scripts
    <https://github.com/dictation-toolbox/dragonfly-scripts>`_
 
- * `Dragonfly::Sorcery <https://github.com/synkarius/dragonfly-sorcery>`_
-   --- David Conway's Dragonfly resources
-
  * `Simian Hacker's Code-by-Voice
    <https://github.com/simianhacker/code-by-voice>`_
    --- Support files for Chris Cowan's "code by voice" setup using
@@ -133,8 +130,8 @@ made by various people for them to improve it or experiment with it:
 Unrelated
 ============================================================================
 
-The following speech recognition resources are unrelated to Dragonfly, but
-may be interesting to its users nevertheless:
+The following resources are unrelated to Dragonfly, but may be interesting
+to its users nevertheless:
 
  * `PySpeech <https://code.google.com/p/pyspeech/>`_
    --- A small Python module for interfacing with WSR
@@ -149,3 +146,11 @@ may be interesting to its users nevertheless:
  * `DragonControl <https://github.com/nriley/DragonControl>`_
    --- Nicholas Riley's scripts for using Dragon Medical under Windows 7
    in VMware Fusion as a dictation buffer for OS X
+
+ * `Getting Started with Eye Tracking <http://handsfreecoding.org/2014/11/16/getting-started-with-eye-tracking/>`_
+   --- James Stout's hands-free coding blog post on using eye tracking with
+   dragonfly
+
+ * `EyeXMouse <https://github.com/Versatilus/EyeXMouse>`_
+   --- Eric Paulson's fork of EyeXMouse for cursor control using the Tobii
+   EyeX eye tracker

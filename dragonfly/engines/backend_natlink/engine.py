@@ -222,13 +222,16 @@ class NatlinkEngine(EngineBase):
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
+        # Store the current mic state.
+        mic_state = self.natlink.getMicState()
+
+        # Say the text.
         self.natlink.execScript('TTSPlayString "%s"' % text)
 
-        # Turn on the mic if necessary so the user can start speaking again.
-        # This is to make the expected behaviour consistent for each version
-        # of Dragon.
-        if self.natlink.getMicState() != "on":
-            self.natlink.setMicState("on")
+        # Restore the previous mic state if necessary.
+        # This is to have consistent behaviour for each version of Dragon.
+        if mic_state != self.natlink.getMicState():
+            self.natlink.setMicState(mic_state)
 
     def _get_language(self):
         import win32com.client

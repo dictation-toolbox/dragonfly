@@ -48,9 +48,9 @@ setup(
       author           = "Christo Butcher",
       author_email     = "dist.dragonfly@twizzy.biz",
       maintainer       = "Dane Finlay",
-      maintainer_email = "Danesprite@gmail.com",
+      maintainer_email = "Danesprite@posteo.net",
       license          = "LICENSE.txt",
-      url              = "https://github.com/Danesprite/dragonfly",
+      url              = "https://github.com/dictation-toolbox/dragonfly",
       zip_safe         = False,  # To unzip documentation files.
       long_description = read("README.rst"),
 
@@ -60,20 +60,41 @@ setup(
 
       install_requires=[
                         "setuptools >= 0.6c7",
-                        "comtypes;platform_system=='Windows'",
-                        "pywin32;platform_system=='Windows'",
                         "six",
                         "pyperclip >= 1.7.0",
                         "enum34;python_version<'3.4'",
-                        "regex"
+                        "regex",
+                        "decorator",
+
+                        # Windows-only dependencies.
+                        "comtypes;platform_system=='Windows'",
+                        "pywin32;platform_system=='Windows'",
+
+                        # Linux dependencies.
+                        # "python-libxdo;platform_system=='Linux'",
+                        # "Xlib;platform_system=='Linux'",
+                        "psutil >= 5.5.1;platform_system=='Linux'",
+
+                        # Mac OS dependencies.
+                        "pynput >= 1.4.2;platform_system=='Darwin'",
+
+                        # RPC requirements
+                        "json-rpc",
+                        "Werkzeug",
+                        "requests",
                        ],
 
       extras_require={
           "sphinx": [
-                     "sphinxwrapper >= 1.1.1",
-                     "pyjsgf >= 1.2.2",
+                     "sphinxwrapper >= 1.2.0",
+                     "pyjsgf >= 1.7.0",
                      "pyaudio"
-                    ]
+                    ],
+          "kaldi": [
+                    "kaldi-active-grammar ~= 0.6.0",
+                    "pyaudio == 0.2.*",
+                    "webrtcvad == 2.0.*",
+                   ],
       },
 
       classifiers=[
@@ -87,5 +108,5 @@ setup(
 
       packages=find_packages(),
 
-      test_suite="dragonfly.test.suites.natlink_suite",
+      test_suite="dragonfly.test.suites.text_suite",
      )

@@ -1,0 +1,23 @@
+Remote Procedure Call (RPC) sub-package
+============================================================================
+
+Dragonfly's remote procedure call (RPC) sub-package allows for interaction
+with a dragonfly speech recognition engine running in a remote process. This
+is useful for building responsive GUI applications without having to
+integrate them into a loaded grammar or grammar rule.
+
+Some use cases for this framework include:
+
+- Listing available commands and grammars in the current context.
+- Integrating and displaying documentation.
+- Guiding the user through complex commands.
+- A GUI for building dragonfly/third-party grammars.
+
+.. automodule:: dragonfly.rpc.server
+   :members:
+
+.. automodule:: dragonfly.rpc.methods
+   :members:
+
+.. automodule:: dragonfly.rpc.util
+   :members:

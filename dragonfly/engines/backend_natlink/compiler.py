@@ -30,6 +30,8 @@ from six import string_types, text_type, PY2
 
 from ..base import CompilerBase, CompilerError
 
+import dragonfly.grammar.elements as elements_
+
 
 #===========================================================================
 
@@ -64,10 +66,17 @@ class NatlinkCompiler(CompilerBase):
     def _compile_sequence(self, element, compiler):
         children = element.children
         if len(children) > 1:
-            compiler.start_sequence()
-            for c in children:
-                self.compile_element(c, compiler)
-            compiler.end_sequence()
+            # Compile Sequence and Repetition elements differently.
+            is_rep = isinstance(element, elements_.Repetition)
+            if is_rep and element.optimize:
+                compiler.start_repetition()
+                self.compile_element(children[0], compiler)
+                compiler.end_repetition()
+            else:
+                compiler.start_sequence()
+                for c in children:
+                    self.compile_element(c, compiler)
+                compiler.end_sequence()
         elif len(children) == 1:
             self.compile_element(children[0], compiler)
 

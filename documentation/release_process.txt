@@ -17,7 +17,7 @@ Preparation
 #.  Tickets
 
     #.  Update ticket status for this release, where relevant:
-        https://github.com/Danesprite/dragonfly/issues
+        https://github.com/dictation-toolbox/dragonfly/issues
 
 #.  Release files
 
@@ -64,7 +64,7 @@ Release
 #.  Upload to GitHub
 
     #.  Upload distributions to GitHub:
-        https://github.com/Danesprite/dragonfly/releases
+        https://github.com/dictation-toolbox/dragonfly/releases
 
 #.  Trigger building of documentation on Read the Docs
 

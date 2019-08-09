@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
@@ -26,9 +27,12 @@ Key action
 
 This section describes the :class:`Key` action object.  This 
 type of action is used for sending keystrokes to the foreground 
-application.  Examples of how to use this class are given in
-:ref:`RefKeySpecExamples`.
+application.  This works on Windows, Mac OS and with X11 (e.g. on Linux).
+Examples of how to use this class are given in :ref:`RefKeySpecExamples`.
 
+To use this class on X11/Linux, the
+`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
+installed.
 
 .. _RefKeySpec:
 
@@ -107,24 +111,31 @@ Key names
    ``3`` or ``three``, ``4`` or ``four``, ``5`` or ``five``,
    ``6`` or ``six``, ``7`` or ``seven``, ``8`` or ``eight``,
    ``9`` or ``nine``
- - Symbol keys: ``bang`` or ``exclamation``, ``at``, ``hash``,
-   ``dollar``, ``percent``, ``caret``, ``and`` or ``ampersand``,
-   ``star`` or ``asterisk``, ``leftparen`` or ``lparen``,
-   ``rightparen`` or ``rparen``, ``minus`` or ``hyphen``,
-   ``underscore``, ``plus``, ``backtick``, ``tilde``,
-   ``leftbracket`` or ``lbracket``, ``rightbracket`` or ``rbracket``,
-   ``leftbrace`` or ``lbrace``, ``rightbrace`` or ``rbrace``,
-   ``backslash``, ``bar``, ``colon``, ``semicolon``,
-   ``apostrophe`` or ``singlequote`` or ``squote``,
-   ``quote`` or ``doublequote`` or ``dquote``, ``comma``, ``dot``,
-   ``slash``, ``lessthan`` or ``leftangle`` or ``langle``,
-   ``greaterthan`` or ``rightangle`` or ``rangle``, ``question``,
-   ``equal`` or ``equals``
+ - Symbol keys: ``!`` or ``bang`` or ``exclamation``, ``@`` or ``at``,
+   ``#`` or ``hash``, ``$`` or ``dollar``, ``%`` or ``percent``,
+   ``^`` or ``caret``, ``&`` or ``and`` or ``ampersand``,
+   ``*`` or ``star`` or ``asterisk``,
+   ``(`` or ``leftparen`` or ``lparen``,
+   ``)`` or ``rightparen`` or ``rparen``, ``minus`` or ``hyphen``,
+   ``_`` or ``underscore``, ``+`` or ``plus``, ````` or ``backtick``,
+   ``~`` or ``tilde``, ``[`` or ``leftbracket`` or ``lbracket``,
+   ``]`` or ``rightbracket`` or ``rbracket``,
+   ``{`` or ``leftbrace`` or ``lbrace``,
+   ``}`` or ``rightbrace`` or ``rbrace``, ``\`` or ``backslash``,
+   ``|`` or ``bar``, ``colon``, ``;`` or ``semicolon``,
+   ``'`` or ``apostrophe`` or ``singlequote`` or ``squote``,
+   ``"`` or ``quote`` or ``doublequote`` or ``dquote``, ``comma``,
+   ``.`` or ``dot``, ``slash``,
+   ``<`` or ``lessthan`` or ``leftangle`` or ``langle``,
+   ``>`` or ``greaterthan`` or ``rightangle`` or ``rangle``,
+   ``?`` or ``question``, ``=`` or ``equal`` or ``equals``
  - Whitespace and editing keys: ``enter``, ``tab``, ``space``,
    ``backspace``, ``delete`` or ``del``
- - Modifier keys: ``shift``, ``control`` or ``ctrl``, ``alt``
- - Special keys: ``escape``, ``insert``, ``pause``, ``win``,
-   ``apps`` or ``popup``
+ - Main modifier keys: ``shift``, ``control`` or ``ctrl``, ``alt``
+ - Right modifier keys: ``rshift``, ``rcontrol`` or ``rctrl``, ``ralt``
+ - Special keys: ``escape``, ``insert``, ``pause``, ``win``, ``rwin``,
+   ``apps`` or ``popup``, ``snapshot`` or ``printscreen``
+ - Lock keys: ``scrolllock``, ``numlock``, ``capslock``
  - Navigation keys: ``up``, ``down``, ``left``, ``right``,
    ``pageup`` or ``pgup``, ``pagedown`` or ``pgdown``, ``home``, ``end``
  - Number pad keys: ``npmul``, ``npadd``, ``npsep``, ``npsub``,
@@ -171,16 +182,55 @@ with the *l*: ::
     Key("w-l").execute()
 
 
+X11 key support
+............................................................................
+
+This class can be used to type arbitrary keys and Unicode characters on
+X11/Linux. It is not limited to the key names listed above, although all of
+them will work too.
+
+Unicode characters are supported by passing their Unicode code point to the
+keyboard implementation. For example, the character ``'€'`` is converted to
+``'U20AC'``. The Unicode code point can also be passed directly, e.g. with
+``Key('U20AC')``.
+
+
+
+Example X11 key actions
+----------------------------------------------------------------------------
+
+In addition to the examples in the previous section, the following example
+will work on X11/Linux.
+
+The following code will type 'σμ' into the foreground application and then
+press ctrl+z: ::
+
+    Key("σ,μ,c-z").execute()
+
+The following code will press 'µ' while holding control and alt: ::
+
+    Key("ca-μ").execute()
+
+The following code will press the browser refresh multimedia key: ::
+
+    Key("XF86Refresh").execute()
+
+Although this key is not defined in dragonfly's typeables list, it still
+works because it is passed directly to xdotool.
+
+
 Key class reference
 ............................................................................
 
 """
 
+import os
 
 from .action_base  import DynStrActionBase, ActionError
 from .typeables    import typeables
 from .keyboard     import Keyboard
 
+_ON_X11 = os.environ.get("XDG_SESSION_TYPE") == "x11"
 
 #---------------------------------------------------------------------------
 
@@ -199,8 +249,10 @@ class Key(DynStrActionBase):
 
         This class emulates keyboard activity by sending keystrokes to the 
         foreground application.  It does this using Dragonfly's keyboard 
-        interface implemented in the :mod:`keyboard` and :mod:`sendinput` 
-        modules.  These use the ``sendinput()`` function of the Win32 API.
+        interface for the current platform.  The implementation for Windows
+        uses the ``sendinput()`` Win32 API function.  The implementations
+        for X11 and Mac OS use
+        `pynput <https://pynput.readthedocs.io/en/latest/>`__.
 
     """
 
@@ -285,11 +337,16 @@ class Key(DynStrActionBase):
         else:
             raise ActionError("Invalid key spec: %s" % spec)
 
-        try:
-            code = typeables[keyname]
-        except KeyError:
+        # Check if the key name is valid.
+        code = typeables.get(keyname)
+        if code is None and _ON_X11:
+            # Delegate to the keyboard class on X11/Linux. Any invalid keys
+            # will cause error messages later than normal, but this allows
+            # using valid key symbols that dragonfly doesn't define.
+            code = self._keyboard.get_typeable(keyname)
+        elif code is None:
+            # Raise an error on other platforms.
             raise ActionError("Invalid key name: %r" % keyname)
-
 
         if inner_pause is not None:
             s = inner_pause

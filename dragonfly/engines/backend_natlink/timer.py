@@ -31,6 +31,22 @@ from ..base import TimerManagerBase
 
 class NatlinkTimerManager(TimerManagerBase):
     """
+    Timer manager for the Natlink engine.
+
+    This class utilises :meth:`natlink.setTimerCallback` to ensure that
+    timer functions are called on-time regardless of Dragon's current
+    status.
+
+    Python code run outside of timer functions will be blocked when
+    ``natlink`` functions are executing. This is a
+    `limitation with Python threads
+    <https://docs.python.org/3/c-api/init.html#thread-state-and-the-global-interpreter-lock>`__.
+
+    :meth:`engine.connect` must be called before using timers with this
+    manager.
+
+    **Note**: long-running timers will block dragonfly from processing
+    what was said, so be careful with how you use them!
     """
 
     def __init__(self, interval, engine):
