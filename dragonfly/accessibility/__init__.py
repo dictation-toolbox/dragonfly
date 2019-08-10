@@ -9,8 +9,8 @@ if sys.platform.startswith("win"):
     from . import ia2
     os_controller_class = ia2.Controller
 else:
-    # TODO Support Linux.
-    pass
+    from . import atspi
+    os_controller_class = atspi.Controller
 
 controller_instance = None
 
