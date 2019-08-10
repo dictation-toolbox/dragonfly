@@ -56,7 +56,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        vad_aggressiveness=3, vad_padding_ms=100, vad_complex_padding_ms=None, input_device_index=None,
+        vad_aggressiveness=3, vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=None, input_device_index=None,
         auto_add_to_user_lexicon=None,
         cloud_dictation=None,  # FIXME: cloud_dictation_lang
         ):
@@ -71,8 +71,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._tmp_dir = tmp_dir if tmp_dir is not None else 'kaldi_tmp'
         self._options = dict(
             vad_aggressiveness = vad_aggressiveness,
-            vad_padding_ms = vad_padding_ms,
-            vad_complex_padding_ms = vad_complex_padding_ms,
+            vad_padding_start_ms = vad_padding_start_ms,
+            vad_padding_end_ms = vad_padding_end_ms,
+            vad_complex_padding_end_ms = vad_complex_padding_end_ms,
             input_device_index = input_device_index,
             auto_add_to_user_lexicon = auto_add_to_user_lexicon,
             cloud_dictation = cloud_dictation,
@@ -103,7 +104,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler.decoder = self._decoder
 
         self._audio = VADAudio(aggressiveness=self._options['vad_aggressiveness'], start=False, input_device_index=self._options['input_device_index'])
-        self._audio_iter = self._audio.vad_collector(padding_ms=self._options['vad_padding_ms'], nowait=True, complex_padding_ms=self._options['vad_complex_padding_ms'])
+        self._audio_iter = self._audio.vad_collector(nowait=True,
+            padding_start_ms=self._options['vad_padding_start_ms'], padding_end_ms=self._options['vad_padding_end_ms'], complex_padding_end_ms=self._options['vad_complex_padding_end_ms'])
         self.audio_store = AudioStore(self._audio, maxlen=0)
 
         self._any_exclusive_grammars = False
