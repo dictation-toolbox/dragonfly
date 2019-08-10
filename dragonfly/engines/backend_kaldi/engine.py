@@ -57,7 +57,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        vad_aggressiveness=None, vad_padding_ms=None, input_device_index=None,
+        vad_aggressiveness=3, vad_padding_ms=100, vad_complex_padding_ms=None, input_device_index=None,
         auto_add_to_user_lexicon=None,
         cloud_dictation=None,  # FIXME: cloud_dictation_lang
         ):
@@ -214,12 +214,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             end_time = time.time() + timeout
             timed_out = True
         phrase_started = False
+        in_complex = False
 
         self._audio.start()
+        next(self._audio_iter)
 
         try:
             while (not timeout) or (time.time() < end_time):
-                block = next(self._audio_iter)
+                block = self._audio_iter.send(in_complex)
 
                 if block is False:
                     # No audio block available
@@ -238,6 +240,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     self._decoder.decode(block, False, kaldi_rules_activity)
                     if self.audio_store:
                         self.audio_store.add_block(block)
+                    output, likelihood = self._decoder.get_output()
+                    self._log.log(5, "Partial utterence: likelihood %f, %r", likelihood, output)
+                    kaldi_rule, words, words_are_dictation = self._compiler.parse_partial_output(output)
+                    in_complex = ((kaldi_rule and kaldi_rule.is_complex) or (words_are_dictation and words_are_dictation[-1]))
 
                 else:
                     # End of phrase
@@ -249,6 +255,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     if self.audio_store and kaldi_rule:
                         self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name)
                     phrase_started = False
+                    in_complex = False
                     timed_out = False
                     if single:
                         break

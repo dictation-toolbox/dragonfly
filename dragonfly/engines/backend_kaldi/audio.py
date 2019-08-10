@@ -154,45 +154,52 @@ class VADAudio(MicAudio):
         super(VADAudio, self).__init__(**kwargs)
         self.vad = webrtcvad.Vad(aggressiveness)
 
-    def vad_collector(self, padding_ms=300, ratio=0.75, blocks=None, nowait=False):
+    def vad_collector(self, padding_ms=100, complex_padding_ms=None, ratio=0.8, blocks=None, nowait=False):
         """Generator that yields series of consecutive audio blocks comprising each utterence, separated by yielding a single None.
             Determines voice activity by ratio of blocks in padding_ms. Uses a buffer to include padding_ms prior to being triggered.
             Example: (block, ..., block, None, block, ..., block, None, ...)
                       |---utterence---|        |---utterence---|
         """
-        # FIXME: error reporting for invalid padding_ms
+        num_padding_blocks = max(1, (padding_ms / ratio) // self.block_duration_ms)
+        num_complex_padding_blocks = max(1, ((complex_padding_ms or padding_ms) / ratio) // self.block_duration_ms)
+        _log.debug("%s: vad_collector: num_padding_blocks=%s num_complex_padding_blocks=%s", num_padding_blocks, num_complex_padding_blocks)
+
         if blocks is None: blocks = self.iter(nowait=nowait)
-        num_padding_blocks = padding_ms // self.block_duration_ms
         ring_buffer = collections.deque(maxlen=num_padding_blocks)
+        complex_ring_buffer = collections.deque(maxlen=num_complex_padding_blocks)
         triggered = False
+        in_complex = False
 
         for block in blocks:
             if block is False or block is None:
-                yield block
+                in_complex = yield block
 
             else:
                 is_speech = self.vad.is_speech(block, self.sample_rate)
 
                 if not triggered:
                     ring_buffer.append((block, is_speech))
-                    num_voiced = len([f for f, speech in ring_buffer if speech])
+                    num_voiced = len([1 for block, speech in ring_buffer if speech])
                     if num_voiced > ratio * ring_buffer.maxlen:
                         # Start of phrase
                         triggered = True
-                        for f, s in ring_buffer:
-                            yield f
+                        for block, _ in ring_buffer:
+                            in_complex = yield block
                         ring_buffer.clear()
 
                 else:
                     # Ongoing phrase
-                    yield block
+                    in_complex = yield block
                     ring_buffer.append((block, is_speech))
-                    num_unvoiced = len([f for f, speech in ring_buffer if not speech])
-                    if num_unvoiced > ratio * ring_buffer.maxlen:
+                    complex_ring_buffer.append((block, is_speech))
+                    num_unvoiced = len([1 for block, speech in ring_buffer if not speech])
+                    num_complex_unvoiced = len([1 for block, speech in complex_ring_buffer if not speech])
+                    if (not in_complex and num_unvoiced > ratio * ring_buffer.maxlen) or (in_complex and num_complex_unvoiced > ratio * complex_ring_buffer.maxlen):
                         # End of phrase
                         triggered = False
-                        yield None
+                        in_complex = yield None
                         ring_buffer.clear()
+                        complex_ring_buffer.clear()
 
 
 class AudioStore(object):
