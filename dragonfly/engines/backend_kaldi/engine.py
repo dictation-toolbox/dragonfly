@@ -45,7 +45,6 @@ except ImportError:
     ENGINE_AVAILABLE = False
 
 
-
 #===========================================================================
 
 class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
@@ -70,11 +69,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._model_dir = model_dir if model_dir is not None else 'kaldi_model_zamia'
         self._tmp_dir = tmp_dir if tmp_dir is not None else 'kaldi_tmp'
-        self._vad_aggressiveness = vad_aggressiveness if vad_aggressiveness is not None else 3
-        self._vad_padding_ms = vad_padding_ms if vad_padding_ms is not None else 300
-        self._input_device_index = input_device_index
-        self._auto_add_to_user_lexicon = auto_add_to_user_lexicon
-        self._cloud_dictation = cloud_dictation
+        self._options = dict(
+            vad_aggressiveness = vad_aggressiveness,
+            vad_padding_ms = vad_padding_ms,
+            vad_complex_padding_ms = vad_complex_padding_ms,
+            input_device_index = input_device_index,
+            auto_add_to_user_lexicon = auto_add_to_user_lexicon,
+            cloud_dictation = cloud_dictation,
+        )
 
         self._compiler = None
         self._decoder = None
@@ -90,7 +92,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._log.debug("Loading KaldiEngine in process %s." % os.getpid())
         # subprocess.call(['vsjitdebugger', '-p', str(os.getpid())]); time.sleep(5)
 
-        self._compiler = KaldiCompiler(self._model_dir, tmp_dir=self._tmp_dir, auto_add_to_user_lexicon=self._auto_add_to_user_lexicon, cloud_dictation=self._cloud_dictation)
+        self._compiler = KaldiCompiler(self._model_dir, tmp_dir=self._tmp_dir,
+            auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
+            cloud_dictation=self._options['cloud_dictation'])
         # self._compiler.fst_cache.invalidate()
 
         top_fst = self._compiler.compile_top_fst()
@@ -98,8 +102,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._decoder = KaldiAgfNNet3Decoder(model_dir=self._model_dir, tmp_dir=self._tmp_dir, top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file)
         self._compiler.decoder = self._decoder
 
-        self._audio = VADAudio(aggressiveness=self._vad_aggressiveness, start=False, input_device_index=self._input_device_index)
-        self._audio_iter = self._audio.vad_collector(padding_ms=self._vad_padding_ms, nowait=True)
+        self._audio = VADAudio(aggressiveness=self._options['vad_aggressiveness'], start=False, input_device_index=self._options['input_device_index'])
+        self._audio_iter = self._audio.vad_collector(padding_ms=self._options['vad_padding_ms'], nowait=True, complex_padding_ms=self._options['vad_complex_padding_ms'])
         self.audio_store = AudioStore(self._audio, maxlen=0)
 
         self._any_exclusive_grammars = False
