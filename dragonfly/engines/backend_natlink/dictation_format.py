@@ -338,8 +338,16 @@ class WordParserDns11(WordParserBase):
         "apostrophe-ess":   WordFlags("no_space_before"),
         "left-*":           WordFlags("no_cap_reset", "no_space_after"),
         "right-*":          WordFlags("no_cap_reset", "no_space_before", "no_space_reset"),
+        "open paren":       WordFlags("no_space_after"),
+        "close paren":       WordFlags("no_space_before"),
+        "slash":            WordFlags("no_space_after", "no_space_before"),
+        
+        # below are two examples of Dragon custom vocabulary with formatting
+        # these would have to be added to the Dragon vocabulary for users to use them
+        # "len":              WordFlags("no_space_after"), # shorter name for (
+        # "ren":              WordFlags("no_space_before"), # shorter name for )
     }
-
+    
     def create_word_flags(self, property):
         if not property:
             # None indicates the word is not in DNS' vocabulary.
@@ -355,6 +363,7 @@ class WordParserDns11(WordParserBase):
             flags = WordFlags()
         return flags
 
+    
     def parse_input(self, input):
         # Not unicode (Python 2) or str (Python 3)
         if not isinstance(input, text_type):
@@ -362,7 +371,6 @@ class WordParserDns11(WordParserBase):
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
             input = text_type(input).encode("windows-1252")
-
         parts = input.split("\\")
         if len(parts) == 1:
             # Word doesn't have "written\property\spoken" form, so
@@ -388,6 +396,11 @@ class WordParserDns11(WordParserBase):
             written = "\\".join(parts[:-2])
             property = parts[-2]
             spoken = parts[-1]
+        """ The if statement below allows users to add the spoken form
+        # (or the written form if and only if there isn't a spoken form)
+        # of their own custom Dragon vocabulary words into the property_mapping """
+        if spoken in self.property_map:
+            property = spoken
 
         word_flags = self.create_word_flags(property)
 
