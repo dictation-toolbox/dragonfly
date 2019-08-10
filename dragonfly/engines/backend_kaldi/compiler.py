@@ -158,8 +158,8 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         kaldi_rule.matcher = matcher.setName(str(kaldi_rule.name)).setResultsName(str(kaldi_rule.name))
         kaldi_rule.fst.equalize_weights()
         if self.added_word:
-            self.model.load_words()
             self.model.generate_lexicon_files()
+            self.model.load_words()
             self.decoder.load_lexicon()
             self.added_word = False
         kaldi_rule.compile_file()
