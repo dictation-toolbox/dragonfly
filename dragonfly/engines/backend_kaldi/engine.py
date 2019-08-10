@@ -245,9 +245,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     if self.audio_store:
                         self.audio_store.add_block(block)
                     output, likelihood = self._decoder.get_output()
-                    self._log.log(5, "Partial utterence: likelihood %f, %r", likelihood, output)
-                    kaldi_rule, words, words_are_dictation = self._compiler.parse_partial_output(output)
-                    in_complex = ((kaldi_rule and kaldi_rule.is_complex) or (words_are_dictation and words_are_dictation[-1]))
+                    self._log.log(5, "Partial utterence: likelihood %f, %r [in_complex=%s]", likelihood, output, in_complex)
+                    kaldi_rule, words, words_are_dictation, in_dictation = self._compiler.parse_partial_output(output)
+                    in_complex = bool(in_dictation or (kaldi_rule and kaldi_rule.is_complex))
 
                 else:
                     # End of phrase
