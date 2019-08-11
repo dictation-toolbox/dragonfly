@@ -20,13 +20,16 @@
 
 """This file implements the Win32 keyboard interface using sendinput."""
 
-import time
-import win32con
-
+from contextlib import contextmanager
 from ctypes import windll, c_char, c_wchar
-from six import text_type, PY2
+import time
 
-from ._base import BaseKeyboard, Typeable
+from six import text_type, PY2, string_types
+import win32con
+import win32gui
+import win32process
+
+from ._base import BaseKeyboard, Typeable as BaseTypeable
 from ..sendinput import KeyboardInput, make_input_array, send_input_array
 
 
@@ -129,6 +132,54 @@ class Win32KeySymbols(object):
     BROWSER_FORWARD = win32con.VK_BROWSER_FORWARD
 
 
+class Typeable(BaseTypeable):
+
+    __slots__ = ("_code", "_modifiers", "_name", "_is_text", "_char")
+
+    def __init__(self, code, modifiers=(), name=None, is_text=False):
+        super(Typeable, self).__init__(code, modifiers, name, is_text)
+        if not is_text and isinstance(code, string_types):
+            self._char = code
+        else:
+            self._char = None
+
+    @contextmanager
+    def _set_keycode_and_modifiers(self):
+        # Only required if this is a hardware-input lookup key.
+        char, is_text = self._char, self._is_text
+        if char is None or is_text:
+            yield
+            return
+        code, modifiers = Keyboard.get_keycode_and_modifiers(char)
+        # try:
+        #     code, modifiers = Keyboard.get_keycode_and_modifiers(char)
+        # except ValueError:
+        #     # Fallback on the Unicode events if the key cannot be typed
+        #     # using the current keyboard layout.
+        #     code, modifiers = char, ()
+        #     self._is_text = True
+
+        # Set keycode and modifiers and yield.
+        self._code, self._modifiers = code, modifiers
+        try:
+            yield
+        finally:
+            # Set _is_text back to the original value.
+            self._is_text = is_text
+
+    def on_events(self, timeout=0):
+        with self._set_keycode_and_modifiers():
+            return super(Typeable, self).on_events(timeout)
+
+    def off_events(self, timeout=0):
+        with self._set_keycode_and_modifiers():
+            return super(Typeable, self).off_events(timeout)
+
+    def events(self, timeout=0):
+        with self._set_keycode_and_modifiers():
+            return super(Typeable, self).events(timeout)
+
+
 class Keyboard(BaseKeyboard):
     """Static class wrapper around SendInput."""
 
@@ -159,11 +210,19 @@ class Keyboard(BaseKeyboard):
                 is_text (boolean): True means that the keypress is targeted
                     at a window or control that accepts Unicode text.
         """
+        # Get the current window's keyboard layout.
+        thread_id = win32process.GetWindowThreadProcessId(
+            win32gui.GetForegroundWindow()
+        )[0]
+        layout = windll.user32.GetKeyboardLayout(thread_id)
+
+        # Process and send keyboard events.
         items = []
         for event in events:
             if len(event) == 3:
                 keycode, down, timeout = event
-                input_structure = KeyboardInput(keycode, down)
+                input_structure = KeyboardInput(keycode, down,
+                                                layout=layout)
             elif len(event) == 4 and event[3]:
                 character, down, timeout = event[:3]
                 input_structure = KeyboardInput(0, down, scancode=character)
@@ -180,7 +239,10 @@ class Keyboard(BaseKeyboard):
 
     @classmethod
     def _get_initial_keycode(cls, char):
-        layout = windll.user32.GetKeyboardLayout(0)
+        thread_id = win32process.GetWindowThreadProcessId(
+            win32gui.GetForegroundWindow()
+        )[0]
+        layout = windll.user32.GetKeyboardLayout(thread_id)
         if isinstance(char, str) and PY2:
             code = windll.user32.VkKeyScanExA(c_char(char), layout)
         elif isinstance(char, text_type):  # unicode for PY2, str for PY3
@@ -218,5 +280,4 @@ class Keyboard(BaseKeyboard):
     def get_typeable(cls, char, is_text=False):
         if is_text:
             return Typeable(char, is_text=True)
-        code, modifiers = cls.get_keycode_and_modifiers(char)
-        return Typeable(code, modifiers)
+        return Typeable(char, name=char)

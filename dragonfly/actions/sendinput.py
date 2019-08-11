@@ -85,10 +85,15 @@ class KeyboardInput(Structure):
                      win32con.VK_RWIN,
                     )
 
-    def __init__(self, virtual_keycode, down, scancode=-1):
+    def __init__(self, virtual_keycode, down, scancode=-1, layout=None):
         """Initialize structure based on key type."""
         if scancode == -1:
-            scancode = windll.user32.MapVirtualKeyW(virtual_keycode, 0)
+            if not layout:
+                scancode = windll.user32.MapVirtualKeyW(virtual_keycode, 0)
+            else:
+                # Assume that 'layout' is a keyboard layout (HKL).
+                scancode = windll.user32.MapVirtualKeyExW(virtual_keycode,
+                                                          0, layout)
 
         flags = 0
         if virtual_keycode is 0:
@@ -101,6 +106,7 @@ class KeyboardInput(Structure):
             flags |= win32con.KEYEVENTF_EXTENDEDKEY
 
         extra = pointer(c_ulong(0))
+        # print(virtual_keycode, scancode, flags, 0, extra)
         Structure.__init__(self, virtual_keycode, scancode, flags, 0, extra)
 
 
