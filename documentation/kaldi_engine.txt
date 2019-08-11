@@ -134,8 +134,12 @@ the ``get_engine()`` function, which passes them to the
     model_dir='kaldi_model_zamia',
     tmp_dir='kaldi_tmp',
     vad_aggressiveness=3,
-    vad_padding_ms=300,
+    vad_padding_start_ms=300,
+    vad_padding_end_ms=100,
+    vad_complex_padding_end_ms=500,
+    input_device_index=None,
     auto_add_to_user_lexicon=True,
+    cloud_dictation=None,
   )
 
 .. autofunction:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
@@ -153,10 +157,23 @@ the ``get_engine()`` function, which passes them to the
   aggressive about filtering out non-speech, and ``3`` is the most
   aggressive.
 
-* ``vad_padding_ms`` (``int``) -- Length of padding/debouncing window (in milliseconds) at
-  beginning & ending of each utterance for the Voice Activity Detector. Smaller
+* ``vad_padding_start_ms`` (``int``) -- Approximate length of padding/debouncing (in milliseconds) at
+  beginning of each utterance for the Voice Activity Detector. Smaller
   values result in lower latency recognition (faster reactions), but possibly higher
-  likelihood of false positives/negatives at beginning/ending of utterances.
+  likelihood of false positives at beginning of utterances, and more
+  importantly higher possibility of not capturing the entire beginning of
+  utterances.
+
+* ``vad_padding_end_ms`` (``int``) -- Approximate length of silence (in milliseconds) at
+  ending of each utterance for the Voice Activity Detector. Smaller
+  values result in lower latency recognition (faster reactions), but possibly higher
+  likelihood of false negatives at ending of utterances.
+
+* ``vad_complex_padding_end_ms`` (``int|None``) -- If not None, the Voice Activity Detector
+  behaves differently for utterances that are complex (usually meaning inside
+  dictation), using this value instead of ``vad_padding_end_ms``, so you can
+  attain longer utterances to take advantage of context to improve recognition
+  quality.
 
 * ``input_device_index`` (``int``) -- Microphone PortAudio input device
   index: the default of ``None`` chooses the default input device. To see
@@ -168,7 +185,7 @@ the ``get_engine()`` function, which passes them to the
   the cloud, to predict pronunciations, depending on your installed
   packages.
 
-* ``cloud_dictation`` (``str``) -- Enables cloud dictation and chooses
+* ``cloud_dictation`` (``str|None``) -- Enables cloud dictation and chooses
   the provider. Possible values:
 
   * ``None`` -- Disabled
