@@ -172,11 +172,11 @@ class BaseWindow(object):
     def title(self):
         """ Read-only access to the window's title. """
         window_text = self._get_window_text()
-        if isinstance(window_text, text_type):
-            return window_text
-        elif isinstance(window_text, binary_type):
+        # PY2
+        if isinstance(window_text, binary_type):
             return window_text.decode(getpreferredencoding())
-
+        else:
+            return window_text
 
     @property
     def classname(self):
