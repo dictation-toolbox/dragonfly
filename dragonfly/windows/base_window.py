@@ -24,7 +24,7 @@ Base Window class
 
 """
 
-from six import string_types, integer_types, text_type, binary_type
+from six import string_types, integer_types, binary_type
 from locale import getpreferredencoding
 
 from .window_movers import window_movers
