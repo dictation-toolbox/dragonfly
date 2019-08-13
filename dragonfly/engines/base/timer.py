@@ -40,7 +40,7 @@ class Timer(object):
      - *function* (*callable*) -- the function to call every N seconds. Must
        have no required arguments.
      - *interval* (*float*) -- number of seconds between calls to the
-       function.
+       function. Note that this is on a best-effort basis only.
      - *manager* (:class:`TimerManagerBase`) -- engine timer manager instance.
      - *repeating* (*bool*) -- whether to call the function every N seconds
        or just once (default: True).
@@ -86,7 +86,7 @@ class Timer(object):
 
         This method is normally called by the timer manager.
         """
-        self.next_time += self.interval
+        self.next_time = time.time() + self.interval
         try:
             self.function()
         except Exception as e:
