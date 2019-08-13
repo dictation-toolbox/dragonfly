@@ -84,6 +84,8 @@ default_levels = {
                   "context.match":        (_warning, _info),
                   "rpc.server":           (_warning, _info),
                   "rpc.methods":          (_warning, _info),
+                  "werkzeug":             (_warning, _warning),
+                  "jsonrpc.manager":      (_critical, _critical),
                   "rule":                 (_warning, _info),
                   "config":               (_warning, _info),
                   "module":               (_info, _info),
