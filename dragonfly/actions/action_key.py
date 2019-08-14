@@ -224,13 +224,9 @@ Key class reference
 
 """
 
-import os
-
 from .action_base  import DynStrActionBase, ActionError
 from .typeables    import typeables
 from .keyboard     import Keyboard
-
-_ON_X11 = os.environ.get("XDG_SESSION_TYPE") == "x11"
 
 #---------------------------------------------------------------------------
 
@@ -341,14 +337,12 @@ class Key(DynStrActionBase):
 
         # Check if the key name is valid.
         code = typeables.get(keyname)
-        if code is None and _ON_X11:
-            # Delegate to the keyboard class on X11/Linux. Any invalid keys
-            # will cause error messages later than normal, but this allows
-            # using valid key symbols that dragonfly doesn't define.
+        if code is None:
+            # Delegate to the keyboard class. Any invalid keys will cause
+            # error messages later than normal, but this allows using valid
+            # key symbols that dragonfly doesn't define.
             code = self._keyboard.get_typeable(keyname)
-        elif code is None:
-            # Raise an error on other platforms.
-            raise ActionError("Invalid key name: %r" % keyname)
+            typeables[keyname] = code
 
         if inner_pause is not None:
             s = inner_pause
