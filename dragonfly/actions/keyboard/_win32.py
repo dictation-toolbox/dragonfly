@@ -21,10 +21,13 @@
 """This file implements the Win32 keyboard interface using sendinput."""
 
 from contextlib import contextmanager
-from ctypes import windll, c_char, c_wchar
+from ctypes import windll
+from locale import getpreferredencoding
 import time
 
-from six import text_type, PY2, string_types
+from six import binary_type, string_types
+
+import win32api
 import win32con
 import win32gui
 import win32process
@@ -243,12 +246,11 @@ class Keyboard(BaseKeyboard):
             win32gui.GetForegroundWindow()
         )[0]
         layout = windll.user32.GetKeyboardLayout(thread_id)
-        if isinstance(char, str) and PY2:
-            code = windll.user32.VkKeyScanExA(c_char(char), layout)
-        elif isinstance(char, text_type):  # unicode for PY2, str for PY3
-            code = windll.user32.VkKeyScanExW(c_wchar(char), layout)
-        else:
-            code = -1
+        if isinstance(char, binary_type):
+            char = char.decode(getpreferredencoding())
+
+        # Get the code for this character.
+        code = win32api.VkKeyScanEx(char, layout)
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
         return code
