@@ -87,5 +87,8 @@ class FakeWindow(BaseWindow):
     def restore(self):
         pass
 
+    def close(self):
+        pass
+
     def set_foreground(self):
         pass

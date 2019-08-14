@@ -394,6 +394,9 @@ class X11Window(BaseWindow):
         elif self._is_maximized(state):
             self._toggle_maximize()
 
+    def close(self):
+        self._run_xdotool_command(['windowclose', self.id])
+
     def set_foreground(self):
         if self.is_minimized:
             self.restore()
