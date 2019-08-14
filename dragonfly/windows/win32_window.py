@@ -142,6 +142,11 @@ class Win32Window(BaseWindow):
     maximize        = _win32gui_show_window(win32con.SW_MAXIMIZE)
     restore         = _win32gui_show_window(win32con.SW_RESTORE)
 
+    def _win32gui_post(message, w=0, l=0):
+        return lambda self: win32gui.PostMessage(self._handle, message, w, l)
+
+    close = _win32gui_post(win32con.WM_CLOSE)
+
     def _get_window_module(self):
         # Get this window's process ID.
         pid = c_ulong()

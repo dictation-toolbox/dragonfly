@@ -237,6 +237,10 @@ class BaseWindow(object):
         """ Maximize the window (if possible). """
         raise NotImplementedError()
 
+    def close(self):
+        """ Close the window (if possible). """
+        raise NotImplementedError()
+
     def restore(self):
         """ Restore the window if it is minimized or maximized. """
         raise NotImplementedError()
