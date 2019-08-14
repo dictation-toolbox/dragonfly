@@ -24,7 +24,8 @@ Base Window class
 
 """
 
-from six import string_types, integer_types
+from six import string_types, integer_types, binary_type
+from locale import getpreferredencoding
 
 from .window_movers import window_movers
 
@@ -170,7 +171,12 @@ class BaseWindow(object):
     @property
     def title(self):
         """ Read-only access to the window's title. """
-        return self._get_window_text()
+        window_text = self._get_window_text()
+        # PY2
+        if isinstance(window_text, binary_type):
+            return window_text.decode(getpreferredencoding())
+        else:
+            return window_text
 
     @property
     def classname(self):
