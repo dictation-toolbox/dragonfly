@@ -250,9 +250,11 @@ class Key(DynStrActionBase):
         This class emulates keyboard activity by sending keystrokes to the 
         foreground application.  It does this using Dragonfly's keyboard 
         interface for the current platform.  The implementation for Windows
-        uses the ``sendinput()`` Win32 API function.  The implementations
-        for X11 and Mac OS use
-        `pynput <https://pynput.readthedocs.io/en/latest/>`__.
+        uses the ``sendinput()`` Win32 API function.  The implementation
+        for Mac OS uses
+        `pynput <https://pynput.readthedocs.io/en/latest/>`__. The
+        implementation for X11/Linux uses `xdotool
+        <https://www.semicomplete.com/projects/xdotool/>`__.
 
     """
 
