@@ -17,8 +17,20 @@ To use this on Linux, you will need to install the Python library pyatspi. You
 can typically get this from your distribution's package manager. See this `stack
 overflow question
 <https://stackoverflow.com/questions/40799953/how-to-install-pyatspi>`__ for
-examples. Most functionality works properly on Linux, except for some edge cases
-which require Mouse actions to work well, which is still a work in progress.
+examples. Next, add ``export GNOME_ACCESSIBILITY=1`` to your ~/.profile (some
+applications will not support assistive technologies unless this is
+enabled). Most functionality works properly on Linux, except for a few known issues:
+
+* Text selection occasionally requires use of the Mouse action due to
+  limitations of the text selection API. The Mouse action is not yet implemented
+  on Linux, so this will sometimes silently fail.
+
+* Firefox has been tested successfully on Ubuntu 18.04 with default
+  configuration, but problems have been reported on Xfce with Xfwm4 on Debian
+  10.
+
+* LibreOffice treats each paragraph as a separate focusable element, so movement
+  between paragraphs is not yet supported.
 
 Entry points
 ----------------------------------------------------------------------------
