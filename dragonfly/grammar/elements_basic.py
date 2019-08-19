@@ -51,6 +51,8 @@ classes listed above:
    free-form dictation; this element matches any words the speaker says,
    and includes facilities for formatting the spoken words with correct
    spacing and capitalization
+ - :class:`Modifier` --
+   modifies the output of another element by applying a function to it following recognition
  - :class:`DictListRef` --
    reference to a :class:`dragonfly.DictList` object; this element is
    similar to the :class:`dragonfly.ListRef` element, except that it returns
@@ -990,6 +992,37 @@ class Dictation(ElementBase):
     def value(self, node):
         return node.engine.DictationContainer(node.words(), self._string_methods)
 
+#---------------------------------------------------------------------------
+
+class Modifier(Alternative):
+    """
+        Element allowing direct modification of the output of another element at recognition time.
+
+        Constructor arguments:
+            - *element* (*Element*) -- The element to be recognised, e.g. :class:`Dictation` or :class:`Repetition`, with appropriate arguments passed.
+            - *modifier* (*function*) -- A function to be applied to the value of this element when it is recognised.
+
+        Examples:
+
+        .. code:: python
+
+            # Recognises an integer, returns the integer plus one
+            Modifier(IntegerRef("plus1", 1, 20), lambda n: n+1)
+            # Recognises a series of integers, returns them separated by commas as a string
+            Modifier(Repetition(IntegerRef("", 0, 10), min=1, max=5, name="num_seq"), 
+                lambda r: ", ".join(map(str, r))),
+
+    """
+    def __init__(self, element, modifier=None):
+        self._modifier = modifier
+        Alternative.__init__(self, children=(element,), name=element.name, default=element.default)
+
+    def value(self, node):
+        initial_value = Alternative.value(self, node)
+        if self._modifier:
+            return self._modifier(initial_value)
+        else:
+            return initial_value
 
 #---------------------------------------------------------------------------
 
