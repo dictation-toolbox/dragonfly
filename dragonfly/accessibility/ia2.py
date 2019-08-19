@@ -114,6 +114,7 @@ class Controller(object):
     def start(self):
         self.shutdown_event = threading.Event()
         thread = threading.Thread(target=self._start_blocking)
+        thread.setDaemon(True)
         thread.start()
 
     def stop(self):

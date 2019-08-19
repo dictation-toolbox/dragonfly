@@ -66,6 +66,7 @@ class Controller(object):
                                                "object:state-changed:focused")
 
         thread = threading.Thread(target=pyatspi.Registry.start)
+        thread.setDaemon(True)
         thread.start()
 
         # Perform all AT-SPI operations as they are enqueued.
@@ -102,6 +103,7 @@ class Controller(object):
     def start(self):
         self.shutdown_event = threading.Event()
         thread = threading.Thread(target=self._start_blocking)
+        thread.setDaemon(True)
         thread.start()
 
     def stop(self):
