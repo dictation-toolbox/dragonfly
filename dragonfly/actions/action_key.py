@@ -4,18 +4,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -25,8 +25,8 @@
 Key action
 ============================================================================
 
-This section describes the :class:`Key` action object.  This 
-type of action is used for sending keystrokes to the foreground 
+This section describes the :class:`Key` action object.  This
+type of action is used for sending keystrokes to the foreground
 application.  This works on Windows, Mac OS and with X11 (e.g. on Linux).
 Examples of how to use this class are given in :ref:`RefKeySpecExamples`.
 
@@ -39,9 +39,9 @@ installed.
 Keystroke specification format
 ............................................................................
 
-The *spec* argument passed to the :class:`Key` constructor specifies which 
-keystroke events will be emulated.  It is a string consisting of one or 
-more comma-separated keystroke elements.  Each of these elements has one 
+The *spec* argument passed to the :class:`Key` constructor specifies which
+keystroke events will be emulated.  It is a string consisting of one or
+more comma-separated keystroke elements.  Each of these elements has one
 of the following two possible formats:
 
 Normal press-release key action, optionally repeated several times:
@@ -50,7 +50,7 @@ Normal press-release key action, optionally repeated several times:
 Press-and-hold a key, or release a held-down key:
    [*modifiers* ``-``] *keyname* ``:`` *direction* [``/`` *outerpause*]
 
-The different parts of the keystroke specification are as follows.  Note 
+The different parts of the keystroke specification are as follows.  Note
 that only *keyname* is required; the other fields are optional.
 
  - *modifiers* --
@@ -80,7 +80,7 @@ that only *keyname* is required; the other fields are optional.
     - ``down`` -- press and hold the key
     - ``up`` -- release the key
 
-   Note that releasing a key which is *not* being held down does *not* 
+   Note that releasing a key which is *not* being held down does *not*
    cause an error.  It harmlessly does nothing.
 
 
@@ -159,24 +159,24 @@ Key names
 Example key actions
 ............................................................................
 
-The following code types the text "Hello world!" into the foreground 
+The following code types the text "Hello world!" into the foreground
 application: ::
 
     Key("H, e, l, l, o, space, w, o, r, l, d, exclamation").execute()
 
-The following code is a bit more useful, as it saves the current file with 
-the name "dragonfly.txt" (this works for many English-language 
+The following code is a bit more useful, as it saves the current file with
+the name "dragonfly.txt" (this works for many English-language
 applications): ::
 
     action = Key("a-f, a/50") + Text("dragonfly.txt") + Key("enter")
     action.execute()
 
-The following code selects the next four lines by holding down the *shift* 
+The following code selects the next four lines by holding down the *shift*
 key, slowly moving down 4 lines, and then releasing the *shift* key: ::
 
     Key("shift:down, down/25:4, shift:up").execute()
 
-The following code locks the screen by pressing the *Windows* key together 
+The following code locks the screen by pressing the *Windows* key together
 with the *l*: ::
 
     Key("w-l").execute()
@@ -244,11 +244,11 @@ class Key(DynStrActionBase):
          - *static* (boolean) -- flag indicating whether the
            specification contains dynamic elements
 
-        The format of the keystroke specification *spec* is described in 
+        The format of the keystroke specification *spec* is described in
         :ref:`RefKeySpec`.
 
-        This class emulates keyboard activity by sending keystrokes to the 
-        foreground application.  It does this using Dragonfly's keyboard 
+        This class emulates keyboard activity by sending keystrokes to the
+        foreground application.  It does this using Dragonfly's keyboard
         interface for the current platform.  The implementation for Windows
         uses the ``sendinput()`` Win32 API function.  The implementation
         for Mac OS uses
@@ -315,7 +315,7 @@ class Key(DynStrActionBase):
         delimiter_sequence = "".join([d[0] for d in delimiters])
         delimiter_index = [d[1] for d in delimiters]
 
-        if delimiter_sequence == "":            
+        if delimiter_sequence == "":
             keyname = spec[index:]
         elif delimiter_sequence == "/":
             keyname = spec[index:delimiter_index[0]]

@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -40,12 +40,12 @@ class Grammar(object):
     """
         Grammar class for managing a set of rules.
 
-        This base grammar class takes care of the communication 
-        between Dragonfly's object model and the backend speech 
-        recognition engine.  This includes compiling rules and 
-        elements, loading them, activating and deactivating 
-        them, and unloading them.  It may, depending on the 
-        engine, also include receiving recognition results and 
+        This base grammar class takes care of the communication
+        between Dragonfly's object model and the backend speech
+        recognition engine.  This includes compiling rules and
+        elements, loading them, activating and deactivating
+        them, and unloading them.  It may, depending on the
+        engine, also include receiving recognition results and
         dispatching them to the appropriate rule.
 
          - *name* -- name of this grammar
@@ -131,7 +131,7 @@ class Grammar(object):
 
     def enable(self):
         """
-            Enable this grammar so that it is active to receive 
+            Enable this grammar so that it is active to receive
             recognitions.
 
         """
@@ -139,7 +139,7 @@ class Grammar(object):
 
     def disable(self):
         """
-            Disable this grammar so that it is not active to 
+            Disable this grammar so that it is not active to
             receive recognitions.
 
         """
@@ -233,8 +233,8 @@ class Grammar(object):
         """
             Add a rule or list dependency to this grammar.
 
-            **Internal:** this method is normally *not* called 
-            by the user, but instead automatically during 
+            **Internal:** this method is normally *not* called
+            by the user, but instead automatically during
             grammar compilation.
 
         """
@@ -252,8 +252,8 @@ class Grammar(object):
         """
             Activate a rule loaded in this grammar.
 
-            **Internal:** this method is normally *not* called 
-            directly by the user, but instead automatically when 
+            **Internal:** this method is normally *not* called
+            directly by the user, but instead automatically when
             the rule itself is activated by the user.
 
         """
@@ -277,8 +277,8 @@ class Grammar(object):
         """
             Deactivate a rule loaded in this grammar.
 
-            **Internal:** this method is normally *not* called 
-            directly by the user, but instead automatically when 
+            **Internal:** this method is normally *not* called
+            directly by the user, but instead automatically when
             the rule itself is deactivated by the user.
 
         """
@@ -302,8 +302,8 @@ class Grammar(object):
         """
             Update a list's content loaded in this grammar.
 
-            **Internal:** this method is normally *not* called 
-            directly by the user, but instead automatically when 
+            **Internal:** this method is normally *not* called
+            directly by the user, but instead automatically when
             the list itself is modified by the user.
 
         """
@@ -365,7 +365,7 @@ class Grammar(object):
 
     def get_complexity_string(self):
         """
-            Build and return a human-readable text giving insight into the 
+            Build and return a human-readable text giving insight into the
             complexity of this grammar.
 
         """
@@ -408,12 +408,12 @@ class Grammar(object):
             ``Grammar._process_begin`` instead of this method, because
             this method merely wraps that method adding context matching.*
 
-            This method is called when the speech recognition 
-            engine detects that the user has begun to speak a 
+            This method is called when the speech recognition
+            engine detects that the user has begun to speak a
             phrase.
 
             Arguments:
-             - *executable* -- the full path to the module whose 
+             - *executable* -- the full path to the module whose
                window is currently in the foreground.
              - *title* -- window title of the foreground window.
              - *handle* -- window handle to the foreground window.
@@ -454,8 +454,8 @@ class Grammar(object):
         """
             Enter context callback.
 
-            This method is called when a phrase-start has been 
-            detected.  It is only called if this grammar's 
+            This method is called when a phrase-start has been
+            detected.  It is only called if this grammar's
             context previously did not match but now does
             match positively.
 
@@ -466,9 +466,9 @@ class Grammar(object):
         """
             Exit context callback.
 
-            This method is called when a phrase-start has been 
-            detected.  It is only called if this grammar's 
-            context previously did match but now doesn't 
+            This method is called when a phrase-start has been
+            detected.  It is only called if this grammar's
+            context previously did match but now doesn't
             match positively anymore.
 
         """
@@ -478,17 +478,17 @@ class Grammar(object):
         """
             Start of phrase callback.
 
-            *This usually is the method which should be overridden 
+            *This usually is the method which should be overridden
             to give derived grammar classes custom behavior.*
 
-            This method is called when the speech recognition 
-            engine detects that the user has begun to speak a 
+            This method is called when the speech recognition
+            engine detects that the user has begun to speak a
             phrase. This method is called by the
             ``Grammar.process_begin`` method only if this
             grammar's context matches positively.
 
             Arguments:
-             - *executable* -- the full path to the module whose 
+             - *executable* -- the full path to the module whose
                window is currently in the foreground.
              - *title* -- window title of the foreground window.
              - *handle* -- window handle to the foreground window.

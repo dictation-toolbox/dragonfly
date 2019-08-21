@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -22,17 +22,17 @@
 Function action
 ============================================================================
 
-The :class:`Function` action wraps a callable, optionally with some 
-default keyword argument values.  On execution, the execution data 
-(commonly containing the recognition extras) are combined with the 
-default argument values (if present) to form the arguments with which 
+The :class:`Function` action wraps a callable, optionally with some
+default keyword argument values.  On execution, the execution data
+(commonly containing the recognition extras) are combined with the
+default argument values (if present) to form the arguments with which
 the callable will be called.
 
 Simple usage::
 
     >>> def func(count):
     ...     print("count: %d" % count)
-    ... 
+    ...
     >>> action = Function(func)
     >>> action.execute({"count": 2})
     count: 2
@@ -47,7 +47,7 @@ Usage with default arguments::
     >>> def func(count, flavor):
     ...     print("count: %d" % count)
     ...     print("flavor: %s" % flavor)
-    ... 
+    ...
     >>> # The Function object can be given default argument values:
     >>> action = Function(func, flavor="spearmint")
     >>> action.execute({"count": 2})

@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -22,8 +22,8 @@
 Playback action
 ============================================================================
 
-The :class:`Playback` action mimics a sequence of recognitions.  This is 
-for example useful for repeating a series of prerecorded or predefined 
+The :class:`Playback` action mimics a sequence of recognitions.  This is
+for example useful for repeating a series of prerecorded or predefined
 voice-commands.
 
 This class could for example be used to reload with one single action::
@@ -62,7 +62,7 @@ class Playback(ActionBase):
              - *speed* (*float*) --
                the factor by which to speed up playback.  The intervals
                after each mimic are divided by this number.
-    
+
         """
         ActionBase.__init__(self)
         self._series = tuple(series)

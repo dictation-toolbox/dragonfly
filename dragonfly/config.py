@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -26,12 +26,12 @@ Dragonfly's configuration toolkit makes it very easy to store
 program data in a separate file from the main program logic.  It uses
 a three-phase *setup -- load -- use* system:
 
- - *setup* -- a Config object is created and its structure and 
+ - *setup* -- a Config object is created and its structure and
    default contents are defined.
- - *load* -- a separate file containing the user's configuration 
-   settings is looked for and, if found, its values are loaded 
+ - *load* -- a separate file containing the user's configuration
+   settings is looked for and, if found, its values are loaded
    into the Config object.
- - *use* -- the program directly accesses the configuration 
+ - *use* -- the program directly accesses the configuration
    through easy Config object attributes.
 
 This configuration toolkit uses the following three classes:
@@ -48,7 +48,7 @@ The main program using Dragonfly's configuration toolkit would
 normally look something like this: ::
 
     from dragonfly import Config, Section, Item
-    
+
     # *Setup* phase.
     # This defines a configuration object with the name "Example
     #  configuration".  It contains one section with the title
@@ -58,14 +58,14 @@ normally look something like this: ::
     config.test            = Section("Test section")
     config.test.fruit      = Item("apple", doc="Must eat fruit.")
     config.test.color      = Item("blue", doc="The color of life.")
-    
+
     # *Load* phase.
     # This searches for a file with the same name as the main program,
     #  but with the extension ".py" replaced by ".txt".  It is also
     #  possible to explicitly specify the configuration file's path.
     #  See Config.load() for more details.
     config.load()
-    
+
     # *Use* phase.
     # The configuration values can now be accessed through the
     #  configuration object as follows.
@@ -78,10 +78,10 @@ the program.  But if the user would like to modify some or all
 of these settings, he can do so in an external configuration file
 without modifying the main program code.
 
-This external configuration file is interpreted as Python code. 
-This gives its author powerful tools for determining the desired 
-configuration settings.  However, it will usually consist merely 
-of variable assignments. The configuration file for the program 
+This external configuration file is interpreted as Python code.
+This gives its author powerful tools for determining the desired
+configuration settings.  However, it will usually consist merely
+of variable assignments. The configuration file for the program
 above might look something like this: ::
 
     # Test section
@@ -136,10 +136,10 @@ class Config(object):
          - *name* (*str*) --
            the name of this configuration object.
 
-        This class can contain zero or more :class:`Section` instances, 
-        each of which can contain zero or more :class:`Item` instances. 
-        It is these items which store the actual configuration settings. 
-        The sections merely divide the items up into groups, so that 
+        This class can contain zero or more :class:`Section` instances,
+        each of which can contain zero or more :class:`Item` instances.
+        It is these items which store the actual configuration settings.
+        The sections merely divide the items up into groups, so that
         different configuration topics can be split for easy readability.
 
   """
@@ -162,7 +162,7 @@ class Config(object):
         instances = list(cls._configs_by_name.items())
         instances.sort()
         return [instance for name, instance in instances]
-        
+
 
     #-----------------------------------------------------------------------
 
@@ -331,7 +331,7 @@ class Config(object):
         names = []
         while stack:
             # Try to retrieve the next section from the top of the stack.
-            try: 
+            try:
                 section_name, section = next(stack[-1])
                 names.append(section_name)
             except StopIteration:
@@ -376,7 +376,7 @@ class Section(object):
          - *doc* (*str*) --
            the name of this configuration section.
 
-        A section can contain zero or more subsections and zero or more 
+        A section can contain zero or more subsections and zero or more
         configuration items.
 
     """
@@ -441,19 +441,19 @@ class Item(object):
            to the Python code in the external configuration file
            during loading
 
-        A configuration item is the object that stores the actual 
-        configuration settings.  Each item has a default value, a current 
+        A configuration item is the object that stores the actual
+        configuration settings.  Each item has a default value, a current
         value, an optional description, and an optional namespace.
 
-        This class performs the checking of configuration values assigned 
-        to it during loading of the configuration file.  The default 
-        behavior of this class is to only accept values of the same Python 
-        type as the item's default value.  So, if the default value is a 
-        string, then the value assigned in the configuration file must 
-        also be a string.  Otherwise an exception will be raised and 
+        This class performs the checking of configuration values assigned
+        to it during loading of the configuration file.  The default
+        behavior of this class is to only accept values of the same Python
+        type as the item's default value.  So, if the default value is a
+        string, then the value assigned in the configuration file must
+        also be a string.  Otherwise an exception will be raised and
         loading will fail.
 
-        Developers who want other kinds of value checking should override 
+        Developers who want other kinds of value checking should override
         the :meth:`Item.validate` method of this class.
 
     """
@@ -479,10 +479,10 @@ class Item(object):
         """
             Determine whether the given *value* is valid.
 
-            This method performs validity checking of the configuration 
-            value assigned to this item during loading of the external 
-            configuration file.  If the default behavior is to raise a 
-            *TypeError* if the type of the assigned value is not the same 
+            This method performs validity checking of the configuration
+            value assigned to this item during loading of the external
+            configuration file.  If the default behavior is to raise a
+            *TypeError* if the type of the assigned value is not the same
             as the type of the default value.
 
         """
