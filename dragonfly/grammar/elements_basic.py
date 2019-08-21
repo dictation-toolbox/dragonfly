@@ -61,7 +61,7 @@ classes listed above:
 
 """
 
-
+import copy
 import logging
 from six import string_types
 
@@ -949,6 +949,9 @@ class Dictation(ElementBase):
             return "%s()" % (self.__class__.__name__)
 
     def __getattr__(self, name):
+        if isinstance(name, str) and name[:2] == name[-2:] == '__':
+            # skip non-existing dunder method lookups
+            raise AttributeError(name)
         def call(*args, **kwargs):
             self._string_methods.append((name, args, kwargs))
             return self
