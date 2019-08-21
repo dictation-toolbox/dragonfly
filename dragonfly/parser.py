@@ -34,6 +34,7 @@ type of input they are meant to process.
 
 import string
 import re
+import logging
 from six import string_types, text_type, PY2
 
 
@@ -262,7 +263,7 @@ class State(object):
         return None
 
     def _log_step(self, parser, message):
-        if not self._log:
+        if not self._log or not self._log.isEnabledFor(logging.DEBUG):
             return
         indent = "   " * self._depth
         output = "%s%s: %s" % (indent, message, parser)
