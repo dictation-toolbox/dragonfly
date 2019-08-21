@@ -111,6 +111,21 @@ Usage::
     >>> test_rep.recognize("hello world hello world")
     [[u'hello', u'world'], [u'hello', u'world']]
 
+Modifier element class
+============================================================================
+
+Basic usage::
+
+    >>> # Repetition is given a dragonfly element, in this case an IntegerRef.
+    >>> i = IntegerRef("n", 1, 10)
+    >>> # Specify min and max values to allow more than one repetition.
+    >>> rep = Repetition(i, min=1, max=16, optimize=False)
+    >>> # Modify the element to format the output
+    >>> mod = Modifier(rep, lambda rep: ", ".join(map(str, rep)))
+    >>> test_rep = ElementTester(mod)
+    >>> test_rep.recognize("one two three four")
+    '1, 2, 3, 4'
+
 
 RuleRef element class
 ============================================================================
