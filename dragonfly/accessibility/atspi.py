@@ -1,5 +1,7 @@
-"""This file contains the IAccessible2-based accessibility controller
-implementation for Windows.
+"""This file contains the AT-SPI-based accessibility controller implementation
+for Linux.
+
+TODO: Reduce duplication between this file and ia2.py.
 """
 
 
@@ -14,7 +16,7 @@ from . import base
 
 
 class Controller(object):
-    """Provides access to the IAccessible2 subsystem. All accesses to this subsystem
+    """Provides access to the AT-SPI subsystem. All accesses to this subsystem
     must be run in a single thread, which is managed here."""
 
     _log = logging.getLogger("accessibility")
@@ -36,6 +38,7 @@ class Controller(object):
         # Add event to a queue for later processing. IAccessible2 functions can
         # cause reentrancy into event handling, so we do this to ensure correct
         # order of processing.
+        # TODO: Verify whether this is needed for AT-SPI.
         self._focus_queue.append(event)
 
     def _process_focus_events(self):
@@ -48,45 +51,32 @@ class Controller(object):
         event = self._focus_queue[-1]
         self._focus_queue = []
 
-        accessible_start = time.time()
-        accessible = pyia2.accessibleObjectFromEvent(event)
-        self._log.debug("Attempted to convert to accessible: %.10f" % (time.time() - accessible_start))
-        if not accessible:
-            self._context.focused = None
-            return
-
-        accessible2_start = time.time()
-        accessible2 = pyia2.accessible2FromAccessible(accessible,
-                                                      pyia2.CHILDID_SELF)
-        self._log.debug("Attempted to convert to accessible2: %.10f" % (time.time() - accessible2_start))
-        if not isinstance(accessible2, pyia2.IA2Lib.IAccessible2):
-            self._context.focused = None
-            return
-
-        self._context.focused = Accessible(accessible2)
-        self._log.debug("Set focused. accessible2: %s" % accessible2)
+        self._context.focused = Accessible(event.source)
+        self._log.debug("Set focused.")
 
     def _start_blocking(self):
         # Import here so that it can be used in a background thread. The import
         # must be run in the same thread as event registration and handling.
-        global comtypes, pyia2
-        import comtypes
-        import pyia2
+        # TODO: Verify whether this is needed for AT-SPI.
+        global pyatspi
+        import pyatspi
 
         # Register event listeners.
-        pyia2.Registry.registerEventListener(self._update_focus,
-                                             pyia2.EVENT_OBJECT_FOCUS)
+        pyatspi.Registry.registerEventListener(self._update_focus,
+                                               "object:state-changed:focused")
 
-        # Perform all IAccessible2 operations as they are enqueued.
+        thread = threading.Thread(target=pyatspi.Registry.start)
+        thread.setDaemon(True)
+        thread.start()
+
+        # Perform all AT-SPI operations as they are enqueued.
+        # TODO: Process the queues on-demand instead of with a timer.
         while not self.shutdown_event.is_set():
-            pyia2.Registry.iter_loop(0.01)
+            time.sleep(1e-2)
 
             # Process events.
             try:
                 self._process_focus_events()
-            except comtypes.COMError:
-                # Commonly occurs when the focus event no longer matches an active object.
-                pass
             except Exception:
                 traceback.print_exc()
 
@@ -108,8 +98,7 @@ class Controller(object):
                     traceback.print_exc()
                 capture.done_event.set()
 
-        # Deregister event listeners.
-        pyia2.Registry.clearListeners()
+        pyatspi.Registry.stop()
 
     def start(self):
         self.shutdown_event = threading.Event()
@@ -130,27 +119,27 @@ class Controller(object):
 
 
 class Context(object):
-    """Provides access to the current IAccessible2 context, such as focused objects."""
+    """Provides access to the current AT-SPI context, such as focused objects."""
 
     def __init__(self):
         self.focused = None
 
 
 class Accessible(object):
-    """Wraps an IAccessible2."""
+    """Wraps an Accessible."""
 
     def __init__(self, accessible):
         self._accessible = accessible
 
     def as_text(self):
         try:
-            text = self._accessible.QueryInterface(pyia2.IA2Lib.IAccessibleText)
+            text = self._accessible.queryText()
             return AccessibleTextNode(text)
-        except comtypes.COMError:
+        except NotImplementedError:
             return None
 
     def is_editable(self):
-        return pyia2.IA2_STATE_EDITABLE & self._accessible.states
+        return pyatspi.state.STATE_EDITABLE in self._accessible.getState().getStates()
 
 
 class BoundingBox(object):
@@ -167,16 +156,16 @@ class BoundingBox(object):
 
 
 class AccessibleTextNode(object):
-    """Provides a wrapper around a snapshot of IAccessibleText. Mutable methods will
-    affect the underlying IAccessibleText, but the changes will not be reflected
+    """Provides a wrapper around a snapshot of AccessibleText. Mutable methods will
+    affect the underlying AccessibleText, but the changes will not be reflected
     here."""
 
     def __init__(self, accessible_text, may_have_cursor=True):
         self.is_leaf = False
         self._text = accessible_text
         self._children = []
-        text_length = self._text.nCharacters
-        text = self._text.text(0, text_length) if text_length > 0 else ""
+        text_length = self._text.characterCount
+        text = self._text.getText(0, text_length).decode('utf-8') if text_length > 0 else ""
         cursor_offset = self._text.caretOffset
         if cursor_offset < 0:
             cursor_offset = None
@@ -188,11 +177,11 @@ class AccessibleTextNode(object):
             self._add_leaf(0, child_indices[0], text, expanded_text_pieces, cursor_offset)
         for i, child_index in enumerate(child_indices):
             # TODO Handle case where all embedded objects are non-text and this interface is not supported.
-            hypertext = self._text.QueryInterface(pyia2.IA2Lib.IAccessibleHypertext)
-            hyperlink_index = hypertext.hyperlinkIndex(child_index)
-            hyperlink = hypertext.hyperlink(hyperlink_index)
+            hypertext = self._text.obj.queryHypertext()
+            hyperlink_index = hypertext.getLinkIndex(child_index)
+            hyperlink = hypertext.getLink(hyperlink_index)
             # TODO Handle case where embedded object is non-text.
-            child = hyperlink.QueryInterface(pyia2.IA2Lib.IAccessibleText)
+            child = hyperlink.getObject(0).queryText()
             child_node = AccessibleTextNode(child, cursor_offset == child_index)
             self._children.append(child_node)
             expanded_text_pieces.append(child_node.expanded_text)
@@ -260,8 +249,8 @@ class AccessibleTextNode(object):
 
 
 class AccessibleTextLeaf(object):
-    """Wrapper around a pure-text segment of an IAccessibleText. Mutable methods
-    will affect the underlying IAccessibleText, but the changes will not be
+    """Wrapper around a pure-text segment of an AccessibleText. Mutable methods
+    will affect the underlying AccessibleText, but the changes will not be
     reflected here."""
 
     # Use a broken vertical bar at the end of the text to delimit it from other
@@ -290,6 +279,7 @@ class AccessibleTextLeaf(object):
         self._text.setCaretOffset(self.get_parent_offset(offset))
 
     def get_bounding_box(self, offset):
-        return BoundingBox(*self._text.characterExtents(
+        screen_relative = 0
+        return BoundingBox(*self._text.getCharacterExtents(
             self.get_parent_offset(offset),
-            pyia2.IA2Lib.IA2_COORDTYPE_SCREEN_RELATIVE))
+            screen_relative))

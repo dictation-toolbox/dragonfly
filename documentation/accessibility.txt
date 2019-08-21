@@ -4,13 +4,33 @@ Accessibility API
 
 The accessibility API enables text selection and editing more powerful than what
 Dragon provides natively, to a wider range of applications (e.g. Google Chrome
-and Mozilla Firefox). It is currently in Beta and the API may change at any
-time. To use this API on Windows, install `pyia2
-<https://github.com/illinois-dres-aitg/pyia2>`__ (currently needs to be cloned
-and added to PYTHONPATH; I have a pending pull request to fix this). To use this
-with Chrome, you may also need an additional 64-bit IAccessible2 DLL which can
-be obtained `here
+on Windows and Mozilla Firefox on Windows and Linux). It is currently in Beta
+and the API may change at any time.
+
+To use this API on Windows, install `pyia2
+<https://github.com/illinois-dres-aitg/pyia2>`__. To use this with Chrome, you
+may also need to register an additional 64-bit IAccessible2 DLL which can be
+obtained `here
 <https://github.com/ThePacielloGroup/aviewer/blob/Develop/package/IAccessible2Proxy64bit.dll>`__.
+
+To use this on Linux, you will need to install the Python library pyatspi. You
+can typically get this from your distribution's package manager. See this `stack
+overflow question
+<https://stackoverflow.com/questions/40799953/how-to-install-pyatspi>`__ for
+examples. Next, add ``export GNOME_ACCESSIBILITY=1`` to your ~/.profile (some
+applications will not support assistive technologies unless this is
+enabled). Most functionality works properly on Linux, except for a few known issues:
+
+* Text selection occasionally requires use of the Mouse action due to
+  limitations of the text selection API. The Mouse action is not yet implemented
+  on Linux, so this will sometimes silently fail.
+
+* Firefox has been tested successfully on Ubuntu 18.04 with default
+  configuration, but problems have been reported on Xfce with Xfwm4 on Debian
+  10.
+
+* LibreOffice treats each paragraph as a separate focusable element, so movement
+  between paragraphs is not yet supported.
 
 Entry points
 ----------------------------------------------------------------------------

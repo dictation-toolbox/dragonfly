@@ -8,18 +8,20 @@ from .utils import (CursorPosition, TextQuery)
 if sys.platform.startswith("win"):
     from . import ia2
     os_controller_class = ia2.Controller
+elif sys.platform.startswith("linux"):
+    from . import atspi
+    os_controller_class = atspi.Controller
 else:
-    # TODO Support Linux.
-    pass
+    os_controller_class = None
 
 controller_instance = None
 
 def get_accessibility_controller():
     """Get the OS-independent accessibility controller which is the gateway to all
-    accessibility functionality."""
+    accessibility functionality. Returns None if OS is not supported."""
 
     global controller_instance
-    if not controller_instance or controller_instance.stopped:
+    if os_controller_class and (not controller_instance or controller_instance.stopped):
         os_controller = os_controller_class()
         controller_instance = controller.AccessibilityController(os_controller)
     return controller_instance
@@ -30,4 +32,5 @@ def get_stopping_accessibility_controller():
     used in a `with` context."""
 
     yield get_accessibility_controller()
-    controller_instance.stop()
+    if controller_instance:
+        controller_instance.stop()
