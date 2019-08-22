@@ -20,7 +20,9 @@
 #
 
 
+import copy
 import unittest
+
 from six import string_types, text_type
 
 from dragonfly.engines.base.dictation   import DictationContainerBase
@@ -92,6 +94,16 @@ class NonAsciiStrDictationTestCase(ElementTestCase):
                     ("test TOUCHÉ",        "touché"),
                     ("test JALAPEÑO",      "jalapeño"),
                    ]
+
+
+class DictationCopyTestCase(unittest.TestCase):
+
+    def test_copy(self):
+        """ Test that Dictation elements can be copied. """
+        element = Dictation("text")
+        self.assertIsNot(element, copy.copy(element))
+        element = Dictation("text").camel()
+        self.assertIsNot(element, copy.copy(element))
 
 
 # ==========================================================================

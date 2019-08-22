@@ -317,9 +317,40 @@ class Compound(elements_.Alternative):
 # The Choice class which maps multiple Compound instances to values.
 
 class Choice(elements_.Alternative):
+    """
+        Element allowing a dictionary of phrases to be recognised to be mapped to objects to be used in an action.
 
+        Constructor arguments:
+            - *name* (*str*) -- the name of this element
+            - *choices* (*dict*) -- dictionary mapping recognised phrases to returned values
+            - *extras* (*list*, default: *None*) -- a list of included extras
+            - *default* (default: *None*) -- the default value of this element
+
+        Example:
+
+        .. code:: python
+
+            # Tab switching command e.g. 'third tab'
+            mapping = {
+                "<nth> tab": Key("c-%(nth)s"),
+            }
+            extras = [
+                Choice("nth", {
+                    "first"         : "1",
+                    "second"        : "2",
+                    "third"         : "3",
+                    "fourth"        : "4",
+                    "fifth"         : "5",
+                    "sixth"         : "6",
+                    "seventh"       : "7",
+                    "eighth"        : "8",
+                    "(last | ninth)": "9",
+                    "next"          : "pgdown",
+                    "previous"      : "pgup",
+                }),
+            ]
+    """
     def __init__(self, name, choices, extras=None, default=None):
-
         # Argument type checking.
         assert isinstance(name, string_types) or name is None
         assert isinstance(choices, dict)

@@ -56,6 +56,10 @@ Dictation class
 .. autoclass:: dragonfly.grammar.elements_basic.Dictation
    :members: dependencies, gstring, decode, value, children
 
+Modifier class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Modifier
+
 Compound class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_compound.Compound

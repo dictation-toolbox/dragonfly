@@ -19,8 +19,9 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-
+import copy
 import unittest
+
 from six import string_types, text_type
 
 from dragonfly.engines.base.dictation   import DictationContainerBase
@@ -143,6 +144,16 @@ class ApplyDictationTestCase(ElementTestCase):
                     ("test some random dictation", "some_random_DICTATION"),
                     ("test touché jalapeño",       "touché_JALAPEÑO"),
                    ]
+
+
+class DictationCopyTestCase(unittest.TestCase):
+
+    def test_copy(self):
+        """ Test that Dictation elements can be copied. """
+        element = Dictation("text")
+        self.assertIsNot(element, copy.copy(element))
+        element = Dictation("text").camel()
+        self.assertIsNot(element, copy.copy(element))
 
 #===========================================================================
 
