@@ -24,6 +24,7 @@
 
 import math
 
+from six import integer_types
 
 #===========================================================================
 
@@ -54,7 +55,7 @@ class Point(object):
 
     def _set_x(self, x):
         if isinstance(x, float):    self._x = x
-        elif isinstance(x, int):    self._x = float(x)
+        elif isinstance(x, integer_types):    self._x = float(x)
         else: raise TypeError("Point coordinate must be an int or float;"
                               " received %r." % x)
     x = property(fget=lambda self: self._x,
@@ -63,7 +64,7 @@ class Point(object):
 
     def _set_y(self, y):
         if isinstance(y, float):    self._y = y
-        elif isinstance(y, int):    self._y = float(y)
+        elif isinstance(y, integer_types):    self._y = float(y)
         else: raise TypeError("Point coordinate must be an int or float;"
                               " received %r." % y)
     y = property(fget=lambda self: self._y,

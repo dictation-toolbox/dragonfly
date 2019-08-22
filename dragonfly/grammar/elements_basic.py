@@ -560,7 +560,7 @@ class Repetition(Sequence):
         if not isinstance(child, ElementBase):
             raise TypeError("Child of %s object must be an"
                             " ElementBase instance." % self)
-        assert isinstance(min, int)
+        assert isinstance(min, integer_types)
         assert max is None or isinstance(max, integer_types)
         assert max is None or min < max
 

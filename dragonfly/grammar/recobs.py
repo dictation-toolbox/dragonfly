@@ -26,6 +26,9 @@ Recognition observer base class
 
 import time
 import logging
+
+from six import integer_types
+
 from ..actions.actions  import Playback
 from ..engines          import get_engine
 
@@ -82,7 +85,8 @@ class RecognitionHistory(list, RecognitionObserver):
         RecognitionObserver.__init__(self)
         self._complete = True
 
-        if (length is None or (isinstance(length, int) and length >= 1)):
+        if (length is None or (isinstance(length, integer_types) and
+                               length >= 1)):
             self._length = length
         else:
             raise ValueError("length must be a positive int or None,"
