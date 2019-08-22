@@ -22,7 +22,7 @@
 This file implements an interface to the Windows system clipboard.
 """
 
-from six import text_type
+from six import text_type, integer_types
 
 import win32clipboard
 import win32con
@@ -145,12 +145,12 @@ class Clipboard(BaseClipboard):
                     if not format:
                         break
                     formats.append(format)
-            elif isinstance(formats, int):
+            elif isinstance(formats, integer_types):
                 formats = (formats,)
 
             # Verify that the given formats are valid.
             for format in formats:
-                if not isinstance(format, int):
+                if not isinstance(format, integer_types):
                     raise TypeError("Invalid clipboard format: %r"
                                     % format)
 

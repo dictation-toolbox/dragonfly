@@ -63,7 +63,7 @@ classes listed above:
 
 import copy
 import logging
-from six import string_types
+from six import integer_types, string_types
 
 from .rule_base  import Rule
 from .list       import ListBase, DictList
@@ -562,8 +562,8 @@ class Repetition(Sequence):
         if not isinstance(child, ElementBase):
             raise TypeError("Child of %s object must be an"
                             " ElementBase instance." % self)
-        assert isinstance(min, int)
-        assert max is None or isinstance(max, int)
+        assert isinstance(min, integer_types)
+        assert max is None or isinstance(max, integer_types)
         assert max is None or min < max
 
         self._child = child

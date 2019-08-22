@@ -28,7 +28,7 @@ ActionBase base class
 import copy as copy_
 import logging
 
-from six import PY2
+from six import PY2, integer_types
 
 
 #---------------------------------------------------------------------------
@@ -239,7 +239,7 @@ class ActionRepetition(ActionBase):
     # Execution methods.
 
     def execute(self, data=None):
-        if isinstance(self._factor, int):
+        if isinstance(self._factor, integer_types):
             repeat = self._factor
         elif isinstance(self._factor, Repeat):
             repeat = self._factor.factor(data)
@@ -304,7 +304,7 @@ class Repeat(object):
     def __init__(self, extra=None, count=None):
         # Backward compatibility for swapped arguments
         # (#103)
-        if isinstance(extra, int):
+        if isinstance(extra, integer_types):
             self._count = extra
             self._extra = count
         else:
