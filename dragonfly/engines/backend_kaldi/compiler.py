@@ -163,7 +163,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
             self.model.load_words()
             self.decoder.load_lexicon()
             self.added_word = False
-        kaldi_rule.compile_file()
+        kaldi_rule.compile(lazy=True)
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
         # Determine whether this rule has already been compiled.

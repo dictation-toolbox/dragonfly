@@ -139,7 +139,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
         wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self)
         for kaldi_rule in kaldi_rule_by_rule_dict.values():
-            kaldi_rule.load_fst()
+            kaldi_rule.load()
 
         self._log.info("...Done loading grammar %s." % grammar.name)
         return wrapper
@@ -227,6 +227,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         try:
             while (not timeout) or (time.time() < end_time):
+                self._prepare_for_recognition()
                 block = self._audio_iter.send(in_complex)
 
                 if block is False:
