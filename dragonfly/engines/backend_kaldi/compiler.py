@@ -66,11 +66,12 @@ MockLiteral = collections.namedtuple('MockLiteral', 'words')
 
 class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
-    def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, **kwargs):
+    def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, lazy_compilation=None, **kwargs):
         CompilerBase.__init__(self)
         KaldiAGCompiler.__init__(self, model_dir=model_dir, tmp_dir=tmp_dir, **kwargs)
 
-        self.auto_add_to_user_lexicon = auto_add_to_user_lexicon
+        self.auto_add_to_user_lexicon = bool(auto_add_to_user_lexicon)
+        self.lazy_compilation = bool(lazy_compilation)
 
         self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
         self._grammar_rule_states_dict = dict()  # FIXME: disabled!
@@ -163,7 +164,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
             self.model.load_words()
             self.decoder.load_lexicon()
             self.added_word = False
-        kaldi_rule.compile(lazy=True)
+        kaldi_rule.compile(lazy=self.lazy_compilation)
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
         # Determine whether this rule has already been compiled.

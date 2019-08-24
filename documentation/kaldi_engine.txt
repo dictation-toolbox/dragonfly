@@ -139,6 +139,7 @@ the ``get_engine()`` function, which passes them to the
     vad_complex_padding_end_ms=500,
     input_device_index=None,
     auto_add_to_user_lexicon=True,
+    lazy_compilation=True,
     cloud_dictation=None,
   )
 
@@ -184,6 +185,10 @@ the ``get_engine()`` function, which passes them to the
   adding unknown words to the `User Lexicon`_. This may make requests to
   the cloud, to predict pronunciations, depending on your installed
   packages.
+
+* ``lazy_compilation`` (``bool``) -- Enables deferred grammar/rule
+  compilation, which then allows parallel compilation up to your number
+  of cores, for a large speed up loading uncached.
 
 * ``cloud_dictation`` (``str|None``) -- Enables cloud dictation and chooses
   the provider. Possible values:

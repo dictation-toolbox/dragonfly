@@ -57,7 +57,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def __init__(self, model_dir=None, tmp_dir=None,
         vad_aggressiveness=3, vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500, input_device_index=None,
-        auto_add_to_user_lexicon=True,
+        auto_add_to_user_lexicon=True, lazy_compilation=True,
         cloud_dictation=None,  # FIXME: cloud_dictation_lang
         ):
         EngineBase.__init__(self)
@@ -76,6 +76,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             vad_complex_padding_end_ms = vad_complex_padding_end_ms,
             input_device_index = input_device_index,
             auto_add_to_user_lexicon = auto_add_to_user_lexicon,
+            lazy_compilation = lazy_compilation,
             cloud_dictation = cloud_dictation,
         )
 
@@ -95,6 +96,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
+            lazy_compilation=self._options['lazy_compilation'],
             cloud_dictation=self._options['cloud_dictation'])
         # self._compiler.fst_cache.invalidate()
 
@@ -214,6 +216,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def _get_language(self):
         return "en"
 
+    def prepare_for_recognition(self):
+        self._compiler.prepare_for_recognition()
+
     def do_recognition(self, timeout=None, single=False):
         self._log.debug("do_recognition: timeout %s" % timeout)
 
@@ -293,9 +298,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     #-----------------------------------------------------------------------
     # Internal processing methods.
-
-    def prepare_for_recognition(self):
-        self._compiler.prepare_for_recognition()
 
     def _compute_kaldi_rules_activity(self, phrase_start=True):
         self._active_kaldi_rules = []
