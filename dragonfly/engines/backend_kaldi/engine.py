@@ -57,7 +57,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def __init__(self, model_dir=None, tmp_dir=None,
         vad_aggressiveness=3, vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500, input_device_index=None,
-        auto_add_to_user_lexicon=None,
+        auto_add_to_user_lexicon=True,
         cloud_dictation=None,  # FIXME: cloud_dictation_lang
         ):
         EngineBase.__init__(self)
@@ -67,9 +67,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self._log.error("%s: Failed to import Kaldi engine dependencies. Are they installed?" % self)
             raise EngineError("Failed to import Kaldi engine dependencies.")
 
-        self._model_dir = model_dir if model_dir is not None else 'kaldi_model_zamia'
-        self._tmp_dir = tmp_dir if tmp_dir is not None else 'kaldi_tmp'
         self._options = dict(
+            model_dir = model_dir,
+            tmp_dir = tmp_dir,
             vad_aggressiveness = vad_aggressiveness,
             vad_padding_start_ms = vad_padding_start_ms,
             vad_padding_end_ms = vad_padding_end_ms,
@@ -93,19 +93,22 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._log.debug("Loading KaldiEngine in process %s." % os.getpid())
         # subprocess.call(['vsjitdebugger', '-p', str(os.getpid())]); time.sleep(5)
 
-        self._compiler = KaldiCompiler(self._model_dir, tmp_dir=self._tmp_dir,
+        self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
             cloud_dictation=self._options['cloud_dictation'])
         # self._compiler.fst_cache.invalidate()
 
         top_fst = self._compiler.compile_top_fst()
         dictation_fst_file = self._compiler.dictation_fst_filepath
-        self._decoder = KaldiAgfNNet3Decoder(model_dir=self._model_dir, tmp_dir=self._tmp_dir, top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file)
+        self._decoder = KaldiAgfNNet3Decoder(model_dir=self._compiler.model_dir, tmp_dir=self._compiler.tmp_dir,
+            top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file)
         self._compiler.decoder = self._decoder
 
         self._audio = VADAudio(aggressiveness=self._options['vad_aggressiveness'], start=False, input_device_index=self._options['input_device_index'])
         self._audio_iter = self._audio.vad_collector(nowait=True,
-            padding_start_ms=self._options['vad_padding_start_ms'], padding_end_ms=self._options['vad_padding_end_ms'], complex_padding_end_ms=self._options['vad_complex_padding_end_ms'])
+            padding_start_ms=self._options['vad_padding_start_ms'],
+            padding_end_ms=self._options['vad_padding_end_ms'],
+            complex_padding_end_ms=self._options['vad_complex_padding_end_ms'])
         self.audio_store = AudioStore(self._audio, maxlen=0)
 
         self._any_exclusive_grammars = False
@@ -214,7 +217,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def do_recognition(self, timeout=None, single=False):
         self._log.debug("do_recognition: timeout %s" % timeout)
 
-        self._prepare_for_recognition()
+        self.prepare_for_recognition()
 
         if timeout != None:
             end_time = time.time() + timeout
@@ -227,7 +230,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         try:
             while (not timeout) or (time.time() < end_time):
-                self._prepare_for_recognition()
+                self.prepare_for_recognition()
                 block = self._audio_iter.send(in_complex)
 
                 if block is False:
@@ -291,7 +294,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
     # Internal processing methods.
 
-    def _prepare_for_recognition(self):
+    def prepare_for_recognition(self):
         self._compiler.prepare_for_recognition()
 
     def _compute_kaldi_rules_activity(self, phrase_start=True):

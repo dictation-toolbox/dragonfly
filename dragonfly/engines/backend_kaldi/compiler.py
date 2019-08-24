@@ -68,7 +68,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, **kwargs):
         CompilerBase.__init__(self)
-        KaldiAGCompiler.__init__(self, model_dir, tmp_dir=tmp_dir, **kwargs)
+        KaldiAGCompiler.__init__(self, model_dir=model_dir, tmp_dir=tmp_dir, **kwargs)
 
         self.auto_add_to_user_lexicon = auto_add_to_user_lexicon
 

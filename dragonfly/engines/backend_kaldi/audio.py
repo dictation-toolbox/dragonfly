@@ -60,7 +60,7 @@ class MicAudio(object):
             start=bool(start),
         )
         self.active = True
-        _log.info("%s: streaming audio from microphone: %i sample_rate, %i block_duration_ms", self, self.sample_rate, self.block_duration_ms)
+        _log.info("streaming audio from microphone: %i sample_rate, %i block_duration_ms", self.sample_rate, self.block_duration_ms)
 
     def destroy(self):
         self.stream.stop_stream()
