@@ -380,7 +380,11 @@ Known Issues
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Entirely new words added to the user lexicon will not be recognized
-  during dictation elements specifically at all currently.
+  during dictation elements specifically at all currently. You can get
+  around this by constructing a rule that alternates between a dictation
+  element and a mapping rule containing your new words, as demonstrated
+  `here
+  <https://github.com/daanzu/kaldi-grammar-simple/blob/e96b4432f93f445b1e8fc8bf9dc1f0145a89d456/_dictation.py#L38>`_.
 
 * Dragonfly :class:`Lists` and :class:`DictLists` function as normal.
   Upon updating a dragonfly list or dictionary, the rules they are part of

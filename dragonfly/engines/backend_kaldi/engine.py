@@ -201,6 +201,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         except Exception as e:
             raise MimicFailure("Invalid mimic input %r: %s." % (words, e))
 
+        # We do not need to call prepare_for_recognition here, because mimics do not use the decoder
         self._recognition_observer_manager.notify_begin()
         kaldi_rules_activity = self._compute_kaldi_rules_activity()
 
@@ -219,9 +220,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         return "en"
 
     def prepare_for_recognition(self):
+        """ Can be called optionally before ``do_recognition()`` to speed up its starting of active recognition. """
         self._compiler.prepare_for_recognition()
 
     def do_recognition(self, timeout=None, single=False):
+        """
+            Loops performing recognition, by default forever, or for *timeout* seconds, or for a single recognition if *single=True*.
+            Returns ``False`` if timeout occurred without a recognition.
+        """
         self._log.debug("do_recognition: timeout %s" % timeout)
         if not self._decoder:
             raise EngineError("Cannot recognize before connect()")
@@ -290,9 +296,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self._audio.stop()
 
         return not timed_out
-
-    def wait_for_recognition(self, timeout=None):
-        return self.do_recognition(timeout=timeout, single=True)
 
     in_phrase = property(lambda self: self._in_phrase,
         doc="Whether or not the engine is currently in the middle of hearing a phrase from the user.")
