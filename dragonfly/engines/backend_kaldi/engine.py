@@ -114,6 +114,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self.audio_store = AudioStore(self._audio, maxlen=0)
 
         self._any_exclusive_grammars = False
+        self._in_phrase = False
+        self._ignore_current_phrase = False
 
     def disconnect(self):
         """ Disconnect from back-end SR engine. """
@@ -221,13 +223,15 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def do_recognition(self, timeout=None, single=False):
         self._log.debug("do_recognition: timeout %s" % timeout)
+        if not self._decoder:
+            raise EngineError("Cannot recognize before connect()")
 
         self.prepare_for_recognition()
 
         if timeout != None:
             end_time = time.time() + timeout
             timed_out = True
-        phrase_started = False
+        self._in_phrase = False
         in_complex = False
 
         self._audio.start()
@@ -243,12 +247,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     time.sleep(0.001)
 
                 elif block is not None:
-                    if not phrase_started:
+                    if not self._in_phrase:
                         # Start of phrase
                         self._recognition_observer_manager.notify_begin()
                         with debug_timer(self._log.debug, "computing activity"):
                             kaldi_rules_activity = self._compute_kaldi_rules_activity()
-                        phrase_started = True
+                        self._in_phrase = True
+                        self._ignore_current_phrase = False
+
                     else:
                         # Ongoing phrase
                         kaldi_rules_activity = None
@@ -256,7 +262,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     if self.audio_store:
                         self.audio_store.add_block(block)
                     output, likelihood = self._decoder.get_output()
-                    self._log.log(5, "Partial utterence: likelihood %f, %r [in_complex=%s]", likelihood, output, in_complex)
+                    self._log.log(5, "Partial phrase: likelihood %f, %r [in_complex=%s]", likelihood, output, in_complex)
                     kaldi_rule, words, words_are_dictation, in_dictation = self._compiler.parse_partial_output(output)
                     in_complex = bool(in_dictation or (kaldi_rule and kaldi_rule.is_complex))
 
@@ -264,12 +270,15 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     # End of phrase
                     self._decoder.decode('', True)
                     output, likelihood = self._decoder.get_output()
-                    output = self._compiler.untranslate_output(output)
-                    kaldi_rule, parsed_output = self._parse_recognition(output)
-                    self._log.debug("End of utterence: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
-                    if self.audio_store and kaldi_rule:
-                        self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name)
-                    phrase_started = False
+                    if not self._ignore_current_phrase:
+                        output = self._compiler.untranslate_output(output)
+                        kaldi_rule, parsed_output = self._parse_recognition(output)
+                        self._log.debug("End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
+                        if self.audio_store and kaldi_rule:
+                            self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name)
+
+                    self._in_phrase = False
+                    self._ignore_current_phrase = False
                     in_complex = False
                     timed_out = False
                     if single:
@@ -285,12 +294,28 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def wait_for_recognition(self, timeout=None):
         return self.do_recognition(timeout=timeout, single=True)
 
-    saving_adaptation_state = property(lambda self: self._decoder.saving_adaptation_state, doc="FIXME")
+    in_phrase = property(lambda self: self._in_phrase,
+        doc="Whether or not the engine is currently in the middle of hearing a phrase from the user.")
+
+    def ignore_current_phrase(self):
+        """
+            Marks the current phrase's recognition to be ignored when it completes, or does nothing if there is none.
+            Returns *bool* indicating whether or not there was a current phrase being heard.
+        """
+        if not self.in_phrase:
+            return False
+        self._ignore_current_phrase = True
+        return True
+
+    saving_adaptation_state = property(lambda self: self._decoder.saving_adaptation_state,
+        doc="Whether or not the engine is currently saving adaptation state.")
 
     def start_saving_adaptation_state(self):
+        """ Enable saving of adaptation state, which improves recognition accuracy in the short term, but is not stored between runs. """
         self._decoder.saving_adaptation_state = True
 
     def stop_saving_adaptation_state(self):
+        """ Disables saving of adaptation state, which you might want to do when you expect there to be noise and don't want it to pollute your current adaptation state. """
         self._decoder.saving_adaptation_state = False
 
     def reset_adaptation_state(self):
@@ -359,7 +384,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 return None, ''
 
         else:
-            raise EngineError("invalid _compiler.parsing_framework")
+            raise EngineError("Invalid _compiler.parsing_framework")
 
         self._recognition_observer_manager.notify_recognition(words)
         grammar_wrapper = self._get_grammar_wrapper(kaldi_rule.parent_grammar)

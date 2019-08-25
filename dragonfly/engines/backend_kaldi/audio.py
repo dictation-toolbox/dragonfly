@@ -155,10 +155,10 @@ class VADAudio(MicAudio):
         self.vad = webrtcvad.Vad(aggressiveness)
 
     def vad_collector(self, padding_start_ms=300, padding_end_ms=100, complex_padding_end_ms=None, ratio=0.8, blocks=None, nowait=False):
-        """Generator/coroutine that yields series of consecutive audio blocks comprising each utterence, separated by yielding a single None.
+        """Generator/coroutine that yields series of consecutive audio blocks comprising each phrase, separated by yielding a single None.
             Determines voice activity by ratio of blocks in padding_ms. Uses a buffer to include padding_ms prior to being triggered.
             Example: (block, ..., block, None, block, ..., block, None, ...)
-                      |---utterence---|        |---utterence---|
+                      |----phrase-----|        |----phrase-----|
         """
         num_padding_start_blocks = max(1, (padding_start_ms / ratio) // self.block_duration_ms)
         num_padding_end_blocks = max(1, (padding_end_ms / ratio) // self.block_duration_ms)
