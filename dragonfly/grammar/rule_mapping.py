@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -22,7 +22,7 @@
 MappingRule class
 ============================================================================
 
-The MappingRule class is designed to make it very easy to create a rule 
+The MappingRule class is designed to make it very easy to create a rule
 based on a mapping of spoken-forms to semantic values.
 
 This class has the following parameters to customize its behavior:
@@ -33,7 +33,7 @@ This class has the following parameters to customize its behavior:
  - *exported* -- whether the rule is exported
  - *context* -- context in which the rule will be active
 
-Each of these parameters can be passed as a (keyword) arguments to the 
+Each of these parameters can be passed as a (keyword) arguments to the
 constructor, or defined as a class attribute in a derived class.
 
 
@@ -166,7 +166,7 @@ class MappingRule(Rule):
         node = node.children[0]
         value = node.value()
 
-        if hasattr(value, "copy_bind"):        
+        if hasattr(value, "copy_bind"):
             # Prepare *extras* dict for passing to _copy_bind().
             extras = {
                       "_grammar":  self.grammar,
@@ -189,7 +189,7 @@ class MappingRule(Rule):
         """
             Process a recognition of this rule.
 
-            This method is called by the containing Grammar when 
+            This method is called by the containing Grammar when
             this rule is recognized.  This method collects information
             about the recognition and then calls
             MappingRule._process_recognition.

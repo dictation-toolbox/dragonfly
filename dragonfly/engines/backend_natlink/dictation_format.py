@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -341,13 +341,13 @@ class WordParserDns11(WordParserBase):
         "open paren":       WordFlags("no_space_after"),
         "close paren":       WordFlags("no_space_before"),
         "slash":            WordFlags("no_space_after", "no_space_before"),
-        
+
         # below are two examples of Dragon custom vocabulary with formatting
         # these would have to be added to the Dragon vocabulary for users to use them
         # "len":              WordFlags("no_space_after"), # shorter name for (
         # "ren":              WordFlags("no_space_before"), # shorter name for )
     }
-    
+
     def create_word_flags(self, property):
         if not property:
             # None indicates the word is not in DNS' vocabulary.
@@ -363,7 +363,7 @@ class WordParserDns11(WordParserBase):
             flags = WordFlags()
         return flags
 
-    
+
     def parse_input(self, input):
         # Not unicode (Python 2) or str (Python 3)
         if not isinstance(input, text_type):

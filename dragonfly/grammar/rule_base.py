@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -35,7 +35,7 @@ class Rule(object):
         Rule class for implementing complete or partial voice-commands.
 
         This rule class represents a voice-command or part of a voice-
-        command.  It contains a root element, which defines the language 
+        command.  It contains a root element, which defines the language
         construct of this rule.
 
         Constructor arguments:
@@ -53,8 +53,8 @@ class Rule(object):
            spoken by the user.  This should be *True* for voice-commands
            that the user can speak.
 
-        The *self._log* logger objects should be used in methods of 
-        derived classes for logging purposes.  It is a standard logger 
+        The *self._log* logger objects should be used in methods of
+        derived classes for logging purposes.  It is a standard logger
         object from the *logger* module in the Python standard library.
 
     """
@@ -158,8 +158,8 @@ class Rule(object):
         """
             Start of phrase callback.
 
-            This method is called when the speech recognition 
-            engine detects that the user has begun to speak a 
+            This method is called when the speech recognition
+            engine detects that the user has begun to speak a
             phrase.  It is called by the rule's containing grammar
             if the grammar and this rule are active.
 
@@ -169,7 +169,7 @@ class Rule(object):
             :meth:`._process_begin`.
 
             Arguments:
-             - *executable* -- the full path to the module whose 
+             - *executable* -- the full path to the module whose
                window is currently in the foreground
              - *title* -- window title of the foreground window
              - *handle* -- window handle to the foreground window
@@ -256,20 +256,20 @@ class Rule(object):
         """
             Start of phrase callback.
 
-            This method is called to obtain the semantic value associated 
-            with a particular recognition.  It could be called from 
-            another rule's :meth:`.value` if 
-            that rule references this rule.  If also be called from this 
+            This method is called to obtain the semantic value associated
+            with a particular recognition.  It could be called from
+            another rule's :meth:`.value` if
+            that rule references this rule.  If also be called from this
             rule's :meth:`.process_recognition`
             if that method has been overridden to do so in a derived
             class.
 
-            The default implementation of this method returns the value of 
+            The default implementation of this method returns the value of
             this rule's root element.
 
             .. note::
 
-               This is generally the method which developers should 
+               This is generally the method which developers should
                override in derived rule classes to change the default
                semantic value of a recognized rule.
 
@@ -283,8 +283,8 @@ class Rule(object):
         """
             Start of phrase detection callback.
 
-            This method is called when the speech recognition 
-            engine detects that the user has begun to speak a 
+            This method is called when the speech recognition
+            engine detects that the user has begun to speak a
             phrase.  It is called by this rule's
             :meth:`.process_begin`
             after some context checks.
@@ -307,8 +307,8 @@ class Rule(object):
         """
             Rule recognition callback.
 
-            This method is called when the user has spoken words matching 
-            this rule's contents.  This method is called only once for 
+            This method is called when the user has spoken words matching
+            this rule's contents.  This method is called only once for
             each recognition, and only for the matching top-level rule.
 
             The default implementation of this method does nothing.

@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -22,19 +22,19 @@
 Mouse action
 ============================================================================
 
-This section describes the :class:`Mouse` action object.  This type of 
+This section describes the :class:`Mouse` action object.  This type of
 action is used for controlling the mouse cursor and clicking mouse
 button.
 
-Below you'll find some simple examples of :class:`Mouse` usage, followed 
+Below you'll find some simple examples of :class:`Mouse` usage, followed
 by a detailed description of the available mouse events.
 
 
 Example mouse actions
 ............................................................................
 
-The following code moves the mouse cursor to the center of the foreground 
-window (``(0.5, 0.5)``) and then clicks the left mouse button once 
+The following code moves the mouse cursor to the center of the foreground
+window (``(0.5, 0.5)``) and then clicks the left mouse button once
 (``left``)::
 
     # Parentheses ("(...)") give foreground-window-relative locations.
@@ -44,8 +44,8 @@ window (``(0.5, 0.5)``) and then clicks the left mouse button once
     action = Mouse("(0.5, 0.5), left")
     action.execute()
 
-The line below moves the mouse cursor to 100 pixels left of the desktop's 
-right edge and 250 pixels down from its top edge (``[-100, 250]``), and 
+The line below moves the mouse cursor to 100 pixels left of the desktop's
+right edge and 250 pixels down from its top edge (``[-100, 250]``), and
 then double clicks the right mouse button (``right:2``)::
 
     # Square brackets ("[...]") give desktop-relative locations.
@@ -54,8 +54,8 @@ then double clicks the right mouse button (``right:2``)::
     #  bottom-edge of the desktop or window.
     Mouse("[-100, 250], right:2").execute()
 
-The following command drags the mouse from the top right corner of the 
-foreground window (``(0.9, 10), left:down``) to the bottom left corner 
+The following command drags the mouse from the top right corner of the
+foreground window (``(0.9, 10), left:down``) to the bottom left corner
 (``(25, -0.1), left:up``)::
 
     Mouse("(0.9, 10), left:down, (25, -0.1), left:up").execute()
@@ -71,9 +71,9 @@ The code below moves the mouse cursor 25 pixels right and 25 pixels up
 Mouse specification format
 ............................................................................
 
-The *spec* argument passed to the :class:`Mouse` constructor specifies 
-which mouse events will be emulated.  It is a string consisting of one or 
-more comma-separated elements.  Each of these elements has one of the 
+The *spec* argument passed to the :class:`Mouse` constructor specifies
+which mouse events will be emulated.  It is a string consisting of one or
+more comma-separated elements.  Each of these elements has one of the
 following possible formats:
 
 Mouse movement actions:
@@ -85,7 +85,7 @@ Mouse movement actions:
  - move the cursor relative to its current position:
    ``<`` *pixels* ``,`` *pixels* ``>``
 
-In the above specifications, the *number* and *pixels* have the 
+In the above specifications, the *number* and *pixels* have the
 following meanings:
 
  - *number* -- can specify a number of pixels or a fraction of

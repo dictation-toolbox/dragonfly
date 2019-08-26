@@ -3,18 +3,18 @@
 # (c) Copyright 2007, 2008 by Christo Butcher
 # Licensed under the LGPL.
 #
-#   Dragonfly is free software: you can redistribute it and/or modify it 
-#   under the terms of the GNU Lesser General Public License as published 
-#   by the Free Software Foundation, either version 3 of the License, or 
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Dragonfly is distributed in the hope that it will be useful, but 
-#   WITHOUT ANY WARRANTY; without even the implied warranty of 
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #   Lesser General Public License for more details.
 #
-#   You should have received a copy of the GNU Lesser General Public 
-#   License along with Dragonfly.  If not, see 
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
 #   <http://www.gnu.org/licenses/>.
 #
 
@@ -34,24 +34,24 @@ class Mimic(ActionBase):
     """
         Mimic recognition action.
 
-        The constructor arguments are the words which will be mimicked. 
+        The constructor arguments are the words which will be mimicked.
         These should be passed as a variable argument list.  For example::
 
             action = Mimic("hello", "world", r"!\\exclamation-mark")
             action.execute()
 
-        If an error occurs during mimicking the given recognition, then an 
-        *ActionError* is raised.  A common error is that the engine does 
-        not know the given words and can therefore not recognize them. 
-        For example, the following attempts to mimic recognition of *one 
-        single word* including a space and an exclamation-mark; this will 
+        If an error occurs during mimicking the given recognition, then an
+        *ActionError* is raised.  A common error is that the engine does
+        not know the given words and can therefore not recognize them.
+        For example, the following attempts to mimic recognition of *one
+        single word* including a space and an exclamation-mark; this will
         almost certainly fail::
 
             Mimic("hello world!").execute()   # Will raise ActionError.
 
-        The constructor accepts the optional *extra* keyword argument, and 
-        uses this to retrieve dynamic data from the extras associated with 
-        the recognition.  For example, this can be used as follows to 
+        The constructor accepts the optional *extra* keyword argument, and
+        uses this to retrieve dynamic data from the extras associated with
+        the recognition.  For example, this can be used as follows to
         implement dynamic mimicking::
 
             class ExampleRule(MappingRule):
@@ -67,9 +67,9 @@ class Mimic(ActionBase):
                             "n": 1,
                            }
 
-        The example above will allow the user to speak **"mimic 
-        recognition hello world! 3 times"**, which would result in the 
-        exact same output as if the user had spoken **"hello world!"** 
+        The example above will allow the user to speak **"mimic
+        recognition hello world! 3 times"**, which would result in the
+        exact same output as if the user had spoken **"hello world!"**
         three times in a row.
 
     """
