@@ -93,8 +93,10 @@ class X11Window(BaseWindow):
             # Return the process output and return code.
             return stdout.rstrip(), stderr.rstrip(), p.returncode
         except Exception as e:
-            cls._log.error("Failed to execute command '%s': %s",
-                           full_readable_command, e)
+            cls._log.error("Failed to execute command '%s': %s. Is "
+                           "%s installed?",
+                           full_readable_command, e, command)
+            raise e
 
     #-----------------------------------------------------------------------
     # Class methods to create new Window objects.
