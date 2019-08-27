@@ -249,7 +249,7 @@ class Grammar(object):
         """
             Iterate through the grammar's rules and add all the necessary dependencies.
 
-            **Internal** This method is called by the engine when the grammar is loaded.
+            **Internal** This method is called when the grammar is loaded.
         """
         memo = []
         for r in self._rules:
