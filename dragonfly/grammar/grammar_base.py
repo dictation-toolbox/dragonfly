@@ -346,6 +346,7 @@ class Grammar(object):
         if self._loaded:
             return
 
+        self.add_all_dependencies()
         self._engine.load_grammar(self)
         self._loaded = True
         self._in_context = False

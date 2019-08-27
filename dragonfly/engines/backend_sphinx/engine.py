@@ -465,7 +465,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                         % (self, grammar.name))
 
         grammar.engine = self
-        grammar.add_all_dependencies()
 
         wrapper = self._build_grammar_wrapper(grammar)
 

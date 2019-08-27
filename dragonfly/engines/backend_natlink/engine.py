@@ -102,8 +102,6 @@ class NatlinkEngine(EngineBase):
         grammar_object.setResultsCallback(wrapper.results_callback)
         grammar_object.setHypothesisCallback(None)
 
-        grammar.add_all_dependencies()
-
         c = NatlinkCompiler()
         (compiled_grammar, rule_names) = c.compile_grammar(grammar)
         grammar._rule_names = rule_names

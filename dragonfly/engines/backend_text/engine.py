@@ -88,7 +88,6 @@ class TextInputEngine(EngineBase):
                         % (self, grammar.name))
 
         grammar.engine = self
-        grammar.add_all_dependencies()
 
         return self._build_grammar_wrapper(grammar)
 

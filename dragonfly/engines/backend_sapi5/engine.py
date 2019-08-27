@@ -136,8 +136,6 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
 
         grammar.engine = self
 
-        grammar.add_all_dependencies()
-
         # Create recognition context, compile grammar, and create
         #  the grammar wrapper object for managing this grammar.
         context = self._recognizer.CreateRecoContext()
