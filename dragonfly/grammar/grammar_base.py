@@ -245,6 +245,17 @@ class Grammar(object):
         else:
             raise GrammarError("Unknown dependency type %s." % dep)
 
+    def add_all_dependencies(self):
+        """
+            Iterate through the grammar's rules and add all the necessary dependencies.
+
+            **Internal** This method is called by the engine when the grammar is loaded.
+        """
+        memo = []
+        for r in self._rules:
+            for d in r.dependencies(memo):
+                self.add_dependency(d)
+
     # ----------------------------------------------------------------------
     # Methods for runtime modification of a grammar's contents.
 
