@@ -124,11 +124,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self.connect()
         grammar.engine = self
 
-        # Dependency checking.
-        memo = []
-        for r in grammar._rules:
-            for d in r.dependencies(memo):
-                grammar.add_dependency(d)
+        grammar.add_all_dependencies()
 
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
         wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self)

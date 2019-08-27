@@ -465,11 +465,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                         % (self, grammar.name))
 
         grammar.engine = self
-        # Dependency checking.
-        memo = []
-        for r in grammar.rules:
-            for d in r.dependencies(memo):
-                grammar.add_dependency(d)
+        grammar.add_all_dependencies()
 
         wrapper = self._build_grammar_wrapper(grammar)
 

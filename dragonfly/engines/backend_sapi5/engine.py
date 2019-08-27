@@ -136,11 +136,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
 
         grammar.engine = self
 
-        # Dependency checking.
-        memo = []
-        for r in grammar._rules:
-            for d in r.dependencies(memo):
-                grammar.add_dependency(d)
+        grammar.add_all_dependencies()
 
         # Create recognition context, compile grammar, and create
         #  the grammar wrapper object for managing this grammar.

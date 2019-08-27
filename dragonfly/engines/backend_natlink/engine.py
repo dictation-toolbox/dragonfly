@@ -102,11 +102,7 @@ class NatlinkEngine(EngineBase):
         grammar_object.setResultsCallback(wrapper.results_callback)
         grammar_object.setHypothesisCallback(None)
 
-        # Dependency checking.
-        memo = []
-        for r in grammar._rules:
-            for d in r.dependencies(memo):
-                grammar.add_dependency(d)
+        grammar.add_all_dependencies()
 
         c = NatlinkCompiler()
         (compiled_grammar, rule_names) = c.compile_grammar(grammar)
