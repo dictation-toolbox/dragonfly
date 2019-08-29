@@ -122,7 +122,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._log.info("Loading grammar %s..." % grammar.name)
         if not self._decoder:
             self.connect()
-        grammar.engine = self
 
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
         wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self)

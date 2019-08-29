@@ -95,7 +95,6 @@ class NatlinkEngine(EngineBase):
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
 
-        grammar.engine = self
         grammar_object = self.natlink.GramObj()
         wrapper = GrammarWrapper(grammar, grammar_object, self)
         grammar_object.setBeginCallback(wrapper.begin_callback)
