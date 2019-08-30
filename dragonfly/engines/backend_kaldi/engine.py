@@ -201,10 +201,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         except Exception as e:
             raise MimicFailure("Invalid mimic input %r: %s." % (words, e))
 
-        # We do not need to call prepare_for_recognition here, because mimics do not use the decoder
         self._recognition_observer_manager.notify_begin()
         kaldi_rules_activity = self._compute_kaldi_rules_activity()
 
+        self.prepare_for_recognition()
         kaldi_rule, parsed_output = self._parse_recognition(output, mimic=True)
         if not kaldi_rule:
             raise MimicFailure("No matching rule found for words %r." % (parsed_output,))
@@ -343,10 +343,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         return self._kaldi_rules_activity
 
     def _parse_recognition(self, output, mimic=False):
-        # if output == '':
-        #     self._log.warning("attempted to parse empty recognition")
-        #     return None
-
         if mimic or self._compiler.parsing_framework == 'text':
             with debug_timer(self._log.debug, "kaldi_rule parse time"):
                 detect_ambiguity = False
