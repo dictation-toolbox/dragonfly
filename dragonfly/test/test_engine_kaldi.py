@@ -215,19 +215,6 @@ class EngineTests(KaldiEngineCase):
         finally:
             grammar.unload()
 
-    def test_grammar_name_conflicts(self):
-        """ Verify that grammars with the same name are not allowed. """
-        grammar1 = Grammar("test_grammar")
-        grammar1.add_rule(CompoundRule(name="rule", spec="test"))
-        grammar2 = Grammar("test_grammar")
-        grammar2.add_rule(CompoundRule(name="rule", spec="test"))
-        try:
-            grammar1.load()
-            self.assertTrue(grammar1.loaded)
-            self.assertRaises(KaldiError, grammar2.load)
-        finally:
-            grammar1.unload()
-
 
 # ---------------------------------------------------------------------
 
