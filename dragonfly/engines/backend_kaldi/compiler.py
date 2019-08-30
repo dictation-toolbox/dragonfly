@@ -188,14 +188,12 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
             kaldi_rule.destroy()
             del self.kaldi_rule_by_rule_dict[rule]
 
-    def update_list(self, lst, rules, grammar):
-        # FIXME: it may be safe to just loop over this directly
+    def update_list(self, lst, grammar):
+        # Note: we update all rules in all grammars that reference this list (unlike WSR/natlink?)
         lst_kaldi_rules = self.kaldi_rules_by_listreflist_dict[id(lst)]
-        for rule in rules:
-            kaldi_rule = self.kaldi_rule_by_rule_dict[rule]
-            if kaldi_rule in lst_kaldi_rules:
-                with kaldi_rule.reload():
-                    self._compile_rule_root(rule, grammar, kaldi_rule)
+        for kaldi_rule in lst_kaldi_rules:
+            with kaldi_rule.reload():
+                self._compile_rule_root(kaldi_rule.parent_rule, grammar, kaldi_rule)
 
     #-----------------------------------------------------------------------
     # Methods for compiling elements.

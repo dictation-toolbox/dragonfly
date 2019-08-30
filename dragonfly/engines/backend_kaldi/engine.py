@@ -178,9 +178,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler.kaldi_rule_by_rule_dict[rule].active = False
 
     def update_list(self, lst, grammar):
-        wrapper = self._get_grammar_wrapper(grammar)
-        rules = wrapper.kaldi_rule_by_rule_dict.keys()
-        self._compiler.update_list(lst, rules, grammar)
+        self._compiler.update_list(lst, grammar)
 
     def set_exclusiveness(self, grammar, exclusive):
         self._log.debug("Setting exclusiveness of grammar %s to %s." % (grammar.name, exclusive))
