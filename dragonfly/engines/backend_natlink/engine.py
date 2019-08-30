@@ -95,18 +95,11 @@ class NatlinkEngine(EngineBase):
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
 
-        grammar.engine = self
         grammar_object = self.natlink.GramObj()
         wrapper = GrammarWrapper(grammar, grammar_object, self)
         grammar_object.setBeginCallback(wrapper.begin_callback)
         grammar_object.setResultsCallback(wrapper.results_callback)
         grammar_object.setHypothesisCallback(None)
-
-        # Dependency checking.
-        memo = []
-        for r in grammar._rules:
-            for d in r.dependencies(memo):
-                grammar.add_dependency(d)
 
         c = NatlinkCompiler()
         (compiled_grammar, rule_names) = c.compile_grammar(grammar)

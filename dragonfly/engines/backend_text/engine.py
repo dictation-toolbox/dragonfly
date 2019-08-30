@@ -86,14 +86,6 @@ class TextInputEngine(EngineBase):
         """ Load the given *grammar* and return a wrapper. """
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
-
-        grammar.engine = self
-        # Dependency checking.
-        memo = []
-        for r in grammar.rules:
-            for d in r.dependencies(memo):
-                grammar.add_dependency(d)
-
         return self._build_grammar_wrapper(grammar)
 
     def _unload_grammar(self, grammar, wrapper):

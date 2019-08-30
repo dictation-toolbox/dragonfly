@@ -463,14 +463,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         """ Load the given *grammar* and return a wrapper. """
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
-
-        grammar.engine = self
-        # Dependency checking.
-        memo = []
-        for r in grammar.rules:
-            for d in r.dependencies(memo):
-                grammar.add_dependency(d)
-
         wrapper = self._build_grammar_wrapper(grammar)
 
         # Check that the engine doesn't already have a grammar with the same
