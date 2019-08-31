@@ -14,7 +14,7 @@ class GrammarWrapper(object):
 
     _log = logging.getLogger("engine")
 
-    def __init__(self, grammar, engine, observer_manager):
+    def __init__(self, grammar, engine, observer_manager, search_name):
         """
         :type grammar: Grammar
         :type engine: SphinxEngine
@@ -23,6 +23,7 @@ class GrammarWrapper(object):
         self.engine = engine
         self._observer_manager = observer_manager
         self.set_search = True
+        self._search_name = search_name
 
         # Compile the grammar into a JSGF grammar and set the language.
         self._jsgf_grammar = engine.compiler.compile_grammar(grammar)
@@ -101,7 +102,7 @@ class GrammarWrapper(object):
 
         :return: str
         """
-        return "g_%s" % self._jsgf_grammar.name
+        return self._search_name
 
     @property
     def grammar_active(self):

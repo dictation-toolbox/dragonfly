@@ -90,6 +90,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._keyphrase_functions = {}
         self._training_session_active = False
         self._default_search_result = None
+        self._grammar_count = 0
 
         # Timer-related members.
         self._timer_manager = SphinxTimerManager(0.02, self)
@@ -256,6 +257,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._cancel_recognition_next_time = False
         self._training_session_active = False
         self._recognition_paused = False
+        self._grammar_count = 0
 
         # Clear dictionaries and sets
         self._grammar_wrappers.clear()
@@ -329,8 +331,11 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             )
 
     def _build_grammar_wrapper(self, grammar):
+        search_name = "%d" % self._grammar_count
+        self._grammar_count += 1
         return GrammarWrapper(grammar, self,
-                              self._recognition_observer_manager)
+                              self._recognition_observer_manager,
+                              search_name)
 
     def _set_grammar(self, wrapper, activate, partial=False):
         if not wrapper:
@@ -462,15 +467,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
         wrapper = self._build_grammar_wrapper(grammar)
-
-        # Check that the engine doesn't already have a grammar with the same
-        # search name. This will include grammars with the same reference
-        # name, e.g. "some grammar" and "some_grammar".
-        if wrapper.search_name in self._valid_searches:
-            message = "Failed to load grammar %s: multiple grammars with " \
-                "the same name are not allowed" % grammar
-            self._log.error(message)
-            raise EngineError(message)
 
         # Attempt to set the grammar search.
         try:
