@@ -66,11 +66,12 @@ MockLiteral = collections.namedtuple('MockLiteral', 'words')
 
 class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
-    def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, **kwargs):
+    def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, lazy_compilation=None, **kwargs):
         CompilerBase.__init__(self)
-        KaldiAGCompiler.__init__(self, model_dir, tmp_dir=tmp_dir, **kwargs)
+        KaldiAGCompiler.__init__(self, model_dir=model_dir, tmp_dir=tmp_dir, **kwargs)
 
-        self.auto_add_to_user_lexicon = auto_add_to_user_lexicon
+        self.auto_add_to_user_lexicon = bool(auto_add_to_user_lexicon)
+        self.lazy_compilation = bool(lazy_compilation)
 
         self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
         self._grammar_rule_states_dict = dict()  # FIXME: disabled!
@@ -99,29 +100,30 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         return output
 
     def translate_words(self, words):
-        new_words = []
-        for word in words:
-            for old, new in self.translation_dict.iteritems():
-                word = word.replace(old, new)
-            word = word.lower()
-            new_words.extend(word.split())
-        words = new_words
-        new_words = []
-        for word in words:
-            if word not in self.lexicon_words:
-                word = self.handle_oov_word(word)
-            new_words.append(word)
-        return new_words
+        # Unused
+        if self.translation_dict:
+            new_words = []
+            for word in words:
+                for old, new in self.translation_dict.iteritems():
+                    word = word.replace(old, new)
+                new_words.extend(word.split())
+            words = new_words
+        words = [word.lower() for word in words]
+        for i in range(len(words)):
+            if words[i] not in self.lexicon_words:
+                words[i] = self.handle_oov_word(words[i])
+        return words
 
     def handle_oov_word(self, word):
         if self.auto_add_to_user_lexicon:
             try:
-                phones = self.model.add_word(word, lazy_compilation=True)
+                pronunciations = self.model.add_word(word, lazy_compilation=True)
                 self.added_word = True
             except Exception as e:
                 self._log.exception("%s: exception automatically adding word %r" % (self, word))
             else:
-                self._log.warning("%s: Word not in lexicon (generated automatic pronunciation): %r [%s]" % (self, word, ' '.join(phones)))
+                for phones in pronunciations:
+                    self._log.warning("%s: Word not in lexicon (generated automatic pronunciation): %r [%s]" % (self, word, ' '.join(phones)))
                 return word
 
         self._log.warning("%s: Word %r not in lexicon (will NOT be recognized; see documentation about user lexicon and auto_add_to_user_lexicon)" % (self, word))
@@ -158,11 +160,11 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         kaldi_rule.matcher = matcher.setName(str(kaldi_rule.name)).setResultsName(str(kaldi_rule.name))
         kaldi_rule.fst.equalize_weights()
         if self.added_word:
-            self.model.load_words()
             self.model.generate_lexicon_files()
+            self.model.load_words()
             self.decoder.load_lexicon()
             self.added_word = False
-        kaldi_rule.compile_file()
+        kaldi_rule.compile(lazy=self.lazy_compilation)
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
         # Determine whether this rule has already been compiled.
@@ -175,7 +177,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         src_state = fst.add_state(initial=export)
         dst_state = fst.add_state(final=export)
         matcher = self.compile_element(rule.element, src_state, dst_state, grammar, kaldi_rule, fst)
-        matcher = matcher.setName(rule.name).setResultsName(rule.name)
+        # matcher = matcher.setName(rule.name).setResultsName(rule.name)
 
         # self._grammar_rule_states_dict[(grammar.name, rule.name)] = (matcher, src_state, dst_state)
         return (matcher, src_state, dst_state)
@@ -186,14 +188,12 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
             kaldi_rule.destroy()
             del self.kaldi_rule_by_rule_dict[rule]
 
-    def update_list(self, lst, rules, grammar):
-        # FIXME: it may be safe to just loop over this directly
+    def update_list(self, lst, grammar):
+        # Note: we update all rules in all grammars that reference this list (unlike WSR/natlink?)
         lst_kaldi_rules = self.kaldi_rules_by_listreflist_dict[id(lst)]
-        for rule in rules:
-            kaldi_rule = self.kaldi_rule_by_rule_dict[rule]
-            if kaldi_rule in lst_kaldi_rules:
-                with kaldi_rule.reload():
-                    self._compile_rule_root(rule, grammar, kaldi_rule)
+        for kaldi_rule in lst_kaldi_rules:
+            with kaldi_rule.reload():
+                self._compile_rule_root(kaldi_rule.parent_rule, grammar, kaldi_rule)
 
     #-----------------------------------------------------------------------
     # Methods for compiling elements.
@@ -207,7 +207,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         # Didn't find a compiler method for this element type.
         raise NotImplementedError("Compiler %s not implemented for element type %s." % (self, element))
 
-    @trace_compile
+    # @trace_compile
     def _compile_sequence(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         children = element.children
         if len(children) > 1:
@@ -255,41 +255,51 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         else:  # len(children) == 0
             return pp.Empty()
 
-    @trace_compile
+    # @trace_compile
     def _compile_alternative(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         matchers = []
         for child in element.children:
             matchers.append(self.compile_element(child, src_state, dst_state, grammar, kaldi_rule, fst))
         return pp.Or(tuple(matchers))
 
-    @trace_compile
+    # @trace_compile
     def _compile_optional(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         matcher = self.compile_element(element.children[0], src_state, dst_state, grammar, kaldi_rule, fst)
         fst.add_arc(src_state, dst_state, None)
         return pp.Optional(matcher)
 
-    @trace_compile
+    # @trace_compile
     def _compile_literal(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # "insert" new states for individual words
         words = element.words
         words = map(str, words)  # FIXME: handle unicode
         matcher = pp.CaselessLiteral(' '.join(words))
-        words = self.translate_words(words)
-        states = [src_state] + [fst.add_state() for i in range(len(words)-1)] + [dst_state]
-        for i, word in enumerate(words):
-            s1 = states[i]
-            s2 = states[i + 1]
-            fst.add_arc(s1, s2, word.lower())
+
+        if len(words) == 1:
+            # words = self.translate_words(words)
+            word = words[0].lower()
+            if word not in self.lexicon_words:
+                word = self.handle_oov_word(word)
+            fst.add_arc(src_state, dst_state, word)
+        else:
+            # words = self.translate_words(words)
+            words = [word.lower() for word in words]
+            for i in range(len(words)):
+                if words[i] not in self.lexicon_words:
+                    words[i] = self.handle_oov_word(words[i])
+            states = [src_state] + [fst.add_state() for i in range(len(words)-1)] + [dst_state]
+            for i, word in enumerate(words):
+                fst.add_arc(states[i], states[i + 1], word)
         return matcher
 
-    @trace_compile
+    # @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         matcher, rule_src_state, rule_dst_state = self._compile_rule(element.rule, grammar, kaldi_rule, fst, export=False)
         fst.add_arc(src_state, rule_src_state, None)
         fst.add_arc(rule_dst_state, dst_state, None)
         return matcher
 
-    @trace_compile
+    # @trace_compile
     def _compile_list_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # list_rule_name = "__list_%s" % element.list.name
         if element.list not in grammar.lists:
@@ -301,17 +311,18 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
             matchers.append(self._compile_literal(MockLiteral(child_str.split()), src_state, dst_state, grammar, kaldi_rule, fst))
         return pp.Or(tuple(matchers))
 
-    @trace_compile
+    # @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # fst.add_arc(src_state, dst_state, '#nonterm:dictation', olabel=WFST.eps)
         extra_state = fst.add_state()
         cloud_dictation = isinstance(element, (CloudDictation, LocalDictation)) and element.cloud
-        cloud_dictation_nonterm = '#nonterm:dictation_cloud' if cloud_dictation else '#nonterm:dictation'
-        fst.add_arc(src_state, extra_state, '#nonterm:dictation', cloud_dictation_nonterm)
-        fst.add_arc(extra_state, dst_state, WFST.eps, '#nonterm:end')
-        return pp.OneOrMore(pp.Word(pp.alphas + pp.alphas8bit + pp.printables))
+        dictation_nonterm = '#nonterm:dictation_cloud' if cloud_dictation else '#nonterm:dictation'
+        fst.add_arc(src_state, extra_state, '#nonterm:dictation', dictation_nonterm)
+        # fst.add_arc(extra_state, dst_state, WFST.eps, '#nonterm:end')
+        fst.add_arc(extra_state, dst_state, '!SIL', '#nonterm:end')
+        return pp.ZeroOrMore(pp.Word(pp.alphas + pp.alphas8bit + pp.printables))
 
-    @trace_compile
+    # @trace_compile
     def _compile_impossible(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # FIXME: not impossible enough (lower probability?)
         fst.add_arc(src_state, dst_state, self.impossible_word.lower())
