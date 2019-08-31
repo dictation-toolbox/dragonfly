@@ -384,10 +384,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Unset the Pocket Sphinx search.
         if name in self._valid_searches:
-            # Unfortunately, the C function for doing this (ps_unset_search)
-            # is not exposed. Pocket Sphinx searches are pretty lighweight
-            # however. This would only be an issue on hardware with limited
-            # memory.
+            # Unset the decoder search.
+            self._decoder.unset_search(name)
 
             # Remove the search from the valid searches set.
             self._valid_searches.remove(name)
@@ -634,6 +632,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Switch back to the previous search.
         self._decoder.end_utterance()  # just in case
         self._decoder.active_search = original
+        self._decoder.unset_search("_temp")
         return result
 
     def _speech_start_callback(self, mimicking):
