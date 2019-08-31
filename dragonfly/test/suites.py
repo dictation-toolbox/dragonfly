@@ -65,6 +65,7 @@ language_names = [
 
 # Define the tests to run for DNS versions 10 and below.
 natlink_10_names = [
+    "test_compiler_natlink",
     "test_dictation",
     "test_engine_natlink",
     "doc:documentation/test_word_formatting_v10_doctest.txt",
@@ -72,6 +73,7 @@ natlink_10_names = [
 
 # Define the tests to run for DNS versions 11 and above.
 natlink_11_names = [
+    "test_compiler_natlink",
     "test_dictation",
     "test_engine_natlink",
     "doc:documentation/test_word_formatting_v11_doctest.txt",

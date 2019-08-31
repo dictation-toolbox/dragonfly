@@ -26,7 +26,8 @@
 #---------------------------------------------------------------------------
 
 import struct
-from six import string_types, text_type, PY2
+from six import string_types, text_type
+from locale import getpreferredencoding
 
 from ..base import CompilerBase, CompilerError
 
@@ -349,7 +350,7 @@ class _Compiler(object):
         output.append(self._compile_rule_chunk(3))
 
         # Return a concatenation of the header and chunks.
-        return "".join(output)
+        return b"".join(output)
 
     def _compile_id_chunk(self, chunk_id, subset, ordered_superset):
         # Loop through the elements of the superset, and if also present in
@@ -368,15 +369,16 @@ class _Compiler(object):
             #  - szName; the element's name terminated by at least one 0.
             # The element's name must be followed by one or more 0
             #  characters, so that its size in bytes is a multiple of 4.
-            if isinstance(name, text_type) and PY2:
-                name = name.encode("windows-1252")
+            if isinstance(name, text_type):
+                name = name.encode(getpreferredencoding())
+
             padded_len = (len(name) + 4) & (~3)
-            element = struct.pack("LL%ds" % padded_len,
-                padded_len + 8, id, str(name))
+            element = struct.pack(("LL%ds" % padded_len),
+                padded_len + 8, id, name)
             elements.append(element)
 
         # Concatenate all the elements.
-        element_data = "".join(elements)
+        element_data = b"".join(elements)
 
         # Chunk header:
         #  - dwChunkId; words:2, rule definitions:3,
@@ -426,12 +428,12 @@ class _Compiler(object):
             #  - dwNum; the ID of this rule.
             definition_size = 8 + sum([len(s) for s in elements])
             definition = struct.pack("LL", definition_size, id)
-            definition += "".join(elements)
+            definition += b"".join(elements)
 
             definitions.append(definition)
 
         # Concatenate all the rule definitions.
-        definition_data = "".join(definitions)
+        definition_data = b"".join(definitions)
 
         # Rule definition chunk header:
         #  - dwChunkId; rule definitions:3
