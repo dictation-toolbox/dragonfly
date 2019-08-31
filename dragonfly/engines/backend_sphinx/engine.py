@@ -23,11 +23,12 @@ Engine class for CMU Pocket Sphinx
 """
 
 import contextlib
+import locale
 import logging
 import os
 import wave
 
-from six import text_type, PY2
+from six import binary_type, text_type, string_types, PY2
 
 from dragonfly import Window
 from .recobs import SphinxRecObsManager
@@ -55,6 +56,18 @@ except ImportError:
 
 class UnknownWordError(Exception):
     pass
+
+
+def _map_to_str(text, encoding=locale.getpreferredencoding()):
+    # Translate unicode/bytes to whatever str is in this version of
+    # Python. Decoder methods seem to require str objects.
+    if not isinstance(text, string_types):
+        text = str(text)
+    if PY2 and isinstance(text, text_type):
+        text = text.encode(encoding)
+    elif not PY2 and isinstance(text, binary_type):
+        text = text.decode(encoding)
+    return text
 
 
 class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
@@ -312,6 +325,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if not self._decoder:
             self.connect()
 
+        word = _map_to_str(word)
         return bool(self._decoder.lookup_word(word.lower()))
 
     def _validate_words(self, words, search_type):
@@ -373,7 +387,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Set the JSGF search.
         self._decoder.end_utterance()
-        self._decoder.set_jsgf_string(wrapper.search_name, compiled)
+        self._decoder.set_jsgf_string(wrapper.search_name,
+                                      _map_to_str(compiled))
         activate_search_if_necessary()
 
         # Grammar search has been loaded, so set the wrapper's flag.
@@ -615,7 +630,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # each literal in the _temp grammar came from a Pocket Sphinx
         # hypothesis.
         self._decoder.end_utterance()
-        self._decoder.set_jsgf_string(name, compiled)
+        self._decoder.set_jsgf_string(name, _map_to_str(compiled))
         self._decoder.active_search = name
 
         # Do the processing.
@@ -765,8 +780,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Minor note: this won't work for languages without capitalisation.
         result = []
         for word in words.split():
-            if PY2 and isinstance(word, str):
-                word = text_type(word, encoding="utf-8")
+            if isinstance(word, binary_type):
+                word = word.decode(locale.getpreferredencoding())
             if word.isupper() and mimicking:
                 # Convert dictation words to lowercase for consistent
                 # output.
