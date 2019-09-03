@@ -133,7 +133,12 @@ class Win32Window(BaseWindow):
     is_enabled      = _win32gui_test("IsWindowEnabled")
     is_visible      = _win32gui_test("IsWindowVisible")
     is_minimized    = _win32gui_test("IsIconic")
-#   is_maximized    = _win32gui_test("IsZoomed")  # IsZoomed is unavailable
+
+    @property
+    def is_maximized(self):
+        # IsZoomed() is not available from win32gui for some reason.
+        # So we use the function directly.
+        return bool(windll.user32.IsZoomed(self._handle))
 
     def _win32gui_show_window(state):
         return lambda self: win32gui.ShowWindow(self._handle, state)
