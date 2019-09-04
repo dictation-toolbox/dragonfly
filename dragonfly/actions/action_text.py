@@ -100,9 +100,10 @@ Text class reference
 
 """
 
+from locale import getpreferredencoding
 import sys
 
-from six import PY2
+from six import binary_type
 
 from ..engines import get_engine
 from ..util.clipboard import Clipboard
@@ -220,6 +221,10 @@ class Text(DynStrActionBase):
         # Set other members and call the super constructor.
         self._autofmt = autofmt
         self._use_hardware = use_hardware
+
+        if isinstance(spec, binary_type):
+            spec = spec.decode(getpreferredencoding())
+
         DynStrActionBase.__init__(self, spec=spec, static=static)
 
     def _parse_spec(self, spec):
@@ -229,8 +234,7 @@ class Text(DynStrActionBase):
         unicode_events = []
         hardware_error_message = None
         unicode_error_message = None
-        if PY2 and isinstance(spec, str):
-            spec = spec.decode('utf-8')
+
         for character in spec:
             if character in self._specials:
                 typeable = self._specials[character]
