@@ -61,6 +61,25 @@ Firefox is in the foreground, but only if Google Reader is
    firefox_but_not_reader_context = firefox_context & ~reader_context
 
 
+Matching other window attributes
+----------------------------------------------------------------------------
+
+The :class:`AppContext` class can be used to match window attributes and
+properties other than the title and executable. To do this, pass extra
+keyword arguments to the constructor::
+
+   # Context for a maximized Firefox window.
+   maximized_firefox = AppContext(executable="firefox", is_maximized=True)
+
+   # Context for a browser in fullscreen mode.
+   # 'role' and 'is_fullscreen' are X11 only.
+   fullscreen_browser = AppContext(role="browser", is_fullscreen=True)
+
+   # Context for Android Studio or PyCharm using the X11 'cls' property.
+   AppContext(cls=["jetbrains-studio", "jetbrains-pycharm-ce"])
+
+
+
 Class reference
 ----------------------------------------------------------------------------
 
@@ -197,7 +216,10 @@ class AppContext(Context):
         certain requirements.  Which requirements must be met for this
         context to match are determined by the constructor arguments.
 
-        If multiple strings are passed in a list, True will be returned if the foreground window matches one or more of them.
+        If multiple strings are passed in a list, True will be returned if
+        the foreground window matches one or more of them. This applies to
+        the *executable* and *title* arguments and key word arguments for
+        most window attributes.
 
         Constructor arguments:
          - *executable* (*str* or *list*) --
@@ -205,13 +227,17 @@ class AppContext(Context):
            executable; case insensitive
          - *title* (*str* or *list*) --
            (part of) the title of the foreground window; case insensitive
+         - *key word arguments* --
+           optional window attributes/properties and expected values;
+           case insensitive
 
     """
 
     # ----------------------------------------------------------------------
     # Initialization methods.
 
-    def __init__(self, executable=None, title=None, exclude=False):
+    def __init__(self, executable=None, title=None, exclude=False,
+                 **kwargs):
         Context.__init__(self)
 
         # Allow Unicode or strings to be used for executables and titles.
@@ -235,10 +261,25 @@ class AppContext(Context):
             raise TypeError("title argument must be a string or None;"
                             " received %r" % title)
 
-        self._exclude = bool(exclude)
+        # Handle keyword arguments.
+        new_kwargs = {}
+        for key, value in kwargs.items():
+            if isinstance(value, string_types):
+                values = [value.lower()]
+            if isinstance(value, list):
+                values = [str(v).lower() for v in value]
+            elif value is None:
+                values = None
+            else:
+                values = [value]
+            new_kwargs[key] = values
 
+        self._exclude = bool(exclude)
         self._str = "%s, %s, %s" % (self._executable, self._title,
                                     self._exclude)
+        self._kwargs = new_kwargs
+        if self._kwargs:
+            self._str += ", %s" % self._kwargs
 
     # ----------------------------------------------------------------------
     # Matching methods.
@@ -265,6 +306,37 @@ class AppContext(Context):
                     break
             if self._exclude == found:
                 self._log_match.debug("%s: No match, title doesn't match." % self)
+                return False
+
+        if self._kwargs:
+            # Import locally to avoid import cycles.
+            from dragonfly.windows import Window
+            window = Window.get_window(handle)
+
+            found = False
+            for attr, expected_values in self._kwargs.items():
+                try:
+                    # Get the window attribute.
+                    attr_value = getattr(window, attr)
+                except AttributeError:
+                    self._log_match.warning("%s: Skipped missing window"
+                                            " attribute '%s'"
+                                            % (self, attr))
+                    continue
+
+                # Check if the window attribute matched.
+                for match in expected_values:
+                    is_string = isinstance(attr_value, string_types)
+                    found = (
+                        not is_string and match == attr_value or
+                        is_string and attr_value.lower().find(match) != -1
+                    )
+                    if found:
+                        break
+
+            if self._exclude == found:
+                self._log_match.debug("%s: No match, not all extra"
+                                      " attributes match." % self)
                 return False
 
         if self._log_match:
