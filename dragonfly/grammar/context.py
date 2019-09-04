@@ -61,6 +61,25 @@ Firefox is in the foreground, but only if Google Reader is
    firefox_but_not_reader_context = firefox_context & ~reader_context
 
 
+Matching other window attributes
+----------------------------------------------------------------------------
+
+The :class:`AppContext` class can be used to match window attributes and
+properties other than the title and executable. To do this, pass extra
+keyword arguments to the constructor::
+
+   # Context for a maximized Firefox window.
+   maximized_firefox = AppContext(executable="firefox", is_maximized=True)
+
+   # Context for a browser in fullscreen mode.
+   # 'role' and 'is_fullscreen' are X11 only.
+   fullscreen_browser = AppContext(role="browser", is_fullscreen=True)
+
+   # Context for Android Studio or PyCharm using the X11 'cls' property.
+   AppContext(cls=["jetbrains-studio", "jetbrains-pycharm-ce"])
+
+
+
 Class reference
 ----------------------------------------------------------------------------
 
