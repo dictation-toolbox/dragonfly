@@ -33,4 +33,4 @@ def compare_security_token(expected, actual):
 
 
 def generate_security_token():
-    return base64.b64encode(os.urandom(32)).decode('utf-8')
+    return base64.b64encode(os.urandom(32)).decode()

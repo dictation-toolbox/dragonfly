@@ -200,9 +200,10 @@ class NatlinkEngine(EngineBase):
         """ Mimic a recognition of the given *words*. """
         try:
             prepared_words = []
+            encoding = getpreferredencoding()
             for word in words:
                 if isinstance(word, text_type):
-                    word = word.encode("windows-1252")
+                    word = word.encode(encoding)
                 prepared_words.append(word)
         except Exception as e:
             raise MimicFailure("Invalid mimic input %r: %s."

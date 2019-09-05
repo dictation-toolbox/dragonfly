@@ -27,9 +27,10 @@ creating grammar element structures based on a simple text format.
 
 """
 
-
+import locale
 import re
-from six import string_types
+
+from six import string_types, binary_type
 
 import dragonfly.grammar.elements_basic as elements_
 import dragonfly.parser as parser_
@@ -238,6 +239,9 @@ class Compound(elements_.Alternative):
 
     def __init__(self, spec, extras=None, actions=None, name=None,
                  value=None, value_func=None, elements=None, default=None):
+        if isinstance(spec, binary_type):
+            spec = spec.decode(locale.getpreferredencoding())
+
         self._spec = spec
         self._value = value
         self._value_func = value_func

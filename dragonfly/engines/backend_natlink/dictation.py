@@ -27,19 +27,9 @@ dictation formatting for the Natlink and Dragon NaturallySpeaking engine.
 
 """
 
+from locale import getpreferredencoding
 
-# Attempt to import Natlink.  If this fails, Natlink is probably
-#  not available and the dictation container implemented here
-#  cannot be used.  However, we don't raise an exception because
-#  this file should still be importable for documentation purposes.
-import locale
-
-from six import text_type, PY2
-
-try:
-    import natlink
-except ImportError:
-    natlink = None
+from six import text_type
 
 from ..base import DictationContainerBase
 from .dictation_format import WordFormatter
@@ -61,8 +51,9 @@ class NatlinkDictationContainer(DictationContainerBase):
             if isinstance(word, text_type):
                 unicode_words.append(word)
             else:
-                unicode_words.append(word.decode("windows-1252"))
-        DictationContainerBase.__init__(self, words=unicode_words, methods=methods)
+                unicode_words.append(word.decode(getpreferredencoding()))
+        DictationContainerBase.__init__(self, words=unicode_words,
+                                        methods=methods)
 
     def format(self):
         """ Format and return this dictation. """

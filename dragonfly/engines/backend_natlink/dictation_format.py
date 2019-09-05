@@ -27,20 +27,22 @@ NaturallySpeaking engine.
 
 """
 
+from locale import getpreferredencoding
+import logging
+import re
 
 # Attempt to import Natlink.  If this fails, Natlink is probably
 #  not available and the dictation container implemented here
 #  cannot be used.  However, we don't raise an exception because
 #  this file should still be importable for documentation purposes.
-from six import text_type, string_types
 
 try:
     import natlink
 except ImportError:
     natlink = None
 
-import logging
-import re
+from six import text_type, binary_type, string_types
+
 import dragonfly.engines
 
 
@@ -67,7 +69,7 @@ class FlagContainer(object):
         return u"%s(%s)" % (self.__class__.__name__, self.flags_string())
 
     def __str__(self):
-        return self.__unicode__().encode("utf-8")
+        return self.__unicode__().encode(getpreferredencoding())
 
     def __getattr__(self, name):
         if name not in self.flag_names:
@@ -189,7 +191,7 @@ class Word(object):
         return u"%s(%s)" % (self.__class__.__name__, ", ".join(info))
 
     def __str__(self):
-        return self.__unicode__().encode("utf-8")
+        return self.__unicode__().encode(getpreferredencoding())
 
 
 #===========================================================================
