@@ -172,7 +172,7 @@ class State(object):
         return None
 
     def _log_step(self, parser, message):
-        if not self._log_decode:
+        if not self._log_decode or not self._log_decode.isEnabledFor(logging.DEBUG):
             return
         indent = u"   " * self._depth
         output = u"%s%s: %s" % (indent, message, parser)
