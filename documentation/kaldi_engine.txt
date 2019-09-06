@@ -123,6 +123,13 @@ recognition (simply say "start listening" or "halt listening").
 A more basic loader is in `dragonfly/examples/kaldi_module_loader.py
 <https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_module_loader.py>`_.
 
+Updating To A New Version
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When updating to a new version of dragonfly, you should always rerun
+``pip install dragonfly2[kaldi]`` (or ``pip install .[kaldi]``, etc.) to
+make sure you get the required version of kaldi_active_grammar.
+
 
 Engine Configuration
 ----------------------------------------------------------------------------
@@ -145,6 +152,7 @@ the ``get_engine()`` function, which passes them to the
     auto_add_to_user_lexicon=True,
     lazy_compilation=True,
     cloud_dictation=None,
+    cloud_dictation_lang='en-US',
   )
 
 .. autofunction:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
@@ -199,6 +207,12 @@ the ``get_engine()`` function, which passes them to the
 
   * ``None`` -- Disabled
   * ``"gcloud"`` -- Google Cloud Speech-to-Text
+
+* ``cloud_dictation_lang`` (``str|None``) -- If you want a cloud
+  dictation language other than English, you can specify it here. Valid
+  codes for Google Cloud Speech-to-Text are listed on this `page
+  <https://cloud.google.com/speech-to-text/docs/languages>`_. There may be
+  unicode issues currently.
 
 
 Cross-platform
@@ -306,7 +320,8 @@ the cloud provider.
 Google Cloud Speech-to-Text is currently the only supported provider.
 You can test its accuracy for free on its `product page
 <https://cloud.google.com/speech-to-text/>`_ and see its pricing there
-as well.
+as well. It also supports many languages other than English, which can
+be enabled with the ``cloud_dictation_lang`` option.
 
 The process to enable your access to GCloud is nontrivial: set up an
 account with billing, set up a project, enable the Google Speech-to-Text
