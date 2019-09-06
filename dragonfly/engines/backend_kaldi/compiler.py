@@ -318,7 +318,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         cloud_dictation = isinstance(element, (CloudDictation, LocalDictation)) and element.cloud
         dictation_nonterm = '#nonterm:dictation_cloud' if cloud_dictation else '#nonterm:dictation'
         fst.add_arc(src_state, extra_state, '#nonterm:dictation', dictation_nonterm)
-        # fst.add_arc(extra_state, dst_state, WFST.eps, '#nonterm:end')
+        fst.add_arc(extra_state, dst_state, WFST.eps, '#nonterm:end')
         fst.add_arc(extra_state, dst_state, '!SIL', '#nonterm:end')
         return pp.ZeroOrMore(pp.Word(pp.alphas + pp.alphas8bit + pp.printables))
 

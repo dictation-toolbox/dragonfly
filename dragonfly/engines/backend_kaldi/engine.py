@@ -58,7 +58,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def __init__(self, model_dir=None, tmp_dir=None,
         vad_aggressiveness=3, vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500, input_device_index=None,
         auto_add_to_user_lexicon=True, lazy_compilation=True,
-        cloud_dictation=None,  # FIXME: cloud_dictation_lang
+        cloud_dictation=None, cloud_dictation_lang='en-US',
         ):
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
@@ -78,6 +78,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             auto_add_to_user_lexicon = auto_add_to_user_lexicon,
             lazy_compilation = lazy_compilation,
             cloud_dictation = cloud_dictation,
+            cloud_dictation_lang = cloud_dictation_lang,
         )
 
         self._compiler = None
@@ -97,7 +98,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
             lazy_compilation=self._options['lazy_compilation'],
-            cloud_dictation=self._options['cloud_dictation'])
+            cloud_dictation=self._options['cloud_dictation'],
+            cloud_dictation_lang=self._options['cloud_dictation_lang'],
+            )
         # self._compiler.fst_cache.invalidate()
 
         top_fst = self._compiler.compile_top_fst()
@@ -110,7 +113,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._audio_iter = self._audio.vad_collector(nowait=True,
             padding_start_ms=self._options['vad_padding_start_ms'],
             padding_end_ms=self._options['vad_padding_end_ms'],
-            complex_padding_end_ms=self._options['vad_complex_padding_end_ms'])
+            complex_padding_end_ms=self._options['vad_complex_padding_end_ms'],
+            )
         self.audio_store = AudioStore(self._audio, maxlen=0)
 
         self._any_exclusive_grammars = False
