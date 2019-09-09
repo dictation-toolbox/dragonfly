@@ -11,6 +11,42 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add Python 3 compatible natlink compiler test (thanks `@mrob95`_).
+* Add a note about installing the `xdotool` program in the Kaldi engine
+  documentation (thanks `@JasoonS`_).
+* Add keywords argument handling to AppContext class for matching window
+  attributes other than titles and executables.
+
+Changed
+~~~~~~~
+* Change the Sphinx engine to allow grammars with the same name (again).
+* Move dependency adding code from engine classes into Grammar methods
+  (thanks `@mrob95`_).
+* Remove extraneous trailing whitespace from 116 files (thanks `@mrob95`_).
+* Remove redundant 'grammar.engine = self' lines from engine classes
+  (thanks `@mrob95`_).
+* Lots of Kaldi engine backend improvements & bug fixes
+  (thanks `@daanzu`_).
+
+Fixed
+~~~~~
+* Add check to avoid preparing expensive debug logs when they will be
+  discarded (thanks `@wolfmanstout`_).
+* Add missing is_maximized property for Win32Window class.
+* Fix Python 3 support in a few places.
+* Fix a few problems with the Sphinx engine.
+* Fix various character encoding issues with dragonfly and its unit tests.
+* Log 'Is X installed?' messages in X11Window if xprop or xdotool are
+  missing.
+* Re-raise errors due to missing xprop or xdotool programs instead of
+  suppressing them.
+
+
 0.16.1_ - 2019-08-04
 --------------------
 
@@ -550,19 +586,22 @@ This release is the first in the Git version control system.
 .. _0.6.4-rc1:   https://github.com/dictation-toolbox/dragonfly/compare/0.6.1...0.6.4-rc1
 .. _0.6.1:       https://github.com/dictation-toolbox/dragonfly/compare/03d06af...0.6.1
 
+.. Contributors.
+.. _@JasoonS: https://github.com/JasoonS
+.. _@LexiconCode: https://github.com/LexiconCode
+.. _@Versatilus: https://github.com/Versatilus
+.. _@calmofthestorm: https://github.com/calmofthestorm
+.. _@comodoro: https://github.com/comodoro
+.. _@daanzu: https://github.com/daanzu
+.. _@lexxish: https://github.com/lexxish
+.. _@mrob95: https://github.com/mrob95
+.. _@tylercal: https://github.com/tylercal
+.. _@wolfmanstout: https://github.com/wolfmanstout
+
 .. Other links.
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
 .. _reStructuredText format: http://docutils.sourceforge.net/rst.html
 .. _Semantic Versioning: http://semver.org/spec/v2.0.0.html
-.. _@comodoro: https://github.com/comodoro
-.. _@daanzu: https://github.com/daanzu
-.. _@Versatilus: https://github.com/Versatilus
-.. _@wolfmanstout: https://github.com/wolfmanstout
-.. _@calmofthestorm: https://github.com/calmofthestorm
-.. _@mrob95: https://github.com/mrob95
-.. _@tylercal: https://github.com/tylercal
-.. _@lexxish: https://github.com/lexxish
-.. _@LexiconCode: https://github.com/LexiconCode
 .. _Aenea: https://github.com/dictation-toolbox/aenea
 .. _pynput: https://github.com/moses-palmer/pynput
 .. _Kaldi engine: https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html
