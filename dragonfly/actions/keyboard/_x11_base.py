@@ -17,6 +17,8 @@
 
 # This file is based on Aenea's X11 key_press implementations.
 
+from locale import getpreferredencoding
+
 from six import PY2
 from ._base import BaseKeyboard, Typeable
 
@@ -94,14 +96,15 @@ class BaseX11Keyboard(BaseKeyboard):
         # as the key name.
         key = KEY_TRANSLATION.get(char, char)
         if PY2 and isinstance(key, str):
-            key = key.decode('utf-8')
+            key = key.decode(getpreferredencoding())
 
         # Convert single character keys to their Unicode code points.
         # This allows typing any Unicode character with the Text and Key
         # actions. It works with both X11 keyboard implementations.
         if not is_text and len(key) == 1:
             # Get the Unicode code point for the character.
-            code_point = key.encode("unicode_escape")[2:].decode('utf-8')
+            encoding = getpreferredencoding()
+            code_point = key.encode("unicode_escape")[2:].decode(encoding)
 
             # Handle ASCII keys by getting the hex code without '0x'.
             if not code_point:

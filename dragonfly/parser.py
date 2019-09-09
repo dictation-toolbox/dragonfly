@@ -34,8 +34,10 @@ type of input they are meant to process.
 
 import string
 import re
+import locale
 import logging
-from six import string_types, text_type, PY2
+
+from six import string_types, text_type, binary_type
 
 
 class ParserError(Exception):
@@ -288,8 +290,8 @@ class Node(object):
         self.children = []
 
     def __str__(self):
-        if PY2:
-            data = text_type(self.data).encode("utf-8")
+        if isinstance(self.data, binary_type):
+            data = self.data.decode(locale.getpreferredencoding())
         else:
             data = text_type(self.data)
         return "Node: %s, %s" % (self.actor, data)

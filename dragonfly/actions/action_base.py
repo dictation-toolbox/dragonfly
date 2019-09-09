@@ -24,8 +24,7 @@ ActionBase base class
 
 """
 
-
-import copy as copy_
+from locale import getpreferredencoding
 import logging
 
 from six import PY2, integer_types
@@ -58,7 +57,7 @@ class ActionBase(object):
 
     def __str__(self):
         if PY2:
-            return self.__unicode__().encode("utf-8")
+            return self.__unicode__().encode(getpreferredencoding())
         else:
             return self.__unicode__()
 

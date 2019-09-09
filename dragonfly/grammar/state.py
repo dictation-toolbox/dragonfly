@@ -24,8 +24,10 @@
 """
 
 
+from locale import getpreferredencoding
 import logging
-from six import text_type, PY2
+
+from six import PY2, text_type, binary_type
 
 from ..error import GrammarError
 
@@ -50,7 +52,7 @@ class State(object):
 
     def __str__(self):
         if PY2:
-            return self.__unicode__().encode("windows-1252")
+            return self.__unicode__().encode(getpreferredencoding())
         else:
             return self.__unicode__()
 
@@ -176,17 +178,15 @@ class State(object):
             return
         indent = u"   " * self._depth
         output = u"%s%s: %s" % (indent, message, parser)
-        if PY2:
-            self._log_decode.debug(output.encode("utf-8"))
-        else:
-            self._log_decode.debug(output)
+        if isinstance(output, binary_type):
+            output = output.decode(getpreferredencoding())
+        self._log_decode.debug(output)
         if self._index != self._previous_index:
             self._previous_index = self._index
             output = u"%s -- Decoding State: '%s'" % (indent, text_type(self))
-            if PY2:
-                self._log_decode.debug(output.encode("utf-8"))
-            else:
-                self._log_decode.debug(output)
+            if isinstance(output, binary_type):
+                output = output.decode(getpreferredencoding())
+            self._log_decode.debug(output)
 
     # -----------------------------------------------------------------------
     # Methods for evaluation.

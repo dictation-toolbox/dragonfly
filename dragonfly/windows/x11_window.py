@@ -23,6 +23,7 @@ Window class for X11
 
 """
 
+import locale
 import logging
 from subprocess import Popen, PIPE
 
@@ -78,10 +79,11 @@ class X11Window(BaseWindow):
             stdout, stderr = p.communicate()
 
             # Decode output if it is binary.
+            encoding = locale.getpreferredencoding()
             if isinstance(stdout, binary_type):
-                stdout = stdout.decode('utf-8')
+                stdout = stdout.decode(encoding)
             if isinstance(stderr, binary_type):
-                stderr = stderr.decode('utf-8')
+                stderr = stderr.decode(encoding)
 
             # Handle non-zero return codes.
             if p.wait() > 0 and error_on_failure:

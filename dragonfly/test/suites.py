@@ -91,6 +91,7 @@ sapi5_names.remove("doc:documentation/test_recobs_doctest.txt")
 sphinx_names = [
     "test_engine_sphinx",
     "test_language_en_number",
+    "test_dictation",
 ] + common_names
 
 kaldi_names = [
@@ -103,7 +104,7 @@ kaldi_names.remove("doc:documentation/test_recobs_doctest.txt")
 text_names = [
     "test_contexts",
     "test_engine_text",
-    "test_engine_text_dictation",
+    "test_dictation",
 ] + common_names + language_names
 
 # ==========================================================================

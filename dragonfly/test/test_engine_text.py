@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- encoding: windows-1252 -*-
 #
 # This file is part of Dragonfly.
 # (c) Copyright 2018 by Dane Finlay
@@ -19,7 +19,10 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+import locale
 import unittest
+
+import six
 
 from dragonfly.engines import EngineBase
 from dragonfly import (Literal, Dictation, Sequence, CompoundRule,
@@ -55,14 +58,18 @@ class TestEngineText(unittest.TestCase):
     def test_unicode_literals(self):
         """ Verify that the text engine can mimic literals using non-ascii
             characters. """
-        tester = ElementTester(Literal(u"Привет, как дела?"))
+        tester = ElementTester(Literal(u"touch�"))
 
         # Test that strings and Unicode objects can be used.
-        results = tester.recognize("Привет, как дела?")
-        assert results == u"Привет, как дела?"
-        results = tester.recognize(u"Привет, как дела?")
-        assert results == u"Привет, как дела?"
+        string = "touch�"
+        if isinstance(string, six.binary_type):
+            encoding = locale.getpreferredencoding()
+            string = string.decode("windows-1252").encode(encoding)
+        results = tester.recognize(string)
+        assert results == u"touch�"
+        results = tester.recognize(u"touch�")
+        assert results == u"touch�"
 
         # Check that recognition failure is possible.
-        results = tester.recognize(u"до свидания")
+        results = tester.recognize(u"jalape�o")
         assert results is RecognitionFailure
