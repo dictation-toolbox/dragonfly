@@ -29,16 +29,13 @@ from dragonfly.actions.action_mimic import Mimic
 
 #===========================================================================
 
-# This test fails because the keyboard interface currently
-# cannot type certain characters, such as accented vowels.
-#
-#class TestNonAsciiText(unittest.TestCase):
-#
-#    def test_non_ascii_text(self):
-#        """ Test handling of non-ASCII characters in Text action. """
-#
-#        action = Text("touché")
-#        self.assertEqual(str(action), "Text(%r)" % ("touché",))
+class TestNonAsciiText(unittest.TestCase):
+
+    def test_non_ascii_text(self):
+        """ Test handling of non-ASCII characters in Text action. """
+
+        action = Text(u"touché")
+        self.assertEqual(str(action), "Text(%r)" % (u"touché",))
 
 
 class TestNonAsciiPaste(unittest.TestCase):
