@@ -24,9 +24,10 @@ Paste action
 
 """
 
+from locale import getpreferredencoding
 import sys
 
-from six import text_type, string_types, PY2
+from six import string_types, binary_type
 
 from ..actions.action_base import DynStrActionBase
 from ..actions.action_key import Key
@@ -107,19 +108,17 @@ class Paste(DynStrActionBase):
         except Exception as e:
             self._log.warning("Failed to store original clipboard contents:"
                               " %s", e)
-        if (self.format == CF_UNICODETEXT and
-                not isinstance(events, text_type)):
-            if PY2:
-                # Use a Unicode object with the correct encoding.
-                on_windows = sys.platform.startswith("win32")
-                encoding = 'windows-1252' if on_windows else 'utf-8'
-                events = text_type(events, encoding=encoding,
-                                   errors='ignore')
-            else:
-                events = text_type(events)
 
-        elif self.format == CF_TEXT:
-            events = str(events)
+        # Convert the string to the appropriate type. Only use a binary
+        # string if on Windows and using the CF_TEXT clipboard format.
+        binary_string = isinstance(events, binary_type)
+        on_windows = sys.platform.startswith("win")
+        text_format = on_windows and self.format == CF_TEXT
+        if text_format and not binary_string:
+            events = events.encode(getpreferredencoding())
+
+        elif not text_format and binary_string:
+            events = events.decode(getpreferredencoding())
 
         clipboard = Clipboard(contents={self.format: events})
         clipboard.copy_to_system()
