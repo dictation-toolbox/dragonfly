@@ -18,10 +18,7 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import logging
 import sys
-
-logging.basicConfig()
 
 # --------------------------------------------------------------------------
 from .config            import Config, Section, Item
