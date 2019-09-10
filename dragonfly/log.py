@@ -43,6 +43,11 @@ It is not necessary to call :meth:`setup_log` at all. Standard Python
 logging functions such as :meth:`basicConfig` can be used at the top of
 module loader scripts instead.
 
+If you are not using dragonfly with a module loader, you will need to set up
+a logging handler to avoid messages like tho following::
+
+    No handlers could be found for logger "typeables"
+
 
 Functions
 ----------------------------------------------------------------------------
