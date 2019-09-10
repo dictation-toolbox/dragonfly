@@ -29,12 +29,7 @@
 
 """
 
-import logging
-
 from .keyboard import keyboard, Typeable, KeySymbols
-
-
-_log = logging.getLogger("typeables")
 
 
 # --------------------------------------------------------------------------
@@ -46,11 +41,13 @@ key_symbols = KeySymbols()
 
 def _add_typeable(name, char):
     # Add a character to the typeables dictionary if it is typeable with
-    # the current keyboard layout or log an error if it isn't.
+    # the current keyboard layout.
     try:
         typeables[name] = keyboard.get_typeable(char)
     except ValueError as e:
-        _log.error(e)
+        # Errors or log messages will occur later if code attempts to use
+        # missing typeables.
+        pass
 
 
 # Lowercase letter keys

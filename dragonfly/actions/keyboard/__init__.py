@@ -23,11 +23,8 @@ This module initializes the correct keyboard interface for the current
 platform.
 """
 
-import logging
 import os
 import sys
-
-_logger = logging.getLogger("keyboard")
 
 # TODO Implement classes for Wayland (XDG_SESSION_TYPE == "wayland").
 
@@ -56,15 +53,11 @@ elif os.environ.get("XDG_SESSION_TYPE") == "x11" and not doc_build:
     # from ._x11_libxdo import LibxdoKeyboard as Keyboard
 
 else:
+    # No keyboard implementation is available. Dragonfly can function
+    # without a keyboard class, so don't raise an error or log any
+    # messages. Errors/messages will occur later if the keyboard is used.
     from ._base import (BaseKeyboard as Keyboard, Typeable,
                         MockKeySymbols as KeySymbols)
-
-    # Warn that no keyboard implementation is available.
-    # Don't raise an error because this will break continuous integration
-    # tests. Most of dragonfly can still be used anyway.
-    if not doc_build:
-        _logger.warning("There is no keyboard implementation for this "
-                        "platform!")
 
 # Initialize a Keyboard instance.
 keyboard = Keyboard()

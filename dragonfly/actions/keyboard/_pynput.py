@@ -38,10 +38,6 @@ class Typeable(BaseTypeable):
     _log = logging.getLogger("keyboard")
 
     def __init__(self, code, modifiers=(), name=None, is_text=False):
-        # Warn about unsupported keys.
-        if isinstance(code, KeyCode) and code.vk == -1:
-            self._log.warning("Unknown key '%s' cannot be typed with "
-                              "pynput on %s", code.char, sys.platform)
         BaseTypeable.__init__(self, code, modifiers, name, is_text)
 
 

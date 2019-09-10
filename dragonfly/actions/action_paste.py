@@ -77,7 +77,6 @@ class Paste(DynStrActionBase):
         _default_paste = (Key("w-v/20") if sys.platform == "darwin"
                           else Key("c-v/20"))
     except:
-        print("Falling back to Shift+insert for Paste's action.")
         _default_paste = Key("s-insert/20")
 
     def __init__(self, contents, format=None, paste=None, static=False):
