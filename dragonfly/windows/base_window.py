@@ -71,6 +71,8 @@ class BaseWindow(object):
         """
         Find windows with a matching executable or title.
 
+        Window searches are case-insensitive.
+
         If neither parameter is be specified, then it is effectively the
         same as calling :meth:`get_all_windows`.
 
@@ -83,6 +85,12 @@ class BaseWindow(object):
         :type title: str
         :rtype: list
         """
+        # Make window searches case-insensitive.
+        if executable:
+            executable = executable.lower()
+        if title:
+            title = title.lower()
+
         matching = []
         for window in cls.get_all_windows():
             if executable:

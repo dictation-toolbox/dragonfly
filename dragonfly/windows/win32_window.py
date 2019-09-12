@@ -66,6 +66,12 @@ class Win32Window(BaseWindow):
 
     @classmethod
     def get_matching_windows(cls, executable=None, title=None):
+        # Make window searches case-insensitive.
+        if executable:
+            executable = executable.lower()
+        if title:
+            title = title.lower()
+
         matching = []
         for window in cls.get_all_windows():
             if not window.is_visible:

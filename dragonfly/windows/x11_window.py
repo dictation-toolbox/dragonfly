@@ -128,6 +128,12 @@ class X11Window(BaseWindow):
 
     @classmethod
     def get_matching_windows(cls, executable=None, title=None):
+        # Make window searches case-insensitive.
+        if executable:
+            executable = executable.lower()
+        if title:
+            title = title.lower()
+
         # Get matching window IDs using 'xdotool search'.
         args = ['search', '--onlyvisible', '--name']
         if title:
