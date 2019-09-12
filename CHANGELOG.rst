@@ -16,14 +16,14 @@ Unreleased_
 
 Added
 ~~~~~
-* Add Python 3 compatible natlink compiler test (thanks `@mrob95`_).
-* Add a note about installing the `xdotool` program in the Kaldi engine
-  documentation (thanks `@JasoonS`_).
 * Add keywords argument handling to AppContext class for matching window
   attributes other than titles and executables.
 
 Changed
 ~~~~~~~
+* Add Python 3 compatible natlink compiler test (thanks `@mrob95`_).
+* Add a note about installing the `xdotool` program in the Kaldi engine
+  documentation (thanks `@JasoonS`_).
 * Change the Sphinx engine to allow grammars with the same name (again).
 * Move dependency adding code from engine classes into Grammar methods
   (thanks `@mrob95`_).
@@ -32,6 +32,10 @@ Changed
   (thanks `@mrob95`_).
 * Lots of Kaldi engine backend improvements & bug fixes
   (thanks `@daanzu`_).
+* Remove keyboard-related messages sometimes printed at import time because
+  similar messages are printed later anyway.
+* Update documentation sections on running dragonfly's test suite.
+* Update documentation section on logging and logging handlers.
 
 Fixed
 ~~~~~
@@ -40,6 +44,8 @@ Fixed
 * Add missing is_maximized property for Win32Window class.
 * Fix Python 3 support in a few places.
 * Fix a few problems with the Sphinx engine.
+* Fix case sensitivity bug with Window.get_matching_windows().
+* Fix minor bug with Win32.get_all_windows().
 * Fix various character encoding issues with dragonfly and its unit tests.
 * Log 'Is X installed?' messages in X11Window if xprop or xdotool are
   missing.
