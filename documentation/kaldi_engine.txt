@@ -91,7 +91,13 @@ from `kaldi-active-grammar
 <https://github.com/daanzu/kaldi-active-grammar>`_. Unzip it into a
 directory within the directory containing your grammar modules.
 
+**Note for Linux:** Before proceeding, you'll need ``xdotool``.
+Under ``apt``-based distributions, you can get them by running::
+
+  sudo apt install xdotool
+
 Once the dependencies and model are installed, you're ready to go!
+
 
 **A simple, single-file, standalone demo/example** can be found in the
 `dragonfly/examples/kaldi_demo.py
@@ -99,11 +105,7 @@ Once the dependencies and model are installed, you're ready to go!
 script. Simply run it from the directory containing the above model (or
 modify the configuration paths in the file) using::
 
-**Note for Linux:** Before proceeding, you'll need ``xdotool``. Under ``apt``-based
-distributions, you can get them by running ``sudo apt install
-xdotool``
-
-  python path/to/kaldi_demo.py
+    python path/to/kaldi_demo.py
 
 For more structured and long-term use, you'll want to use a **module
 loader**. Copy the `dragonfly/examples/kaldi_module_loader_plus.py
