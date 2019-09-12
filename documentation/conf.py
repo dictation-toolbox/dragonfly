@@ -63,7 +63,7 @@ project = u"Dragonfly"
 copyright = u"2014, Christo Butcher"
 
 today_fmt = "%Y-%m-%d"
-exclude_trees = []
+exclude_patterns = ["requirements.txt"]
 add_module_names = False
 pygments_style = "sphinx"
 autoclass_content = "both"
