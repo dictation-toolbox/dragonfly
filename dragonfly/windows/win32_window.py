@@ -59,7 +59,7 @@ class Win32Window(BaseWindow):
     @classmethod
     def get_all_windows(cls):
         def function(handle, argument):
-            argument.append(Win32Window(handle))
+            argument.append(cls.get_window(handle))
         argument = []
         win32gui.EnumWindows(function, argument)
         return argument
