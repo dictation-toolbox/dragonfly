@@ -16,6 +16,8 @@ commit history and will be placed under headings in this file over time.
 
 Added
 ~~~~~
+* Add alpha support for the accessibility API on Linux
+  (thanks `@wolfmanstout`_).
 * Add keywords argument handling to AppContext class for matching window
   attributes other than titles and executables.
 
