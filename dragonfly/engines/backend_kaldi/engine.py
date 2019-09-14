@@ -34,6 +34,7 @@ from ...grammar.state           import State
 from ...windows                 import Window
 
 try:
+    import kaldi_active_grammar
     from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
     from .compiler                  import KaldiCompiler
     from .audio                     import MicAudio, VADAudio, AudioStore
@@ -66,6 +67,17 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if not ENGINE_AVAILABLE:
             self._log.error("%s: Failed to import Kaldi engine dependencies. Are they installed?" % self)
             raise EngineError("Failed to import Kaldi engine dependencies.")
+        with open(os.path.join(os.path.dirname(__file__), 'kag_version.txt')) as file:
+            required_kag_version = file.read().strip()
+        # Compatible release version specification (we could use pkg_resources.require, but is it always installed?)
+        required_kag_version_split = required_kag_version.split('.')
+        kag_version = kaldi_active_grammar.__version__
+        kag_version_split = kag_version.split('.')
+        assert len(required_kag_version_split) == len(kag_version_split) == 3
+        if not ((kag_version_split[:-1] == required_kag_version_split[:-1]) and (kag_version_split[-1] >= required_kag_version_split[-1])):
+            self._log.error("%s: Incompatible kaldi_active_grammar version %s! Expected ~= %s!" % (self, kag_version, required_kag_version))
+            self._log.error("See https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
+            raise EngineError("Incompatible kaldi_active_grammar version")
 
         self._options = dict(
             model_dir = model_dir,
