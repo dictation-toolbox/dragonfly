@@ -69,13 +69,14 @@ class VoxhubEngine(EngineBase):
     def __str__(self):
         return "%s()" % self.__class__.__name__
 
-    def connect(self):
+    def connect(self, process_speech=True):
         """ Connect to back-end Voxhub server. """
         self._queue = Queue()
         self._process = Process(target=VoxhubAudioProcess.connect_to_server, args=(self._queue,))
         self._process.start()
         self._connected = True
-        self.process_speech()
+        if process_speech:
+            self.process_speech()
 
     def disconnect(self):
         """ Disconnect from back-end Voxhub server. """
