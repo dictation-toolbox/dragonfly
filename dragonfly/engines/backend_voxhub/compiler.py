@@ -26,9 +26,6 @@
 
 #---------------------------------------------------------------------------
 
-import struct
-from six import string_types, text_type, PY2
-
 from ..base import CompilerBase, CompilerError
 
 
@@ -52,7 +49,7 @@ class VoxhubCompiler(CompilerBase):
 
         #compiled_grammar = compiler.compile()
         #rule_names = compiler.rule_names
-#        print compiler.debug_state_string()
+#        print(compiler.debug_state_string())
         #return (compiled_grammar, rule_names)
         return True
 
@@ -126,7 +123,7 @@ class _Compiler(object):
         self.indent = 0
 
     def log(self, message):
-        print '    '*self.indent + message
+        print('    '*self.indent + message)
 
     #-----------------------------------------------------------------------
 

@@ -1,14 +1,21 @@
+from __future__ import print_function
+
 # Silvius microphone client based on Tanel's client.py
 __author__ = 'dwk'
-import sys
-import urllib
+
 import json
+import sys
 import time
 
+try:
+    from urllib import urlencode
+except ImportError:  # for Python 3 and above
+    from urllib.parse import urlencode
 
 from ws4py.client.threadedclient import WebSocketClient
-from dragonfly.engines.backend_voxhub.config import *
-from dragonfly.engines.backend_voxhub.microphone import *
+
+from .config import *
+from .microphone import *
 
 reconnect_mode = True
 fatal_error = False
@@ -21,7 +28,7 @@ class VoxhubAudioProcess:
         uri = VoxhubAudioProcess.create_connection_uri()
 
         while True:
-            print >> sys.stderr, "Connecting to", uri
+            print("Connecting to", uri, file=sys.stderr)
             ws = MyClient(uri, byte_rate=MISC_CONFIG["byte_rate"],
                 mic=VoxhubMicrophoneManager.lookup_microphone(MISC_CONFIG["device"]),
                 show_hypotheses=MISC_CONFIG["hypotheses"],
@@ -34,7 +41,7 @@ class VoxhubAudioProcess:
 
     @staticmethod
     def create_connection_uri():
-        uri = "ws://%s:%s/%s?%s" % (SERVER, PORT, PATH, urllib.urlencode([("content-type", CONTENT_TYPE)]))
+        uri = "ws://%s:%s/%s?%s" % (SERVER, PORT, PATH, urlencode([("content-type", CONTENT_TYPE)]))
         return uri
 
 class MyClient(WebSocketClient):
@@ -67,9 +74,9 @@ class MyClient(WebSocketClient):
             try:
                 self.send_data(data)
                 return True
-            except IOError, e:
+            except IOError as e:
                 # usually a broken pipe
-                print e
+                print(e)
             except AttributeError:
                 # currently raised when the socket gets closed by main thread
                 pass
@@ -86,37 +93,37 @@ class MyClient(WebSocketClient):
             mic.start_thread(
                 try_send_data,
                 lambda : skip_io_error(self.close))
-        except e:
-            print e
+        except Exception as e:
+            print(e)
 
     def received_message(self, m):
         response = json.loads(str(m))
-        #print >> sys.stderr, "RESPONSE:", response
+        #print("RESPONSE:", response, file=sys.stderr)
         if response['status'] == 0:
             if 'result' in response:
                 trans = response['result']['hypotheses'][0]['transcript']
                 if response['result']['final']:
                     if self.show_hypotheses:
-                        print >> sys.stderr, '\r%s' % trans.replace("\n", "\\n")
-                    # print '%s' % trans.replace("\n", "\\n")  # final result!
+                        print('\r%s' % trans.replace("\n", "\\n"), file=sys.stderr)
+                    # print('%s' % trans.replace("\n", "\\n"))  # final result!
                     self.queue.put(trans.replace("\n", "\\n"))
                     # sys.stdout.flush()
                 elif self.show_hypotheses:
                     print_trans = trans.replace("\n", "\\n")
                     if len(print_trans) > 80:
                         print_trans = "... %s" % print_trans[-75:],
-                    print >> sys.stderr, '\r%s' % print_trans,
+                    print('\r%s' % print_trans, end=' ', file=sys.stderr)
             # if 'adaptation_state' in response:
             #     if self.save_adaptation_state_filename:
-            #         print >> sys.stderr, "Saving adaptation state to %s" % self.save_adaptation_state_filename
+            #         print("Saving adaptation state to %s" % self.save_adaptation_state_filename, file=sys.stderr)
             #         with open(self.save_adaptation_state_filename, "w") as f:
             #             f.write(json.dumps(response['adaptation_state']))
         else:
-            print >> sys.stderr, "Received error from server (status %d)" % response['status']
+            print("Received error from server (status %d)" % response['status'], file=sys.stderr)
             if 'message' in response:
-                print >> sys.stderr, "Error message:",  response['message']
+                print("Error message:",  response['message'], file=sys.stderr)
             
             global reconnect_mode
             if reconnect_mode:
-                print >> sys.stderr, "Sleeping for five seconds before reconnecting"
+                print("Sleeping for five seconds before reconnecting", file=sys.stderr)
                 time.sleep(5)

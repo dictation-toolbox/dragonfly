@@ -29,8 +29,8 @@ from ..base import RecObsManagerBase
 
 class VoxhubRecObsManager(RecObsManagerBase):
     """
-    This class's methods are called by the engine directly, rather than through a
-    grammar.
+    This class's methods are called by the engine directly, rather than
+    through a grammar.
     """
     def __init__(self, engine):
         RecObsManagerBase.__init__(self, engine)
@@ -41,18 +41,3 @@ class VoxhubRecObsManager(RecObsManagerBase):
 
     def _deactivate(self):
         pass
-
-    def notify_next_rule_part(self, words):
-        """
-        Notify observers that the next part of a rule has been spoken. This is for
-        rules involving Dictation elements that must be spoken in sequence.
-        :type words: list
-        """
-        for observer in self._observers:
-            try:
-                if hasattr(observer, "on_next_rule_part"):
-                    observer.on_next_rule_part(words)
-            except Exception as e:
-                self._log.exception("Exception during on_next_rule_part()"
-                                    " method of recognition observer %s: %s"
-                                    % (observer, e))

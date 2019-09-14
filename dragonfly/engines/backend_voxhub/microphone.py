@@ -17,21 +17,21 @@ class VoxhubMicrophoneManager:
     def dump_list():
         pa = VoxhubMicrophoneManager.get_pa()
 
-        print ""
-        print "LISTING OF ALL INPUT DEVICES SUPPORTED BY PORTAUDIO."
-        print "Device can be configured by adding <DEVICE_NUMBER> under device in voxhub_config.py"
-        print "(any device numbers not shown are for output only)"
-        print ""
+        print("")
+        print("LISTING OF ALL INPUT DEVICES SUPPORTED BY PORTAUDIO.")
+        print("Device can be configured by adding <DEVICE_NUMBER> under device in voxhub_config.py")
+        print("(any device numbers not shown are for output only)")
+        print("")
 
         for i in range(0, pa.get_device_count()):
             info = pa.get_device_info_by_index(i)
 
             if info['maxInputChannels'] > 0:  # microphone? or just speakers
-                print "DEVICE_NUMBER = %d" % info['index']
-                print "    %s" % info['name']
-                print "    input channels = %d, output channels = %d, defaultSampleRate = %d" \
-                    % (info['maxInputChannels'], info['maxOutputChannels'], info['defaultSampleRate'])
-                #print info
+                print("DEVICE_NUMBER = %d" % info['index'])
+                print("    %s" % info['name'])
+                print("    input channels = %d, output channels = %d, defaultSampleRate = %d" \
+                    % (info['maxInputChannels'], info['maxOutputChannels'], info['defaultSampleRate']))
+                #print(info)
 
     @staticmethod
     def lookup_microphone_helper(name):
@@ -55,16 +55,16 @@ class VoxhubMicrophoneManager:
 
         if(isinstance(name, list)):
             for value in name:
-                print "Trying microphone '" + value + "'..."
+                print("Trying microphone '" + value + "'...")
                 m = VoxhubMicrophoneManager.lookup_microphone_helper(value)
                 if(m != -1):
-                    print "    found!"
+                    print("    found!")
                     return m
-            print "WARNING: no specified microphones found, trying default"
+            print("WARNING: no specified microphones found, trying default")
         else:
             m = VoxhubMicrophoneManager.lookup_microphone_helper(name)
             if(m != -1): return m
-            print "WARNING: specified microphone '" + name + "' not found, trying default"
+            print("WARNING: specified microphone '" + name + "' not found, trying default")
 
         return -1  # use default microphone
 
@@ -78,8 +78,8 @@ class VoxhubMicrophoneManager:
             try:
                 if mic_index == -1:
                     mic_index = pa.get_default_input_device_info()['index']
-                    print "Selecting default mic"
-                print "Using mic #", mic_index
+                    print("Selecting default mic")
+                print("Using mic #", mic_index)
                 stream = pa.open(
                     rate        = byte_rate,
                     format      = pyaudio.paInt16,
@@ -87,16 +87,16 @@ class VoxhubMicrophoneManager:
                     input       = True,
                     input_device_index = mic_index,
                     frames_per_buffer  = chunk)
-                print "Creating microphone with", byte_rate, stream
+                print("Creating microphone with", byte_rate, stream)
                 return VoxhubMicrophone(original_byte_rate, byte_rate, stream, chunk)
-            except IOError, e:
+            except IOError as e:
                 if e.errno == -9997 or e.errno == 'Invalid sample rate':
                     new_sample_rate = int(pa.get_device_info_by_index(mic_index)['defaultSampleRate'])
                     if byte_rate != new_sample_rate:
                         byte_rate = new_sample_rate
                         continue
-                print str(e)
-                print "\nCould not open microphone. Please try a different device."
+                print(str(e))
+                print("\nCould not open microphone. Please try a different device.")
                 return None
 
 class VoxhubMicrophone:
@@ -111,13 +111,14 @@ class VoxhubMicrophone:
         self.audio_gate = gate
 
     def start_thread(self, data_callback, finished_callback=None):
-        print "Starting microphone thread..."
+        print("Starting microphone thread...")
         def listen_to_mic():  # uses self.stream
-            print "\nLISTENING TO MICROPHONE"
+            print("\nLISTENING TO MICROPHONE")
             last_state = None
             running = True
             while running:
-                data = self.stream.read(self.chunk * self.byte_rate / self.original_byte_rate)
+                bytes_to_read = int(self.chunk * self.byte_rate / self.original_byte_rate)
+                data = self.stream.read(bytes_to_read)
                 if self.audio_gate > 0:
                     rms = audioop.rms(data, 2)
                     if rms < self.audio_gate:

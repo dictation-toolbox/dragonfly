@@ -26,18 +26,20 @@ VoxhubEngine class
 """
 
 import logging
+import re
+
+from multiprocessing import Process, Queue
 
 from dragonfly.engines.backend_voxhub import is_engine_available
-from compiler import VoxhubCompiler
-from ..base import EngineBase, EngineError, MimicFailure
-from .dictation import VoxhubDictationContainer
-from network import VoxhubAudioProcess
-from multiprocessing import Process, Queue
-from ...grammar.state import State
-from recobs import VoxhubRecObsManager
-from microphone import VoxhubMicrophoneManager
-from config import *
-import re
+from dragonfly.grammar.state import State
+
+from ..base import (EngineBase, EngineError, MimicFailure,
+                    DictationContainerBase)
+from .compiler import VoxhubCompiler
+from .config import *
+from .microphone import VoxhubMicrophoneManager
+from .network import VoxhubAudioProcess
+from .recobs import VoxhubRecObsManager
 
 
 class VoxhubEngine(EngineBase):
@@ -46,7 +48,7 @@ class VoxhubEngine(EngineBase):
     _log = logging.getLogger("engine.voxhub")
     _name = ".voxhub"
     _timer_manager = None
-    DictationContainer = VoxhubDictationContainer
+    DictationContainer = DictationContainerBase
 
     def __init__(self):
         self._connected = False
@@ -79,12 +81,8 @@ class VoxhubEngine(EngineBase):
         """ Disconnect from back-end Voxhub server. """
         if self._process:
             self._process.terminate()
-            print "Connection closed"
+            print("Connection closed")
         self._connected = False
-
-    def connection(self):
-        """ Context manager for a connection to the back-end Voxhub engine. """
-        return EngineContext(self)
 
     @staticmethod
     def validate_config():
@@ -115,8 +113,7 @@ class VoxhubEngine(EngineBase):
     # Methods for administrating grammar wrappers.
 
     def _build_grammar_wrapper(self, grammar):
-        raise NotImplementedError("Virtual method not implemented for"
-                                  " engine %s." % self)
+        return grammar
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.
@@ -131,25 +128,15 @@ class VoxhubEngine(EngineBase):
         self._grammar_wrappers[wrapper_key] = wrapper
 
     def _load_grammar(self, grammar):
-        print "[LOAD]", grammar
+        print("[LOAD]", grammar)
 
         """ Load the given *grammar* and return a wrapper. """
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
 
-        grammar.engine = self
-        # Dependency checking.
-        memo = []
-        for r in grammar.rules:
-            for d in r.dependencies(memo):
-                grammar.add_dependency(d)
-
         wrapper = self._build_grammar_wrapper(grammar)
         self.set_grammar(wrapper)
         return wrapper
-
-    def _build_grammar_wrapper(self, grammar):
-        return grammar
 
     def set_grammar(self, wrapper):
         self._set_grammar(wrapper)
@@ -244,17 +231,17 @@ class VoxhubEngine(EngineBase):
     #  Miscellaneous methods.
 
     def mimic(self, words):
-        print "[MIMIC]", words
+        print("[MIMIC]", words)
         self.process_transcript(words[0])
 
     def speak(self, text):
-        print "[SPEAK]", text
+        print("[SPEAK]", text)
 
     def _get_language(self):
         return "en"  # default to english
 
     def process_transcript(self, transcript):
-        # print "Processing transcript"
+        # print("Processing transcript")
         results = [(word, 0) for word in transcript.split()]
         for (_, grammar) in self._grammar_wrappers.items():
             if self.process_results_with_grammar(results, ["dgndictation"], grammar):
@@ -285,7 +272,7 @@ class VoxhubEngine(EngineBase):
             result = self._queue.get()
             if result:
                 # result = "quit"
-                print "Transcript: ", result
+                print("Transcript: ", result)
 
                 if re.match(r"\s*"+QUIT_PHRASE+"\s*", result, re.I):
                     print('Exiting..')
