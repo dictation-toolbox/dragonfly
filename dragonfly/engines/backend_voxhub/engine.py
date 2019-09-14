@@ -32,6 +32,7 @@ from multiprocessing import Process, Queue
 
 from dragonfly.engines.backend_voxhub import is_engine_available
 from dragonfly.grammar.state import State
+from dragonfly.windows import Window
 
 from ..base import (EngineBase, EngineError, MimicFailure,
                     DictationContainerBase)
@@ -244,7 +245,15 @@ class VoxhubEngine(EngineBase):
     def process_transcript(self, transcript):
         # print("Processing transcript")
         results = [(word, 0) for word in transcript.split()]
+
+        # Get the current foreground window.
+        fg_window = Window.get_foreground()
+
         for (_, grammar) in self._grammar_wrappers.items():
+            # Call process_begin() to activate/deactivate rules & grammars.
+            grammar.process_begin(fg_window.executable, fg_window.title,
+                                  fg_window.handle)
+
             if self.process_results_with_grammar(results, ["dgndictation"], grammar):
                 return True
         return False
