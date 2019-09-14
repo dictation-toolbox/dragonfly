@@ -242,20 +242,31 @@ class VoxhubEngine(EngineBase):
     def _get_language(self):
         return "en"  # default to english
 
-    def process_transcript(self, transcript):
-        # print("Processing transcript")
-        results = [(word, 0) for word in transcript.split()]
+    def _process_begin(self):
+        # Do things that should be done when speech is first detected.
+        # Notify observers that a recognition has begun.
+        self._recognition_observer_manager.notify_begin()
 
         # Get the current foreground window.
         fg_window = Window.get_foreground()
-
         for (_, grammar) in self._grammar_wrappers.items():
             # Call process_begin() to activate/deactivate rules & grammars.
             grammar.process_begin(fg_window.executable, fg_window.title,
                                   fg_window.handle)
 
+    def process_transcript(self, transcript):
+        # TODO This should be done earlier when speech is first detected.
+        self._process_begin()
+
+        # print("Processing transcript")
+        results = [(word, 0) for word in transcript.split()]
+
+        for (_, grammar) in self._grammar_wrappers.items():
             if self.process_results_with_grammar(results, ["dgndictation"], grammar):
                 return True
+
+        # Notify observers of a recognition failure (no rule matched).
+        self._recognition_observer_manager.notify_failure()
         return False
 
     def process_results_with_grammar(self, results, rule_set, grammar):
@@ -272,6 +283,13 @@ class VoxhubEngine(EngineBase):
             for result in r.decode(s):
                 if s.finished():
                     self._log.debug("Matching rule: %s" % r.name)
+
+                    # Notify observers using the manager *before*
+                    # processing.
+                    self._recognition_observer_manager.notify_recognition(
+                        tuple([result for result, _ in results])
+                    )
+
                     root = s.build_parse_tree()
                     r.process_recognition(root)
                     return True
