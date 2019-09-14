@@ -290,8 +290,13 @@ class VoxhubEngine(EngineBase):
                         tuple([result for result, _ in results])
                     )
 
-                    root = s.build_parse_tree()
-                    r.process_recognition(root)
+                    # Process the rule.
+                    try:
+                        root = s.build_parse_tree()
+                        r.process_recognition(root)
+                    except Exception as e:
+                        self._log.exception("Failed to process rule "
+                                            "'%s': %s" % (r.name, e))
                     return True
         return False
 
