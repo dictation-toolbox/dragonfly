@@ -73,6 +73,13 @@ To use the CMU Pocket Sphinx engine, see the `relevant documentation
 page <http://dragonfly2.readthedocs.org/en/latest/sphinx_engine.html>`__
 on it.
 
+If pip fails to install *dragonfly2* or any of its required or extra
+dependencies, then you may need to upgrade pip with the following command:
+
+.. code:: shell
+
+    pip install --upgrade pip
+
 Features
 --------
 

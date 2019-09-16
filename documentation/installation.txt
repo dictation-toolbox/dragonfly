@@ -61,6 +61,13 @@ the following (or similar) command in the project's root directory:
 
     python setup.py install
 
+If pip fails to install *dragonfly2* or any of its required or extra
+dependencies, then you may need to upgrade pip with the following command:
+
+.. code:: shell
+
+    pip install --upgrade pip
+
 
 Installation for Dragon NaturallySpeaking
 ----------------------------------------------------------------------------
