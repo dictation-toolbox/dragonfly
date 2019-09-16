@@ -106,6 +106,10 @@ listening" or "halt listening"), along with a rudimentary user interface
 via sound effects and console text (easily modified in the file). It
 otherwise operates like the above loader.
 
+You can download Dragonfly's module loaders and other example files in
+``dragonfly/examples`` from `the source code repository
+<https://github.com/dictation-toolbox/dragonfly/tree/master/dragonfly/examples>`__.
+
 
 Installation for CMU Pocket Sphinx
 ----------------------------------------------------------------------------
