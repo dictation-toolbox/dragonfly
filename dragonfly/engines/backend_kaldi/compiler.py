@@ -140,19 +140,22 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         for rule in grammar.rules:
             if rule.exported:
                 if rule.element is None:
-                    raise CompilerError("Invalid None element for rule %s in grammar %s" % (rule, grammar))
+                    raise CompilerError("Invalid None element for %s in %s" % (rule, grammar))
 
                 kaldi_rule = KaldiRule(self,
                     name='%s::%s' % (grammar.name, rule.name),
                     has_dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))
                 kaldi_rule.parent_grammar = grammar
                 kaldi_rule.parent_rule = rule
-
-                self.kaldi_rule_by_rule_dict[rule] = kaldi_rule
                 kaldi_rule_by_rule_dict[rule] = kaldi_rule
 
-                self._compile_rule_root(rule, grammar, kaldi_rule)
+                try:
+                    self._compile_rule_root(rule, grammar, kaldi_rule)
+                except Exception as e:
+                    kaldi_rule.destroy()
+                    raise
 
+        self.kaldi_rule_by_rule_dict.update(kaldi_rule_by_rule_dict)
         return kaldi_rule_by_rule_dict
 
     def _compile_rule_root(self, rule, grammar, kaldi_rule):
