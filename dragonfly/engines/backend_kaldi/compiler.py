@@ -199,6 +199,8 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     #-----------------------------------------------------------------------
     # Methods for compiling elements.
 
+    _eps_like_nonterms = frozenset(('#nonterm:dictation', '#nonterm:dictation_cloud'))
+
     def compile_element(self, element, *args, **kwargs):
         """Compile element in FST (from src_state to dst_state) and return result."""
         # Look for a compiler method to handle the given element.
@@ -225,17 +227,16 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
                 s1 = fst.add_state()
                 s2 = fst.add_state()
                 fst.add_arc(src_state, s1, None)
-                # NOTE: to avoid creating an un-decodable epsilon loop, we must not allow an all-epsilon child here (compile_graph_agf should check)
-                # NOTE: has_eps_path is ~3-5x faster than matcher.parseString() inside try/except block
-                if not fst.has_eps_path(s1, s2):
+                # NOTE: to avoid creating an un-decodable epsilon loop, we must not allow an all-epsilon child here (compile_graph_agf should check this)
                 self.compile_element(children[0], s1, s2, grammar, kaldi_rule, fst)
+                if not fst.has_eps_path(s1, s2, self._eps_like_nonterms):
                     fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # back arc
                     fst.add_arc(s2, dst_state, None)
                     return
 
                 else:
                     # Cannot do optimize path, because of epsilon loop, so finish up with Sequence path
-                    self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string; falling back inefficient non-optimize path!" % self)
+                    self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string; falling back to inefficient non-optimize path!" % self)
                     states = [src_state, s2] + [fst.add_state() for i in range(len(children)-2)] + [dst_state]
                     for i, child in enumerate(children[1:], start=1):
                         s1 = states[i]
@@ -310,7 +311,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         fst.add_arc(src_state, extra_state, '#nonterm:dictation', dictation_nonterm)
         # Accepts zero or more words
         fst.add_arc(extra_state, dst_state, WFST.eps, '#nonterm:end')
-        fst.add_arc(extra_state, dst_state, '!SIL', '#nonterm:end')
+        # fst.add_arc(extra_state, dst_state, '!SIL', '#nonterm:end')  # Causes problems with lack of phones during decoding
 
     # @trace_compile
     def _compile_impossible(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
