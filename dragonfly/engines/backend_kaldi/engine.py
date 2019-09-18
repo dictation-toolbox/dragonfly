@@ -57,8 +57,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        vad_aggressiveness=3, vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500, input_device_index=None,
-        auto_add_to_user_lexicon=True, lazy_compilation=True,
+        input_device_index=None, vad_aggressiveness=3,
+        vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500,
+        auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         cloud_dictation=None, cloud_dictation_lang='en-US',
         ):
         EngineBase.__init__(self)
@@ -82,13 +83,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._options = dict(
             model_dir = model_dir,
             tmp_dir = tmp_dir,
+            input_device_index = input_device_index,
             vad_aggressiveness = vad_aggressiveness,
             vad_padding_start_ms = vad_padding_start_ms,
             vad_padding_end_ms = vad_padding_end_ms,
             vad_complex_padding_end_ms = vad_complex_padding_end_ms,
-            input_device_index = input_device_index,
             auto_add_to_user_lexicon = auto_add_to_user_lexicon,
             lazy_compilation = lazy_compilation,
+            invalidate_cache = invalidate_cache,
             cloud_dictation = cloud_dictation,
             cloud_dictation_lang = cloud_dictation_lang,
         )
@@ -113,7 +115,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             cloud_dictation=self._options['cloud_dictation'],
             cloud_dictation_lang=self._options['cloud_dictation_lang'],
             )
-        # self._compiler.fst_cache.invalidate()
+        if self._options['invalidate_cache']:
+            self._compiler.fst_cache.invalidate()
 
         top_fst = self._compiler.compile_top_fst()
         dictation_fst_file = self._compiler.dictation_fst_filepath
@@ -214,7 +217,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self.prepare_for_recognition()
         kaldi_rule, parsed_output = self._parse_recognition(output, mimic=True)
         if not kaldi_rule:
-            raise MimicFailure("No matching rule found for words %r." % (parsed_output,))
+            raise MimicFailure("No matching rule found for %r." % (output,))
         self._log.debug("End of mimic: rule %s, %r" % (kaldi_rule, output))
 
     def speak(self, text):
