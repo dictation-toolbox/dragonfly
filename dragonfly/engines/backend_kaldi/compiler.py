@@ -159,8 +159,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         return kaldi_rule_by_rule_dict
 
     def _compile_rule_root(self, rule, grammar, kaldi_rule):
-        matcher, _, _ = self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
-        kaldi_rule.matcher = matcher.setName(str(kaldi_rule.name)).setResultsName(str(kaldi_rule.name))
+        self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
         kaldi_rule.fst.equalize_weights()
         if self.added_word:
             self.model.generate_lexicon_files()
@@ -179,11 +178,10 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
         src_state = fst.add_state(initial=export)
         dst_state = fst.add_state(final=export)
-        matcher = self.compile_element(rule.element, src_state, dst_state, grammar, kaldi_rule, fst)
-        # matcher = matcher.setName(rule.name).setResultsName(rule.name)
+        self.compile_element(rule.element, src_state, dst_state, grammar, kaldi_rule, fst)
 
-        # self._grammar_rule_states_dict[(grammar.name, rule.name)] = (matcher, src_state, dst_state)
-        return (matcher, src_state, dst_state)
+        # self._grammar_rule_states_dict[(grammar.name, rule.name)] = (src_state, dst_state)
+        return (src_state, dst_state)
 
     def unload_grammar(self, grammar, rules, engine):
         for rule in rules:
@@ -202,7 +200,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     # Methods for compiling elements.
 
     def compile_element(self, element, *args, **kwargs):
-        """Compile element in FST (from src_state to dst_state) and return matcher for element (used in parsing kaldi output)."""
+        """Compile element in FST (from src_state to dst_state) and return result."""
         # Look for a compiler method to handle the given element.
         for element_type, compiler in self.element_compilers:
             if isinstance(element, element_type):
@@ -213,70 +211,63 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     # @trace_compile
     def _compile_sequence(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         children = element.children
-        if len(children) > 1:
-            # Handle Repetition elements differently as a special case.
-            is_rep = isinstance(element, elements_.Repetition)
-            if is_rep and element.optimize:
+        # Optimize for special lengths
+        if len(children) <= 0:
+            return
+        elif len(children) == 1:
+            return self.compile_element(children[0], src_state, dst_state, grammar, kaldi_rule, fst)
+        else:  # len(children) > 1:
+            # Handle Repetition elements differently as a special case
+            is_repetition = isinstance(element, elements_.Repetition)
+            if is_repetition and element.optimize:
                 # Repetition...
                 # Insert new states, so back arc only affects child
                 s1 = fst.add_state()
                 s2 = fst.add_state()
                 fst.add_arc(src_state, s1, None)
                 # NOTE: to avoid creating an un-decodable epsilon loop, we must not allow an all-epsilon child here (compile_graph_agf should check)
-                matcher = self.compile_element(children[0], s1, s2, grammar, kaldi_rule, fst)
                 # NOTE: has_eps_path is ~3-5x faster than matcher.parseString() inside try/except block
                 if not fst.has_eps_path(s1, s2):
+                self.compile_element(children[0], s1, s2, grammar, kaldi_rule, fst)
                     fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # back arc
                     fst.add_arc(s2, dst_state, None)
-                    return pp.OneOrMore(matcher)
+                    return
 
                 else:
                     # Cannot do optimize path, because of epsilon loop, so finish up with Sequence path
                     self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string; falling back inefficient non-optimize path!" % self)
                     states = [src_state, s2] + [fst.add_state() for i in range(len(children)-2)] + [dst_state]
-                    matchers = [matcher]
                     for i, child in enumerate(children[1:], start=1):
                         s1 = states[i]
                         s2 = states[i + 1]
-                        matchers.append(self.compile_element(child, s1, s2, grammar, kaldi_rule, fst))
-                    return pp.And(tuple(matchers))
+                        self.compile_element(child, s1, s2, grammar, kaldi_rule, fst)
+                    return
 
             else:
-                # Sequence...
+                # Sequence, not Repetition...
                 # Insert new states for individual children elements
                 states = [src_state] + [fst.add_state() for i in range(len(children)-1)] + [dst_state]
-                matchers = []
                 for i, child in enumerate(children):
                     s1 = states[i]
                     s2 = states[i + 1]
-                    matchers.append(self.compile_element(child, s1, s2, grammar, kaldi_rule, fst))
-                return pp.And(tuple(matchers))
-
-        elif len(children) == 1:
-            return self.compile_element(children[0], src_state, dst_state, grammar, kaldi_rule, fst)
-
-        else:  # len(children) == 0
-            return pp.Empty()
+                    self.compile_element(child, s1, s2, grammar, kaldi_rule, fst)
+                return
 
     # @trace_compile
     def _compile_alternative(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        matchers = []
         for child in element.children:
-            matchers.append(self.compile_element(child, src_state, dst_state, grammar, kaldi_rule, fst))
-        return pp.Or(tuple(matchers))
+            self.compile_element(child, src_state, dst_state, grammar, kaldi_rule, fst)
 
     # @trace_compile
     def _compile_optional(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        matcher = self.compile_element(element.children[0], src_state, dst_state, grammar, kaldi_rule, fst)
+        self.compile_element(element.children[0], src_state, dst_state, grammar, kaldi_rule, fst)
         fst.add_arc(src_state, dst_state, None)
-        return pp.Optional(matcher)
 
     # @trace_compile
     def _compile_literal(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # "insert" new states for individual words
         words = element.words
         words = map(str, words)  # FIXME: handle unicode
-        matcher = pp.CaselessLiteral(' '.join(words))
 
         if len(words) == 1:
             # words = self.translate_words(words)
@@ -293,14 +284,12 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
             states = [src_state] + [fst.add_state() for i in range(len(words)-1)] + [dst_state]
             for i, word in enumerate(words):
                 fst.add_arc(states[i], states[i + 1], word)
-        return matcher
 
     # @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        matcher, rule_src_state, rule_dst_state = self._compile_rule(element.rule, grammar, kaldi_rule, fst, export=False)
+        rule_src_state, rule_dst_state = self._compile_rule(element.rule, grammar, kaldi_rule, fst, export=False)
         fst.add_arc(src_state, rule_src_state, None)
         fst.add_arc(rule_dst_state, dst_state, None)
-        return matcher
 
     # @trace_compile
     def _compile_list_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
@@ -309,10 +298,8 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
             # Should only happen during initial compilation; during updates, we must skip this
             grammar.add_list(element.list)
         self.kaldi_rules_by_listreflist_dict[id(element.list)].add(kaldi_rule)
-        matchers = []
         for child_str in element.list.get_list_items():
-            matchers.append(self._compile_literal(MockLiteral(child_str.split()), src_state, dst_state, grammar, kaldi_rule, fst))
-        return pp.Or(tuple(matchers))
+            self._compile_literal(MockLiteral(child_str.split()), src_state, dst_state, grammar, kaldi_rule, fst)
 
     # @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
@@ -321,12 +308,11 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         cloud_dictation = isinstance(element, (CloudDictation, LocalDictation)) and element.cloud
         dictation_nonterm = '#nonterm:dictation_cloud' if cloud_dictation else '#nonterm:dictation'
         fst.add_arc(src_state, extra_state, '#nonterm:dictation', dictation_nonterm)
+        # Accepts zero or more words
         fst.add_arc(extra_state, dst_state, WFST.eps, '#nonterm:end')
         fst.add_arc(extra_state, dst_state, '!SIL', '#nonterm:end')
-        return pp.ZeroOrMore(pp.Word(pp.alphas + pp.alphas8bit + pp.printables))
 
     # @trace_compile
     def _compile_impossible(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # FIXME: not impossible enough (lower probability?)
         fst.add_arc(src_state, dst_state, self.impossible_word.lower())
-        return pp.NoMatch()
