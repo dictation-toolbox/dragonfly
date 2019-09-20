@@ -288,7 +288,12 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     # @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         rule_src_state, rule_dst_state = self._compile_rule(element.rule, grammar, kaldi_rule, fst, export=False)
-        fst.add_arc(src_state, rule_src_state, None)
+        weight = getattr(element.rule, 'weight', None)
+        if weight is not None:
+            weight = float(weight)
+            if weight < 0:
+                raise CompilerError("Weight cannot be negative, but %s weight is %s" % (element.rule, weight))
+        fst.add_arc(src_state, rule_src_state, None, weight=weight)
         fst.add_arc(rule_dst_state, dst_state, None)
 
     # @trace_compile
