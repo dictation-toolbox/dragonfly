@@ -151,7 +151,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar*. """
-        self._log.info("Loading grammar %s..." % grammar.name)
+        self._log.info("Loading grammar %s" % grammar.name)
         if not self._decoder:
             self.connect()
 
@@ -160,7 +160,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         for kaldi_rule in kaldi_rule_by_rule_dict.values():
             kaldi_rule.load(lazy=self._compiler.lazy_compilation)
 
-        self._log.info("...Done loading grammar %s." % grammar.name)
         return wrapper
 
     def _unload_grammar(self, grammar, wrapper):
@@ -289,7 +288,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     if not self._ignore_current_phrase:
                         output = self._compiler.untranslate_output(output)
                         kaldi_rule, parsed_output = self._parse_recognition(output)
-                        self._log.debug("End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
+                        self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
                         if self.audio_store and kaldi_rule:
                             self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name)
 
