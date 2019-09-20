@@ -160,7 +160,6 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     def _compile_rule_root(self, rule, grammar, kaldi_rule):
         self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
-        kaldi_rule.fst.equalize_weights()
         if self.added_word:
             self.model.generate_lexicon_files()
             self.model.load_words()
