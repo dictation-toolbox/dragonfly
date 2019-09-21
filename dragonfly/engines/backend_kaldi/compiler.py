@@ -82,6 +82,12 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     impossible_word = property(lambda self: self._longest_word)  # FIXME
     unknown_word = '<unk>'
 
+    def get_weight(self, obj, name):
+        weight = float(getattr(obj, name, 1))
+        if weight < 0:
+            raise CompilerError("Weight cannot be negative, but %s %s is %s" % (obj, name, weight))
+        return weight
+
     #-----------------------------------------------------------------------
     # Methods for handling lexicon translation.
 
@@ -168,19 +174,31 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         kaldi_rule.compile(lazy=self.lazy_compilation)
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
+        """ :param export: whether rule is exported (a root rule) """
         # Determine whether this rule has already been compiled.
-        if (grammar.name, rule.name) in self._grammar_rule_states_dict:
-            self._log.debug("%s: Already compiled rule %s%s." % (self, rule.name, ' [EXPORTED]' if export else ''))
-            return self._grammar_rule_states_dict[(grammar.name, rule.name)]
+        # if (grammar.name, rule.name) in self._grammar_rule_states_dict:
+        #     self._log.debug("%s: Already compiled rule %s%s." % (self, rule.name, ' [EXPORTED]' if export else ''))
+        #     return self._grammar_rule_states_dict[(grammar.name, rule.name)]
+        # else:
+        self._log.debug("%s: Compiling rule %s%s." % (self, rule.name, ' [EXPORTED]' if export else ''))
+
+        if export:
+            weight = self.get_weight(grammar, 'weight') * self.get_weight(rule, 'weight')
+            outer_src_state = fst.add_state(initial=True)
+            inner_src_state = fst.add_state()
+            fst.add_arc(outer_src_state, inner_src_state, None, weight=weight)
+            dst_state = fst.add_state(final=True)
+
         else:
-            self._log.debug("%s: Compiling rule %s%s." % (self, rule.name, ' [EXPORTED]' if export else ''))
+            weight = self.get_weight(rule, 'weight')
+            outer_src_state = fst.add_state()
+            inner_src_state = fst.add_state()
+            fst.add_arc(outer_src_state, inner_src_state, None, weight=weight)
+            dst_state = fst.add_state()
 
-        src_state = fst.add_state(initial=export)
-        dst_state = fst.add_state(final=export)
-        self.compile_element(rule.element, src_state, dst_state, grammar, kaldi_rule, fst)
-
+        self.compile_element(rule.element, inner_src_state, dst_state, grammar, kaldi_rule, fst)
         # self._grammar_rule_states_dict[(grammar.name, rule.name)] = (src_state, dst_state)
-        return (src_state, dst_state)
+        return (outer_src_state, dst_state)
 
     def unload_grammar(self, grammar, rules, engine):
         for rule in rules:
@@ -288,12 +306,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     # @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         rule_src_state, rule_dst_state = self._compile_rule(element.rule, grammar, kaldi_rule, fst, export=False)
-        weight = getattr(element.rule, 'weight', None)
-        if weight is not None:
-            weight = float(weight)
-            if weight < 0:
-                raise CompilerError("Weight cannot be negative, but %s weight is %s" % (element.rule, weight))
-        fst.add_arc(src_state, rule_src_state, None, weight=weight)
+        fst.add_arc(src_state, rule_src_state, None)
         fst.add_arc(rule_dst_state, dst_state, None)
 
     # @trace_compile
