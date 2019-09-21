@@ -30,7 +30,6 @@ from ..base                     import CompilerBase, CompilerError
 from ...grammar                 import elements as elements_
 
 import six
-import pyparsing as pp
 from kaldi_active_grammar import WFST, KaldiRule
 from kaldi_active_grammar import Compiler as KaldiAGCompiler
 
