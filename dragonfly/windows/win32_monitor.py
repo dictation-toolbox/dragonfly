@@ -18,11 +18,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-    This file offers an interface to Win32 information about
-    available monitors (a.k.a. screens, displays).
-"""
-
 import win32api
 
 from .base_monitor import BaseMonitor
@@ -40,6 +35,9 @@ monitors = []
 # Monitor class for storing info about single display monitor.
 
 class Win32Monitor(BaseMonitor):
+    """
+    The monitor class used on Win32.
+    """
 
     #-----------------------------------------------------------------------
     # Methods for initialization and introspection.

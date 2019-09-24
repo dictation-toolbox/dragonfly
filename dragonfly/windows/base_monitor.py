@@ -18,11 +18,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-    This file offers an interface to the system's information about
-    available monitors (a.k.a. screens, displays).
-"""
-
 import logging
 
 from six import integer_types
@@ -41,6 +36,9 @@ monitors = []
 # Monitor classes for storing info about single display monitor.
 
 class BaseMonitor(object):
+    """
+    The base monitor class.
+    """
 
     _log = logging.getLogger("monitor.init")
 

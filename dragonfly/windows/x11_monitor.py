@@ -18,11 +18,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-    This file offers an interface to X11 information about
-    available monitors (a.k.a. screens, displays).
-"""
-
 from six import integer_types, string_types
 
 from .base_monitor import BaseMonitor
@@ -40,6 +35,9 @@ monitors = []
 # Monitor class for storing info about single display monitor.
 
 class X11Monitor(BaseMonitor):
+    """
+    The monitor class used on X11 (Linux).
+    """
 
     #-----------------------------------------------------------------------
     # Methods for initialization and introspection.
