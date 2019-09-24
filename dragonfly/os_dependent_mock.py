@@ -38,10 +38,3 @@ class MockAction(ActionBase):
 class PlaySound(ActionBase):
     def __init__(self, name=None, file=None):
         ActionBase.__init__(self)
-
-
-monitors = []
-
-
-class Monitor(MockBase):
-    pass
