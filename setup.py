@@ -74,9 +74,11 @@ setup(
                         # "python-libxdo;platform_system=='Linux'",
                         # "Xlib;platform_system=='Linux'",
                         "psutil >= 5.5.1;platform_system=='Linux'",
+                        "pynput >= 1.4.2;platform_system=='Linux'",
 
-                        # Linux and Mac OS dependencies.
-                        "pynput >= 1.4.2;platform_system!='Windows'",
+                        # Mac OS dependencies.
+                        "pynput >= 1.4.2;platform_system=='Darwin'",
+                        "pyobjc >= 5.2;platform_system=='Darwin'",
 
                         # RPC requirements
                         "json-rpc",
