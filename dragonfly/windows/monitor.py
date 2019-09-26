@@ -21,9 +21,13 @@
 import sys
 import os
 
-# Windows-specific
+# Windows
 if sys.platform.startswith("win"):
     from .win32_monitor import Win32Monitor as Monitor, monitors
+
+# Mac OS
+elif sys.platform == "darwin":
+    from .darwin_monitor import DarwinMonitor as Monitor, monitors
 
 # Linux/X11
 elif os.environ.get("XDG_SESSION_TYPE") == "x11":
