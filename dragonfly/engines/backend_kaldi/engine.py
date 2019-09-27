@@ -24,7 +24,8 @@ Kaldi engine classes
 
 import collections, os, subprocess, threading, time
 
-from six import string_types, integer_types, print_
+from six import integer_types, string_types, print_
+from six.moves import zip
 
 from ..base                     import (EngineBase, EngineError, MimicFailure,
                                         DelegateTimerManager, DelegateTimerManagerInterface, DictationContainerBase)
@@ -165,7 +166,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def _unload_grammar(self, grammar, wrapper):
         """ Unload the given *grammar*. """
         self._log.debug("Unloading grammar %s." % grammar.name)
-        rules = wrapper.kaldi_rule_by_rule_dict.keys()
+        rules = list(wrapper.kaldi_rule_by_rule_dict.keys())
         self._compiler.unload_grammar(grammar, rules, self)
 
     def activate_grammar(self, grammar):
@@ -250,6 +251,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         in_complex = False
 
         self._audio.start()
+        self._log.info("Listening...")
         next(self._audio_iter)
 
         try:
@@ -283,7 +285,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
                 else:
                     # End of phrase
-                    self._decoder.decode('', True)
+                    self._decoder.decode(b'', True)
                     output, likelihood = self._decoder.get_output()
                     if not self._ignore_current_phrase:
                         output = self._compiler.untranslate_output(output)

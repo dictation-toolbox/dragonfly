@@ -24,8 +24,8 @@ Audio input/output classes for Kaldi backend
 
 import collections, wave, logging, os, datetime
 
-from six import print_
-from six.moves import queue
+from six import binary_type, text_type, print_
+from six.moves import queue, range
 import pyaudio
 import webrtcvad
 
@@ -160,9 +160,9 @@ class VADAudio(MicAudio):
             Example: (block, ..., block, None, block, ..., block, None, ...)
                       |----phrase-----|        |----phrase-----|
         """
-        num_padding_start_blocks = max(1, (padding_start_ms / ratio) // self.block_duration_ms)
-        num_padding_end_blocks = max(1, (padding_end_ms / ratio) // self.block_duration_ms)
-        num_complex_padding_end_blocks = max(1, ((complex_padding_end_ms or padding_end_ms) / ratio) // self.block_duration_ms)
+        num_padding_start_blocks = max(1, int((padding_start_ms / ratio) // self.block_duration_ms))
+        num_padding_end_blocks = max(1, int((padding_end_ms / ratio) // self.block_duration_ms))
+        num_complex_padding_end_blocks = max(1, int(((complex_padding_end_ms or padding_end_ms) / ratio) // self.block_duration_ms))
         _log.debug("%s: vad_collector: num_padding_start_blocks=%s num_padding_end_blocks=%s num_complex_padding_end_blocks=%s",
             self, num_padding_start_blocks, num_padding_end_blocks, num_complex_padding_end_blocks)
 
@@ -217,7 +217,7 @@ class AudioStore(object):
         self.deque = collections.deque(maxlen=maxlen) if maxlen > 0 else None
         self.blocks = []
 
-    current_audio_data = property(lambda self: ''.join(self.blocks))
+    current_audio_data = property(lambda self: b''.join(self.blocks))
 
     def add_block(self, block):
         self.blocks.append(block)

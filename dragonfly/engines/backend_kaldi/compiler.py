@@ -29,9 +29,12 @@ from .dictation                 import CloudDictation, LocalDictation
 from ..base                     import CompilerBase, CompilerError
 from ...grammar                 import elements as elements_
 
-import six
 from kaldi_active_grammar import WFST, KaldiRule
 from kaldi_active_grammar import Compiler as KaldiAGCompiler
+
+import six
+from six import text_type
+from six.moves import map, range
 
 _log = logging.getLogger("engine.compiler")
 
@@ -100,7 +103,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     })
 
     def untranslate_output(self, output):
-        for old, new in self.untranslation_dict.iteritems():
+        for old, new in six.iteritems(self.untranslation_dict):
             output = output.replace(old, new)
         return output
 
@@ -109,7 +112,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         if self.translation_dict:
             new_words = []
             for word in words:
-                for old, new in self.translation_dict.iteritems():
+                for old, new in six.iteritems(self.translation_dict):
                     word = word.replace(old, new)
                 new_words.extend(word.split())
             words = new_words
@@ -284,14 +287,16 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def _compile_literal(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # "insert" new states for individual words
         words = element.words
-        words = map(str, words)  # FIXME: handle unicode
+        words = list(map(text_type, words))
 
+        # Special case optimize single-word literal
         if len(words) == 1:
             # words = self.translate_words(words)
             word = words[0].lower()
             if word not in self.lexicon_words:
                 word = self.handle_oov_word(word)
             fst.add_arc(src_state, dst_state, word)
+
         else:
             # words = self.translate_words(words)
             words = [word.lower() for word in words]
