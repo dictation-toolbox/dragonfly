@@ -4,20 +4,19 @@ import sys
 
 
 from dragonfly import get_engine, MimicFailure
-from dragonfly.engines.base.engine import EngineContext
 from dragonfly.loader import CommandModule
 
 logging.basicConfig()
-_log = logging.getLogger("command")
+LOG = logging.getLogger("command")
 
 
 def test_with_engine(args):
     # Initialise the specified engine, catching and reporting errors.
     try:
         engine = get_engine(args.engine)
-        _log.debug("Testing with engine '%s'" % args.engine)
+        LOG.debug("Testing with engine '%s'", args.engine)
     except Exception as e:
-        _log.error(e)
+        LOG.error(e)
         return 1
 
     # Set the logging level of the root logger.
@@ -51,7 +50,7 @@ def test_with_engine(args):
         if args.no_input:
             # Return early if --no-input was specified.
             return return_code
-        _log.info("Enter commands to mimic followed by new lines.")
+        LOG.info("Enter commands to mimic followed by new lines.")
         try:
             # Use iter to avoid a bug in Python 2.x:
             # https://bugs.python.org/issue3907
@@ -62,9 +61,9 @@ def test_with_engine(args):
 
                 try:
                     engine.mimic(line.split())
-                    _log.info("Mimic success for words: %s" % line)
+                    LOG.info("Mimic success for words: %s", line)
                 except MimicFailure:
-                    _log.error("Mimic failure for words: %s" % line)
+                    LOG.error("Mimic failure for words: %s", line)
                     return_code = 1
         except KeyboardInterrupt:
             pass
@@ -80,7 +79,7 @@ def test_with_engine(args):
     return return_code
 
 
-_command_map = {
+_COMMAND_MAP = {
     "test": test_with_engine
 }
 
@@ -91,7 +90,7 @@ def make_arg_parser():
         description="Command-line interface to the Dragonfly speech "
                     "recognition framework"
     )
-    subparsers = parser.add_subparsers(dest='subparser_name')
+    subparsers = parser.add_subparsers(dest='test')
 
     # Create the parser for the "test" command.
     parser_test = subparsers.add_parser(
@@ -137,10 +136,10 @@ def main():
     args = make_arg_parser().parse_args()
 
     def not_implemented(_):
-        print("Command '%s' is not implemented" % args.subparser_name)
+        print("Command '%s' is not implemented" % args.test)
         return 1
 
-    func = _command_map.get(args.subparser_name, not_implemented)
+    func = _COMMAND_MAP.get(args.test, not_implemented)
 
     # Call the function and exit using the result.
     return_code = func(args)
