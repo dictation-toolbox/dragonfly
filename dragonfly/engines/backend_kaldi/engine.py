@@ -139,8 +139,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def disconnect(self):
         """ Disconnect from back-end SR engine. """
-        self._audio.destroy()
-        self._audio = None
+        if self._audio:
+            self._audio.destroy()
+            self._audio = None
         self._compiler = None
         self._decoder = None
 
