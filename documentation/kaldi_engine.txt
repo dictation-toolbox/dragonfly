@@ -33,6 +33,7 @@ affiliated with the dragonfly project itself).
 * `Engine Configuration`_
 * `Cross-platform`_
 * `User Lexicon`_
+* `Grammar/Rule Weights`_
 * `Alternative/Cloud Dictation`_
 
 
@@ -48,7 +49,7 @@ Otherwise...
 
 **Requirements:**
 
-* Python 2.7 (3.x support planned); *64-bit required!*
+* Python 2.7 or 3.4+; *64-bit required!*
 * OS: *Linux or Windows*; macOS planned if there is interest
 * Only supports Kaldi left-biphone models, specifically *nnet3 chain* models, with specific modifications
 * ~1GB+ disk space for model plus temporary storage and cache, depending on your grammar complexity
@@ -98,6 +99,8 @@ Under ``apt``-based distributions, you can get them by running::
 
 Once the dependencies and model are installed, you're ready to go!
 
+Getting Started
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **A simple, single-file, standalone demo/example** can be found in the
 `dragonfly/examples/kaldi_demo.py
@@ -209,6 +212,9 @@ the ``get_engine()`` function, which passes them to the
   compilation, which then allows parallel compilation up to your number
   of cores, for a large speed up loading uncached.
 
+* ``invalidate_cache`` (``bool``) -- Enables invalidating the engine's
+  cache prior to initialization.
+
 * ``alternative_dictation`` (``str|None``) -- Enables alternative
   dictation and chooses the provider. Possible values:
 
@@ -298,6 +304,28 @@ specifically until the dictation model is recompiled. Entirely new words
 added to the user lexicon will not be recognized during dictation
 elements specifically at all currently. Please let me know if this is a
 significant problem for you.
+
+
+Grammar/Rule Weights
+----------------------------------------------------------------------------
+Grammars and/or rules can have a weight specified, where grammars/rules
+with higher weight value are more likely to be recognized, compared to
+their peers, for an ambiguous recognition. This can be used to adjust
+the probability of them be recognized.
+
+The default weight value is ``1``. Two competing rules with weights of
+``1`` and ``2`` will result in the latter being twice as likely to be
+recognized then if the weights were equal. Similarly for ``1`` and
+``0.5``. An example::
+
+  class WeightExample1Rule(MappingRule):
+      mapping = { "i scream": ActionBase() }
+  class WeightExample2Rule(MappingRule):
+      mapping = { "ice cream": ActionBase() }
+      weight = 2
+
+The weight of a grammar is effectively propagated equally to its child
+rules, on top of their own weights.
 
 
 Alternative/Cloud Dictation
