@@ -1,7 +1,7 @@
 import argparse
 import logging
 import sys
-
+import time
 
 from dragonfly import get_engine, MimicFailure
 from dragonfly.loader import CommandModule
@@ -45,12 +45,22 @@ def test_with_engine(args):
             # Also close each file object created by argparse.
             f.close()
 
+        # Get the number of seconds to delay between each mimic() call
+        # (default 0).
+        delay = args.delay
+
         # Read lines from stdin and pass them to engine.mimic. Strip excess
         # white space from each line. Report any mimic failures.
         if args.no_input:
             # Return early if --no-input was specified.
             return return_code
         LOG.info("Enter commands to mimic followed by new lines.")
+
+        # Log a message about delay if necessary.
+        if delay:
+            LOG.info("Calls to mimic() will be delayed by %.2f seconds "
+                     "as specified", delay)
+
         try:
             # Use iter to avoid a bug in Python 2.x:
             # https://bugs.python.org/issue3907
@@ -58,6 +68,10 @@ def test_with_engine(args):
                 line = line.strip()
                 if not line:  # skip empty lines.
                     continue
+
+                # Delay between mimic() calls if necessary.
+                if delay > 0:
+                    time.sleep(delay)
 
                 try:
                     engine.mimic(line.split())
@@ -102,6 +116,11 @@ def make_arg_parser():
     parser_test.add_argument(
         "files", metavar="file", nargs="+", type=argparse.FileType("r"),
         help="Command module file(s)."
+    )
+    parser_test.add_argument(
+        "-d", "--delay", default=0, type=float,
+        help="Time in seconds to delay before mimicking each command. This "
+        "is useful for testing contexts."
     )
     parser_test.add_argument(
         "-e", "--engine", default="text",
