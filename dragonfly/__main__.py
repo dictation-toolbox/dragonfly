@@ -104,7 +104,7 @@ def make_arg_parser():
         description="Command-line interface to the Dragonfly speech "
                     "recognition framework"
     )
-    subparsers = parser.add_subparsers(dest='test')
+    subparsers = parser.add_subparsers(dest='command')
 
     # Create the parser for the "test" command.
     parser_test = subparsers.add_parser(
@@ -155,10 +155,10 @@ def main():
     args = make_arg_parser().parse_args()
 
     def not_implemented(_):
-        print("Command '%s' is not implemented" % args.test)
+        print("Command '%s' is not implemented" % args.command)
         return 1
 
-    func = _COMMAND_MAP.get(args.test, not_implemented)
+    func = _COMMAND_MAP.get(args.command, not_implemented)
 
     # Call the function and exit using the result.
     return_code = func(args)
