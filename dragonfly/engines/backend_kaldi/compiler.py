@@ -25,7 +25,7 @@ Compiler classes for Kaldi backend
 import collections, logging, os.path, re, subprocess
 
 from .testing                   import debug_timer
-from .dictation                 import CloudDictation, LocalDictation
+from .dictation                 import AlternativeDictation, DefaultDictation
 from ..base                     import CompilerBase, CompilerError
 from ...grammar                 import elements as elements_
 
@@ -327,7 +327,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def _compile_dictation(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # fst.add_arc(src_state, dst_state, '#nonterm:dictation', olabel=WFST.eps)
         extra_state = fst.add_state()
-        cloud_dictation = isinstance(element, (CloudDictation, LocalDictation)) and element.cloud
+        cloud_dictation = isinstance(element, (AlternativeDictation, DefaultDictation)) and element.cloud
         dictation_nonterm = '#nonterm:dictation_cloud' if cloud_dictation else '#nonterm:dictation'
         fst.add_arc(src_state, extra_state, '#nonterm:dictation', dictation_nonterm)
         # Accepts zero or more words

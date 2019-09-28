@@ -33,7 +33,7 @@ affiliated with the dragonfly project itself).
 * `Engine Configuration`_
 * `Cross-platform`_
 * `User Lexicon`_
-* `Cloud Dictation`_
+* `Alternative/Cloud Dictation`_
 
 
 Setup
@@ -153,7 +153,7 @@ the ``get_engine()`` function, which passes them to the
     input_device_index=None,
     auto_add_to_user_lexicon=True,
     lazy_compilation=True,
-    cloud_dictation=None,
+    alternative_dictation=None,
     cloud_dictation_lang='en-US',
   )
 
@@ -204,8 +204,8 @@ the ``get_engine()`` function, which passes them to the
   compilation, which then allows parallel compilation up to your number
   of cores, for a large speed up loading uncached.
 
-* ``cloud_dictation`` (``str|None``) -- Enables cloud dictation and chooses
-  the provider. Possible values:
+* ``alternative_dictation`` (``str|None``) -- Enables alternative
+  dictation and chooses the provider. Possible values:
 
   * ``None`` -- Disabled
   * ``"gcloud"`` -- Google Cloud Speech-to-Text
@@ -213,8 +213,7 @@ the ``get_engine()`` function, which passes them to the
 * ``cloud_dictation_lang`` (``str|None``) -- If you want a cloud
   dictation language other than English, you can specify it here. Valid
   codes for Google Cloud Speech-to-Text are listed on this `page
-  <https://cloud.google.com/speech-to-text/docs/languages>`_. There may be
-  unicode issues currently.
+  <https://cloud.google.com/speech-to-text/docs/languages>`_.
 
 
 Cross-platform
@@ -296,10 +295,24 @@ elements specifically at all currently. Please let me know if this is a
 significant problem for you.
 
 
-Cloud Dictation
+Alternative/Cloud Dictation
 ----------------------------------------------------------------------------
 
+This backend supports optionally using an alternative method of
+recognizing (some or all) dictation, rather than the default Kaldi
+model, which is always used for command recognition. You may want to do
+this for higher dictation accuracy (at the possible cost of higher
+latency or what would otherwise cause lower command accuracy), dictating
+in another language, or some other reason. You can use one of:
+
+* an alternative Kaldi model
+* an alternative local speech recognition engine
+* a cloud speech recognition engine
+
 **Note:** This feature is completely optional and disabled by default!
+
+Cloud Dictation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Although the Kaldi engine has full native/local/offline dictation
 support, and can produce competitive state-of-the-art results with
@@ -340,22 +353,24 @@ an account with me, and I could send you a simple API key to pass as a
 keyword argument just like other normal engine options. Let me know if
 you're interested such a service.
 
-Using Cloud Dictation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-First, you must install the Google Cloud Speech-to-Text client library::
+Prior to use, you must install the Google Cloud Speech-to-Text client library::
 
   pip install google-cloud-speech==0.36.3
 
-To use cloud dictation, you *must both* pass the ``cloud_dictation``
-option *and* use a specialized ``Dictation`` element. The standard
-dragonfly ``Dictation`` does not support cloud dictation. Instead, this
-backend provides two subclasses of it: ``CloudDictation`` and
-``LocalDictation``. These two subclasses both support cloud dictation;
-they differ only in whether they do cloud dictation by default.
+Using Alternative/Cloud Dictation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``CloudDictation`` and ``LocalDictation`` can be used as follows. Assume
-we are defining a variable ``element`` that is used by the code::
+To use alternative dictation, you *must both* pass the
+``alternative_dictation`` option *and* use a specialized ``Dictation``
+element. The standard dragonfly ``Dictation`` does not support
+alternative dictation. Instead, this backend provides two subclasses of
+it: ``AlternativeDictation`` and ``DefaultDictation``. These two subclasses both
+support alternative dictation; they differ only in whether they do
+alternative dictation by default.
+
+``AlternativeDictation`` and ``DefaultDictation`` can be used as
+follows. Assume we are defining a variable ``element`` that is used by
+the code::
 
   class TestDictationRule(MappingRule):
     mapping = { "dictate <text>": Text("%(text)s") }
@@ -363,30 +378,30 @@ we are defining a variable ``element`` that is used by the code::
 
 Examples::
 
-  element = CloudDictation("text")              # cloud dictation
-  element = LocalDictation("text")              # no cloud dictation
-  element = CloudDictation("text", cloud=False) # no cloud dictation
-  element = LocalDictation("text", cloud=True)  # cloud dictation
+  element = AlternativeDictation("text")                    # alternative dictation
+  element = DefaultDictation("text")                        # no alternative dictation
+  element = AlternativeDictation("text", alternative=False) # no alternative dictation
+  element = DefaultDictation("text", alternative=True)      # alternative dictation
 
-  # all CloudDictation instances instantiated after this (in any file!) will default to cloud=False
-  CloudDictation.cloud_default = False
-  element = CloudDictation("text")              # no cloud dictation
-  element = CloudDictation("text", cloud=True)  # cloud dictation
+  # all AlternativeDictation instances instantiated after this (in any file!) will default to alternative=False
+  AlternativeDictation.alternative_default = False
+  element = AlternativeDictation("text")                    # no alternative dictation
+  element = AlternativeDictation("text", alternative=True)  # alternative dictation
 
-  # all LocalDictation instances instantiated after this (in any file!) will default to cloud=True
-  LocalDictation.cloud_default = True
-  element = LocalDictation("text")              # cloud dictation
-  element = LocalDictation("text", cloud=False) # no cloud dictation
+  # all DefaultDictation instances instantiated after this (in any file!) will default to alternative=True
+  DefaultDictation.alternative_default = True
+  element = DefaultDictation("text")                        # alternative dictation
+  element = DefaultDictation("text", alternative=False)     # no alternative dictation
 
-  CloudDictation.cloud_default = True
-  LocalDictation.cloud_default = False
-  # all CloudDictation and LocalDictation instances instantiated after this are back to normal
+  AlternativeDictation.alternative_default = True
+  DefaultDictation.alternative_default = False
+  # all AlternativeDictation and DefaultDictation instances instantiated after this are back to normal
 
 If you want to replace all uses of standard ``Dictation`` in a file::
 
-  from dragonfly.engines.backend_kaldi.dictation import CloudDictation as Dictation
+  from dragonfly.engines.backend_kaldi.dictation import AlternativeDictation as Dictation
   # OR
-  from dragonfly.engines.backend_kaldi.dictation import LocalDictation as Dictation
+  from dragonfly.engines.backend_kaldi.dictation import DefaultDictation as Dictation
 
 
 Limitations & Future Work
@@ -462,7 +477,7 @@ Engine API
 .. autoclass:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
    :members:
 
-.. autoclass:: dragonfly.engines.backend_kaldi.dictation.CloudDictation
+.. autoclass:: dragonfly.engines.backend_kaldi.dictation.AlternativeDictation
    :members:
-.. autoclass:: dragonfly.engines.backend_kaldi.dictation.LocalDictation
+.. autoclass:: dragonfly.engines.backend_kaldi.dictation.DefaultDictation
    :members:

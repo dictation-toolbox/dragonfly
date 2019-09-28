@@ -61,7 +61,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         input_device_index=None, vad_aggressiveness=3,
         vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
-        cloud_dictation=None, cloud_dictation_lang='en-US',
+        alternative_dictation=None, cloud_dictation_lang='en-US',
         ):
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
@@ -92,7 +92,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             auto_add_to_user_lexicon = auto_add_to_user_lexicon,
             lazy_compilation = lazy_compilation,
             invalidate_cache = invalidate_cache,
-            cloud_dictation = cloud_dictation,
+            alternative_dictation = alternative_dictation,
             cloud_dictation_lang = cloud_dictation_lang,
         )
 
@@ -113,7 +113,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
             lazy_compilation=self._options['lazy_compilation'],
-            cloud_dictation=self._options['cloud_dictation'],
+            alternative_dictation=self._options['alternative_dictation'],
             cloud_dictation_lang=self._options['cloud_dictation_lang'],
             )
         if self._options['invalidate_cache']:
