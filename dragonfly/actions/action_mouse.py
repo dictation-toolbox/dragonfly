@@ -148,133 +148,16 @@ Mouse class reference
 
 """
 
-import time
-import win32con
-
-from ctypes             import windll, pointer, c_long, c_ulong, Structure
-from .sendinput         import MouseInput, make_input_array, send_input_array
 from .action_base       import DynStrActionBase, ActionError
 from ..windows.window   import Window
-from ..windows.monitor  import monitors
 
+from .mouse import (ButtonEvent, PauseEvent, MoveRelativeEvent,
+                    MoveScreenEvent, MoveWindowEvent, PLATFORM_BUTTON_FLAGS,
+                    PLATFORM_WHEEL_FLAGS)
 
-#---------------------------------------------------------------------------
+# Imported for backwards-compatibility: these functions used to live here.
+from .mouse import get_cursor_position, set_cursor_position
 
-MOUSEEVENTF_HWHEEL = 0x1000 # taken from https://msdn.microsoft.com/en-us/library/windows/desktop/ms646273(v=vs.85).aspx
-
-#---------------------------------------------------------------------------
-
-class _point_t(Structure):
-    _fields_ = [
-                ('x',  c_long),
-                ('y',  c_long),
-               ]
-
-def get_cursor_position():
-    point = _point_t()
-    result = windll.user32.GetCursorPos(pointer(point))
-    if result:  return (point.x, point.y)
-    else:       return None
-
-def set_cursor_position(x, y):
-    result = windll.user32.SetCursorPos(c_long(int(x)), c_long(int(y)))
-    if result:  return False
-    else:       return True
-
-
-#---------------------------------------------------------------------------
-
-class _EventBase(object):
-
-    def execute():
-        pass
-
-
-class _Move(_EventBase):
-
-    def __init__(self, from_left, horizontal, from_top, vertical):
-        self.from_left = from_left
-        self.horizontal = horizontal
-        self.from_top = from_top
-        self.vertical = vertical
-        _EventBase.__init__(self)
-
-    def _move_relative(self, rectangle):
-        if self.from_left:  horizontal = rectangle.x1
-        else:               horizontal = rectangle.x2
-        if isinstance(self.horizontal, float):
-            distance = self.horizontal * rectangle.dx
-        else:
-            distance = self.horizontal
-        horizontal += distance
-
-        if self.from_top:   vertical = rectangle.y1
-        else:               vertical = rectangle.y2
-        if isinstance(self.vertical, float):
-            distance = self.vertical * rectangle.dy
-        else:
-            distance = self.vertical
-        vertical += distance
-
-        self._move_mouse(horizontal, vertical)
-
-    def _move_mouse(self, horizontal, vertical):
-        set_cursor_position(horizontal, vertical)
-
-
-class _MoveWindow(_Move):
-
-    def execute(self, window):
-        self._move_relative(window.get_position())
-
-
-class _MoveScreen(_Move):
-
-    def execute(self, window):
-        self._move_relative(monitors[0].rectangle)
-
-
-class _MoveRelative(_Move):
-
-    def __init__(self, horizontal, vertical):
-        _Move.__init__(self, None, None, None, None)
-        self.horizontal = horizontal
-        self.vertical = vertical
-
-    def execute(self, window):
-        position = get_cursor_position()
-        if not position:
-            raise ActionError("Failed to retrieve cursor position.")
-        horizontal = position[0] + self.horizontal
-        vertical   = position[1] + self.vertical
-        self._move_mouse(horizontal, vertical)
-
-
-class _Button(_EventBase):
-
-    def __init__(self, *flags):
-        _EventBase.__init__(self)
-        self._flags = flags
-
-    def execute(self, window):
-        zero = pointer(c_ulong(0))
-        inputs = [MouseInput(0, 0, flag[1], flag[0], 0, zero)
-                  for flag in self._flags]
-        array = make_input_array(inputs)
-        send_input_array(array)
-
-
-class _Pause(_EventBase):
-
-    def __init__(self, interval):
-        _EventBase.__init__(self)
-        self._interval = interval
-
-    def execute(self, window):
-        time.sleep(self._interval)
-
-
-#---------------------------------------------------------------------------
 
 class Mouse(DynStrActionBase):
     """ Action that sends mouse events. """
@@ -322,7 +205,7 @@ class Mouse(DynStrActionBase):
         if not spec.startswith("(") or not spec.endswith(")"):
             return False
         h_origin, h_value, v_origin, v_value = self._parse_position_pair(spec[1:-1])
-        event = _MoveWindow(h_origin, h_value, v_origin, v_value)
+        event = MoveWindowEvent(h_origin, h_value, v_origin, v_value)
         events.append(event)
         return True
 
@@ -330,7 +213,7 @@ class Mouse(DynStrActionBase):
         if not spec.startswith("[") or not spec.endswith("]"):
             return False
         h_origin, h_value, v_origin, v_value = self._parse_position_pair(spec[1:-1])
-        event = _MoveScreen(h_origin, h_value, v_origin, v_value)
+        event = MoveScreenEvent(h_origin, h_value, v_origin, v_value)
         events.append(event)
         return True
 
@@ -342,33 +225,12 @@ class Mouse(DynStrActionBase):
             return False
         horizontal = int(parts[0])
         vertical   = int(parts[1])
-        event = _MoveRelative(horizontal, vertical)
+        event = MoveRelativeEvent(horizontal, vertical)
         events.append(event)
         return True
 
-    _button_flags = {
-                     "left":   ((win32con.MOUSEEVENTF_LEFTDOWN, 0),
-                                (win32con.MOUSEEVENTF_LEFTUP, 0)),
-                     "right":  ((win32con.MOUSEEVENTF_RIGHTDOWN, 0),
-                                (win32con.MOUSEEVENTF_RIGHTUP, 0)),
-                     "middle": ((win32con.MOUSEEVENTF_MIDDLEDOWN, 0),
-                                (win32con.MOUSEEVENTF_MIDDLEUP, 0)),
-                     "four": ((win32con.MOUSEEVENTF_XDOWN, 1),
-                                (win32con.MOUSEEVENTF_XUP, 1)),
-                     "five": ((win32con.MOUSEEVENTF_XDOWN, 2),
-                                (win32con.MOUSEEVENTF_XUP, 2)),
-                    }
-
-    _wheel_flags = {
-                    "wheelup": (win32con.MOUSEEVENTF_WHEEL, 120),
-                    "stepup": (win32con.MOUSEEVENTF_WHEEL, 40),
-                    "wheeldown": (win32con.MOUSEEVENTF_WHEEL, -120),
-                    "stepdown": (win32con.MOUSEEVENTF_WHEEL, -40),
-                    "wheelright": (MOUSEEVENTF_HWHEEL, 120),
-                    "stepright": (MOUSEEVENTF_HWHEEL, 40),
-                    "wheelleft": (MOUSEEVENTF_HWHEEL, -120),
-                    "stepleft": (MOUSEEVENTF_HWHEEL, -40),
-                   }
+    _button_flags = PLATFORM_BUTTON_FLAGS
+    _wheel_flags = PLATFORM_WHEEL_FLAGS
 
     def _process_button(self, spec, events):
         parts = spec.split(":", 1)
@@ -380,16 +242,16 @@ class Mouse(DynStrActionBase):
             flag_down, flag_up = self._button_flags[button]
 
             if special == "down":
-                event = _Button(flag_down)
+                event = ButtonEvent(flag_down)
             elif special == "up":
-                event = _Button(flag_up)
+                event = ButtonEvent(flag_up)
             else:
                 try:
                     repeat = int(special)
                 except ValueError:
                     return False
                 flag_series = (flag_down, flag_up) * repeat
-                event = _Button(*flag_series)
+                event = ButtonEvent(*flag_series)
         elif button in self._wheel_flags:
             flag = self._wheel_flags[button]
             try:
@@ -397,7 +259,7 @@ class Mouse(DynStrActionBase):
             except ValueError:
                 return False
             flag = (flag[0], repeat * flag[1])
-            event = _Button(flag)
+            event = ButtonEvent(flag)
         else:
             return False
 
@@ -408,7 +270,7 @@ class Mouse(DynStrActionBase):
         if not spec.startswith("/"):
             return False
         interval = float(spec[1:]) / 100
-        event = _Pause(interval)
+        event = PauseEvent(interval)
         events.append(event)
         return True
 

@@ -25,12 +25,8 @@ from .rectangle   import Rectangle, unit
 from .point       import Point
 from .window      import Window
 from .fake_window import FakeWindow
+from .monitor     import Monitor, monitors
 
 # Windows-specific
 if sys.platform.startswith("win"):
-    from .monitor      import Monitor, monitors
     from .clipboard    import Clipboard
-
-# Import mock classes.
-else:
-    from ..os_dependent_mock import Monitor, monitors

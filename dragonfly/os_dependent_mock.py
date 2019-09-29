@@ -21,7 +21,7 @@ Heavily modified to allow more dragonfly functionality to work
 regardless of operating system.
 """
 
-from .actions import ActionBase, DynStrActionBase
+from .actions import ActionBase
 
 
 class MockBase(object):
@@ -35,19 +35,6 @@ class MockAction(ActionBase):
         ActionBase.__init__(self)
 
 
-class Mouse(DynStrActionBase):
-    """ Mock Mouse action class. """
-    def __init__(self, spec=None, static=False):
-        DynStrActionBase.__init__(self, spec, static)
-
-
 class PlaySound(ActionBase):
     def __init__(self, name=None, file=None):
         ActionBase.__init__(self)
-
-
-monitors = []
-
-
-class Monitor(MockBase):
-    pass

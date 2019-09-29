@@ -1,0 +1,18 @@
+
+Monitor classes
+============================================================================
+
+The monitor classes are how Dragonfly gets information on the available
+monitors (a.k.a. screens, displays) for the current platform.
+
+.. automodule:: dragonfly.windows.base_monitor
+   :members:
+
+.. automodule:: dragonfly.windows.win32_monitor
+   :members:
+
+.. automodule:: dragonfly.windows.x11_monitor
+   :members:
+
+.. automodule:: dragonfly.windows.monitor
+   :members:

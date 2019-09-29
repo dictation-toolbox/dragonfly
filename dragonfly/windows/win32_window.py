@@ -31,8 +31,7 @@ import win32gui
 import win32con
 
 from .base_window    import BaseWindow
-from .rectangle      import Rectangle, unit
-from .monitor        import monitors
+from .rectangle      import Rectangle
 from ..actions.action_key import Key
 
 
@@ -208,25 +207,6 @@ class Win32Window(BaseWindow):
         assert isinstance(rectangle, Rectangle)
         l, t, w, h = rectangle.ltwh
         win32gui.MoveWindow(self._handle, l, t, w, h, 1)
-
-    def get_containing_monitor(self):
-        center = self.get_position().center
-        for monitor in monitors:
-            if monitor.rectangle.contains(center):
-                return monitor
-        # Fall through, return first monitor.
-        return monitors[0]
-
-    def get_normalized_position(self):
-        monitor = self.get_containing_monitor()
-        rectangle = self.get_position()
-        rectangle.renormalize(monitor.rectangle, unit)
-        return rectangle
-
-    def set_normalized_position(self, rectangle, monitor=None):
-        if not monitor: monitor = self.get_containing_monitor()
-        rectangle.renormalize(unit, monitor.rectangle)
-        self.set_position(rectangle)
 
     #-----------------------------------------------------------------------
     # Methods for miscellaneous window control.
