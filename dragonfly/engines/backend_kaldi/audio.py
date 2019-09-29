@@ -23,11 +23,14 @@ Audio input/output classes for Kaldi backend
 """
 
 import collections, wave, logging, os, datetime
+from io import open
 
 from six import binary_type, text_type, print_
 from six.moves import queue, range
 import pyaudio
 import webrtcvad
+
+from ..base import EngineError
 
 _log = logging.getLogger("engine")
 
@@ -68,6 +71,9 @@ class MicAudio(object):
         self.pa.terminate()
         self.active = False
 
+    block_size = property(lambda self: int(self.sample_rate / float(self.BLOCKS_PER_SECOND)), doc="Block size in number of samples")
+    block_duration_ms = property(lambda self: 1000 * self.block_size // self.sample_rate, doc="Block duration in milliseconds")
+
     def start(self):
         self.stream.start_stream()
 
@@ -104,8 +110,12 @@ class MicAudio(object):
         """Generator that yields all audio blocks from microphone."""
         return self.iter()
 
-    block_size = property(lambda self: int(self.sample_rate / float(self.BLOCKS_PER_SECOND)))
-    block_duration_ms = property(lambda self: 1000 * self.block_size // self.sample_rate)
+    def get_wav_length_s(self, data):
+        assert isinstance(data, binary_type)
+        length_bytes = len(data)
+        assert self.FORMAT == pyaudio.paInt16
+        length_samples = length_bytes / 2
+        return (float(length_samples) / self.sample_rate)
 
     def write_wav(self, filename, data):
         # _log.debug("write wav %s", filename)
@@ -206,15 +216,21 @@ class VADAudio(MicAudio):
 
 
 class AudioStore(object):
-    """Stores the current audio data being recognized, plus the last `maxlen` recognitions as tuples (audio, text, grammar_name, rule_name), indexed in reverse order (0 is most recent)"""
+    """
+    Stores the current audio data being recognized, which is cleared upon calling `finalize()`.
+    Also, optionally stores the last `maxlen` recognitions as lists [audio, text, grammar_name, rule_name, misrecognition],
+    indexed in reverse order (0 is most recent), and advanced upon calling `finalize()`.
+    Note: `finalize()` should be called after the recognition has been parsed and its actions executed.
+    """
 
-    def __init__(self, audio_obj, maxlen=0, save_dir=None, auto_save_predicate_func=None):
+    def __init__(self, audio_obj, maxlen=None, save_dir=None, auto_save_predicate_func=None):
         self.audio_obj = audio_obj
         self.maxlen = maxlen
         self.save_dir = save_dir
-        # if self.save_dir and not os.path.exists(self.save_dir): os.makedirs(self.save_dir)
+        if self.save_dir:
+            _log.info("retaining audio and recognition metadata to '%s'", self.save_dir)
         self.auto_save_predicate_func = auto_save_predicate_func
-        self.deque = collections.deque(maxlen=maxlen) if maxlen > 0 else None
+        self.deque = collections.deque(maxlen=maxlen) if maxlen else None
         self.blocks = []
 
     current_audio_data = property(lambda self: b''.join(self.blocks))
@@ -222,21 +238,38 @@ class AudioStore(object):
     def add_block(self, block):
         self.blocks.append(block)
 
-    def finalize(self, text, grammar_name, rule_name):
-        get_recognition = lambda: (self.current_audio_data, text, grammar_name, rule_name)
+    def finalize(self, text, grammar_name, rule_name, likelihood=None):
+        info = [self.current_audio_data, grammar_name, rule_name, text, likelihood, False]
         if self.deque is not None:
-            self.deque.appendleft(get_recognition())
-        if self.auto_save_predicate_func and self.auto_save_predicate_func(*get_recognition()):
-            self.save(0)
+            if len(self.deque) == self.deque.maxlen:
+                self.save(-1)  # Save oldest
+            self.deque.appendleft(info)
+        # if self.auto_save_predicate_func and self.auto_save_predicate_func(*info):
+        #     self.save(0)
         self.blocks = []
 
     def save(self, index):
-        if self.save_dir:
-            filename = os.path.join(self.save_dir, "retain_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f") + ".wav")
-            audio, text, grammar_name, rule_name = self.deque[index]
-            self.audio_obj.write_wav(filename, audio)
-            with open(os.path.join(self.save_dir, "retain.csv"), "a") as csvfile:
-                csvfile.write(','.join([filename, '0', grammar_name, rule_name, text]) + '\n')
+        if slice(index).indices(len(self.deque))[1] >= len(self.deque):
+            raise EngineError("Invalid index to save in AudioStore")
+        if not self.save_dir:
+            return
+        if not os.path.isdir(self.save_dir):
+            _log.warning("Audio was not retained because '%s' was not a directory" % self.save_dir)
+            return
+
+        filename = os.path.join(self.save_dir, "retain_%s.wav" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f"))
+        audio, grammar_name, rule_name, text, likelihood, misrecognition = self.deque[index]
+        self.audio_obj.write_wav(filename, audio)
+        with open(os.path.join(self.save_dir, "retain.tsv"), 'a', encoding='utf-8') as tsv_file:
+            tsv_file.write(u'\t'.join([
+                    filename,
+                    text_type(self.audio_obj.get_wav_length_s(audio)),
+                    grammar_name,
+                    rule_name,
+                    text,
+                    text_type(likelihood),
+                    text_type(misrecognition),
+                ]) + '\n')
 
     def __getitem__(self, key):
         return self.deque[key]

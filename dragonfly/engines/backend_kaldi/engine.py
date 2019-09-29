@@ -58,7 +58,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        input_device_index=None, vad_aggressiveness=3,
+        input_device_index=None, retain_dir=None, vad_aggressiveness=3,
         vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         alternative_dictation=None, cloud_dictation_lang='en-US',
@@ -81,10 +81,15 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self._log.error("See https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
             raise EngineError("Incompatible kaldi_active_grammar version")
 
+        if not (isinstance(retain_dir, string_types) or (retain_dir is None)):
+            self._log.error("Invalid retain_dir: %r" % retain_dir)
+            retain_dir = None
+
         self._options = dict(
             model_dir = model_dir,
             tmp_dir = tmp_dir,
             input_device_index = input_device_index,
+            retain_dir = retain_dir,
             vad_aggressiveness = vad_aggressiveness,
             vad_padding_start_ms = vad_padding_start_ms,
             vad_padding_end_ms = vad_padding_end_ms,
@@ -131,7 +136,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             padding_end_ms=self._options['vad_padding_end_ms'],
             complex_padding_end_ms=self._options['vad_complex_padding_end_ms'],
             )
-        self.audio_store = AudioStore(self._audio, maxlen=0)
+        self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0), save_dir=self._options['retain_dir'])
 
         self._any_exclusive_grammars = False
         self._in_phrase = False
@@ -293,7 +298,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                         kaldi_rule, parsed_output = self._parse_recognition(output)
                         self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
                         if self.audio_store and kaldi_rule:
-                            self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name)
+                            self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name, likelihood)
 
                     self._in_phrase = False
                     self._ignore_current_phrase = False

@@ -138,21 +138,22 @@ Engine Configuration
 
 This engine can be configured by passing (optional) keyword arguments to
 the ``get_engine()`` function, which passes them to the
-:class:`KaldiEngine` constructor (documented below). For example, from
-*kaldi_module_loader_plus.py*:
+:class:`KaldiEngine` constructor (documented below). For example:
 
 .. code:: Python
 
   engine = get_engine("kaldi",
     model_dir='kaldi_model_zamia',
     tmp_dir='kaldi_tmp',
+    input_device_index=None,
+    retain_dir=None,
     vad_aggressiveness=3,
     vad_padding_start_ms=300,
     vad_padding_end_ms=100,
     vad_complex_padding_end_ms=500,
-    input_device_index=None,
     auto_add_to_user_lexicon=True,
     lazy_compilation=True,
+    invalidate_cache=False,
     alternative_dictation=None,
     cloud_dictation_lang='en-US',
   )
@@ -161,11 +162,20 @@ the ``get_engine()`` function, which passes them to the
 
 **Arguments (all optional):**
 
-* ``model_dir`` (``str``) -- Directory containing model.
+* ``model_dir`` (``str|None``) -- Directory containing model.
 
-* ``tmp_dir`` (``str``) -- Directory to use for temporary storage and
+* ``tmp_dir`` (``str|None``) -- Directory to use for temporary storage and
   cache (used both during execution and between executions but safe to
   delete).
+
+* ``input_device_index`` (``int``) -- Microphone PortAudio input device
+  index: the default of ``None`` chooses the default input device. To see
+  a list your available input devices and their corresponding indexes, call
+  ``get_engine('kaldi').print_mic_list()``
+
+* ``retain_dir`` (``str|None``) -- Retains recognized audio & metadata in the
+  given directory, saving audio to ``retain_[timestamp].wav`` file and
+  metadata to ``retain.tsv``.
 
 * ``vad_aggressiveness`` (``int``) -- Aggressiveness of the Voice Activity
   Detector: an integer between ``0`` and ``3``, where ``0`` is the least
@@ -189,11 +199,6 @@ the ``get_engine()`` function, which passes them to the
   dictation), using this value instead of ``vad_padding_end_ms``, so you can
   attain longer utterances to take advantage of context to improve recognition
   quality.
-
-* ``input_device_index`` (``int``) -- Microphone PortAudio input device
-  index: the default of ``None`` chooses the default input device. To see
-  a list your available input devices and their corresponding indexes, call
-  ``get_engine('kaldi').print_mic_list()``
 
 * ``auto_add_to_user_lexicon`` (``bool``) -- Enables automatically
   adding unknown words to the `User Lexicon`_. This may make requests to
