@@ -23,16 +23,42 @@ import os
 
 # Windows
 if sys.platform.startswith("win"):
-    from .win32_monitor import Win32Monitor as Monitor, monitors
+    from .win32_monitor import Win32Monitor as Monitor
 
 # Mac OS
 elif sys.platform == "darwin":
-    from .darwin_monitor import DarwinMonitor as Monitor, monitors
+    from .darwin_monitor import DarwinMonitor as Monitor
 
 # Linux/X11
 elif os.environ.get("XDG_SESSION_TYPE") == "x11":
-    from .x11_monitor import X11Monitor as Monitor, monitors
+    from .x11_monitor import X11Monitor as Monitor
 
 # Unsupported
 else:
-    from .base_monitor import BaseMonitor as Monitor, monitors
+    from .base_monitor import FakeMonitor as Monitor
+
+
+class MonitorList(object):
+    """
+    Special read-only, self-updating monitors list class.
+
+    Supports indexing and iteration.
+    """
+
+    def __init__(self):
+        self._list = None  # lazily initialised
+
+    def _update(self):
+        self._list = Monitor.get_all_monitors()
+
+    def __getitem__(self, index):
+        self._update()
+        return self._list[index]
+
+    def __iter__(self):
+        self._update()
+        return iter(self._list)
+
+
+#: :class:`MonitorsList` instance
+monitors = MonitorList()

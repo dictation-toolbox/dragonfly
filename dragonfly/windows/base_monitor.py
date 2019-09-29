@@ -25,15 +25,8 @@ from six import integer_types
 from .rectangle import Rectangle
 
 
-#---------------------------------------------------------------------------
-# List of monitors that will be filled when this module is loaded and
-# updated on calls to `Monitor.update_monitors_list`.
-
-monitors = []
-
-
 #===========================================================================
-# Monitor classes for storing info about single display monitor.
+# Monitor classes for storing info about a single display monitor.
 
 class BaseMonitor(object):
     """
@@ -41,6 +34,46 @@ class BaseMonitor(object):
     """
 
     _log = logging.getLogger("monitor.init")
+
+    #-----------------------------------------------------------------------
+    # Class attributes to retrieve existing Monitor objects.
+
+    _monitors_by_handle = {}
+
+    #-----------------------------------------------------------------------
+    # Class methods to create new Monitor objects.
+
+    @classmethod
+    def get_monitor(cls, handle, rectangle):
+        """
+        Get a :class:`Monitor` object given a monitor handle.
+
+        Given the same handle, this method will return the same object.
+
+        :param handle: monitor handle
+        :type handle: int
+        :param rectangle: monitor rectangle
+        :type rectangle: Rectangle
+        :rtype: Monitor
+        :returns: monitor
+        """
+        if handle in cls._monitors_by_handle:
+            monitor = cls._monitors_by_handle[handle]
+            monitor.rectangle = rectangle
+        else:
+            monitor = cls(handle, rectangle)
+            cls._monitors_by_handle[handle] = monitor
+        return monitor
+
+    @classmethod
+    def get_all_monitors(cls):
+        """
+        Get a list containing each connected monitor.
+
+        :rtype: list
+        :returns: monitors
+        """
+        raise NotImplementedError()
 
     #-----------------------------------------------------------------------
     # Methods for initialization and introspection.
@@ -54,15 +87,6 @@ class BaseMonitor(object):
     def __str__(self):
         return "%s(%d)" % (self.__class__.__name__, self._handle)
 
-    @classmethod
-    def update_monitors_list(cls):
-        """
-        Update dragonfly's monitors list with new monitors, delete monitors
-        that aren't found and replace rectangles of monitors that have
-        changed.
-        """
-        pass
-
     #-----------------------------------------------------------------------
     # Methods that control attribute access.
 
@@ -74,19 +98,20 @@ class BaseMonitor(object):
                       fset=_set_handle,
                       doc="Protected access to handle attribute.")
 
-    def _get_updated_rectangle(self):
-        self.update_monitors_list()
-        return self._rectangle
-
     def _set_rectangle(self, rectangle):
         assert isinstance(rectangle, Rectangle)
         self._rectangle = rectangle  # Should make a copy??
 
-    rectangle = property(fget=_get_updated_rectangle,
+    rectangle = property(fget=lambda self: self._rectangle,
                          fset=_set_rectangle,
                          doc="Protected access to rectangle attribute.")
 
 
-# Enumerate monitors and build Dragonfly's monitor list when this
-# module is loaded.
-BaseMonitor.update_monitors_list()
+class FakeMonitor(BaseMonitor):
+    """
+    The monitor class used on unsupported platforms.
+    """
+
+    @classmethod
+    def get_all_monitors(cls):
+        return []

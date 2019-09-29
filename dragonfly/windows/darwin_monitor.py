@@ -24,15 +24,8 @@ from .base_monitor import BaseMonitor
 from .rectangle import Rectangle
 
 
-#---------------------------------------------------------------------------
-# List of monitors that will be filled when this module is loaded and
-# updated on calls to `Monitor.update_monitors_list`.
-
-monitors = []
-
-
 #===========================================================================
-# Monitor class for storing info about single display monitor.
+# Monitor class for storing info about a single display monitor.
 
 class DarwinMonitor(BaseMonitor):
     """
@@ -46,42 +39,24 @@ class DarwinMonitor(BaseMonitor):
     """
 
     #-----------------------------------------------------------------------
-    # Methods for initialization and introspection.
+    # Class methods to create new Monitor objects.
 
     @classmethod
-    def update_monitors_list(cls):
-        # Get a list of the current monitor handles.
-        monitor_handles = [m.handle for m in monitors]
-
+    def get_all_monitors(cls):
         # Get monitor information from AppKit.
-        new_monitor_handles = []
+        monitors = []
         for screen in NSScreen.screens():
+            # Get the monitor handle.
             handle = screen.deviceDescription()['NSScreenNumber']
+
+            # Create a rectangle object representing the monitor's
+            # dimensions and relative position.
             frame = screen.frame()
             dx = frame.size.width - frame.origin.x
             dy = frame.size.height - frame.origin.y
             rectangle = Rectangle(frame.origin.x, frame.origin.y, dx, dy)
 
-            # Check if this monitor is already in the list.
-            if handle in monitor_handles:
-                # Replace the monitor's rectangle if it has changed.
-                index = monitor_handles.index(handle)
-                monitor = monitors[index]
-                if rectangle != monitor._rectangle:
-                    monitor.rectangle = rectangle
-            else:
-                # Add a new monitor object to the list.
-                monitors.append(cls(handle, rectangle))
+            # Get a new or updated monitor object and add it to the list.
+            monitors.append(cls.get_monitor(handle, rectangle))
 
-            # Keep track of each monitor handle.
-            new_monitor_handles.append(handle)
-
-        # Remove any monitors whose handles weren't found.
-        for monitor in tuple(monitors):
-            if monitor.handle not in new_monitor_handles:
-                monitors.remove(monitor)
-
-
-# Enumerate monitors and build Dragonfly's monitor list when this
-# module is loaded.
-DarwinMonitor.update_monitors_list()
+        return monitors

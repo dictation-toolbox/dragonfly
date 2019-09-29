@@ -5,8 +5,6 @@ Monitor classes
 The monitor classes are how Dragonfly gets information on the available
 monitors (a.k.a. screens, displays) for the current platform.
 
-The :class:`BaseMonitor` class will be used on unsupported platforms.
-
 .. automodule:: dragonfly.windows.base_monitor
    :members:
 
@@ -14,4 +12,7 @@ The :class:`BaseMonitor` class will be used on unsupported platforms.
    :members:
 
 .. automodule:: dragonfly.windows.x11_monitor
+   :members:
+
+.. automodule:: dragonfly.windows.monitor
    :members:

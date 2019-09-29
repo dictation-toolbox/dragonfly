@@ -27,15 +27,8 @@ from .base_monitor import BaseMonitor
 from .rectangle import Rectangle
 
 
-#---------------------------------------------------------------------------
-# List of monitors that will be filled when this module is loaded and
-# updated on calls to `Monitor.update_monitors_list`.
-
-monitors = []
-
-
 #===========================================================================
-# Monitor class for storing info about single display monitor.
+# Monitor class for storing info about a single display monitor.
 
 class X11Monitor(BaseMonitor):
     """
@@ -59,19 +52,20 @@ class X11Monitor(BaseMonitor):
     def __str__(self):
         return "%s(%s)" % (self.__class__.__name__, self._name)
 
+    #-----------------------------------------------------------------------
+    # Class methods to create new Monitor objects.
+
     @classmethod
-    def update_monitors_list(cls):
-        # Get monitor information from xrandr.
+    def get_all_monitors(cls):
+        # Get updated monitor information from xrandr.
         try:
-            p = Popen(["xrandr"], stdout=PIPE, stderr=PIPE)
-            stdout, stderr = p.communicate()
+            p = Popen(["xrandr"], stdout=PIPE)
+            stdout, _ = p.communicate()
 
             # Decode output if it is binary.
             encoding = locale.getpreferredencoding()
             if isinstance(stdout, binary_type):
                 stdout = stdout.decode(encoding)
-            if isinstance(stderr, binary_type):
-                stderr = stderr.decode(encoding)
 
             # Handle non-zero return codes.
             if p.wait() > 0:
@@ -84,11 +78,8 @@ class X11Monitor(BaseMonitor):
                            "xrandr installed?", e)
             raise e
 
-        # Get a list of the current monitor names.
-        monitor_names = [m.name for m in monitors]
-        new_monitor_names = []
-
         # Parse output from xrandr.
+        monitors = []
         for line in stdout.split("\n")[1:]:  # skip the first line
             # Skip disconnected monitors, output modes and empty lines.
             if not line or "disconnected" in line or line.startswith("   "):
@@ -103,12 +94,13 @@ class X11Monitor(BaseMonitor):
 
             # Find and remove info we don't need (e.g. 'connected' and
             # orientation info).
+            i = 1
             for i, part in enumerate(parts):
                 if "(" in part:  # e.g. '(normal'
                     break
             parts = parts[1:i]
 
-            # Skip disabled monitors that haven't reported mode info.
+            # Skip disabled monitors (no reported mode info).
             if not parts:
                 continue
 
@@ -117,41 +109,23 @@ class X11Monitor(BaseMonitor):
             width, height = res_info.pop(0).split("x")
             origin_x, origin_y = res_info
 
-            # Convert values to integers and create a rectangle using them.
+            # Convert values to integers and create a rectangle object
+            # representing the monitor's dimensions and relative position.
             width, height = int(width), int(height)
             origin_x, origin_y = int(origin_x), int(origin_y)
             dx = width - origin_x
             dy = height - origin_y
             rectangle = Rectangle(origin_x, origin_y, dx, dy)
 
-            # Check if this monitor is already in the list.
-            if name in monitor_names:
-                # Replace the monitor's rectangle if it has changed.
-                index = monitor_names.index(name)
-                monitor = monitors[index]
-                if rectangle != monitor._rectangle:
-                    monitor.rectangle = rectangle
-
-                # Ensure that the primary monitor is first.
-                if primary:
-                    monitors.pop(index)
-                    monitors.insert(0, monitor)
+            # Get a new or updated monitor object and add it to the list.
+            monitor = cls.get_monitor(name, rectangle)
+            if primary:
+                monitors.insert(0, monitor)
             else:
-                # Add a new monitor object to the list, ensuring that the
-                # primary monitor is first.
-                new_monitor = cls(name, rectangle)
-                if primary:
-                    monitors.insert(0, new_monitor)
-                else:
-                    monitors.append(new_monitor)
+                monitors.append(monitor)
 
-            # Keep track of each monitor name.
-            new_monitor_names.append(name)
-
-        # Remove any monitors whose names weren't found.
-        for monitor in tuple(monitors):
-            if monitor.name not in new_monitor_names:
-                monitors.remove(monitor)
+        # Return the list of monitors.
+        return monitors
 
     #-----------------------------------------------------------------------
     # Methods that control attribute access.
@@ -166,8 +140,3 @@ class X11Monitor(BaseMonitor):
     name = property(fget=lambda self: self._name,
                     fset=_set_name,
                     doc="Protected access to name attribute.")
-
-
-# Enumerate monitors and build Dragonfly's monitor list when this
-# module is loaded.
-X11Monitor.update_monitors_list()

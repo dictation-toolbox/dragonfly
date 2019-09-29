@@ -24,15 +24,8 @@ from .base_monitor import BaseMonitor
 from .rectangle import Rectangle
 
 
-#---------------------------------------------------------------------------
-# List of monitors that will be filled when this module is loaded and
-# updated on calls to `Monitor.update_monitors_list`.
-
-monitors = []
-
-
 #===========================================================================
-# Monitor class for storing info about single display monitor.
+# Monitor class for storing info about a single display monitor.
 
 class Win32Monitor(BaseMonitor):
     """
@@ -40,45 +33,24 @@ class Win32Monitor(BaseMonitor):
     """
 
     #-----------------------------------------------------------------------
-    # Methods for initialization and introspection.
+    # Class methods to create new Monitor objects.
 
     @classmethod
-    def update_monitors_list(cls):
-        # Get an updated list of monitor information and the handles of
-        # monitors in the list at the moment.
-        updated_monitors = win32api.EnumDisplayMonitors()
-        monitor_handles = [m.handle for m in monitors]
+    def get_all_monitors(cls):
+        # Get an updated list of monitors.
+        monitors = []
+        for py_handle, _, rectangle in win32api.EnumDisplayMonitors():
+            # Get the monitor handle.
+            handle = py_handle.handle
 
-        # Update the list with any new or changed monitors.
-        for h1, _, rectangle in updated_monitors:
-            handle = h1.handle
+            # Create a rectangle object representing the monitor's
+            # dimensions and relative position.
             top_left_x, top_left_y, bottom_right_x, bottom_right_y = rectangle
             dx = bottom_right_x - top_left_x
             dy = bottom_right_y - top_left_y
+            rectangle = Rectangle(top_left_x, top_left_y, dx, dy)
 
-            # Check if the monitors list already contains this monitor.
-            if handle in monitor_handles:
-                # Replace the rectangle for the monitor if it has changed.
-                i = monitor_handles.index(handle)
-                m = monitors[i]
-                r = Rectangle(top_left_x, top_left_y, dx, dy)
-                if r != m._rectangle:
-                    cls._log.debug("Setting %s.rectangle to %s"
-                                       % (m, r))
-                    m.rectangle = r
-            else:
-                # Add the new monitor to the list.
-                m = cls(handle, Rectangle(top_left_x, top_left_y, dx, dy))
-                cls._log.debug("Adding %s to monitors list" % m)
-                monitors.append(m)
+            # Get a new or updated monitor object and add it to the list.
+            monitors.append(cls.get_monitor(handle, rectangle))
 
-        # Remove any monitors that aren't in the updated list.
-        monitor_handles = [h1.handle for h1, _, _ in updated_monitors]
-        for m in list(monitors):
-            if m.handle not in monitor_handles:
-                cls._log.debug("Removing %s from monitors list" % m)
-                monitors.remove(m)
-
-# Enumerate monitors and build Dragonfly's monitor list when this
-# module is loaded. This should be done for concrete Monitor classes.
-Win32Monitor.update_monitors_list()
+        return monitors
