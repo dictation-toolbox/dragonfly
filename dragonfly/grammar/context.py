@@ -127,6 +127,9 @@ class Context(object):
     def __str__(self):
         return "%s(%s)" % (self.__class__.__name__, self._str)
 
+    def __repr__(self):
+        return str(self)
+
     def copy(self):
         return copy.deepcopy(self)
 

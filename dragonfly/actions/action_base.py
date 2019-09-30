@@ -64,6 +64,9 @@ class ActionBase(object):
     def __unicode__(self):
         return u"%s(%s)" % (self.__class__.__name__, self._str)
 
+    def __repr__(self):
+        return str(self)
+
     def __add__(self, other):
         return ActionSeries(self, other)
 

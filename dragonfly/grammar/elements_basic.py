@@ -101,6 +101,9 @@ class ElementBase(object):
         else:           name_str = ""
         return "%s(...%s)" % (self.__class__.__name__, name_str)
 
+    def __repr__(self):
+        return str(self)
+
     def _get_children(self):
         """
             Returns an iterable of this element's children.
@@ -1012,7 +1015,7 @@ class Modifier(Alternative):
             # Recognises an integer, returns the integer plus one
             Modifier(IntegerRef("plus1", 1, 20), lambda n: n+1)
             # Recognises a series of integers, returns them separated by commas as a string
-            Modifier(Repetition(IntegerRef("", 0, 10), min=1, max=5, name="num_seq"), 
+            Modifier(Repetition(IntegerRef("", 0, 10), min=1, max=5, name="num_seq"),
                 lambda r: ", ".join(map(str, r))),
 
     """

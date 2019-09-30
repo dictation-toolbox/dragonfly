@@ -107,6 +107,9 @@ class Clipboard(BaseClipboard):
     def __str__(self):
         return "%s(%s)" % (self.__class__.__name__, self._content)
 
+    def __repr__(self):
+        return str(self)
+
     def copy_from_system(self, clear=False):
         """
             Copy the system clipboard contents into this instance.

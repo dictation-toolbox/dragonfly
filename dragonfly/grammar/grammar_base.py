@@ -101,6 +101,9 @@ class Grammar(object):
     def __str__(self):
         return "%s(%s)" % (self.__class__.__name__, self._name)
 
+    def __repr__(self):
+        return str(self)
+
     name = property(lambda self: self._name,
                     doc="A grammar's name.")
 

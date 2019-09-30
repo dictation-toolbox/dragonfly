@@ -122,6 +122,9 @@ class BaseWindow(object):
         args = list(self._names)
         return "%s(%s)" % (self.__class__.__name__, ", ".join(args))
 
+    def __repr__(self):
+        return str(self)
+
     #-----------------------------------------------------------------------
     # Methods that control attribute access.
 

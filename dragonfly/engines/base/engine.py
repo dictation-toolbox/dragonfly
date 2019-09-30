@@ -83,6 +83,9 @@ class EngineBase(object):
     def __str__(self):
         return "%s()" % self.__class__.__name__
 
+    def __repr__(self):
+        return str(self)
+
     @property
     def name(self):
         """ The human-readable name of this engine. """
