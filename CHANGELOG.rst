@@ -11,6 +11,21 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add optional --delay argument to Dragonfly's test command (CLI).
+
+Changed
+~~~~~~~
+* Add pyobjc as a required package on Mac OS (for AppKit).
+* Make the Monitor class and list work on X11 (Linux) & Mac OS.
+* Make the Mouse action work on X11 (Linux) & Mac OS.
+* Move 3 monitor-related methods from Win32Window to BaseWindow.
+
+
 0.17.0_ - 2019-09-12
 --------------------
 
