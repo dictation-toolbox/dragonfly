@@ -257,12 +257,12 @@ class AudioStore(object):
         self.blocks.append(block)
 
     def finalize(self, text, grammar_name, rule_name, likelihood=None):
-        info = [self.current_audio_data, grammar_name, rule_name, text, likelihood, False]
+        entry = AudioStoreEntry(self.current_audio_data, grammar_name, rule_name, text, likelihood, False)
         if self.deque is not None:
             if len(self.deque) == self.deque.maxlen:
-                self.save(-1)  # Save oldest
-            self.deque.appendleft(info)
-        # if self.auto_save_predicate_func and self.auto_save_predicate_func(*info):
+                self.save(-1)  # Save oldest, which is about to be evicted
+            self.deque.appendleft(entry)
+        # if self.auto_save_predicate_func and self.auto_save_predicate_func(*entry):
         #     self.save(0)
         self.blocks = []
 
@@ -276,18 +276,22 @@ class AudioStore(object):
             return
 
         filename = os.path.join(self.save_dir, "retain_%s.wav" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f"))
-        audio, grammar_name, rule_name, text, likelihood, misrecognition = self.deque[index]
-        self.audio_obj.write_wav(filename, audio)
+        entry = self.deque[index]
+        self.audio_obj.write_wav(filename, entry.audio)
         with open(os.path.join(self.save_dir, "retain.tsv"), 'a', encoding='utf-8') as tsv_file:
             tsv_file.write(u'\t'.join([
                     filename,
-                    text_type(self.audio_obj.get_wav_length_s(audio)),
-                    grammar_name,
-                    rule_name,
-                    text,
-                    text_type(likelihood),
-                    text_type(misrecognition),
+                    text_type(self.audio_obj.get_wav_length_s(entry.audio)),
+                    entry.grammar_name,
+                    entry.rule_name,
+                    entry.text,
+                    text_type(entry.likelihood),
+                    text_type(entry.misrecognition),
                 ]) + '\n')
+
+    def save_all(self):
+        for i in reversed(range(len(self.deque))):
+            self.save(i)
 
     def __getitem__(self, key):
         return self.deque[key]
@@ -297,3 +301,17 @@ class AudioStore(object):
         return True
     def __nonzero__(self):
         return True
+
+class AudioStoreEntry(object):
+    __slots__ = ('audio', 'grammar_name', 'rule_name', 'text', 'likelihood', 'misrecognition')
+
+    def __init__(self, audio, grammar_name, rule_name, text, likelihood, misrecognition):
+        self.audio = audio
+        self.grammar_name = grammar_name
+        self.rule_name = rule_name
+        self.text = text
+        self.likelihood = likelihood
+        self.misrecognition = misrecognition
+
+    def set(self, key, value):
+        setattr(self, key, value)
