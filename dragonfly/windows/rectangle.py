@@ -44,7 +44,7 @@ class Rectangle(Point):
     def __copy__(self):
         return copy.deepcopy(self)
 
-    def __str__(self):
+    def __repr__(self):
         return "%s(%.1f, %.1f, %.1f, %.1f)" \
             % (self.__class__.__name__, self.x, self.y, self.dx, self.dy)
 

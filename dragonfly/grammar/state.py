@@ -50,7 +50,7 @@ class State(object):
         self.initialize_decoding()
         self._previous_index = None
 
-    def __str__(self):
+    def __repr__(self):
         if PY2:
             return self.__unicode__().encode(getpreferredencoding())
         else:
@@ -226,7 +226,7 @@ class Node(object):
         self.engine = engine
         self.children = []
 
-    def __str__(self):
+    def __repr__(self):
         return "Node: %s, %s" % (self.actor, self.words())
 
     def words(self):

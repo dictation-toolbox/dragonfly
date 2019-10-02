@@ -41,7 +41,7 @@ class Point(object):
     def copy(self):     return Point(x=self._x, y=self._y)
     def __copy__(self): return self.copy()
 
-    def __str__(self):
+    def __repr__(self):
         return "%s(%.2f,%.2f)" % (self.__class__.__name__, self._x, self._y)
 
     def __eq__(self, other):

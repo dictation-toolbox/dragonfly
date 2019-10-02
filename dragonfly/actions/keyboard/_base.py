@@ -54,7 +54,7 @@ class Typeable(object):
         self._name = name
         self._is_text = is_text
 
-    def __str__(self):
+    def __repr__(self):
         """Return information useful for debugging."""
         return ("%s(%s)" % (self.__class__.__name__, self._name) +
                 repr(self.events()))

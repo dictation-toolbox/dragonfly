@@ -40,7 +40,7 @@ class CommandModule(object):
         self._namespace = None
         self._loaded = False
 
-    def __str__(self):
+    def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__,
                            os.path.basename(self._path))
 

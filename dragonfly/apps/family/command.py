@@ -53,7 +53,7 @@ class CommandBase(object):
     def __init__(self):
         pass
 
-    def __str__(self):
+    def __repr__(self):
         return "%s()" % (self.__class__.__name__)
 
     @property
@@ -84,7 +84,7 @@ class CompoundCommand(CommandBase):
         self._element = Compound(spec, extras=extras)
         CommandBase.__init__(self)
 
-    def __str__(self):
+    def __repr__(self):
         args = self._spec
         return "%s(%s)" % (self.__class__.__name__, args)
 

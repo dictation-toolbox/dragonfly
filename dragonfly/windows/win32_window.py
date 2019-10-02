@@ -110,7 +110,7 @@ class Win32Window(BaseWindow):
     def __init__(self, handle):
         super(Win32Window, self).__init__(id=handle)
 
-    def __str__(self):
+    def __repr__(self):
         args = ["handle=%d" % self.handle] + list(self._names)
         return "%s(%s)" % (self.__class__.__name__, ", ".join(args))
 

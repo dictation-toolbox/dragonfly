@@ -67,7 +67,7 @@ class Integer(Alternative):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         arguments = []
         if self.name is not None:
             arguments = ["%r" % self.name]

@@ -62,7 +62,7 @@ class Digits(Repetition):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         arguments = "%d-%d" % (self._min, self._max)
         if self.name is not None:
             arguments = "'%s', %s" % (self.name, arguments)
