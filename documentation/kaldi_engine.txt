@@ -34,6 +34,7 @@ affiliated with the dragonfly project itself).
 * `Cross-platform`_
 * `User Lexicon`_
 * `Grammar/Rule Weights`_
+* `Retaining Audio and Recognition Metadata`_
 * `Alternative/Cloud Dictation`_
 
 
@@ -283,10 +284,10 @@ simple and whitespace-based::
   cromulent k r A m j V l V n t
   embiggen I m b I g V n
 
-**Note:** Currently, adding words only accepts pronunciations using the
-`"CMU"/"ARPABET" <https://en.wikipedia.org/wiki/ARPABET>`_ phone set
-(with or without stress), but the model and ``user_lexicon.txt`` file
-store pronunciations using `"X-SAMPA"
+**Note on Phones:** Currently, adding words only accepts pronunciations
+using the `"CMU"/"ARPABET" <https://en.wikipedia.org/wiki/ARPABET>`_
+phone set (with or without stress), but the model and
+``user_lexicon.txt`` file store pronunciations using `"X-SAMPA"
 <https://en.wikipedia.org/wiki/X-SAMPA>`_ phone set.
 
 To empty your user lexicon, you can simply delete ``user_lexicon.txt``,
@@ -294,16 +295,35 @@ or run::
 
   python -m kaldi_active_grammar reset_user_lexicon
 
-**Note:** When changing models, you can (and probably should) copy your
-``user_lexicon.txt`` file from your old model directory to the new one.
-This will let you keep your additions.
+**Preserving Your User Lexicon:** When changing models, you can (and
+probably should) copy your ``user_lexicon.txt`` file from your old model
+directory to the new one. This will let you keep your additions.
 
-**Note:** New pronunciations for existing words already in the dictation
-language model will not be recognized during dictation elements
-specifically until the dictation model is recompiled. Entirely new words
-added to the user lexicon will not be recognized during dictation
-elements specifically at all currently. Please let me know if this is a
-significant problem for you.
+User Lexicon and Dictation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**New pronunciations for existing words that are already in the
+dictation language model** will not be recognized during dictation
+elements specifically until the dictation model is recompiled.
+Recompilation is quite time consuming (on the order of 15 minutes), but
+can be performed by running::
+
+  python -m kaldi_active_grammar compile_dictation_graph -m kaldi_model_zamia
+
+**Entirely new words added to the user lexicon** will not be recognized
+during dictation elements specifically at all currently.
+
+**However**, you can achieve a similar result for both of these
+weaknesses with the following: create a rule that recognizes a
+repetition of alternates between normal dictation and a special rule
+that recognizes all of your special terminology. An example of this can
+be seen in `this dictation grammar
+<https://github.com/daanzu/kaldi-grammar-simple/blob/master/_dictation.py>`_.
+This technique can also help mitigate dictation **recognizing the wrong
+of similar sounding words** by emphasizing the word you want to be
+recognized, possibly with the addition of a weight parameter.
+
+Future development work includes improving on these issues.
 
 
 Grammar/Rule Weights
@@ -326,6 +346,17 @@ recognized then if the weights were equal. Similarly for ``1`` and
 
 The weight of a grammar is effectively propagated equally to its child
 rules, on top of their own weights.
+
+
+Retaining Audio and Recognition Metadata
+----------------------------------------------------------------------------
+
+You can optionally enable retention of the audio and metadata about the
+recognition, using the ``retain_dir`` engine parameter. You can also
+mark the previous recognition as incorrect in the metadata with a rule
+containing::
+
+  "action whoops": Function(lambda: engines.get_engine().audio_store[0].set('misrecognition', True))
 
 
 Alternative/Cloud Dictation
