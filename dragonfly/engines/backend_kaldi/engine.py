@@ -104,6 +104,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler = None
         self._decoder = None
         self._audio = None
+        self.audio_store = None
         self._recognition_observer_manager = KaldiRecObsManager(self)
         self._timer_manager = DelegateTimerManager(0.02, self)
 
@@ -147,6 +148,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if self._audio:
             self._audio.destroy()
             self._audio = None
+            self._audio_iter = None
+            self.audio_store = None
         self._compiler = None
         self._decoder = None
 
