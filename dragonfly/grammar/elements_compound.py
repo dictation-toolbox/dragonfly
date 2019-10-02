@@ -288,7 +288,7 @@ class Compound(elements_.Alternative):
         elements_.Alternative.__init__(self, (element,), name=name,
                                        default=default)
 
-    def __str__(self):
+    def __repr__(self):
         arguments = ["%r" % self._spec]
         if self.name:
             arguments.append("name=%r" % self.name)

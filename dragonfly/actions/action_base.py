@@ -55,7 +55,7 @@ class ActionBase(object):
     def __init__(self):
         self._str = ""
 
-    def __str__(self):
+    def __repr__(self):
         if PY2:
             return self.__unicode__().encode(getpreferredencoding())
         else:
@@ -63,9 +63,6 @@ class ActionBase(object):
 
     def __unicode__(self):
         return u"%s(%s)" % (self.__class__.__name__, self._str)
-
-    def __repr__(self):
-        return str(self)
 
     def __add__(self, other):
         return ActionSeries(self, other)
