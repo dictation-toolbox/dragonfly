@@ -45,14 +45,20 @@ class MicAudio(object):
     BLOCKS_PER_SECOND = 50
 
     def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None):
+        self.callback = callback if callback is not None else lambda in_data: self.buffer_queue.put(in_data, block=False)
+        self.flush_queue = flush_queue
+        self.input_device_index = input_device_index
+
+        self.sample_rate = self.RATE
+        self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.block_duration_ms))
+        self.pa = pyaudio.PyAudio()
+        self._connect(start=start)
+
+    def _connect(self, start=None):
+        callback = self.callback
         def proxy_callback(in_data, frame_count, time_info, status):
             callback(in_data)
             return (None, pyaudio.paContinue)
-        if callback is None: callback = lambda in_data: self.buffer_queue.put(in_data, block=False)
-        self.sample_rate = self.RATE
-        self.flush_queue = flush_queue
-        self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.block_duration_ms))
-        self.pa = pyaudio.PyAudio()
         self.stream = self.pa.open(
             format=self.FORMAT,
             channels=self.CHANNELS,
@@ -60,7 +66,7 @@ class MicAudio(object):
             input=True,
             frames_per_buffer=self.block_size,
             stream_callback=proxy_callback,
-            input_device_index=input_device_index,
+            input_device_index=self.input_device_index,
             start=bool(start),
         )
         self.active = True
@@ -75,15 +81,16 @@ class MicAudio(object):
     block_size = property(lambda self: int(self.sample_rate / float(self.BLOCKS_PER_SECOND)), doc="Block size in number of samples")
     block_duration_ms = property(lambda self: int(1000 * self.block_size // self.sample_rate), doc="Block duration in milliseconds")
 
+    def reconnect(self):
+        self.stream.stop_stream()
+        self.stream.close()
+        self._connect(start=True)
+
     def start(self):
         self.stream.start_stream()
 
     def stop(self):
         self.stream.stop_stream()
-
-    def restart(self):
-        self.stream.stop_stream()
-        self.stream.start_stream()
 
     def read(self, nowait=False):
         """Return a block of audio data. If nowait==False, waits for a block if necessary; else, returns False immediately if no block is available."""
@@ -178,8 +185,8 @@ class VADAudio(MicAudio):
         num_padding_start_blocks = max(1, int((padding_start_ms / ratio) // self.block_duration_ms))
         num_padding_end_blocks = max(1, int((padding_end_ms / ratio) // self.block_duration_ms))
         num_complex_padding_end_blocks = max(1, int(((complex_padding_end_ms or padding_end_ms) / ratio) // self.block_duration_ms))
-        audio_restart_threshold_blocks = 5
-        audio_restart_threshold_time = 50 * self.block_duration_ms / 1000
+        audio_reconnect_threshold_blocks = 5
+        audio_reconnect_threshold_time = 50 * self.block_duration_ms / 1000
         _log.debug("%s: vad_collector: num_padding_start_blocks=%s num_padding_end_blocks=%s num_complex_padding_end_blocks=%s",
             self, num_padding_start_blocks, num_padding_end_blocks, num_complex_padding_end_blocks)
 
@@ -195,9 +202,9 @@ class VADAudio(MicAudio):
         for block in blocks:
             if block is False or block is None:
                 num_empty_blocks += 1
-                if (num_empty_blocks >= audio_restart_threshold_blocks) and (time.time() - last_good_block_time >= audio_restart_threshold_time):
-                    _log.warning("%s: no good block received recently, so restarting audio")
-                    self.restart()
+                if (num_empty_blocks >= audio_reconnect_threshold_blocks) and (time.time() - last_good_block_time >= audio_reconnect_threshold_time):
+                    _log.warning("%s: no good block received recently, so reconnecting audio")
+                    self.reconnect()
                     num_empty_blocks = 0
                     last_good_block_time = time.time()
                 in_complex_phrase = yield block
