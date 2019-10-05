@@ -255,6 +255,8 @@ class NatlinkEngine(EngineBase):
                       0x040a: ("es", "Spanish"),
                       0x0809: ("en", "UKEnglish"),
                       0x0409: ("en", "USEnglish"),
+                      0xf809: ("en", "CAEnglish"),
+
                      }
 
 #---------------------------------------------------------------------------
