@@ -218,7 +218,7 @@ class Magnitude(Compound):
         self._rem = remainder
         Compound.__init__(self, spec, extras=[multiplier, remainder], name=name)
 
-    def __str__(self):
+    def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, self._factor)
 
     def value(self, node):

@@ -118,7 +118,7 @@ class BaseWindow(object):
         self.id = id
         self._names = set()
 
-    def __str__(self):
+    def __repr__(self):
         args = list(self._names)
         return "%s(%s)" % (self.__class__.__name__, ", ".join(args))
 

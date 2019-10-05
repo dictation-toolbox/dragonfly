@@ -38,9 +38,6 @@ class Identifier(object):
     def __init__(self, name):
         self.name = name
 
-    def __str__(self):
-        return "Identifier(%r)" % self.name
-
     def __repr__(self):
         return "Identifier(%r)" % self.name
 
@@ -60,7 +57,7 @@ class Argument(object):
         self.name = name
         self.value = value
 
-    def __str__(self):
+    def __repr__(self):
         return "Argument(%r, %r)" % (self.name, self.value)
 
     def __ne__(self, other):
@@ -79,12 +76,9 @@ class Call(object):
         self.function = function
         self.arguments = arguments
 
-    def __str__(self):
+    def __repr__(self):
         args = [str(a) for a in self.arguments]
         return "Call(f=%r, args=(%s))" % (self.function, ", ".join(args))
-
-    def __repr__(self):
-        return self.__str__()
 
     def __ne__(self, other):
         return not (self == other)

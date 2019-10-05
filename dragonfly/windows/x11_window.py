@@ -163,7 +163,7 @@ class X11Window(BaseWindow):
         self._pid = -1  # initialized later if required
         self._executable = -1
 
-    def __str__(self):
+    def __repr__(self):
         args = ["id=%d" % self._id] + list(self._names)
         return "%s(%s)" % (self.__class__.__name__, ", ".join(args))
 

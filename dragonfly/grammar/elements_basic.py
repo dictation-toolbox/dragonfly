@@ -96,7 +96,7 @@ class ElementBase(object):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         if self.name:   name_str = ", name=%r" % self.name
         else:           name_str = ""
         return "%s(...%s)" % (self.__class__.__name__, name_str)
@@ -687,7 +687,7 @@ class Literal(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self.words)
 
     words = property(lambda self: self._words)
@@ -749,9 +749,9 @@ class RuleRef(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         if not hasattr(self, "_rule"):
-            return ElementBase.__str__(self)
+            return ElementBase.__repr__(self)
         return '%s(%s)' % (self.__class__.__name__, self._rule.name)
 
     rule = property(lambda self: self._rule)
@@ -808,7 +808,7 @@ class ListRef(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         arguments = []
         if self._list != None:
             arguments.append(repr(self._list.name))
@@ -942,7 +942,7 @@ class Dictation(ElementBase):
         self._format_words = format
         self._string_methods = []
 
-    def __str__(self):
+    def __repr__(self):
         if self.name:
             return "%s(%r)" % (self.__class__.__name__, self.name)
         else:
@@ -1012,7 +1012,7 @@ class Modifier(Alternative):
             # Recognises an integer, returns the integer plus one
             Modifier(IntegerRef("plus1", 1, 20), lambda n: n+1)
             # Recognises a series of integers, returns them separated by commas as a string
-            Modifier(Repetition(IntegerRef("", 0, 10), min=1, max=5, name="num_seq"), 
+            Modifier(Repetition(IntegerRef("", 0, 10), min=1, max=5, name="num_seq"),
                 lambda r: ", ".join(map(str, r))),
 
     """

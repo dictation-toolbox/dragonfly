@@ -65,7 +65,7 @@ class TextQuery(object):
         self.end_relative_phrase = end_relative_phrase
         """The phrase to match before or after at the end."""
 
-    def __str__(self):
+    def __repr__(self):
         return str(dict([(k, v) for (k, v) in self.__dict__.items() if v]))
 
 

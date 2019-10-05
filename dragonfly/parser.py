@@ -107,7 +107,7 @@ class State(object):
         self._stack = []
         self._previous_index = None
 
-    def __str__(self):
+    def __repr__(self):
         return self.position_string()
 
     #-----------------------------------------------------------------------
@@ -289,7 +289,7 @@ class Node(object):
         self.success_value = value
         self.children = []
 
-    def __str__(self):
+    def __repr__(self):
         if isinstance(self.data, binary_type):
             data = self.data.decode(locale.getpreferredencoding())
         else:
@@ -359,7 +359,7 @@ class ParserElementBase(object):
         else:
             return "%s(%s)" % (self.__class__.__name__, argument)
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("...")
 
     name = property(lambda self: self._name,
@@ -393,7 +393,7 @@ class Sequence(ParserElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("%d children" % len(self._children))
 
     def _get_children(self):
@@ -465,7 +465,7 @@ class Repetition(ParserElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("")
 
     def _get_children(self):
@@ -530,7 +530,7 @@ class Alternative(ParserElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("%d children" % len(self._children))
 
     def _get_children(self):
@@ -592,7 +592,7 @@ class Optional(ParserElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("")
 
     def _get_children(self):
@@ -671,7 +671,7 @@ class String(ParserElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("%s" % self._string)
 
     #-----------------------------------------------------------------------
@@ -708,7 +708,7 @@ class CharacterSeries(ParserElementBase):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("%s" % self._set)
 
     #-----------------------------------------------------------------------
@@ -769,7 +769,7 @@ class Choice(Alternative):
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("%d choices" % len(self._choice_pairs))
 
     #-----------------------------------------------------------------------
@@ -791,7 +791,7 @@ class Whitespace(CharacterSeries):
         set = string.whitespace
         CharacterSeries.__init__(self, set, optional=optional, name=name)
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("")
 
 
@@ -803,7 +803,7 @@ class Letters(CharacterSeries):
         pattern = re.compile(r"\w", re.UNICODE)
         CharacterSeries.__init__(self, None, name=name, pattern=pattern)
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("")
 
     def char_matches(self, c):
@@ -821,7 +821,7 @@ class Alphanumerics(CharacterSeries):
         pattern = re.compile(r"\w", re.UNICODE)
         CharacterSeries.__init__(self, None, name=name, pattern=pattern)
 
-    def __str__(self):
+    def __repr__(self):
         return self._str("")
 
 

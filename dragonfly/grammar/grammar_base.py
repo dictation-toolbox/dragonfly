@@ -98,7 +98,7 @@ class Grammar(object):
     # ----------------------------------------------------------------------
     # Methods for runtime introspection.
 
-    def __str__(self):
+    def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, self._name)
 
     name = property(lambda self: self._name,

@@ -20,7 +20,7 @@ class StateBase(object):
         self._command_chain_rules = {}
         self._recursing_transitions = False
 
-    def __str__(self):
+    def __repr__(self):
         return "%s(name=%s)" % (self.__class__.__name__, self._name)
 
     #-----------------------------------------------------------------------
@@ -167,7 +167,7 @@ class WindowState(StateBase):
         self._title       = title
         self._context     = AppContext(executable=executable, title=title)
 
-    def __str__(self):
+    def __repr__(self):
         args = []
         if self._executable:  args.append(self._executable)
         if self._title:       args.append(self._title)

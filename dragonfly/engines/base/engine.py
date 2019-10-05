@@ -80,7 +80,7 @@ class EngineBase(object):
 #        except:
 #            pass
 
-    def __str__(self):
+    def __repr__(self):
         return "%s()" % self.__class__.__name__
 
     @property

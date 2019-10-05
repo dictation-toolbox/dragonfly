@@ -101,7 +101,7 @@ class Clipboard(BaseClipboard):
         if not text is None:
             self._contents[self.format_unicode] = text_type(text)
 
-    def __str__(self):
+    def __repr__(self):
         arguments = []
         skip = []
         if self.format_unicode in self._contents:

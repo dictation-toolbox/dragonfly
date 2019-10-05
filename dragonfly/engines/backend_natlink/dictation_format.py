@@ -68,7 +68,7 @@ class FlagContainer(object):
     def __unicode__(self):
         return u"%s(%s)" % (self.__class__.__name__, self.flags_string())
 
-    def __str__(self):
+    def __repr__(self):
         return self.__unicode__().encode(getpreferredencoding())
 
     def __getattr__(self, name):
@@ -190,7 +190,7 @@ class Word(object):
             info.append(flags_string)
         return u"%s(%s)" % (self.__class__.__name__, ", ".join(info))
 
-    def __str__(self):
+    def __repr__(self):
         return self.__unicode__().encode(getpreferredencoding())
 
 

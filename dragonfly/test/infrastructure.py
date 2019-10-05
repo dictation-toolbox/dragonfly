@@ -37,10 +37,8 @@ class Unique(object):
     def __init__(self, name):
         self._name = name
 
-    def __str__(self):
+    def __repr__(self):
         return self._name
-
-    __repr__ = __str__
 
 
 RecognitionFailure = Unique("RecognitionFailure")
