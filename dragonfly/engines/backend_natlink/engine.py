@@ -228,16 +228,27 @@ class NatlinkEngine(EngineBase):
             self.natlink.setMicState(mic_state)
 
     def _get_language(self):
+        # Get a Windows language identifier from Dragon.
         import win32com.client
         app = win32com.client.Dispatch("Dragon.DgnEngineControl")
         language = app.SpeakerLanguage("")
-        try:
-            tag = self._language_tags[language]
-            tag = tag[0]
-        except KeyError:
-            self._log.error("Unknown speaker language: 0x%04x" % language)
-            raise GrammarError("Unknown speaker language: 0x%04x" % language)
-        return tag
+
+        # Lookup the language tags.
+        tags = self._language_tags.get(language)
+        if tags:
+            return tags[0]
+
+        # The _language_tags dictionary didn't contain the language, so
+        # get the best match by using the primary language identifier.
+        # This allows us to match unlisted language variants.
+        primary_id = language & 0x00ff
+        for lang_id, (tag, _) in self._language_tags.items():
+            if primary_id == lang_id & 0x00ff:  # Match found.
+                return tag
+
+        # Speaker language wasn't found.
+        self._log.error("Unknown speaker language: 0x%04x" % language)
+        raise GrammarError("Unknown speaker language: 0x%04x" % language)
 
     _language_tags = {
                       0x0c09: ("en", "AustralianEnglish"),
@@ -256,7 +267,6 @@ class NatlinkEngine(EngineBase):
                       0x0809: ("en", "UKEnglish"),
                       0x0409: ("en", "USEnglish"),
                       0xf809: ("en", "CAEnglish"),
-
                      }
 
 #---------------------------------------------------------------------------
