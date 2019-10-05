@@ -70,7 +70,8 @@ class MicAudio(object):
             start=bool(start),
         )
         self.active = True
-        _log.info("streaming audio from microphone: %i sample_rate, %i block_duration_ms", self.sample_rate, self.block_duration_ms)
+        info = self.pa.get_default_input_device_info() if self.input_device_index is None else self.pa.get_device_info_by_index(self.input_device_index)
+        _log.info("streaming audio from '%s': %i sample_rate, %i block_duration_ms", info['name'], self.sample_rate, self.block_duration_ms)
 
     def destroy(self):
         self.stream.stop_stream()
