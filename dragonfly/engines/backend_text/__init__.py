@@ -36,6 +36,8 @@ recognition backends should be returned from the function by default.
 All dragonfly elements and rule classes should be supported. Use all
 uppercase words to mimic input for :class:`Dictation` elements, e.g.
 `"find SOME TEXT"` to match the dragonfly spec `"find <text>"`.
+`executable`, `title`, and `handle` keyword arguments may optionally be
+passed to :meth:`engine.mimic` to simulate a particular foreground window.
 
 Dragonfly's command-line interface can be used to test command modules with
 the text input engine. See the :ref:`CLI page <RefCLI>` for more details.
