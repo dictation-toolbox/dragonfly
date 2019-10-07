@@ -135,7 +135,7 @@ class TextInputEngine(EngineBase):
         # Minor note: this won't work for languages without capitalisation.
         return tuple(map(_map_word, words))
 
-    def mimic(self, words):
+    def mimic(self, words, **kwargs):
         """ Mimic a recognition of the given *words*. """
         # Handle string input.
         if isinstance(words, string_types):
@@ -154,10 +154,18 @@ class TextInputEngine(EngineBase):
 
         # Call process_begin and process_words for all grammar wrappers,
         # stopping early if processing occurred.
-        fg_window = Window.get_foreground()
+
+        w = Window.get_foreground()
+        process_args = {
+            "executable": w.executable,
+            "title": w.title,
+            "handle": w.handle,
+        }
+        process_args.update(kwargs)
+
         processing_occurred = False
         for wrapper in self._grammar_wrappers.values():
-            wrapper.process_begin(fg_window)
+            wrapper.process_begin(**process_args)
             processing_occurred = wrapper.process_words(words_rules)
             if processing_occurred:
                 break
@@ -203,9 +211,8 @@ class GrammarWrapper(object):
         self.engine = engine
         self._observer_manager = observer_manager
 
-    def process_begin(self, fg_window):
-        self.grammar.process_begin(fg_window.executable, fg_window.title,
-                                   fg_window.handle)
+    def process_begin(self, executable, title, handle):
+        self.grammar.process_begin(executable, title, handle)
 
     def process_words(self, words):
         # Return early if the grammar is disabled or if there are no active
