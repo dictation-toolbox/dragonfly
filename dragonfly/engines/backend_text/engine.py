@@ -152,17 +152,17 @@ class TextInputEngine(EngineBase):
         # Generate the input for process_words.
         words_rules = self.generate_words_rules(words)
 
-        # Call process_begin and process_words for all grammar wrappers,
-        # stopping early if processing occurred.
-
         w = Window.get_foreground()
         process_args = {
             "executable": w.executable,
             "title": w.title,
             "handle": w.handle,
         }
+        # Allows optional passing of window attributes to mimic
         process_args.update(kwargs)
 
+        # Call process_begin and process_words for all grammar wrappers,
+        # stopping early if processing occurred.
         processing_occurred = False
         for wrapper in self._grammar_wrappers.values():
             wrapper.process_begin(**process_args)
