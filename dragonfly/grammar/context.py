@@ -266,7 +266,7 @@ class AppContext(Context):
         for key, value in kwargs.items():
             if isinstance(value, string_types):
                 values = [value.lower()]
-            if isinstance(value, list):
+            elif isinstance(value, list):
                 values = [str(v).lower() for v in value]
             elif value is None:
                 values = None
