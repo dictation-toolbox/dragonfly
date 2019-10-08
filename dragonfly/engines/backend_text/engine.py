@@ -164,8 +164,9 @@ class TextInputEngine(EngineBase):
         # Call process_begin and process_words for all grammar wrappers,
         # stopping early if processing occurred.
         processing_occurred = False
-        for wrapper in self._grammar_wrappers.values():
+        for wrapper in self._grammar_wrappers.copy().values():
             wrapper.process_begin(**process_args)
+        for wrapper in self._grammar_wrappers.copy().values():
             processing_occurred = wrapper.process_words(words_rules)
             if processing_occurred:
                 break
