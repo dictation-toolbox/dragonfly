@@ -92,8 +92,8 @@ class CompoundRule(Rule):
     spec     = None
     extras   = ()
     defaults = ()
-    exported = True
     context  = None
+    _default_exported = True
 
     #-----------------------------------------------------------------------
 
@@ -103,8 +103,17 @@ class CompoundRule(Rule):
         if spec     is None: spec     = self.spec
         if extras   is None: extras   = self.extras
         if defaults is None: defaults = self.defaults
-        if exported is None: exported = self.exported
         if context  is None: context  = self.context
+
+        # Complex handling of exported, because of clashing use of the
+        #  exported name at the class level: property & class-value.
+        if exported is not None:
+            pass
+        elif (hasattr(self.__class__, "exported")
+            and not isinstance(self.__class__.exported, property)):
+            exported = self.__class__.exported
+        else:
+            exported = self._default_exported
 
         assert isinstance(name, string_types)
         assert isinstance(spec, string_types)

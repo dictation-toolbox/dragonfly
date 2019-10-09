@@ -247,7 +247,7 @@ class GrammarWrapper(object):
         # recognition and return.
         s = state_.State(words, self.grammar.rule_names, self.engine)
         for r in self.grammar.rules:
-            if not r.active:
+            if not (r.active and r.exported):
                 continue
             s.initialize_decoding()
             for _ in r.decode(s):

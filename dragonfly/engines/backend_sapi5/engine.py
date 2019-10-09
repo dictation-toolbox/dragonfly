@@ -601,7 +601,7 @@ class GrammarWrapper(object):
 
             s = State(results, rule_set, self.engine)
             for r in self.grammar.rules:
-                if not r.active:
+                if not (r.active and r.exported):
                     continue
 
                 s.initialize_decoding()

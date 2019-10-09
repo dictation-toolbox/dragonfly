@@ -319,7 +319,7 @@ class GrammarWrapper(object):
         #  method for processing the recognition and return.
         s = state_.State(words_rules, self.grammar._rule_names, self.engine)
         for r in self.grammar._rules:
-            if not r.active: continue
+            if not (r.active and r.exported): continue
             s.initialize_decoding()
             for result in r.decode(s):
                 if s.finished():
