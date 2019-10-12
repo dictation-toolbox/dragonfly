@@ -42,6 +42,10 @@ from .grammar.context   import Context, AppContext, FuncContext
 from .grammar.list      import ListBase, List, DictList
 from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
                                 PlaybackHistory)
+from .grammar.recobs_callbacks   import (CallbackRecognitionObserver,
+                                         register_beginning_callback,
+                                         register_recognition_callback,
+                                         register_failure_callback)
 
 # --------------------------------------------------------------------------
 
