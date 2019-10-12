@@ -23,27 +23,23 @@ Dictation container for the Kaldi engine.
 
 """
 
-import logging, locale
-
-from six import PY2
-
 from ...grammar.elements_basic import Dictation as BaseDictation
 
 #---------------------------------------------------------------------------
-# Cloud dictation classes -- elements capable of local or cloud dictation.
+# Alternative dictation classes -- elements capable of default or alternative dictation.
 
-class CloudDictation(BaseDictation):
+class AlternativeDictation(BaseDictation):
 
-    cloud_default = True
+    alternative_default = True
 
     def __init__(self, *args, **kwargs):
-        self.cloud = kwargs.pop('cloud', self.cloud_default)
+        self.alternative = kwargs.pop('alternative', self.alternative_default)
         BaseDictation.__init__(self, *args, **kwargs)
 
-class LocalDictation(BaseDictation):
+class DefaultDictation(BaseDictation):
 
-    cloud_default = False
+    alternative_default = False
 
     def __init__(self, *args, **kwargs):
-        self.cloud = kwargs.pop('cloud', self.cloud_default)
+        self.alternative = kwargs.pop('alternative', self.alternative_default)
         BaseDictation.__init__(self, *args, **kwargs)

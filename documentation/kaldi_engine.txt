@@ -33,7 +33,9 @@ affiliated with the dragonfly project itself).
 * `Engine Configuration`_
 * `Cross-platform`_
 * `User Lexicon`_
-* `Cloud Dictation`_
+* `Grammar/Rule Weights`_
+* `Retaining Audio and Recognition Metadata`_
+* `Alternative/Cloud Dictation`_
 
 
 Setup
@@ -48,7 +50,7 @@ Otherwise...
 
 **Requirements:**
 
-* Python 2.7 (3.x support planned); *64-bit required!*
+* Python 2.7 or 3.4+; *64-bit required!*
 * OS: *Linux or Windows*; macOS planned if there is interest
 * Only supports Kaldi left-biphone models, specifically *nnet3 chain* models, with specific modifications
 * ~1GB+ disk space for model plus temporary storage and cache, depending on your grammar complexity
@@ -98,6 +100,8 @@ Under ``apt``-based distributions, you can get them by running::
 
 Once the dependencies and model are installed, you're ready to go!
 
+Getting Started
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **A simple, single-file, standalone demo/example** can be found in the
 `dragonfly/examples/kaldi_demo.py
@@ -138,22 +142,23 @@ Engine Configuration
 
 This engine can be configured by passing (optional) keyword arguments to
 the ``get_engine()`` function, which passes them to the
-:class:`KaldiEngine` constructor (documented below). For example, from
-*kaldi_module_loader_plus.py*:
+:class:`KaldiEngine` constructor (documented below). For example:
 
 .. code:: Python
 
   engine = get_engine("kaldi",
     model_dir='kaldi_model_zamia',
     tmp_dir='kaldi_tmp',
+    input_device_index=None,
+    retain_dir=None,
     vad_aggressiveness=3,
     vad_padding_start_ms=300,
     vad_padding_end_ms=100,
     vad_complex_padding_end_ms=500,
-    input_device_index=None,
     auto_add_to_user_lexicon=True,
     lazy_compilation=True,
-    cloud_dictation=None,
+    invalidate_cache=False,
+    alternative_dictation=None,
     cloud_dictation_lang='en-US',
   )
 
@@ -161,11 +166,20 @@ the ``get_engine()`` function, which passes them to the
 
 **Arguments (all optional):**
 
-* ``model_dir`` (``str``) -- Directory containing model.
+* ``model_dir`` (``str|None``) -- Directory containing model.
 
-* ``tmp_dir`` (``str``) -- Directory to use for temporary storage and
+* ``tmp_dir`` (``str|None``) -- Directory to use for temporary storage and
   cache (used both during execution and between executions but safe to
   delete).
+
+* ``input_device_index`` (``int``) -- Microphone PortAudio input device
+  index: the default of ``None`` chooses the default input device. To see
+  a list your available input devices and their corresponding indexes, call
+  ``get_engine('kaldi').print_mic_list()``
+
+* ``retain_dir`` (``str|None``) -- Retains recognized audio & metadata in the
+  given directory, saving audio to ``retain_[timestamp].wav`` file and
+  metadata to ``retain.tsv``.
 
 * ``vad_aggressiveness`` (``int``) -- Aggressiveness of the Voice Activity
   Detector: an integer between ``0`` and ``3``, where ``0`` is the least
@@ -190,11 +204,6 @@ the ``get_engine()`` function, which passes them to the
   attain longer utterances to take advantage of context to improve recognition
   quality.
 
-* ``input_device_index`` (``int``) -- Microphone PortAudio input device
-  index: the default of ``None`` chooses the default input device. To see
-  a list your available input devices and their corresponding indexes, call
-  ``get_engine('kaldi').print_mic_list()``
-
 * ``auto_add_to_user_lexicon`` (``bool``) -- Enables automatically
   adding unknown words to the `User Lexicon`_. This may make requests to
   the cloud, to predict pronunciations, depending on your installed
@@ -204,8 +213,11 @@ the ``get_engine()`` function, which passes them to the
   compilation, which then allows parallel compilation up to your number
   of cores, for a large speed up loading uncached.
 
-* ``cloud_dictation`` (``str|None``) -- Enables cloud dictation and chooses
-  the provider. Possible values:
+* ``invalidate_cache`` (``bool``) -- Enables invalidating the engine's
+  cache prior to initialization.
+
+* ``alternative_dictation`` (``str|None``) -- Enables alternative
+  dictation and chooses the provider. Possible values:
 
   * ``None`` -- Disabled
   * ``"gcloud"`` -- Google Cloud Speech-to-Text
@@ -213,8 +225,7 @@ the ``get_engine()`` function, which passes them to the
 * ``cloud_dictation_lang`` (``str|None``) -- If you want a cloud
   dictation language other than English, you can specify it here. Valid
   codes for Google Cloud Speech-to-Text are listed on this `page
-  <https://cloud.google.com/speech-to-text/docs/languages>`_. There may be
-  unicode issues currently.
+  <https://cloud.google.com/speech-to-text/docs/languages>`_.
 
 
 Cross-platform
@@ -273,10 +284,10 @@ simple and whitespace-based::
   cromulent k r A m j V l V n t
   embiggen I m b I g V n
 
-**Note:** Currently, adding words only accepts pronunciations using the
-`"CMU"/"ARPABET" <https://en.wikipedia.org/wiki/ARPABET>`_ phone set
-(with or without stress), but the model and ``user_lexicon.txt`` file
-store pronunciations using `"X-SAMPA"
+**Note on Phones:** Currently, adding words only accepts pronunciations
+using the `"CMU"/"ARPABET" <https://en.wikipedia.org/wiki/ARPABET>`_
+phone set (with or without stress), but the model and
+``user_lexicon.txt`` file store pronunciations using `"X-SAMPA"
 <https://en.wikipedia.org/wiki/X-SAMPA>`_ phone set.
 
 To empty your user lexicon, you can simply delete ``user_lexicon.txt``,
@@ -284,22 +295,88 @@ or run::
 
   python -m kaldi_active_grammar reset_user_lexicon
 
-**Note:** When changing models, you can (and probably should) copy your
-``user_lexicon.txt`` file from your old model directory to the new one.
-This will let you keep your additions.
+**Preserving Your User Lexicon:** When changing models, you can (and
+probably should) copy your ``user_lexicon.txt`` file from your old model
+directory to the new one. This will let you keep your additions.
 
-**Note:** New pronunciations for existing words already in the dictation
-language model will not be recognized during dictation elements
-specifically until the dictation model is recompiled. Entirely new words
-added to the user lexicon will not be recognized during dictation
-elements specifically at all currently. Please let me know if this is a
-significant problem for you.
+User Lexicon and Dictation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**New pronunciations for existing words that are already in the
+dictation language model** will not be recognized during dictation
+elements specifically until the dictation model is recompiled.
+Recompilation is quite time consuming (on the order of 15 minutes), but
+can be performed by running::
+
+  python -m kaldi_active_grammar compile_dictation_graph -m kaldi_model_zamia
+
+**Entirely new words added to the user lexicon** will not be recognized
+during dictation elements specifically at all currently.
+
+**However**, you can achieve a similar result for both of these
+weaknesses with the following: create a rule that recognizes a
+repetition of alternates between normal dictation and a special rule
+that recognizes all of your special terminology. An example of this can
+be seen in `this dictation grammar
+<https://github.com/daanzu/kaldi-grammar-simple/blob/master/_dictation.py>`_.
+This technique can also help mitigate dictation **recognizing the wrong
+of similar sounding words** by emphasizing the word you want to be
+recognized, possibly with the addition of a weight parameter.
+
+Future development work includes improving on these issues.
 
 
-Cloud Dictation
+Grammar/Rule Weights
+----------------------------------------------------------------------------
+Grammars and/or rules can have a weight specified, where grammars/rules
+with higher weight value are more likely to be recognized, compared to
+their peers, for an ambiguous recognition. This can be used to adjust
+the probability of them be recognized.
+
+The default weight value is ``1``. Two competing rules with weights of
+``1`` and ``2`` will result in the latter being twice as likely to be
+recognized then if the weights were equal. Similarly for ``1`` and
+``0.5``. An example::
+
+  class WeightExample1Rule(MappingRule):
+      mapping = { "i scream": ActionBase() }
+  class WeightExample2Rule(MappingRule):
+      mapping = { "ice cream": ActionBase() }
+      weight = 2
+
+The weight of a grammar is effectively propagated equally to its child
+rules, on top of their own weights.
+
+
+Retaining Audio and Recognition Metadata
 ----------------------------------------------------------------------------
 
+You can optionally enable retention of the audio and metadata about the
+recognition, using the ``retain_dir`` engine parameter. You can also
+mark the previous recognition as incorrect in the metadata with a rule
+containing::
+
+  "action whoops": Function(lambda: engines.get_engine().audio_store[0].set('misrecognition', True))
+
+
+Alternative/Cloud Dictation
+----------------------------------------------------------------------------
+
+This backend supports optionally using an alternative method of
+recognizing (some or all) dictation, rather than the default Kaldi
+model, which is always used for command recognition. You may want to do
+this for higher dictation accuracy (at the possible cost of higher
+latency or what would otherwise cause lower command accuracy), dictating
+in another language, or some other reason. You can use one of:
+
+* an alternative Kaldi model
+* an alternative local speech recognition engine
+* a cloud speech recognition engine
+
 **Note:** This feature is completely optional and disabled by default!
+
+Cloud Dictation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Although the Kaldi engine has full native/local/offline dictation
 support, and can produce competitive state-of-the-art results with
@@ -340,22 +417,24 @@ an account with me, and I could send you a simple API key to pass as a
 keyword argument just like other normal engine options. Let me know if
 you're interested such a service.
 
-Using Cloud Dictation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-First, you must install the Google Cloud Speech-to-Text client library::
+Prior to use, you must install the Google Cloud Speech-to-Text client library::
 
   pip install google-cloud-speech==0.36.3
 
-To use cloud dictation, you *must both* pass the ``cloud_dictation``
-option *and* use a specialized ``Dictation`` element. The standard
-dragonfly ``Dictation`` does not support cloud dictation. Instead, this
-backend provides two subclasses of it: ``CloudDictation`` and
-``LocalDictation``. These two subclasses both support cloud dictation;
-they differ only in whether they do cloud dictation by default.
+Using Alternative/Cloud Dictation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``CloudDictation`` and ``LocalDictation`` can be used as follows. Assume
-we are defining a variable ``element`` that is used by the code::
+To use alternative dictation, you *must both* pass the
+``alternative_dictation`` option *and* use a specialized ``Dictation``
+element. The standard dragonfly ``Dictation`` does not support
+alternative dictation. Instead, this backend provides two subclasses of
+it: ``AlternativeDictation`` and ``DefaultDictation``. These two subclasses both
+support alternative dictation; they differ only in whether they do
+alternative dictation by default.
+
+``AlternativeDictation`` and ``DefaultDictation`` can be used as
+follows. Assume we are defining a variable ``element`` that is used by
+the code::
 
   class TestDictationRule(MappingRule):
     mapping = { "dictate <text>": Text("%(text)s") }
@@ -363,30 +442,30 @@ we are defining a variable ``element`` that is used by the code::
 
 Examples::
 
-  element = CloudDictation("text")              # cloud dictation
-  element = LocalDictation("text")              # no cloud dictation
-  element = CloudDictation("text", cloud=False) # no cloud dictation
-  element = LocalDictation("text", cloud=True)  # cloud dictation
+  element = AlternativeDictation("text")                    # alternative dictation
+  element = DefaultDictation("text")                        # no alternative dictation
+  element = AlternativeDictation("text", alternative=False) # no alternative dictation
+  element = DefaultDictation("text", alternative=True)      # alternative dictation
 
-  # all CloudDictation instances instantiated after this (in any file!) will default to cloud=False
-  CloudDictation.cloud_default = False
-  element = CloudDictation("text")              # no cloud dictation
-  element = CloudDictation("text", cloud=True)  # cloud dictation
+  # all AlternativeDictation instances instantiated after this (in any file!) will default to alternative=False
+  AlternativeDictation.alternative_default = False
+  element = AlternativeDictation("text")                    # no alternative dictation
+  element = AlternativeDictation("text", alternative=True)  # alternative dictation
 
-  # all LocalDictation instances instantiated after this (in any file!) will default to cloud=True
-  LocalDictation.cloud_default = True
-  element = LocalDictation("text")              # cloud dictation
-  element = LocalDictation("text", cloud=False) # no cloud dictation
+  # all DefaultDictation instances instantiated after this (in any file!) will default to alternative=True
+  DefaultDictation.alternative_default = True
+  element = DefaultDictation("text")                        # alternative dictation
+  element = DefaultDictation("text", alternative=False)     # no alternative dictation
 
-  CloudDictation.cloud_default = True
-  LocalDictation.cloud_default = False
-  # all CloudDictation and LocalDictation instances instantiated after this are back to normal
+  AlternativeDictation.alternative_default = True
+  DefaultDictation.alternative_default = False
+  # all AlternativeDictation and DefaultDictation instances instantiated after this are back to normal
 
 If you want to replace all uses of standard ``Dictation`` in a file::
 
-  from dragonfly.engines.backend_kaldi.dictation import CloudDictation as Dictation
+  from dragonfly.engines.backend_kaldi.dictation import AlternativeDictation as Dictation
   # OR
-  from dragonfly.engines.backend_kaldi.dictation import LocalDictation as Dictation
+  from dragonfly.engines.backend_kaldi.dictation import DefaultDictation as Dictation
 
 
 Limitations & Future Work
@@ -462,7 +541,7 @@ Engine API
 .. autoclass:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
    :members:
 
-.. autoclass:: dragonfly.engines.backend_kaldi.dictation.CloudDictation
+.. autoclass:: dragonfly.engines.backend_kaldi.dictation.AlternativeDictation
    :members:
-.. autoclass:: dragonfly.engines.backend_kaldi.dictation.LocalDictation
+.. autoclass:: dragonfly.engines.backend_kaldi.dictation.DefaultDictation
    :members:

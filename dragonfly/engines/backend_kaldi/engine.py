@@ -24,7 +24,8 @@ Kaldi engine classes
 
 import collections, os, subprocess, threading, time
 
-from six import string_types, integer_types, print_
+from six import integer_types, string_types, print_
+from six.moves import zip
 
 from ..base                     import (EngineBase, EngineError, MimicFailure,
                                         DelegateTimerManager, DelegateTimerManagerInterface, DictationContainerBase)
@@ -34,6 +35,7 @@ from ...grammar.state           import State
 from ...windows                 import Window
 
 try:
+    import kaldi_active_grammar
     from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
     from .compiler                  import KaldiCompiler
     from .audio                     import MicAudio, VADAudio, AudioStore
@@ -56,9 +58,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        vad_aggressiveness=3, vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500, input_device_index=None,
-        auto_add_to_user_lexicon=True, lazy_compilation=True,
-        cloud_dictation=None, cloud_dictation_lang='en-US',
+        input_device_index=None, retain_dir=None, vad_aggressiveness=3,
+        vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500,
+        auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
+        alternative_dictation=None, cloud_dictation_lang='en-US',
         ):
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
@@ -66,24 +69,42 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if not ENGINE_AVAILABLE:
             self._log.error("%s: Failed to import Kaldi engine dependencies. Are they installed?" % self)
             raise EngineError("Failed to import Kaldi engine dependencies.")
+        with open(os.path.join(os.path.dirname(__file__), 'kag_version.txt')) as file:
+            required_kag_version = file.read().strip()
+        # Compatible release version specification (we could use pkg_resources.require, but is it always installed?)
+        required_kag_version_split = required_kag_version.split('.')
+        kag_version = kaldi_active_grammar.__version__
+        kag_version_split = kag_version.split('.')
+        assert len(required_kag_version_split) == len(kag_version_split) == 3
+        if not ((kag_version_split[:-1] == required_kag_version_split[:-1]) and (kag_version_split[-1] >= required_kag_version_split[-1])):
+            self._log.error("%s: Incompatible kaldi_active_grammar version %s! Expected ~= %s!" % (self, kag_version, required_kag_version))
+            self._log.error("See https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
+            raise EngineError("Incompatible kaldi_active_grammar version")
+
+        if not (isinstance(retain_dir, string_types) or (retain_dir is None)):
+            self._log.error("Invalid retain_dir: %r" % retain_dir)
+            retain_dir = None
 
         self._options = dict(
             model_dir = model_dir,
             tmp_dir = tmp_dir,
+            input_device_index = input_device_index,
+            retain_dir = retain_dir,
             vad_aggressiveness = vad_aggressiveness,
             vad_padding_start_ms = vad_padding_start_ms,
             vad_padding_end_ms = vad_padding_end_ms,
             vad_complex_padding_end_ms = vad_complex_padding_end_ms,
-            input_device_index = input_device_index,
             auto_add_to_user_lexicon = auto_add_to_user_lexicon,
             lazy_compilation = lazy_compilation,
-            cloud_dictation = cloud_dictation,
+            invalidate_cache = invalidate_cache,
+            alternative_dictation = alternative_dictation,
             cloud_dictation_lang = cloud_dictation_lang,
         )
 
         self._compiler = None
         self._decoder = None
         self._audio = None
+        self.audio_store = None
         self._recognition_observer_manager = KaldiRecObsManager(self)
         self._timer_manager = DelegateTimerManager(0.02, self)
 
@@ -98,10 +119,11 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
             lazy_compilation=self._options['lazy_compilation'],
-            cloud_dictation=self._options['cloud_dictation'],
+            alternative_dictation=self._options['alternative_dictation'],
             cloud_dictation_lang=self._options['cloud_dictation_lang'],
             )
-        # self._compiler.fst_cache.invalidate()
+        if self._options['invalidate_cache']:
+            self._compiler.fst_cache.invalidate()
 
         top_fst = self._compiler.compile_top_fst()
         dictation_fst_file = self._compiler.dictation_fst_filepath
@@ -115,7 +137,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             padding_end_ms=self._options['vad_padding_end_ms'],
             complex_padding_end_ms=self._options['vad_complex_padding_end_ms'],
             )
-        self.audio_store = AudioStore(self._audio, maxlen=0)
+        self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0), save_dir=self._options['retain_dir'])
 
         self._any_exclusive_grammars = False
         self._in_phrase = False
@@ -123,8 +145,11 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def disconnect(self):
         """ Disconnect from back-end SR engine. """
-        self._audio.destroy()
-        self._audio = None
+        if self._audio:
+            self._audio.destroy()
+            self._audio = None
+            self._audio_iter = None
+            self.audio_store = None
         self._compiler = None
         self._decoder = None
 
@@ -136,7 +161,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar*. """
-        self._log.info("Loading grammar %s..." % grammar.name)
+        self._log.info("Loading grammar %s" % grammar.name)
         if not self._decoder:
             self.connect()
 
@@ -145,13 +170,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         for kaldi_rule in kaldi_rule_by_rule_dict.values():
             kaldi_rule.load(lazy=self._compiler.lazy_compilation)
 
-        self._log.info("...Done loading grammar %s." % grammar.name)
         return wrapper
 
     def _unload_grammar(self, grammar, wrapper):
         """ Unload the given *grammar*. """
         self._log.debug("Unloading grammar %s." % grammar.name)
-        rules = wrapper.kaldi_rule_by_rule_dict.keys()
+        rules = list(wrapper.kaldi_rule_by_rule_dict.keys())
         self._compiler.unload_grammar(grammar, rules, self)
 
     def activate_grammar(self, grammar):
@@ -202,7 +226,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self.prepare_for_recognition()
         kaldi_rule, parsed_output = self._parse_recognition(output, mimic=True)
         if not kaldi_rule:
-            raise MimicFailure("No matching rule found for words %r." % (parsed_output,))
+            raise MimicFailure("No matching rule found for %r." % (output,))
         self._log.debug("End of mimic: rule %s, %r" % (kaldi_rule, output))
 
     def speak(self, text):
@@ -236,6 +260,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         in_complex = False
 
         self._audio.start()
+        self._log.info("Listening...")
         next(self._audio_iter)
 
         try:
@@ -269,14 +294,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
                 else:
                     # End of phrase
-                    self._decoder.decode('', True)
+                    self._decoder.decode(b'', True)
                     output, likelihood = self._decoder.get_output()
                     if not self._ignore_current_phrase:
                         output = self._compiler.untranslate_output(output)
                         kaldi_rule, parsed_output = self._parse_recognition(output)
-                        self._log.debug("End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
+                        self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
                         if self.audio_store and kaldi_rule:
-                            self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name)
+                            self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name, likelihood)
 
                     self._in_phrase = False
                     self._ignore_current_phrase = False
