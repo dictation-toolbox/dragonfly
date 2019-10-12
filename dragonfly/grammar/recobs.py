@@ -19,7 +19,7 @@
 #
 
 """
-Recognition observer base class
+Recognition observer classes
 ============================================================================
 
 """
@@ -36,6 +36,11 @@ from ..engines          import get_engine
 #---------------------------------------------------------------------------
 
 class RecognitionObserver(object):
+    """
+    Recognition observer base class.
+
+    Sub-classes should override one or more of the event methods.
+    """
 
     _log = logging.getLogger("grammar")
 
@@ -49,20 +54,44 @@ class RecognitionObserver(object):
             pass
 
     def register(self):
+        """
+        Register the observer for recognition state events.
+        """
         engine = get_engine()
         engine.register_recognition_observer(self)
 
     def unregister(self):
+        """
+        Unregister the observer for recognition state events.
+        """
         engine = get_engine()
         engine.unregister_recognition_observer(self)
 
     def on_begin(self):
+        """
+        Method called when the observer is registered and speech start is
+        detected.
+        """
         pass
 
     def on_recognition(self, words):
+        """
+        Method called when speech successfully decoded to a grammar rule or
+        to dictation.
+
+        This is called *before* grammar rule processing (i.e.
+        ``Rule.process_recognition()``).
+
+        :param words: recognized words
+        :type words: tuple
+        """
         pass
 
     def on_failure(self):
+        """
+        Method called when speech failed to decode to a grammar rule or to
+        dictation.
+        """
         pass
 
 
@@ -98,9 +127,11 @@ class RecognitionHistory(list, RecognitionObserver):
         return self._complete
 
     def on_begin(self):
+        """"""
         self._complete = False
 
     def on_recognition(self, words):
+        """"""
         self._complete = True
         self.append(self._recognition_to_item(words))
         if self._length:
@@ -108,12 +139,25 @@ class RecognitionHistory(list, RecognitionObserver):
                 self.pop(0)
 
     def _recognition_to_item(self, words):
+        """"""
         return words
 
 
 #---------------------------------------------------------------------------
 
 class PlaybackHistory(RecognitionHistory):
+    """
+        Storage class for playing back recent recognitions via the
+        :class:`Playback` action.
+
+        Instances of this class monitor recognitions and store them
+        internally.  This class derives from the built in *list* type
+        and can be accessed as if it were a normal *list* containing
+        :class:`Playback` actions for recent recognitions.  Note that an
+        instance's contents are updated automatically as recognitions are
+        received.
+
+    """
 
     def __init__(self, length=10):
         RecognitionHistory.__init__(self, length)
