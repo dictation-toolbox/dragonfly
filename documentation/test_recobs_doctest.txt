@@ -152,3 +152,42 @@ Minimum length is 1::
     ...     assert test_int.recognize(word) == i + 1
     >>> history
     [(u'five',)]
+
+
+Recognition callback functions
+==========================================================================
+
+Register recognition callback functions::
+
+    >>> # Define and register functions for each recognition state event.
+    >>> def on_begin():
+    ...     print("on_begin()")
+    ...
+    >>> def on_recognition(words):
+    ...     print("on_recognition(): %s" % (words,))
+    ...
+    >>> def on_failure():
+    ...     print("on_failure()")
+    ...
+    >>> on_begin_obs = register_beginning_callback(on_begin)
+    >>> on_success_obs = register_recognition_callback(on_recognition)
+    >>> on_failure_obs = register_failure_callback(on_failure)
+
+Callback functions are called during recognitions::
+
+    >>> test_lit = ElementTester(Literal("hello world"))
+    >>> test_lit.recognize("hello world")
+    on_begin()
+    on_recognition(): (u'hello', u'world')
+    u'hello world'
+    >>> test_lit.recognize("hello universe")
+    on_begin()
+    on_failure()
+    RecognitionFailure
+
+Callback functions are unregistered using the observer objects returned by
+each function::
+
+    >>> on_begin_obs.unregister()
+    >>> on_success_obs.unregister()
+    >>> on_failure_obs.unregister()
