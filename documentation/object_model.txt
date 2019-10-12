@@ -13,6 +13,7 @@ object model.
     rules
     elements
     context
+    recobs
 
 
 Grammars

@@ -1,6 +1,10 @@
-﻿
+.. _Recobs Doc Tests:
+
 RecognitionObserver base class
 ==========================================================================
+
+If you're looking for the class and function reference for recognition
+observers, you want :ref:`this page <Recobs>`.
 
 .. note:: :class:`RecognitionObserver` instances can be used for both
    the DNS and the WSR backend engines.  However, WSR will sometimes call

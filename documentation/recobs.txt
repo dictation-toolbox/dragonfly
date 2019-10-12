@@ -1,0 +1,26 @@
+.. _Recobs:
+
+Recognition observers
+============================================================================
+
+This section describes classes and functions for observing Dragonfly's
+recognition state events:
+
+ * ``on_begin()`` -- called when speech start is detected.
+ * ``on_recognition()`` -- called when speech successfully decoded to a
+   grammar rule or to dictation. This is called *before* grammar rule
+   processing (i.e. ``Rule.process_recognition()``).
+ * ``on_failure()`` -- called when speech failed to decode to a grammar rule
+   or to dictation.
+
+.. automodule:: dragonfly.grammar.recobs
+   :members:
+
+.. automodule:: dragonfly.grammar.recobs_callbacks
+   :members:
+
+Doctest usage examples
+----------------------------------------------------------------------------
+
+See Dragonfly's :ref:`doctests for recognition observers<Recobs Doc Tests>`
+for some usage examples.
