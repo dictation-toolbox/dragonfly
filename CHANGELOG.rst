@@ -46,6 +46,7 @@ Fixed
 * Fix Natlink engine for all variants of supported languages.
 * Fix case sensitivity bug with AppContext keyword arguments.
 * Fix quite a few bugs with the Kaldi backend (thanks `@daanzu`_).
+* Fix two bugs with the text engine's mimic method (thanks `@mrob95`_).
 
 
 0.17.0_ - 2019-09-12
