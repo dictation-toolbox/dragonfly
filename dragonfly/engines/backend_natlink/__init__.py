@@ -34,8 +34,13 @@ _log = logging.getLogger("engine.natlink")
 _engine = None
 
 
-def is_engine_available():
-    """ Check whether Natlink is available. """
+def is_engine_available(**kwargs):
+    """
+        Check whether Natlink is available.
+
+        :param \\**kwargs: optional keyword arguments passed through to the
+            engine for engine-specific configuration.
+    """
     global _engine
     if _engine:
         return True
@@ -62,10 +67,21 @@ def is_engine_available():
         return False
 
 
-def get_engine():
-    """ Retrieve the Natlink back-end engine object. """
+def get_engine(**kwargs):
+    """
+        Retrieve the Natlink back-end engine object.
+
+        :param \\**kwargs: optional keyword arguments passed through to the
+            engine for engine-specific configuration.
+        :Keyword Arguments:
+            * **retain_dir** (``str``) -- directory to save audio data:
+                A ``.wav`` file for each utterance, and ``retain.tsv`` file
+                with each row listing (wav filename, wav length in seconds,
+                grammar name, rule name, recognized text) as tab separated
+                values.
+    """
     global _engine
     if not _engine:
         from .engine import NatlinkEngine
-        _engine = NatlinkEngine()
+        _engine = NatlinkEngine(**kwargs)
     return _engine

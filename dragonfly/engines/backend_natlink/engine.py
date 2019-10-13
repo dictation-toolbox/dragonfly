@@ -28,8 +28,10 @@ Detecting sleep mode
  - http://blogs.msdn.com/b/tsfaware/archive/2010/03/22/detecting-sleep-mode-in-sapi.aspx
 
 """
+import os.path
+from datetime import datetime
 from locale import getpreferredencoding
-from six import text_type, binary_type
+from six import text_type, binary_type, string_types
 
 from ..base        import EngineBase, EngineError, MimicFailure
 from ...error import GrammarError
@@ -64,7 +66,7 @@ class NatlinkEngine(EngineBase):
 
     #-----------------------------------------------------------------------
 
-    def __init__(self):
+    def __init__(self, retain_dir=None):
         EngineBase.__init__(self)
 
         self.natlink = None
@@ -78,6 +80,12 @@ class NatlinkEngine(EngineBase):
         self._grammar_count = 0
         self._recognition_observer_manager = NatlinkRecObsManager(self)
         self._timer_manager = NatlinkTimerManager(0.02, self)
+
+        if isinstance(retain_dir, string_types) or retain_dir is None:
+            self._retain_dir = retain_dir
+        else:
+            self._retain_dir = None
+            self._log.error("Invalid retain_dir: %r" % retain_dir)
 
     def connect(self):
         """ Connect to natlink with Python threading support enabled. """
@@ -323,6 +331,7 @@ class GrammarWrapper(object):
             s.initialize_decoding()
             for result in r.decode(s):
                 if s.finished():
+                    self._retain_audio(words, results, r.name)
                     root = s.build_parse_tree()
                     r.process_recognition(root)
                     return
@@ -330,3 +339,36 @@ class GrammarWrapper(object):
         NatlinkEngine._log.warning("Grammar %s: failed to decode"
                                    " recognition %r."
                                    % (self.grammar._name, words))
+
+    def _retain_audio(self, words, results, rule_name):
+        # Only write audio data and metadata if the directory exists.
+        retain_dir = self.engine._retain_dir
+        if retain_dir and not os.path.isdir(retain_dir):
+            self.engine._log.warning(
+                "Audio was not retained because '%s' was not a "
+                "directory" % retain_dir
+            )
+        elif retain_dir:
+            try:
+                audio = results.getWave()
+                # Make sure we have audio data
+                if len(audio) > 0:
+                    # Write audio data.
+                    now = datetime.now()
+                    filename = ("retain_%s.wav"
+                                % now.strftime("%Y-%m-%d_%H-%M-%S_%f"))
+                    wav_path = os.path.join(retain_dir, filename)
+                    with open(filename, "wb") as f:
+                        f.write(audio)
+
+                    # Write metadata
+                    text = ' '.join(words)
+                    audio_length = float(len(audio) / 2) / 11025  # assumes 11025Hz 16bit mono
+                    tsv_path = os.path.join(retain_dir, "retain.tsv")
+                    with open(tsv_path, "a") as tsv_file:
+                        tsv_file.write('\t'.join([
+                            filename, text_type(audio_length),
+                            self.grammar.name, rule_name, text
+                        ]) + '\n')
+            except:
+                self.engine._log.exception("Exception retaining audio")
