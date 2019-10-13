@@ -1,11 +1,16 @@
+Alex Boche <akboche@gmail.com>
 Alex Roper <alex@aroper.net>
 Christo Butcher <t4ngo@twizzy.biz>
 Christopher Schnick <c.schnick@monospark.org>
 Dane Finlay <Danesprite@posteo.net>
+David Zurow <daanzu@gmail.com>
+Dusty Phillips <86920+dusty-phillips@users.noreply.github.com>
 Eric Paulson <Paulson.Eric@Gmail.com>
 James Stout <james.wolf.stout@gmail.com>
-Vojta Drabek <vojta.drabek@gmail.com>
-daanzu <daanzu@gmail.com>
-sathishkottravel <sathishkottravel@gmail.com>
+Jason Smythe <jason@smythemail.za.net>
+LexiconCode <thequietplace@protonmail.com>
+Mike Roberts <42875462+mrob95@users.noreply.github.com>
 Tyler Elliott <tylercal@gmail.com>
+Vojta Drabek <vojta.drabek@gmail.com>
 lexxish <meandro7@gmail.com>
+sathishkottravel <sathishkottravel@gmail.com>
