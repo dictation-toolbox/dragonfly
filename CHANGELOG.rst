@@ -16,14 +16,36 @@ Unreleased_
 
 Added
 ~~~~~
+* Add grammar/rule weights support for the Kaldi backend
+  (thanks `@daanzu`_).
+* Add new functions for recognition state change callbacks.
 * Add optional --delay argument to Dragonfly's test command (CLI).
+* Allow the passing of window attributes to text engine mimic
+  (thanks `@mrob95`_).
 
 Changed
 ~~~~~~~
+* Add magic repr methods for debugging (thanks `@mrob95`_).
 * Add pyobjc as a required package on Mac OS (for AppKit).
+* Improve Kaldi backend performance by parsing directly on the FST instead
+  of with pyparsing (thanks `@daanzu`_).
+* Make Kaldi backend work with Python 3 (thanks `@daanzu`_).
+* Make other various improvements to the Kaldi backend (thanks `@daanzu`_).
 * Make the Monitor class and list work on X11 (Linux) & Mac OS.
 * Make the Mouse action work on X11 (Linux) & Mac OS.
 * Move 3 monitor-related methods from Win32Window to BaseWindow.
+
+Fixed
+~~~~~
+* Change Sphinx and text engines to not accept mimicking of non-exported
+  rules (expected behaviour).
+* Fix CompoundRule bug where the 'exported' parameter was effectively
+  ignored.
+* Fix Natlink engine bug where Canadian English isn't recognised
+  (thanks `@dusty-phillips`_).
+* Fix Natlink engine for all variants of supported languages.
+* Fix case sensitivity bug with AppContext keyword arguments.
+* Fix quite a few bugs with the Kaldi backend (thanks `@daanzu`_).
 
 
 0.17.0_ - 2019-09-12
@@ -617,6 +639,7 @@ This release is the first in the Git version control system.
 .. _@calmofthestorm: https://github.com/calmofthestorm
 .. _@comodoro: https://github.com/comodoro
 .. _@daanzu: https://github.com/daanzu
+.. _@dusty-phillips: https://github.com/dusty-phillips
 .. _@lexxish: https://github.com/lexxish
 .. _@mrob95: https://github.com/mrob95
 .. _@tylercal: https://github.com/tylercal
