@@ -57,6 +57,8 @@ Added
   (thanks `@wolfmanstout`_).
 * Add keywords argument handling to AppContext class for matching window
   attributes other than titles and executables.
+* Add the ability to set formatting flags for natlink dictation containers
+  (thanks `@alexboche`_).
 
 Changed
 ~~~~~~~
@@ -636,6 +638,7 @@ This release is the first in the Git version control system.
 .. _@JasoonS: https://github.com/JasoonS
 .. _@LexiconCode: https://github.com/LexiconCode
 .. _@Versatilus: https://github.com/Versatilus
+.. _@alexboche: https://github.com/alexboche
 .. _@calmofthestorm: https://github.com/calmofthestorm
 .. _@comodoro: https://github.com/comodoro
 .. _@daanzu: https://github.com/daanzu
