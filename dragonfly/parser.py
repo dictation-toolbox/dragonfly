@@ -98,6 +98,7 @@ class State(object):
         self._data = data
         self._index = index
         self._log = log
+        self._log_debug = False if not self._log else self._log.isEnabledFor(logging.DEBUG)
         self._stack = []
         self._depth = 0
         self._previous_index = None
@@ -265,7 +266,8 @@ class State(object):
         return None
 
     def _log_step(self, parser, message):
-        if not self._log or not self._log.isEnabledFor(logging.DEBUG):
+        # if not self._log or not self._log.isEnabledFor(logging.DEBUG):
+        if not self._log_debug:
             return
         indent = "   " * self._depth
         output = "%s%s: %s" % (indent, message, parser)
@@ -547,7 +549,8 @@ class Alternative(ParserElementBase):
         state.decode_attempt(self)
 
         # Special case for an empty list of alternatives.
-        if len(self._children) == 0:
+        # if len(self._children) == 0:
+        if not self._children:
             state.decode_success(self)
             yield state
             state.decode_retry(self)
