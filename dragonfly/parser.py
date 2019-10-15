@@ -252,21 +252,18 @@ class State(object):
         self._depth -= 1
 
     def _get_frame_from_depth(self):
-        for i in range(len(self._stack)-1, -1, -1):
-            frame = self._stack[i]
+        for frame in reversed(self._stack):
             if frame.depth == self._depth:
                 return frame
         return None
 
     def _get_frame_from_actor(self, actor):
-        for i in range(len(self._stack)-1, -1, -1):
-            frame = self._stack[i]
+        for frame in reversed(self._stack):
             if frame.actor is actor:
                 return frame
         return None
 
     def _log_step(self, parser, message):
-        # if not self._log or not self._log.isEnabledFor(logging.DEBUG):
         if not self._log_debug:
             return
         indent = "   " * self._depth
