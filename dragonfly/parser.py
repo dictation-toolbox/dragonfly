@@ -549,7 +549,6 @@ class Alternative(ParserElementBase):
         state.decode_attempt(self)
 
         # Special case for an empty list of alternatives.
-        # if len(self._children) == 0:
         if not self._children:
             state.decode_success(self)
             yield state
