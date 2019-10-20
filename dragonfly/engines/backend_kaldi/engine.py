@@ -314,6 +314,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         finally:
             self._audio.stop()
+            self.audio_store.save_all()
 
         return not timed_out
 
