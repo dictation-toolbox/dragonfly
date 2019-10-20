@@ -358,7 +358,7 @@ class GrammarWrapper(object):
                     filename = ("retain_%s.wav"
                                 % now.strftime("%Y-%m-%d_%H-%M-%S_%f"))
                     wav_path = os.path.join(retain_dir, filename)
-                    with open(filename, "wb") as f:
+                    with open(wav_path, "wb") as f:
                         f.write(audio)
 
                     # Write metadata
