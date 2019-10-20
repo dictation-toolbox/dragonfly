@@ -230,9 +230,9 @@ class Rule(object):
         return s
 
     def dependencies(self, memo):
-        if self in memo:
+        if self._name in memo:
             return []
-        memo.append(self)
+        memo.add(self._name)
         if self._element:
             return self._element.dependencies(memo)
         else:

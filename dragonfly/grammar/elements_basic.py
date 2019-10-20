@@ -68,9 +68,12 @@ from six import integer_types, string_types
 from .rule_base  import Rule
 from .list       import ListBase, DictList
 
+from itertools import count
 
 #===========================================================================
 # Element base class.
+
+id_generator = count()
 
 class ElementBase(object):
     """ Base class for all other element classes. """
@@ -92,6 +95,7 @@ class ElementBase(object):
             name = None
         self.name = name
         self._default = default
+        self._id = next(id_generator)
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
@@ -147,9 +151,9 @@ class ElementBase(object):
             for this element.  These include lists and other rules.
 
         """
-        if self in memo:
+        if self._id in memo:
             return []
-        memo.append(self)
+        memo.add(self._id)
         dependencies = []
         for c in self.children:
             dependencies.extend(c.dependencies(memo))
@@ -280,9 +284,9 @@ class Sequence(ElementBase):
     # Methods for load-time setup.
 
     def dependencies(self, memo):
-        if self in memo:
+        if self._id in memo:
             return []
-        memo.append(self)
+        memo.add(self._id)
         dependencies = []
         for c in self._children:
             dependencies.extend(c.dependencies(memo))
@@ -380,9 +384,9 @@ class Optional(ElementBase):
     # Methods for load-time setup.
 
     def dependencies(self, memo):
-        if self in memo:
+        if self._id in memo:
             return []
-        memo.append(self)
+        memo.add(self._id)
         return self._child.dependencies(memo)
 
     def gstring(self):
@@ -474,9 +478,9 @@ class Alternative(ElementBase):
              + ")"
 
     def dependencies(self, memo):
-        if self in memo:
+        if self._id in memo:
             return []
-        memo.append(self)
+        memo.add(self._id)
         dependencies = []
         for c in self._children:
             dependencies.extend(c.dependencies(memo))
@@ -610,9 +614,9 @@ class Repetition(Sequence):
     )
 
     def dependencies(self, memo):
-        if self in memo:
+        if self._id in memo:
             return []
-        memo.append(self)
+        memo.add(self._id)
         return self._child.dependencies(memo)
 
     #-----------------------------------------------------------------------
@@ -695,6 +699,9 @@ class Literal(ElementBase):
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
 
+    def dependencies(self, memo):
+        return []
+
     def gstring(self):
         return " ".join(self._words)
 
@@ -760,9 +767,9 @@ class RuleRef(ElementBase):
     # Methods for load-time setup.
 
     def dependencies(self, memo):
-        if self in memo:
+        if self._id in memo:
             return []
-        memo.append(self)
+        memo.add(self._id)
         return [self._rule] + self._rule.dependencies(memo)
 
     def gstring(self):
@@ -822,9 +829,9 @@ class ListRef(ElementBase):
     # Methods for load-time setup.
 
     def dependencies(self, memo):
-        if self in memo:
+        if self._id in memo:
             return []
-        memo.append(self)
+        memo.add(self._id)
         return [self._list]
 
     def compile(self, compiler):

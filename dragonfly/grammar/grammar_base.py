@@ -251,7 +251,7 @@ class Grammar(object):
 
             **Internal** This method is called when the grammar is loaded.
         """
-        memo = []
+        memo = set()
         for r in self._rules:
             for d in r.dependencies(memo):
                 self.add_dependency(d)

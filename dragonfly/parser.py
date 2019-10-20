@@ -98,6 +98,7 @@ class State(object):
         self._data = data
         self._index = index
         self._log = log
+        self._log_debug = self._log.isEnabledFor(logging.DEBUG) if self._log else False
         self._stack = []
         self._depth = 0
         self._previous_index = None
@@ -212,13 +213,15 @@ class State(object):
         # assert isinstance(element, ParserElementBase)
         self._depth += 1
         self._stack.append(State._Frame(self._depth, element, self._index))
-        self._log_step(element, "attempt")
+        if self._log_debug:
+            self._log_step(element, "attempt")
 
     def decode_retry(self, element):
         # assert isinstance(element, ParserElementBase)
         frame = self._get_frame_from_actor(element)
         self._depth = frame.depth
-        self._log_step(element, "retry")
+        if self._log_debug:
+            self._log_step(element, "retry")
 
     def decode_rollback(self, element):
         # assert isinstance(element, ParserElementBase)
@@ -230,11 +233,13 @@ class State(object):
             self._index = frame.begin
         else:
             raise ParserError("Parser decoding stack broken")
-        self._log_step(element, "rollback")
+        if self._log_debug:
+            self._log_step(element, "rollback")
 
     def decode_success(self, element, value=None):
         # assert isinstance(element, ParserElementBase)
-        self._log_step(element, "success")
+        if self._log_debug:
+            self._log_step(element, "success")
         frame = self._get_frame_from_depth()
         if not frame or frame.actor != element:
             raise ParserError("Parser decoding stack broken.")
@@ -247,26 +252,23 @@ class State(object):
         frame = self._stack.pop()
         self._index = frame.begin
         self._depth = frame.depth
-        self._log_step(element, "failure")
+        if self._log_debug:
+            self._log_step(element, "failure")
         self._depth -= 1
 
     def _get_frame_from_depth(self):
-        for i in range(len(self._stack)-1, -1, -1):
-            frame = self._stack[i]
+        for frame in reversed(self._stack):
             if frame.depth == self._depth:
                 return frame
         return None
 
     def _get_frame_from_actor(self, actor):
-        for i in range(len(self._stack)-1, -1, -1):
-            frame = self._stack[i]
+        for frame in reversed(self._stack):
             if frame.actor is actor:
                 return frame
         return None
 
     def _log_step(self, parser, message):
-        if not self._log or not self._log.isEnabledFor(logging.DEBUG):
-            return
         indent = "   " * self._depth
         output = "%s%s: %s" % (indent, message, parser)
         self._log.debug(output)
@@ -410,7 +412,7 @@ class Sequence(ParserElementBase):
         state.decode_attempt(self)
 
         # Special case for an empty sequence.
-        if len(self._children) == 0:
+        if not self._children:
             state.decode_success(self)
             yield state
             state.decode_retry(self)
@@ -547,7 +549,7 @@ class Alternative(ParserElementBase):
         state.decode_attempt(self)
 
         # Special case for an empty list of alternatives.
-        if len(self._children) == 0:
+        if not self._children:
             state.decode_success(self)
             yield state
             state.decode_retry(self)
