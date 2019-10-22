@@ -29,6 +29,7 @@ Detecting sleep mode
 
 """
 import os.path
+import sys
 from datetime import datetime
 from locale import getpreferredencoding
 from six import text_type, binary_type, string_types
@@ -80,12 +81,12 @@ class NatlinkEngine(EngineBase):
         self._grammar_count = 0
         self._recognition_observer_manager = NatlinkRecObsManager(self)
         self._timer_manager = NatlinkTimerManager(0.02, self)
-
-        if isinstance(retain_dir, string_types) or retain_dir is None:
-            self._retain_dir = retain_dir
-        else:
+        self._retain_dir = None
+        try:
+            self.set_retain_directory(retain_dir)
+        except EngineError as err:
             self._retain_dir = None
-            self._log.error("Invalid retain_dir: %r" % retain_dir)
+            self._log.error(err)
 
     def connect(self):
         """ Connect to natlink with Python threading support enabled. """
@@ -276,6 +277,47 @@ class NatlinkEngine(EngineBase):
                       0x0409: ("en", "USEnglish"),
                       0xf809: ("en", "CAEnglish"),
                      }
+
+    def set_retain_directory(self, retain_dir):
+        """
+        Set the directory where audio data is saved.
+
+        Retaining audio data may be useful for acoustic model training. This
+        is disabled by default.
+
+        If a relative path is used and the code is running via natspeak.exe,
+        then the path will be made relative to the Natlink user directory or
+        base directory (e.g. ``MacroSystem``).
+
+        :param retain_dir: retain directory path
+        :type retain_dir: string|None
+        """
+        is_string = isinstance(retain_dir, string_types)
+        if not (retain_dir is None or is_string):
+            raise EngineError("Invalid retain_dir: %r" % retain_dir)
+
+        if is_string:
+            # Handle relative paths by using the Natlink user directory or
+            # base directory. Only do this if running via natspeak.exe.
+            try:
+                import natlinkstatus
+            except ImportError:
+                natlinkstatus = None
+            running_via_natspeak = (
+                sys.executable.endswith("natspeak.exe") and
+                natlinkstatus is not None
+            )
+            if not os.path.isabs(retain_dir) and running_via_natspeak:
+                status = natlinkstatus.NatlinkStatus()
+                user_dir = status.getUserDirectory()
+                retain_dir = os.path.join(
+                    # Use the base dir if user dir isn't set.
+                    user_dir if user_dir else status.BaseDirectory,
+                    retain_dir
+                )
+
+        # Set the retain directory.
+        self._retain_dir = retain_dir
 
 #---------------------------------------------------------------------------
 
