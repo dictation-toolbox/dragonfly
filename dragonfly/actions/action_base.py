@@ -93,6 +93,10 @@ class ActionBase(object):
         except ActionError as e:
             self._log_exec.error("Execution failed: %s", e)
             return False
+        except Exception as e:
+            self._log_exec.exception("Execution of %s failed due to "
+                                     "exception: %s", self, e)
+            return False
         return True
 
     def _execute(self, data=None):
