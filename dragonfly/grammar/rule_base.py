@@ -48,7 +48,7 @@ class Rule(object):
            always be active when its grammar is active.
          - *imported* (boolean, default: *False*) --
            if true, this rule is imported from outside its grammar
-         - *exported* (boolean, default: *False*) --
+         - *exported* (boolean, default: *True*) --
            if true, this rule is a complete top-level rule which can be
            spoken by the user.  This should be *True* for voice-commands
            that the user can speak.
@@ -69,7 +69,7 @@ class Rule(object):
     _next_anonymous_id = 0
 
     def __init__(self, name=None, element=None, context=None,
-                 imported=False, exported=False):
+                 imported=False, exported=True):
         # The default argument for *element* is NOT acceptable; this
         #  construction is used for backwards compatibility and argument
         #  order.
@@ -139,15 +139,15 @@ class Rule(object):
     def _get_grammar(self):
         return self._grammar
     def _set_grammar(self, grammar):
-#        if self._grammar is None:
+       # if self._grammar is None:
             self._grammar = grammar
-#        elif grammar is None:
-#            self._grammar = None
-#        elif grammar != self._grammar:
-#            self._log.error("rule: %s" % self)
-#            raise TypeError("The grammar object a Dragonfly rule"
-#                " cannot be changed after it has been set (%s != %s)."
-#                % (grammar, self._grammar))
+       # elif grammar is None:
+       #     self._grammar = None
+       # elif grammar != self._grammar:
+       #     self._log.error("rule: %s" % self)
+       #     raise TypeError("The grammar object a Dragonfly rule"
+       #         " cannot be changed after it has been set (%s != %s)."
+       #         % (grammar, self._grammar))
     grammar = property(_get_grammar, _set_grammar,
                        doc="This rule's grammar object.  (Set once)")
 
