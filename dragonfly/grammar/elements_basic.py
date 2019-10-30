@@ -1066,5 +1066,5 @@ class RuleWrap(RuleRef):
     def __init__(self, name, element, default=None):
         rule_name = "_%s_%02d" % (self.__class__.__name__, RuleWrap._next_id)
         RuleWrap._next_id += 1
-        rule = Rule(name=rule_name, element=element)
+        rule = Rule(name=rule_name, element=element, exported=False)
         RuleRef.__init__(self, rule=rule, name=name, default=default)
