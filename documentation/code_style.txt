@@ -2,4 +2,49 @@
 .. _RefCodeStyle:
 
 Code style
-****************************************************************************
+============================================================================
+
+Dragonfly's code base generally follows the `PEP 8 Style Guide for Python
+Code <https://legacy.python.org/dev/peps/pep-0008/>`__. There are some parts
+of Dragonfly that don't follow that guide precisely, which is okay; it is
+only a guideline and blind adherence to it can actually be bad sometimes
+(see PEP 8 `A Foolish Consistency is the Hobgoblin of Little Minds
+<https://legacy.python.org/dev/peps/pep-0008/#a-foolish-consistency-is-the-hobgoblin-of-little-minds>`__).
+
+When making code submissions for Dragonfly, try to generally stick to the
+PEP 8 style guide.
+
+Dragonfly's source files have historically had a maximum line length of 76
+characters, although up to 85 characters is fine (PEP 8). The exception to
+this rule is where a long URL is used in a comment or string. Long URLs
+should usually be on separate lines.
+
+
+Documentation style
+============================================================================
+
+Most docstrings in Dragonfly generally follow the `Sphinx docstring format
+<https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html>`__.
+A different style is used in some places, mostly for constructor arguments::
+
+  class Grammar(object):
+    """
+        Grammar class for managing a set of rules.
+
+        Constructor arguments:
+         - *name* -- name of this grammar
+         - *description* (str, default: None) --
+           description for this grammar
+         - *context* (Context, default: None) --
+           context within which to be active.  If *None*, the grammar will
+           always be active.
+
+    """
+
+The Sphinx docstring format is preferred, although the above format
+is also acceptable. The important thing is that the documentation is
+readable in the source file and in the various generated formats
+(e.g. HTML, PDF, man page).
+
+Notice that the docstring's content is also indented. This is done in
+a few places and is also acceptable.
