@@ -82,8 +82,14 @@ class StartApp(ActionBase):
                if not *None*, then start the application in this
                directory
 
+            A single *list* or *tuple* argument can be used instead of
+            variable arguments.
+
         """
         ActionBase.__init__(self)
+        if len(args) == 1 and isinstance(args, (list, tuple)):
+            args = args[0]  # use the sub-list instead
+
         self._args = args
 
         if "cwd" in kwargs:  self._cwd = kwargs.pop("cwd")
