@@ -348,14 +348,26 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
     # Internal processing methods.
 
+    def _iter_all_grammar_wrappers_dynamically(self):
+        """ Accounts for grammar wrappers being dynamically added during iteration. """
+        processed_grammar_wrappers = set()
+        todo_grammar_wrappers = set(self._grammar_wrappers.values())
+        while todo_grammar_wrappers:
+            while todo_grammar_wrappers:
+                grammar_wrapper = todo_grammar_wrappers.pop()
+                yield grammar_wrapper
+                processed_grammar_wrappers.add(grammar_wrapper)
+            todo_grammar_wrappers = set(self._grammar_wrappers.values()) - processed_grammar_wrappers
+
     def _compute_kaldi_rules_activity(self, phrase_start=True):
         fg_window = Window.get_foreground()
-        for grammar_wrapper in self._grammar_wrappers.copy().values():
+        for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
             if phrase_start:
                 grammar_wrapper.phrase_start_callback(fg_window)
+        self.prepare_for_recognition()
         self._active_kaldi_rules = []
         self._kaldi_rules_activity = [False] * self._compiler.num_kaldi_rules
-        for grammar_wrapper in self._grammar_wrappers.copy().values():
+        for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
             if grammar_wrapper.active and (not self._any_exclusive_grammars or (self._any_exclusive_grammars and grammar_wrapper.exclusive)):
                 for kaldi_rule in grammar_wrapper.kaldi_rule_by_rule_dict.values():
                     if kaldi_rule.active:
