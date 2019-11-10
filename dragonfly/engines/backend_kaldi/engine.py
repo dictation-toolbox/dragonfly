@@ -242,7 +242,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         """ Can be called optionally before ``do_recognition()`` to speed up its starting of active recognition. """
         self._compiler.prepare_for_recognition()
 
-    def do_recognition(self, timeout=None, single=False):
+    def recognize_forever(self, timeout=None, single=False):
         """
             Loops performing recognition, by default forever, or for *timeout* seconds, or for a single recognition if *single=True*.
             Returns ``False`` if timeout occurred without a recognition.
@@ -317,6 +317,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self.audio_store.save_all()
 
         return not timed_out
+
+    #: Alias of :meth:`recognize_forever` left in for backwards-compatibility
+    do_recognition = recognize_forever
 
     in_phrase = property(lambda self: self._in_phrase,
         doc="Whether or not the engine is currently in the middle of hearing a phrase from the user.")

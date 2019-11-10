@@ -130,6 +130,13 @@ class TextInputEngine(EngineBase):
         # Minor note: this won't work for languages without capitalisation.
         return tuple(map(_map_word, words))
 
+    def recognize_forever(self):
+        """
+        Recognize words from standard input (stdin) in a loop until
+        interrupted or :meth:`disconnect` is called.
+        """
+        # TODO Implement using code from dragonfly/__main__.py
+
     def mimic(self, words, **kwargs):
         """ Mimic a recognition of the given *words*. """
         # Handle string input.

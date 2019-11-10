@@ -204,6 +204,13 @@ class EngineBase(object):
     #-----------------------------------------------------------------------
     #  Miscellaneous methods.
 
+    def recognize_forever(self):
+        """
+        Recognize speech in a loop until interrupted or :meth:`disconnect`
+        is called.
+        """
+        raise NotImplementedError("Engine %s not implemented." % self)
+
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
         raise NotImplementedError("Engine %s not implemented." % self)
