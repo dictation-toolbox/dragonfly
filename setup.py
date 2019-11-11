@@ -20,7 +20,7 @@
 
 import os.path
 import re
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Command
 
 
 #---------------------------------------------------------------------------
@@ -32,6 +32,36 @@ version_string = open(path).readline()
 match = re.match(r"\s*(?P<rel>(?P<ver>\d+\.\d+)(?:\.\S+)*)\s*", version_string)
 version = match.group("ver")
 release = match.group("rel")
+
+#---------------------------------------------------------------------------
+# Override the 'test' command to use pytest instead.
+# Test requirements are located in the 'test_requirements.txt' file.
+
+class test(Command):
+    description = 'run unit tests and doctests after in-place build'
+    user_options = [
+        # (long option, short option, description)
+        # '=' means an argument should be supplied.
+        ('test-suite=', None, 'Dragonfly engine to test (default: "text")'),
+    ]
+
+    def initialize_options(self):
+        self.test_suite = 'text'
+
+    def finalize_options(self):
+        # Check that 'test_suite' is an engine name.
+        from dragonfly.test.suites import engine_tests_dict
+        suite = self.test_suite
+        assert suite in engine_tests_dict.keys(), \
+            "the test suite value must be an engine name, not '%s'" % suite
+
+    def run(self):
+        from dragonfly.test.suites import run_pytest_suite
+        print("Test suite running for engine '%s'" % self.test_suite)
+        result = run_pytest_suite(self.test_suite)
+
+        # Exit using pytest's return code.
+        exit(int(result))
 
 
 #---------------------------------------------------------------------------
@@ -97,6 +127,10 @@ setup(
                     "pyaudio == 0.2.*",
                     "webrtcvad == 2.0.*",
                    ],
+      },
+
+      cmdclass={
+          "test": test,
       },
 
       classifiers=[
