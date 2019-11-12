@@ -138,9 +138,12 @@ def run_pytest_suite(engine_name):
     engine._timer_manager.disable()
     try:
         # Run doctests through pytest.main() now that the engine is set up.
-        # Use the ALLOW_UNICODE option to make the doctests compatible with
-        # both Python 2.7 and 3.
-        args = ['-o', 'doctest_optionflags=ALLOW_UNICODE'] + paths
+        # Use some doctest options for compatibility with both Python 2.7
+        # and 3.
+        args = [
+            '-o',
+            'doctest_optionflags=ALLOW_UNICODE IGNORE_EXCEPTION_DETAIL'
+        ] + paths
         return pytest.main(args)
     finally:
         # Disconnect after the tests.
