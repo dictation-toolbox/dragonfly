@@ -30,13 +30,13 @@ _debug_timer_stack = []
 
 @contextmanager
 def debug_timer(log, desc, enabled=True, independent=False):
-    start_time = time.clock()
+    start_time = time.time()
     if not independent: _debug_timer_stack.append(start_time)
-    spent_time_func = lambda: time.clock() - start_time
+    spent_time_func = lambda: time.time() - start_time
     yield spent_time_func
     start_time_adjusted = _debug_timer_stack.pop() if not independent else 0
     if enabled:
         if debug_timer_enabled:
-            log("%s %d ms" % (desc, (time.clock() - start_time_adjusted) * 1000))
+            log("%s %d ms" % (desc, (time.time() - start_time_adjusted) * 1000))
         if _debug_timer_stack and not independent:
             _debug_timer_stack[-1] += spent_time_func()
