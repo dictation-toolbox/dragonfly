@@ -23,9 +23,12 @@ Window class for X11
 
 """
 
+from __future__ import print_function
+
 import locale
 import logging
 from subprocess import Popen, PIPE
+import sys
 
 import psutil
 from six import binary_type
@@ -39,6 +42,9 @@ class X11Window(BaseWindow):
         The Window class is an interface to the window control and
         placement APIs for X11.
 
+        Window control methods such as :meth:`close` will return ``True``
+        if successful.
+
     """
 
     _log = logging.getLogger("window")
@@ -51,15 +57,23 @@ class X11Window(BaseWindow):
     xprop = "xprop"
 
     @classmethod
-    def _run_xdotool_command(cls, arguments, error_on_failure=True):
-        return cls._run_command(cls.xdotool, arguments, error_on_failure)
+    def _run_xdotool_command(cls, arguments):
+        return cls._run_command(cls.xdotool, arguments)
 
     @classmethod
-    def _run_xprop_command(cls, arguments, error_on_failure=True):
-        return cls._run_command(cls.xprop, arguments, error_on_failure)
+    def _run_xdotool_command_simple(cls, arguments):
+        # Run the command and return whether or not it succeeded based on
+        # the return code.
+        stdout, return_code = cls._run_command(cls.xdotool, arguments)
+        if stdout: print(stdout)
+        return return_code == 0
 
     @classmethod
-    def _run_command(cls, command, arguments, error_on_failure=True):
+    def _run_xprop_command(cls, arguments):
+        return cls._run_command(cls.xprop, arguments)
+
+    @classmethod
+    def _run_command(cls, command, arguments):
         """
         Run a command with arguments and return the result.
 
@@ -67,7 +81,7 @@ class X11Window(BaseWindow):
         :type command: str
         :param arguments: arguments to append
         :type arguments: list
-        :returns: stdout, stderr, return_code
+        :returns: stdout, return_code
         :rtype: tuple
         """
         arguments = [str(arg) for arg in arguments]
@@ -85,16 +99,13 @@ class X11Window(BaseWindow):
             if isinstance(stderr, binary_type):
                 stderr = stderr.decode(encoding)
 
-            # Handle non-zero return codes.
-            if p.wait() > 0 and error_on_failure:
-                print(stdout)
-                print(stderr)
-                raise RuntimeError("%s command exited with non-zero return"
-                                   " code %d" % (command, p.returncode))
+            stderr = stderr.rstrip()
+            if stderr:
+                print(stderr, file=sys.stderr)
 
             # Return the process output and return code.
-            return stdout.rstrip(), stderr.rstrip(), p.returncode
-        except Exception as e:
+            return stdout.rstrip(), p.returncode
+        except OSError as e:
             cls._log.error("Failed to execute command '%s': %s. Is "
                            "%s installed?",
                            full_readable_command, e, command)
@@ -105,16 +116,27 @@ class X11Window(BaseWindow):
 
     @classmethod
     def get_foreground(cls):
-        window_id, _, _ = cls._run_xdotool_command(["getactivewindow"])
-        return cls.get_window(int(window_id))
+        window_id, return_code = cls._run_xdotool_command([
+            "getactivewindow"
+        ])
+        if return_code == 0:
+            return cls.get_window(int(window_id))
+        else:
+            return cls.get_window(0)  # return an invalid window
 
     @classmethod
     def get_all_windows(cls):
         # Get all window IDs using 'xdotool search'.
-        output, _, _ = cls._run_xdotool_command(['search', '--onlyvisible',
-                                                 '--name', ''])
-        lines = [line for line in output.split('\n') if line]
-        windows = [cls.get_window(int(line)) for line in lines]
+        stdout, return_code = cls._run_xdotool_command([
+            'search', '--onlyvisible', '--name', ''
+        ])
+        if return_code == 0:
+            lines = [line for line in stdout.split('\n') if line]
+            windows = [cls.get_window(int(line)) for line in lines]
+        else:
+            # Return any windows found previously.
+            if stdout: print(stdout)
+            return list(cls._windows_by_id.values())
 
         # Exclude window IDs that have no associated process ID.
         result = []
@@ -140,9 +162,15 @@ class X11Window(BaseWindow):
             args.append(title)
         else:
             args.append('')
-        output, _, _ = cls._run_xdotool_command(args, False)
-        lines = [line for line in output.split('\n') if line]
-        windows = [cls.get_window(int(line)) for line in lines]
+        stdout, return_code = cls._run_xdotool_command(args)
+        if return_code == 0:
+            lines = [line for line in stdout.split('\n') if line]
+            windows = [cls.get_window(int(line)) for line in lines]
+        else:
+            # Use windows found previously.
+            if stdout: print(stdout)
+            windows = list(cls._windows_by_id.values())
+
         matching = []
         for window in windows:
             if executable:
@@ -174,11 +202,12 @@ class X11Window(BaseWindow):
         # This method retrieves windows properties by shelling out to xprop.
         result = {}
         args = ['-id', self.id] + list(properties)
-        output, _, return_code = self._run_xprop_command(args, False)
+        stdout, return_code = self._run_xprop_command(args)
         if return_code > 0:
+            if stdout: print(stdout)
             return {}
 
-        for line in output.split('\n'):
+        for line in stdout.split('\n'):
             line = line.split(' =', 1)
             if len(line) != 2:
                 continue
@@ -208,7 +237,12 @@ class X11Window(BaseWindow):
     def _get_window_text(self):
         # Get the title text.
         args = ['getwindowname', self.id]
-        return self._run_xdotool_command(args)[0]
+        stdout, return_code = self._run_xdotool_command(args)
+        if return_code == 0:
+            return stdout
+        else:
+            if stdout: print(stdout)
+            return ""
 
     def _get_class_name(self):
         return (self._get_properties_from_xprop("WM_CLASS")
@@ -364,9 +398,13 @@ class X11Window(BaseWindow):
     # Methods related to window geometry.
 
     def get_position(self):
-        output, _, _ = self._run_xdotool_command(
+        stdout, return_code = self._run_xdotool_command(
             ['getwindowgeometry', '--shell', self.id])
-        geometry = output.strip().split('\n')
+        if return_code > 0:
+            if stdout: print(stdout)
+            return Rectangle(0, 0, 0, 0)
+
+        geometry = stdout.strip().split('\n')
         geo = dict([val.lower()
                     for val in line.split('=')]
                    for line in geometry)
@@ -376,44 +414,58 @@ class X11Window(BaseWindow):
     def set_position(self, rectangle):
         l, t, w, h = rectangle.ltwh
         id = self.id
-        self._run_xdotool_command(
+        return self._run_xdotool_command_simple(
             ['windowmove', id, l, t,
-             'windowsize', id, w, h])
+             'windowsize', id, w, h]
+        )
 
     #-----------------------------------------------------------------------
     # Methods for miscellaneous window control.
 
     def minimize(self):
-        self._run_xdotool_command(['windowminimize', self.id])
+        # Attempt to minimize the window. Return the command's success.
+        return self._run_xdotool_command_simple(['windowminimize',
+                                                 self.id])
 
     def _toggle_maximize(self):
         # Doesn't seem possible with xdotool. We'll try pressing a-f10
-        # with the window focused.
-        self.set_foreground()
-        self._run_xdotool_command(['keydown', 'Alt_L', 'key', 'F10',
-                                   'keyup', 'Alt_L'])
+        # with the window focused. Only maximize if set_foreground()
+        # succeeded.
+        return self.set_foreground() and self._run_xdotool_command_simple([
+                'keydown', 'Alt_L', 'key', 'F10', 'keyup', 'Alt_L'
+        ])
 
     def maximize(self):
         if not self.is_maximized:
-            self._toggle_maximize()
+            return self._toggle_maximize()
+        return True  # already maximized.
 
     def restore(self):
         state = self.state
         if self._is_minimized(state):
-            self._run_xdotool_command(['windowactivate', self.id])
+            return self._run_xdotool_command_simple([
+                'windowactivate', self.id
+            ])
         elif self._is_maximized(state):
-            self._toggle_maximize()
+            return self._toggle_maximize()
+        else:
+            # True if already restored or False if no _NET_WM_STATE.
+            return state is not None
 
     def close(self):
-        self._run_xdotool_command(['windowclose', self.id])
+        return self._run_xdotool_command_simple(['windowclose', self.id])
 
     def set_foreground(self):
-        if self.is_minimized:
-            self.restore()
+        # Restore if minimized.
+        if self.is_minimized and not self.restore():
+            return False  # restore() failed
         if not self.is_focused:
             id = '%i' % self.id
-            self._run_xdotool_command(['windowactivate', id,
-                                       'windowfocus', id])
+            return self._run_xdotool_command_simple([
+                'windowactivate', id, 'windowfocus', id
+            ])
+
+        return True
 
     def set_focus(self):
         """
@@ -422,4 +474,6 @@ class X11Window(BaseWindow):
         This method will set the input focus, but will not necessarily bring
         the window to the front.
         """
-        self._run_xdotool_command(['windowfocus', self.id])
+        return self._run_xdotool_command_simple([
+            'windowfocus', self.id
+        ])
