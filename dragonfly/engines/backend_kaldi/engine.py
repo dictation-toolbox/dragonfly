@@ -363,9 +363,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             todo_grammar_wrappers = set(self._grammar_wrappers.values()) - processed_grammar_wrappers
 
     def _compute_kaldi_rules_activity(self, phrase_start=True):
-        fg_window = Window.get_foreground()
-        for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
-            if phrase_start:
+        if phrase_start:
+            fg_window = Window.get_foreground()
+            for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
                 grammar_wrapper.phrase_start_callback(fg_window)
         self.prepare_for_recognition()
         self._active_kaldi_rules = []
@@ -418,6 +418,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     self._log.error("unable to parse recognition: %r" % output)
                 self._recognition_observer_manager.notify_failure()
                 return None, ''
+            self._log.log(12, "Alignment (word,time,length): %s" % self._decoder.get_word_align(output))
 
         else:
             raise EngineError("Invalid _compiler.parsing_framework")
