@@ -1,0 +1,31 @@
+[MASTER]
+
+# Add files or directories matching the regex patterns to the blacklist. The
+# regex matches against base names, not paths.
+ignore-patterns=_test_*.py
+
+# Use multiple processes to speed up Pylint.
+jobs=4
+
+[MESSAGES CONTROL]
+
+# Disable unwanted warnings with the given id(s) using a comma-separated
+# list.
+disable=invalid-name,bare-except,broad-except,bad-whitespace,unused-import,multiple-statements,missing-docstring,empty-docstring,useless-object-inheritance,no-else-return,len-as-condition
+
+[DESIGN]
+
+# Maximum number of arguments for function / method
+max-args=7
+
+# Minimum number of public methods for a class (see R0903).
+min-public-methods=0
+
+# Maximum number of public methods for a class (see R0904).
+max-public-methods=20
+
+[CLASSES]
+
+# List of method names used to declare (i.e. assign) instance attributes.
+# Action classes define some instance attributes in initialize().
+defining-attr-methods=__init__,__new__,setUp,initialize
