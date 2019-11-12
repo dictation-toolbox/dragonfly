@@ -298,6 +298,9 @@ class AudioStore(object):
                 ]) + '\n')
 
     def save_all(self):
+        if self.deque is None:
+            return
+
         for i in reversed(range(len(self.deque))):
             self.save(i)
 
