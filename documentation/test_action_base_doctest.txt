@@ -22,8 +22,15 @@ The following PrintAction is used in this test suite::
     ...         ActionBase.__init__(self)
     ...         self._name = name
     ...     def execute(self, data=None):
-    ...         if data:  print("executing %r %r" % (self._name, data))
-    ...         else:     print("executing %r" % (self._name,))
+    ...         if data:
+    ...             # Print a sorted representation of the data dict.
+    ...             sorted_data = "{%s}" % ", ".join([
+    ...                 "%r: %r" % (key, value)
+    ...                 for key, value in sorted(data.items())
+    ...             ])
+    ...             print("executing %r %s" % (self._name, sorted_data))
+    ...         else:
+    ...              print("executing %r" % (self._name,))
     ...
     >>> a = PrintAction("a")
     >>> a.execute()
@@ -138,10 +145,10 @@ Earliest bound data is used during execution::
 
     >>> ab_bound = a_bound + b_bound
     >>> ab_bound.execute({"bar": "later"})
-    executing 'a' {'foo': 2, 'bar': 'later'}
+    executing 'a' {'bar': 'later', 'foo': 2}
     executing 'b' {'bar': 3}
 
     >>> ab_bound = (a_bound + b_bound).bind({"bar": "later"})
     >>> ab_bound.execute()
-    executing 'a' {'foo': 2, 'bar': 'later'}
+    executing 'a' {'bar': 'later', 'foo': 2}
     executing 'b' {'bar': 3}

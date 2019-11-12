@@ -52,12 +52,18 @@ Follow the following steps to run the test suite for the DNS backend:
 
  #. Start DNS.  (And ensure that NatLink is also automatically started.)
  #. Extract the Dragonfly source code in a directory ``<dir>``.
- #. Run the tests with the following commands:
+ #. Run the follow commands to install test requirements:
 
     .. code:: shell
 
         cd <dir>
-        python setup.py test --test-suite=dragonfly.test.suites.natlink_suite
+        pip install -r test_requirements.txt
+
+ #. Run the tests with the following command:
+
+    .. code:: shell
+
+        python setup.py test --test-suite=natlink
 
 
 Different tests need to be run for different DNS versions. The natlink test
@@ -85,21 +91,26 @@ Follow the following steps to run the test suite for the WSR backend:
     because otherwise it'll be off and sleeping at the same time.  This
     causes all recognitions to fail.  Weird, huh?)
  #. Extract the Dragonfly source code in a directory ``<dir>``.
- #. Run the tests with the following commands:
+ #. Run the follow commands to install test requirements:
 
     .. code:: shell
 
         cd <dir>
-        python setup.py test --test-suite=dragonfly.test.suites.sapi5_suite
+        pip install -r test_requirements.txt
+
+ #. Run the tests with the following command:
+
+    .. code:: shell
+
+        python setup.py test --test-suite=sapi5
 
 
 You can also run the test suite for the in process engine class. It has no
-GUI for the moment. Run the tests with the following commands:
+GUI for the moment. Run the tests with the following command:
 
     .. code:: shell
 
-        cd <dir>
-        python setup.py test --test-suite=dragonfly.test.suites.sapi5inproc_suite
+        python setup.py test --test-suite=sapi5inproc
 
 
 Some SAPI5 engine tests will fail intermittently, particularly with the
@@ -115,12 +126,20 @@ Follow the following steps to run the test suite for the Kaldi backend:
  #. Extract the Dragonfly source code in a directory ``<dir>``.
  #. Follow the set up and install instructions for the Kaldi engine
     :ref:`on this page <RefKaldiEngine>`.
- #. Run the tests with the following commands:
+ #. Run the following commands to install the Kaldi engine and test
+    dependencies:
 
     .. code:: shell
 
         cd <dir>
-        python setup.py test --test-suite=dragonfly.test.suites.kaldi_suite
+        pip install -e .[kaldi]
+        pip install -r test_requirements.txt
+
+ #. Run the tests with the following command:
+
+    .. code:: shell
+
+        python setup.py test --test-suite=kaldi
 
 
 Using the CMU Pocket Sphinx engine
@@ -129,19 +148,21 @@ Using the CMU Pocket Sphinx engine
 Follow the following steps to run the test suite for the Sphinx backend:
 
  #. Extract the Dragonfly source code in a directory ``<dir>``.
- #. Run the following commands to install the Sphinx engine dependencies:
+ #. Run the following commands to install the Sphinx engine and test
+    dependencies:
 
     .. code:: shell
 
         cd <dir>
         pip install -e .[sphinx]
+        pip install -r test_requirements.txt
 
 
  #. Run the tests with the following command:
 
     .. code:: shell
 
-        python setup.py test --test-suite=dragonfly.test.suites.sphinx_suite
+        python setup.py test --test-suite=sphinx
 
 
 Using the text-input engine
@@ -150,6 +171,13 @@ Using the text-input engine
 Follow the following steps to run the test suite for the "text" backend:
 
  #. Extract the Dragonfly source code in a directory ``<dir>``.
+ #. Run the follow commands to install test requirements:
+
+    .. code:: shell
+
+        cd <dir>
+        pip install -r test_requirements.txt
+
  #. Run the tests with the following commands:
 
     .. code:: shell
