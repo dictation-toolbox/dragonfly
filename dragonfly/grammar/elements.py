@@ -29,7 +29,6 @@
 import dragonfly.grammar.elements_basic as basic_
 import dragonfly.grammar.elements_compound as compound_
 
-
 #===========================================================================
 # Element classes.
 
