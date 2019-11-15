@@ -32,210 +32,18 @@ import re
 
 from six import string_types, binary_type
 
-import dragonfly.grammar.elements_basic as elements_
-import dragonfly.parser as parser_
+from dragonfly.grammar.elements_basic import Alternative, ElementBase
 import logging
 
-
-class _Stuff(parser_.Sequence):
-
-    def __init__(self):
-        super(_Stuff, self).__init__()
-        self._single = None
-
-    def initialize(self):
-        self._single = _Single()
-        self._single.initialize()
-        repetition = parser_.Repetition(self._single)
-        elements = (
-            repetition,
-            parser_.Repetition(
-                parser_.Sequence((
-                    parser_.String("|"),
-                    repetition,
-                    )),
-                min=0),
-            )
-        parser_.Sequence.__init__(self, elements)
-
-    def set_elements(self, identifiers):
-        self._single.set_elements(identifiers)
-
-    def set_actions(self, identifiers):
-        self._single.set_actions(identifiers)
-
-    def value(self, node):
-        repetitions = [node.children[0].value()]
-        for repetition in node.children[1].children:
-            repetitions.append(repetition.children[1].value())
-
-        alternatives = []
-        for repetition in repetitions:
-            if len(repetition) == 1:
-                alternatives.append(repetition[0])
-            else:
-                element = elements_.Sequence(repetition)
-                alternatives.append(element)
-
-        if len(alternatives) == 1:
-            return alternatives[0]
-        else:
-            return elements_.Alternative(alternatives)
-
-stuff = _Stuff()
-
-
-class _Single(parser_.Sequence):
-
-    def __init__(self):
-        super(_Single, self).__init__()
-        self._action_identifier = None
-        self._element_identifier = None
-
-    def initialize(self):
-        self._element_identifier = _ElementRef()
-        self._action_identifier = _ActionRef()
-        alternatives = parser_.Alternative((
-            _Literal(),
-            _Optional(),
-            _Group(),
-            self._element_identifier,
-            ))
-        elements = [
-            parser_.Whitespace(optional=True),
-            alternatives,
-            parser_.Optional(
-                parser_.Sequence((
-                    parser_.Whitespace(optional=True),
-                    self._action_identifier,
-                    ))
-                ),
-            parser_.Whitespace(optional=True),
-            ]
-        parser_.Sequence.__init__(self, elements)
-
-    def set_elements(self, identifiers):
-        self._element_identifier.set_identifiers(identifiers)
-
-    def set_actions(self, identifiers):
-        self._action_identifier.set_identifiers(identifiers)
-
-    def value(self, node):
-        alternative = node.children[1]
-        element = alternative.children[0].value()
-
-        optional = node.children[2]
-        if optional.children:
-            action = optional.children[0].children[1].value()
-            element.add_action(action)
-
-        return element
-
-
-class _ElementRef(parser_.Sequence):
-
-    def __init__(self):
-        # Use a pattern to allow ascii and Unicode alphanumeric characters plus
-        # underscores.
-        pattern = re.compile(r"\w", re.UNICODE)
-        name = parser_.CharacterSeries(None, pattern=pattern)
-        elements = (parser_.String("<"), name, parser_.String(">"))
-        parser_.Sequence.__init__(self, elements)
-        self._identifiers = None
-
-    def set_identifiers(self, identifiers):
-        self._identifiers = identifiers
-
-    def value(self, node):
-        name = node.children[1].value()
-        try:
-            return self._identifiers[name]
-        except KeyError:
-            root = node
-            while root.parent:
-                root = root.parent
-            s = "Unknown reference name %r in %r" % (node.data, root.data)
-            raise Exception(s)
-
-
-class _ActionRef(parser_.Sequence):
-
-    def __init__(self):
-        # Use a pattern to allow ascii and Unicode alphanumeric characters plus
-        # underscores.
-        pattern = re.compile(r"\w", re.UNICODE)
-        name = parser_.CharacterSeries(None, pattern=pattern)
-        elements = (parser_.String("{"), name, parser_.String("}"))
-        parser_.Sequence.__init__(self, elements)
-        self._identifiers = None
-
-    def set_identifiers(self, identifiers):
-        self._identifiers = identifiers
-
-    def value(self, node):
-        name = node.children[1].value()
-        try:
-            return self._identifiers[name]
-        except KeyError:
-            root = node
-            while root.parent:
-                root = root.parent
-            s = "Unknown reference name %r in %r" % (node.data, root.data)
-            raise Exception(s)
-
-
-class _Literal(parser_.Sequence):
-
-    def __init__(self):
-        # Use a pattern to allow ascii and Unicode alphanumeric characters plus a
-        # few special characters.
-        pattern = re.compile(r"[\w_\-.',]", re.UNICODE)
-        word = parser_.CharacterSeries(None, pattern=pattern)
-        whitespace = parser_.Whitespace()
-        elements = (
-            word,
-            parser_.Repetition(
-                parser_.Sequence((whitespace, word)),
-                min=0),
-            )
-        parser_.Sequence.__init__(self, elements)
-
-    def value(self, node):
-        return elements_.Literal(node.match())
-
-
-class _Optional(parser_.Sequence):
-
-    def __init__(self):
-        elements = (parser_.String("["), stuff, parser_.String("]"))
-        parser_.Sequence.__init__(self, elements)
-
-    def value(self, node):
-        child = node.children[1].value()
-        return elements_.Optional(child)
-
-
-class _Group(parser_.Sequence):
-
-    def __init__(self):
-        elements = (parser_.String("("), stuff, parser_.String(")"))
-        parser_.Sequence.__init__(self, elements)
-
-    def value(self, node):
-        child = node.children[1].value()
-        return child
-
-
-stuff.initialize()
-
+from dragonfly.parsing.parse import spec_parser, CompoundTransformer, ParseError
 
 #---------------------------------------------------------------------------
 # The Compound class.
 
-class Compound(elements_.Alternative):
+class Compound(Alternative):
 
     _log = logging.getLogger("compound.parse")
-    _parser = parser_.Parser(stuff, _log)
+    _parser = spec_parser
 
     def __init__(self, spec, extras=None, actions=None, name=None,
                  value=None, value_func=None, elements=None, default=None):
@@ -254,7 +62,7 @@ class Compound(elements_.Alternative):
         if isinstance(extras, (tuple, list)):
             mapping = {}
             for element in extras:
-                if not isinstance(element, elements_.ElementBase):
+                if not isinstance(element, ElementBase):
                     self._log.error("Invalid extras item: %s" % element)
                     raise TypeError("Invalid extras item: %s" % element)
                 if not element.name:
@@ -277,15 +85,19 @@ class Compound(elements_.Alternative):
             extras = elements
         self._extras = extras
 
-        # This solution is non-ideal as "stuff" is a global instance.
-        stuff.set_elements(extras)
-        stuff.set_actions(actions)
+        try:
+            tree = self._parser.parse(spec)
+        except Exception as e:
+            self._log.error("Exception raised parsing %r: %s" % (spec, e))
+            raise ParseError("Exception raised parsing %r: %s" % (spec, e))
 
-        element = self._parser.parse(spec)
-        if not element:
-            self._log.error("Invalid compound spec: %r" % spec)
-            raise SyntaxError("Invalid compound spec: %r" % spec)
-        elements_.Alternative.__init__(self, (element,), name=name,
+        try:
+            element = CompoundTransformer(self._extras).transform(tree)
+        except Exception as e:
+            self._log.error("Exception raised transforming %r: %s" % (spec, e))
+            raise ParseError("Exception raised transforming %r: %s" % (spec, e))
+
+        Alternative.__init__(self, (element,), name=name,
                                        default=default)
 
     def __repr__(self):
@@ -314,13 +126,13 @@ class Compound(elements_.Alternative):
         elif self._value is not None:
             return self._value
         else:
-            return elements_.Alternative.value(self, node)
+            return Alternative.value(self, node)
 
 
 #---------------------------------------------------------------------------
 # The Choice class which maps multiple Compound instances to values.
 
-class Choice(elements_.Alternative):
+class Choice(Alternative):
     """
         Element allowing a dictionary of phrases to be recognised to be mapped to objects to be used in an action.
 
@@ -370,5 +182,5 @@ class Choice(elements_.Alternative):
             children.append(child)
 
         # Initialize super class.
-        elements_.Alternative.__init__(self, children=children,
+        Alternative.__init__(self, children=children,
                                        name=name, default=default)

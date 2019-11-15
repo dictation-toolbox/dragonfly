@@ -41,22 +41,25 @@ class IntBuilderBase(object):
         raise NotImplementedError("Call to virtual method build_element()"
                                   " in base class IntBuilderBase")
 
-
 class MapIntBuilder(IntBuilderBase):
 
     def __init__(self, mapping):
         self._mapping = mapping
 
-    def build_element(self, min, max):
-        elements = [(spec, value)
-                    for spec, value in self._mapping.items()
-                    if min <= value < max]
-        if len(elements) > 1:
-            children = [Compound(spec=spec, value=value)
-                        for spec, value in elements]
+    def build_element(self, min, max, memo={}):
+        children = []
+        for spec, value in self._mapping.items():
+            if min <= value < max:
+                if spec in memo:
+                    children.append(memo[spec])
+                else:
+                    element = Compound(spec=spec, value=value)
+                    children.append(element)
+                    memo[spec] = element
+        if len(children) > 1:
             return Alternative(children)
-        elif len(elements) == 1:
-            return Compound(spec=elements[0][0], value=elements[0][1])
+        elif len(children) == 1:
+            return children[0]
         else:
             return None
 

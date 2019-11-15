@@ -39,6 +39,7 @@ common_names = [
     "test_engine_nonexistent",
     "test_log",
     "test_parser",
+    "test_lark_parser",
     "test_rpc",
     "test_timer",
     "test_window",
