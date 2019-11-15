@@ -22,7 +22,6 @@
 This file offers access to various action classes.
 
 """
-import sys
 
 from .action_pause        import Pause
 from .action_function     import Function
@@ -40,10 +39,4 @@ from .action_mouse        import Mouse
 from .action_waitwindow   import WaitWindow
 from .action_focuswindow  import FocusWindow
 from .action_startapp     import StartApp, BringApp
-
-if sys.platform.startswith("win"):
-    # Import Windows only classes and functions.
-    from .action_playsound    import PlaySound
-else:
-    # Import mocked classes and functions for other platforms.
-    from ..os_dependent_mock import PlaySound
+from .action_playsound    import PlaySound
