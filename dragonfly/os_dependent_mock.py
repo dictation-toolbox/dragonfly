@@ -33,8 +33,3 @@ class MockAction(ActionBase):
     """ Mock class for dragonfly actions. """
     def __init__(self, *args, **kwargs):
         ActionBase.__init__(self)
-
-
-class PlaySound(ActionBase):
-    def __init__(self, name=None, file=None):
-        ActionBase.__init__(self)

@@ -134,3 +134,6 @@ Action class reference
 
 .. automodule:: dragonfly.actions.action_pause
    :members:
+
+.. automodule:: dragonfly.actions.action_playsound
+   :members:
