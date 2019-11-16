@@ -149,14 +149,19 @@ class BringApp(StartApp):
              - *cwd* (*str*, default *None*) --
                if not *None*, then start the application in this
                directory
+             - *title* (*str*, default *None*) --
+               if not *None*, then matching existing windows using this
+               title.
 
         """
+        self._title = kwargs.pop("title", None)
         StartApp.__init__(self, *args, **kwargs)
 
     def _execute(self, data=None):
         self._log.debug("Bringing app: %r" % (self._args,))
         target = self._args[0].lower()
-        focus_action = FocusWindow(executable=target)
+        title = self._title
+        focus_action = FocusWindow(executable=target, title=title)
         # Attempt to focus on an existing window.
         if not focus_action.execute():
             # Failed to focus on an existing window, so start
