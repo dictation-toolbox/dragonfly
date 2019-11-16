@@ -57,6 +57,9 @@ Class reference
 
 import os.path
 from subprocess           import Popen
+
+from six import string_types
+
 from .action_base         import ActionBase, ActionError
 from .action_focuswindow  import FocusWindow
 
@@ -82,12 +85,12 @@ class StartApp(ActionBase):
                if not *None*, then start the application in this
                directory
 
-            A single *list* argument can be used instead of
+            A single *list* or *tuple* argument can be used instead of
             variable arguments.
 
         """
         ActionBase.__init__(self)
-        if len(args) == 1 and isinstance(args, list):
+        if len(args) == 1 and isinstance(args[0], (tuple, list)):
             args = args[0]  # use the sub-list instead
 
         self._args = args
@@ -105,6 +108,10 @@ class StartApp(ActionBase):
         self._str = str(", ".join(repr(a) for a in self._args))
 
     def _interpret(self, path):
+        if not isinstance(path, string_types):
+            raise TypeError("expected string argument for path, but got "
+                            "%s" % path)
+
         return os.path.expanduser(os.path.expandvars(path))
 
     def _execute(self, data=None):
