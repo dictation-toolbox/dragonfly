@@ -981,7 +981,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             self._log.warning("Or maybe '-vad_startspeech' or "
                               "'-vad_postspeech' should be lower?")
 
-    def recognize_forever(self):
+    def _do_recognition(self):
         """
         Start recognising from the default recording device until
         :meth:`disconnect` is called.
@@ -1006,9 +1006,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Free engine resources after recognition has stopped.
         self._free_engine_resources()
-
-    #: Alias of :meth:`recognize_forever` left in for backwards-compatibility
-    recognise_forever = recognize_forever
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words* """

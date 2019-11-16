@@ -130,7 +130,7 @@ class TextInputEngine(EngineBase):
         # Minor note: this won't work for languages without capitalisation.
         return tuple(map(_map_word, words))
 
-    def recognize_forever(self):
+    def _do_recognition(self):
         """
         Recognize words from standard input (stdin) in a loop until
         interrupted or :meth:`disconnect` is called.

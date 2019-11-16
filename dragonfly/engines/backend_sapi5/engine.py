@@ -305,7 +305,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
             grammar.process_begin(window.executable, window.title,
                                   window.handle)
 
-    def recognize_forever(self):
+    def _do_recognition(self):
         """
             Recognize speech in a loop.
 

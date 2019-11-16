@@ -205,7 +205,7 @@ class NatlinkEngine(EngineBase):
     #-----------------------------------------------------------------------
     # Miscellaneous methods.
 
-    def recognize_forever(self):
+    def _do_recognition(self):
         self.natlink.waitForSpeech()
 
     def mimic(self, words):
