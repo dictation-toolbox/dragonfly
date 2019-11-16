@@ -179,6 +179,10 @@ class BaseWindow(object):
         # Method to get the window executable.
         raise NotImplementedError()
 
+    def _get_window_pid(self):
+        # Method to get the window process ID.
+        raise NotImplementedError()
+
     @property
     def title(self):
         """ Read-only access to the window's title. """
@@ -201,6 +205,21 @@ class BaseWindow(object):
     def executable(self):
         """ Read-only access to the window's executable. """
         return self._get_window_module()
+
+    @property
+    def pid(self):
+        """
+        Read-only access to the window's process ID.
+
+        This will be the PID of the window's process, not any subprocess.
+
+        If the window has no associated process id, this will return
+        ``None``.
+
+        :returns: pid
+        :rtype: int | None
+        """
+        return self._get_window_pid()
 
     @property
     def is_minimized(self):

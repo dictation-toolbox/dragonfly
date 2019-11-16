@@ -28,6 +28,7 @@ class FakeWindow(BaseWindow):
     fake_title = ''
     fake_classname = ''
     fake_executable = ''
+    fake_pid = 0
 
     @classmethod
     def get_foreground(cls):
@@ -52,6 +53,9 @@ class FakeWindow(BaseWindow):
 
     def _get_window_module(self):
         return self.fake_executable
+
+    def _get_window_pid(self):
+        return self.fake_pid
 
     @property
     def is_minimized(self):
