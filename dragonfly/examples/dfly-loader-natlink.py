@@ -38,7 +38,7 @@ Some notes
 
 import os.path
 
-from dragonfly import RecognitionObserver, get_engine
+from dragonfly import get_engine
 from dragonfly.loader import CommandModuleDirectory
 from dragonfly.log import setup_log
 
@@ -47,22 +47,6 @@ from dragonfly.log import setup_log
 
 setup_log()
 # logging.getLogger("compound.parse").setLevel(logging.INFO)
-
-# --------------------------------------------------------------------------
-# Simple recognition observer class.
-
-class Observer(RecognitionObserver):
-    def __init__(self):
-        super(Observer, self).__init__()
-
-    def on_begin(self):
-        print("Speech start detected.")
-
-    def on_recognition(self, words):
-        print(" ".join(words))
-
-    def on_failure(self):
-        print("Sorry, what was that?")
 
 
 #---------------------------------------------------------------------------
@@ -78,18 +62,29 @@ def main():
         path = os.getcwd()
         __file__ = os.path.join(path, "dfly-loader-natlink.py")
 
+    # Initialize and connect the engine.
     engine = get_engine("natlink")
     engine.connect()
 
-    # Register a recognition observer
-    observer = Observer()
-    observer.register()
-
+    # Load grammars.
     directory = CommandModuleDirectory(path, excludes=[__file__])
     directory.load()
 
+    # Define recognition callback functions.
+    def on_begin():
+        print("Speech start detected.")
+
+    def on_recognition(words):
+        print("Recognized: %s" % " ".join(words))
+
+    def on_failure():
+        print("Sorry, what was that?")
+
     # Recognize from Dragon in a loop (opens a dialogue window).
-    engine.natlink.waitForSpeech()
+    try:
+        engine.do_recognition(on_begin, on_recognition, on_failure)
+    except KeyboardInterrupt:
+        pass
 
     # Unload all grammars from the engine so that Dragon doesn't keep
     # recognizing them.

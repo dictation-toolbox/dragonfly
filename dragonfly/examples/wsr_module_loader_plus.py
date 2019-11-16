@@ -15,7 +15,7 @@ import os.path
 import logging
 import winsound
 
-from dragonfly import RecognitionObserver, get_engine
+from dragonfly import get_engine
 from dragonfly import Grammar, MappingRule, Function, Dictation, FuncContext
 from dragonfly.loader import CommandModuleDirectory
 from dragonfly.log import setup_log
@@ -105,20 +105,6 @@ def load_sleep_wake_grammar(initial_awake):
 
 
 # --------------------------------------------------------------------------
-# Simple recognition observer class.
-
-class Observer(RecognitionObserver):
-    def on_begin(self):
-        print("Speech started.")
-
-    def on_recognition(self, words):
-        print("Recognized:", " ".join(words))
-
-    def on_failure(self):
-        print("Sorry, what was that?")
-
-
-# --------------------------------------------------------------------------
 # Main event driving loop.
 
 def main():
@@ -133,26 +119,30 @@ def main():
         path = os.getcwd()
         __file__ = os.path.join(path, "wsr_module_loader_plus.py")
 
+    # Initialize and connect the engine.
     # Set any configuration options here as keyword arguments.
     engine = get_engine("sapi5inproc")
-
-    # Call connect() now that the engine configuration is set.
     engine.connect()
 
-    # Register a recognition observer
-    observer = Observer()
-    observer.register()
-
+    # Load grammars.
     load_sleep_wake_grammar(True)
-
     directory = CommandModuleDirectory(path, excludes=[__file__])
     directory.load()
 
+    # Define recognition callback functions.
+    def on_begin():
+        print("Speech start detected.")
+
+    def on_recognition(words):
+        print("Recognized: %s" % " ".join(words))
+
+    def on_failure():
+        print("Sorry, what was that?")
+
     # Start the engine's main recognition loop
     try:
-        # Recognize from WSR in a loop.
         print("Listening...")
-        engine.recognize_forever()
+        engine.do_recognition(on_begin, on_recognition, on_failure)
     except KeyboardInterrupt:
         pass
 
