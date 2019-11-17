@@ -141,12 +141,17 @@ class X11Window(BaseWindow):
         # Exclude window IDs that have no associated process ID.
         result = []
         for window in windows:
-            props = cls._get_properties_from_xprop(window, '_NET_WM_PID')
+            props = cls._get_properties_from_xprop(window, '_NET_WM_PID',
+                                                   '_NET_WM_STATE')
             if '_NET_WM_PID' not in props:
                 continue
-            result.append(window)
+            has_state = '_NET_WM_STATE' not in props
+            result.append((window, has_state))
 
-        return result
+        # Sort the list so that windows without _NET_WM_STATE are
+        # last.
+        result.sort(key=lambda pair: pair[1])
+        return [w for (w, _) in result]  # return just the windows
 
     @classmethod
     def get_matching_windows(cls, executable=None, title=None):
@@ -179,8 +184,13 @@ class X11Window(BaseWindow):
             if title:
                 if window.title.lower().find(title) == -1:
                     continue
+
+            # Match found.
             matching.append(window)
 
+        # Sort the window list so that windows without _NET_WM_STATE are
+        # last.
+        matching.sort(key=lambda w: w.state is None)
         return matching
 
     #-----------------------------------------------------------------------
