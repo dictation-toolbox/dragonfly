@@ -20,6 +20,8 @@
 
 import locale
 import logging
+import sys
+import time
 
 from six import string_types, binary_type
 
@@ -130,12 +132,32 @@ class TextInputEngine(EngineBase):
         # Minor note: this won't work for languages without capitalisation.
         return tuple(map(_map_word, words))
 
-    def _do_recognition(self):
+    def _do_recognition(self, delay=0):
         """
         Recognize words from standard input (stdin) in a loop until
         interrupted or :meth:`disconnect` is called.
+
+        :param delay: time in seconds to delay before mimicking each
+            command. This is useful for testing contexts.
         """
-        # TODO Implement using code from dragonfly/__main__.py
+        try:
+            # Use iter to avoid a bug in Python 2.x:
+            # https://bugs.python.org/issue3907
+            for line in iter(sys.stdin.readline, ''):
+                line = line.strip()
+                if not line:  # skip empty lines.
+                    continue
+
+                # Delay between mimic() calls if necessary.
+                if delay > 0:
+                    time.sleep(delay)
+
+                try:
+                    self.mimic(line.split())
+                except MimicFailure:
+                    self._log.error("Mimic failure for words: %s", line)
+        except KeyboardInterrupt:
+            pass
 
     def mimic(self, words, **kwargs):
         """ Mimic a recognition of the given *words*. """
