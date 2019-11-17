@@ -2,9 +2,28 @@ from lark import Lark, Transformer
 from ..grammar.elements_basic import Literal, Optional, Sequence, Alternative, Empty
 import os
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+grammar = r"""
+?start: alternative
 
-spec_parser = Lark.open(os.path.join(dir_path, "grammar.lark"),
+// ? means that the rule will be inlined iff there is a single child
+?alternative: sequence ("|" sequence)*
+?sequence: single*
+
+?single: WORD+               -> literal
+      | "<" WORD ">"         -> reference
+      | "[" alternative "]"  -> optional
+      | "(" alternative ")"
+
+// Match anything which is not whitespace or a control character,
+// we will let the engine handle invalid words
+WORD: /[^\s\[\]<>|()]+/
+
+%import common.WS_INLINE
+%ignore WS_INLINE
+"""
+
+spec_parser = Lark(
+    grammar,
     parser="lalr"
 )
 
