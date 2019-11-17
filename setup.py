@@ -135,12 +135,22 @@ setup(
       },
 
       classifiers=[
-                   "Environment :: Win32 (MS Windows)",
                    "Development Status :: 4 - Beta",
+                   "Environment :: Win32 (MS Windows)",
+                   "Environment :: X11 Applications",
                    "License :: OSI Approved :: "
                    "GNU Library or Lesser General Public License (LGPL)",
+                   "Intended Audience :: Developers",
                    "Operating System :: Microsoft :: Windows",
-                   "Programming Language :: Python",
+                   "Operating System :: POSIX",
+                   "Programming Language :: Python :: 2.7",
+                   "Programming Language :: Python :: 3.4",
+                   "Programming Language :: Python :: 3.5",
+                   "Programming Language :: Python :: 3.6",
+                   "Programming Language :: Python :: 3.7",
+                   "Programming Language :: Python :: Implementation :: CPython",
+                   "Topic :: Multimedia :: Sound/Audio :: Speech",
+                   "Topic :: Software Development :: Libraries :: Python Modules",
                   ],
 
       packages=find_packages(),
