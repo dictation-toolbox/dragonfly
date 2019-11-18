@@ -83,11 +83,7 @@ setup(
       url              = "https://github.com/dictation-toolbox/dragonfly",
       zip_safe         = False,  # To unzip documentation files.
       long_description = read("README.rst"),
-
-      package_data={
-                    "": ["*.txt", "*.rst"]
-                   },
-
+      include_package_data=True,
       install_requires=[
                         "setuptools >= 0.6c7",
                         "six",
