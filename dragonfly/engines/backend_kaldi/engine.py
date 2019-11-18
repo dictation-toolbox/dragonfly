@@ -264,7 +264,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         next(self._audio_iter)
 
         try:
-            while (not timeout) or (time.time() < end_time):
+            # Loop until timeout (if set) or until disconnect() is called.
+            while self._decoder and ((not timeout) or (time.time() < end_time)):
                 self.prepare_for_recognition()
                 block = self._audio_iter.send(in_complex)
 
@@ -313,8 +314,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 self.call_timer_callback()
 
         finally:
-            self._audio.stop()
-            self.audio_store.save_all()
+            if self._audio:
+                self._audio.stop()
+            if self.audio_store:
+                self.audio_store.save_all()
 
         return not timed_out
 

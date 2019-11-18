@@ -54,15 +54,17 @@ class TextInputEngine(EngineBase):
     def __init__(self):
         EngineBase.__init__(self)
         self._language = "en"
+        self._connected = False
         self._recognition_observer_manager = TextRecobsManager(self)
         self._timer_manager = ThreadedTimerManager(0.02, self)
 
     def connect(self):
-        pass
+        self._connected = True
 
     def disconnect(self):
         # Clear grammar wrappers on disconnect()
         self._grammar_wrappers.clear()
+        self._connected = False
 
     # -----------------------------------------------------------------------
     # Methods for administrating timers.
@@ -140,6 +142,7 @@ class TextInputEngine(EngineBase):
         :param delay: time in seconds to delay before mimicking each
             command. This is useful for testing contexts.
         """
+        self.connect()
         try:
             # Use iter to avoid a bug in Python 2.x:
             # https://bugs.python.org/issue3907
@@ -156,6 +159,10 @@ class TextInputEngine(EngineBase):
                     self.mimic(line.split())
                 except MimicFailure:
                     self._log.error("Mimic failure for words: %s", line)
+
+                # Finish early if disconnect() was called.
+                if self._connected is False:
+                    break
         except KeyboardInterrupt:
             pass
 
