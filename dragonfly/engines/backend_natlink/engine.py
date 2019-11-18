@@ -28,8 +28,10 @@ Detecting sleep mode
  - http://blogs.msdn.com/b/tsfaware/archive/2010/03/22/detecting-sleep-mode-in-sapi.aspx
 
 """
+
 import os.path
 import sys
+import pywintypes
 from datetime import datetime
 from locale import getpreferredencoding
 from six import text_type, binary_type, string_types
@@ -94,6 +96,23 @@ class NatlinkEngine(EngineBase):
 
     def disconnect(self):
         """ Disconnect from natlink. """
+        # Unload all grammars from the engine so that Dragon doesn't keep
+        # recognizing them.
+        for grammar in self.grammars:
+            grammar.unload()
+
+        # Close the the waitForSpeech() dialog box if it is active.
+        from dragonfly import Window
+        target_title = "Natlink / Python Subsystem"
+        for window in Window.get_matching_windows(title=target_title):
+            if window.is_visible:
+                try:
+                    window.close()
+                except pywintypes.error:
+                    pass
+                break
+
+        # Finally disconnect from natlink.
         self.natlink.natDisconnect()
 
     # -----------------------------------------------------------------------
@@ -204,6 +223,9 @@ class NatlinkEngine(EngineBase):
 
     #-----------------------------------------------------------------------
     # Miscellaneous methods.
+
+    def _do_recognition(self):
+        self.natlink.waitForSpeech()
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """

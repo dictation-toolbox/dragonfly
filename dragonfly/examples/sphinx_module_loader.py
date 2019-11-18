@@ -17,7 +17,7 @@ import os.path
 import logging
 
 
-from dragonfly import RecognitionObserver, get_engine
+from dragonfly import get_engine
 from dragonfly.loader import CommandModuleDirectory
 from dragonfly.log import setup_log
 
@@ -25,20 +25,6 @@ from dragonfly.log import setup_log
 # Set up basic logging.
 
 setup_log()
-
-
-# --------------------------------------------------------------------------
-# Simple recognition observer class.
-
-class Observer(RecognitionObserver):
-    def on_begin(self):
-        print("Speech started.")
-
-    def on_recognition(self, words):
-        print(" ".join(words))
-
-    def on_failure(self):
-        print("Sorry, what was that?")
 
 
 # --------------------------------------------------------------------------
@@ -54,6 +40,7 @@ def main():
         path = os.getcwd()
         __file__ = os.path.join(path, "sphinx_module_loader.py")
 
+    # Initialize the engine.
     engine = get_engine("sphinx")
 
     # Try to import the local engine configuration object first. If there isn't one,
@@ -77,16 +64,23 @@ def main():
     # Call connect() now that the engine configuration is set.
     engine.connect()
 
-    # Register a recognition observer
-    observer = Observer()
-    observer.register()
-
+    # Load grammars.
     directory = CommandModuleDirectory(path, excludes=[__file__])
     directory.load()
 
+    # Define recognition callback functions.
+    def on_begin():
+        print("Speech start detected.")
+
+    def on_recognition(words):
+        print("Recognized: %s" % " ".join(words))
+
+    def on_failure():
+        print("Sorry, what was that?")
+
     # Start the engine's main recognition loop
     try:
-        engine.recognise_forever()
+        engine.do_recognition(on_begin, on_recognition, on_failure)
     except KeyboardInterrupt:
         pass
 

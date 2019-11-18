@@ -204,6 +204,58 @@ class EngineBase(object):
     #-----------------------------------------------------------------------
     #  Miscellaneous methods.
 
+    def do_recognition(self, begin_callback=None, recognition_callback=None,
+                       failure_callback=None, *args, **kwargs):
+        """
+        Recognize speech in a loop until interrupted or :meth:`disconnect`
+        is called.
+
+        Recognition callback functions can optionally be registered.
+
+        Extra positional and key word arguments are passed to
+        :meth:`_do_recognition`.
+
+        :param begin_callback: optional function to be called when speech
+            starts.
+        :type begin_callback: callable | None
+        :param recognition_callback: optional function to be called on
+            recognition success.
+        :type recognition_callback: callable | None
+        :param failure_callback: optional function to be called on
+            recognition failure.
+        :type failure_callback: callable | None
+        """
+        # Import locally to avoid cycles.
+        from dragonfly.grammar.recobs_callbacks import (
+            register_beginning_callback, register_recognition_callback,
+            register_failure_callback
+        )
+
+        if begin_callback:
+            register_beginning_callback(begin_callback)
+        if recognition_callback:
+            register_recognition_callback(recognition_callback)
+        if failure_callback:
+            register_failure_callback(failure_callback)
+
+        # Call _do_recognition() to start recognizing.
+        self._do_recognition(*args, **kwargs)
+
+    def _do_recognition(self, *args, **kwargs):
+        """
+        Recognize speech in a loop until interrupted or :meth:`disconnect`
+        is called.
+
+        This method should be implemented by engine sub-classes.
+        """
+        raise NotImplementedError("Engine %s not implemented." % self)
+
+    #: Alias of :meth:`do_recognition` left in for backwards-compatibility
+    recognize_forever = do_recognition
+
+    #: Alias of :meth:`do_recognition` left in for backwards-compatibility
+    recognise_forever = do_recognition
+
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
         raise NotImplementedError("Engine %s not implemented." % self)

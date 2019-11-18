@@ -981,7 +981,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             self._log.warning("Or maybe '-vad_startspeech' or "
                               "'-vad_postspeech' should be lower?")
 
-    def recognise_forever(self):
+    def _do_recognition(self):
         """
         Start recognising from the default recording device until
         :meth:`disconnect` is called.

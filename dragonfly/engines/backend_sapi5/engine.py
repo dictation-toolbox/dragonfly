@@ -305,7 +305,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
             grammar.process_begin(window.executable, window.title,
                                   window.handle)
 
-    def recognize_forever(self):
+    def _do_recognition(self):
         """
             Recognize speech in a loop.
 
@@ -345,9 +345,9 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
           win32con.EVENT_OBJECT_NAMECHANGE, }]
 
         # Recognize speech, call timer functions and handle window change
-        # events in a loop.
+        # events in a loop. Stop on disconnect().
         self.speak('beginning loop!')
-        while 1:
+        while self._recognizer is not None:
             pythoncom.PumpWaitingMessages()
             self.call_timer_callback()
             time.sleep(0.005)
