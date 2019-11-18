@@ -86,11 +86,6 @@ def main():
     except KeyboardInterrupt:
         pass
 
-    # Unload all grammars from the engine so that Dragon doesn't keep
-    # recognizing them.
-    for grammar in engine.grammars:
-        grammar.unload()
-
     # Disconnect after the dialogue is closed.
     engine.disconnect()
 
