@@ -96,7 +96,7 @@ class KeyboardInput(Structure):
                                                           0, layout)
 
         flags = 0
-        if virtual_keycode is 0:
+        if virtual_keycode == 0:
             flags |= 4  # KEYEVENTF_UNICODE
         elif virtual_keycode not in self.soft_keys:
             flags |= 8  # KEYEVENTF_SCANCODE
