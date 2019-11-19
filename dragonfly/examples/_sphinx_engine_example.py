@@ -16,15 +16,6 @@ if __name__ == '__main__':
     sphinx_engine = get_engine("sphinx")
 
 
-def disconnect():
-    # You shouldn't really run this module in other engines because it uses
-    # sphinx-specific engine methods.
-    print("Disconnecting engine (only for sphinx)")
-    engine = get_engine()
-    if engine.name == "sphinx":
-        engine.disconnect()
-
-
 def print_(x):
     print(x)
 
@@ -71,9 +62,6 @@ class ExampleRule(MappingRule):
 
         # Command to type numbers, e.g. 'type one two three'.
         "type <numbers>": Function(type_numbers),
-
-        # Stop recognising from the microphone and exit.
-        "disconnect engine|turn off": Function(disconnect),
 
         # Write transcript files used for training models.
         "(make|write) transcripts": Function(write_transcripts),
