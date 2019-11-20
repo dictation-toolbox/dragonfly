@@ -249,6 +249,11 @@ class Text(DynStrActionBase):
                     hardware_error_message = ("Keyboard interface cannot type this"
                                               " character: %r (in %r)"
                                               % (character, spec))
+
+                # Calculate and add Unicode events only if necessary.
+                if not sys.platform.startswith("win"):
+                    continue
+
                 # Add Unicode events.
                 byte_stream = character.encode("utf-16-le")
                 for short in unpack("<" + str(len(byte_stream) // 2) + "H",
