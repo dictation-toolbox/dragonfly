@@ -229,7 +229,6 @@ class Text(DynStrActionBase):
 
     def _parse_spec(self, spec):
         """Convert the given *spec* to keyboard events."""
-        from struct import unpack
         hardware_events = []
         unicode_events = []
         hardware_error_message = None
@@ -254,18 +253,14 @@ class Text(DynStrActionBase):
                 if not sys.platform.startswith("win"):
                     continue
 
-                # Add Unicode events.
-                byte_stream = character.encode("utf-16-le")
-                for short in unpack("<" + str(len(byte_stream) // 2) + "H",
-                                    byte_stream):
-                    try:
-                        typeable = self._keyboard.get_typeable(short,
-                                                               is_text=True)
-                        unicode_events.extend(typeable.events(self._pause * 0.5))
-                    except ValueError:
-                        unicode_error_message = ("Keyboard interface cannot type "
-                                                 "this character: %r (in %r)" %
-                                                 (character, spec))
+                try:
+                    typeable = self._keyboard.get_typeable(character,
+                                                           is_text=True)
+                    unicode_events.extend(typeable.events(self._pause * 0.5))
+                except ValueError:
+                    unicode_error_message = ("Keyboard interface cannot type "
+                                             "this character: %r (in %r)" %
+                                             (character, spec))
         return self.Events(hardware_events, hardware_error_message,
                            unicode_events, unicode_error_message)
 

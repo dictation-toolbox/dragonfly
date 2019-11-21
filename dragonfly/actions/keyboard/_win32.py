@@ -20,12 +20,11 @@
 
 """This file implements the Win32 keyboard interface using sendinput."""
 
-from contextlib import contextmanager
-from ctypes import windll
 from locale import getpreferredencoding
+from struct import unpack
 import time
 
-from six import binary_type, string_types
+from six import binary_type, text_type
 
 import win32api
 import win32con
@@ -139,48 +138,74 @@ class Typeable(BaseTypeable):
 
     __slots__ = ("_code", "_modifiers", "_name", "_is_text", "_char")
 
-    def __init__(self, code, modifiers=(), name=None, is_text=False):
-        super(Typeable, self).__init__(code, modifiers, name, is_text)
-        if not is_text and isinstance(code, string_types):
-            self._char = code
-        else:
-            self._char = None
+    def __init__(self, code, modifiers=(), name=None, is_text=False,
+                 char=None):
+        BaseTypeable.__init__(self, code, modifiers, name, is_text)
+        self._char = char
 
-    @contextmanager
-    def _set_keycode_and_modifiers(self):
-        # Only required if this is a hardware-input lookup key.
-        char, is_text = self._char, self._is_text
-        if char is None or is_text:
-            yield
+    def update(self):
+        # Nothing to do for virtual keys.
+        if self._char is None:
             return
-        code, modifiers = Keyboard.get_keycode_and_modifiers(char)
-        # try:
-        #     code, modifiers = Keyboard.get_keycode_and_modifiers(char)
-        # except ValueError:
-        #     # Fallback on the Unicode events if the key cannot be typed
-        #     # using the current keyboard layout.
-        #     code, modifiers = char, ()
-        #     self._is_text = True
 
-        # Set keycode and modifiers and yield.
-        self._code, self._modifiers = code, modifiers
+        # Get updated key code and modifiers for this Typeable.
         try:
-            yield
-        finally:
-            # Set _is_text back to the original value.
-            self._is_text = is_text
+            code, modifiers = Keyboard.get_keycode_and_modifiers(self._char)
+        except ValueError:
+            # Fallback on Unicode events.
+            code, modifiers = self._char, ()
+            self._is_text = True
+
+        # Set key code and modifiers.
+        self._code, self._modifiers = code, modifiers
+
+    def _unicode_events(self, down, timeout):
+        character = self._code
+        if not isinstance(character, text_type):
+            raise TypeError("cannot create Unicode events for character: %r"
+                            % character)
+
+        # Construct the UTF-16 (LE) events that sendinput expects.
+        events = []
+        byte_stream = character.encode("utf-16-le")
+        format_string = "<" + str(len(byte_stream) // 2) + "H"
+        for short in unpack(format_string, byte_stream):
+            if down is True or down is False:
+                events.extend([(short, down, timeout, True)])
+            else:  # both for events()
+                events.extend([(short, True, timeout, True),
+                               (short, False, timeout, True)])
+        return events
 
     def on_events(self, timeout=0):
-        with self._set_keycode_and_modifiers():
-            return super(Typeable, self).on_events(timeout)
+        """Return events for pressing this key down."""
+        if self._is_text:
+            events = self._unicode_events(True, timeout)
+        else:
+            events = [(m, True, 0) for m in self._modifiers]
+            events.append((self._code, True, timeout))
+        return events
 
     def off_events(self, timeout=0):
-        with self._set_keycode_and_modifiers():
-            return super(Typeable, self).off_events(timeout)
+        """Return events for releasing this key."""
+        if self._is_text:
+            events = self._unicode_events(False, timeout)
+        else:
+            events = [(m, False, 0) for m in self._modifiers]
+            events.append((self._code, False, timeout))
+            events.reverse()
+        return events
 
     def events(self, timeout=0):
-        with self._set_keycode_and_modifiers():
-            return super(Typeable, self).events(timeout)
+        """Return events for pressing and then releasing this key."""
+        if self._is_text:
+            events = self._unicode_events("both", timeout)
+        else:
+            events = [(self._code, True, 0), (self._code, False, timeout)]
+            for m in self._modifiers[-1::-1]:
+                events.insert(0, (m, True, 0))
+                events.append((m, False, 0))
+        return events
 
 
 class Keyboard(BaseKeyboard):
@@ -246,15 +271,13 @@ class Keyboard(BaseKeyboard):
 
     @classmethod
     def _get_initial_keycode(cls, char):
-        thread_id = win32process.GetWindowThreadProcessId(
-            win32gui.GetForegroundWindow()
-        )[0]
-        layout = windll.user32.GetKeyboardLayout(thread_id)
-        if isinstance(char, binary_type):
-            char = char.decode(getpreferredencoding())
-
         # Get the code for this character.
-        code = win32api.VkKeyScanEx(char, layout)
+        layout = cls.get_current_layout()
+        try:
+            code = win32api.VkKeyScanEx(char, layout)
+        except TypeError:
+            code = -1
+
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
         return code
@@ -284,6 +307,10 @@ class Keyboard(BaseKeyboard):
 
     @classmethod
     def get_typeable(cls, char, is_text=False):
+        if isinstance(char, binary_type):
+            char = char.decode(getpreferredencoding())
         if is_text:
             return Typeable(char, is_text=True)
-        return Typeable(char, name=char)
+
+        code, modifiers = cls.get_keycode_and_modifiers(char)
+        return Typeable(code, modifiers, name=char, char=char)
