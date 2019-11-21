@@ -224,13 +224,15 @@ Key class reference
 
 """
 
-from .action_base  import DynStrActionBase, ActionError
-from .typeables    import typeables
-from .keyboard     import Keyboard
+import sys
+
+from .action_base           import ActionError
+from .action_base_keyboard  import BaseKeyboardAction
+from .typeables             import typeables
 
 #---------------------------------------------------------------------------
 
-class Key(DynStrActionBase):
+class Key(BaseKeyboardAction):
 
     """
         Keystroke emulation action.
@@ -239,6 +241,10 @@ class Key(DynStrActionBase):
          - *spec* (*str*) -- keystroke specification
          - *static* (boolean) -- flag indicating whether the
            specification contains dynamic elements
+         - *use_hardware* (boolean) --
+           if *True*, send keyboard events using hardware emulation instead
+           of as Unicode text. This will respect the up/down status of
+           modifier keys.
 
         The format of the keystroke specification *spec* is described in
         :ref:`RefKeySpec`.
@@ -266,15 +272,19 @@ class Key(DynStrActionBase):
         }
     interval_factor = 0.01
     interval_default = 0.0
-    _keyboard = Keyboard()
 
     def _parse_spec(self, spec):
         # Iterate through the keystrokes specified in spec, parsing
         #  each individually.
         events = []
+        error_message = None
         for single in spec.split(self._key_separator):
-            events.extend(self._parse_single(single))
-        return events
+            key_events, error_message = self._parse_single(single)
+            if error_message:
+                break
+
+            events.extend(key_events)
+        return events, error_message
 
     def _parse_single(self, spec):
 
@@ -337,12 +347,45 @@ class Key(DynStrActionBase):
 
         # Check if the key name is valid.
         code = typeables.get(keyname)
-        if code is None:
+        is_windows = sys.platform.startswith("win")
+        if code is None and not is_windows:
             # Delegate to the keyboard class. Any invalid keys will cause
             # error messages later than normal, but this allows using valid
             # key symbols that dragonfly doesn't define.
             code = self._keyboard.get_typeable(keyname)
             typeables[keyname] = code
+
+        elif code is None and is_windows:
+            # Handle this differently on Windows.
+            if len(keyname) > 1:
+                # Raise an error on Windows for unknown keys that aren't
+                # single characters.
+                raise ActionError("Invalid key name: %r" % keyname)
+
+            # Otherwise get a new Typeable.
+            try:
+                code = self._keyboard.get_typeable(keyname)
+            except ValueError:
+                error_message = ("Keyboard interface cannot type this "
+                                 "character: %r" % keyname)
+                if self.require_hardware_events():
+                    # Return an error message to display when this action
+                    # is executed.
+                    return [], error_message
+
+                # Use the Unicode keyboard instead.
+                try:
+                    code = self._keyboard.get_typeable(keyname,
+                                                       is_text=True)
+                except ValueError:
+                    return [], error_message
+
+            # Save the typeable.
+            typeables[keyname] = code
+        else:
+            # Update the Typeable.
+            # Note: this only does anything on Windows.
+            code.update()
 
         if inner_pause is not None:
             s = inner_pause
@@ -400,8 +443,14 @@ class Key(DynStrActionBase):
             else:
                 events = code.off_events(outer_pause)
 
-        return events
+        return events, None
 
     def _execute_events(self, events):
-        self._keyboard.send_keyboard_events(events)
+        events, error_message = events
+
+        # Raise any message about invalid keys.
+        if error_message:
+            raise ActionError(error_message)
+        else:
+            self._keyboard.send_keyboard_events(events)
         return True
