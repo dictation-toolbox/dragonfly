@@ -85,8 +85,16 @@ class BaseKeyboardAction(DynStrActionBase):
     _pause_default = PAUSE_DEFAULT
 
     def __init__(self, spec=None, static=False, use_hardware=False):
+        # Note: these are only used on Windows.
+        self._event_cache = {}
         self._use_hardware = use_hardware
+
         super(BaseKeyboardAction, self).__init__(spec, static)
+
+        # Save events for the current layout if on Windows.
+        if self._events is not None and sys.platform.startswith("win"):
+            layout = self._keyboard.get_current_layout()
+            self._event_cache[layout] = self._events
 
     def require_hardware_events(self):
         """
@@ -103,3 +111,15 @@ class BaseKeyboardAction(DynStrActionBase):
                                          .executable.lower())
         return ((not UNICODE_KEYBOARD) or
                 (foreground_executable in HARDWARE_APPS))
+
+    def _execute(self, data=None):
+        # Get updated events on Windows for each new keyboard layout
+        # encountered.
+        if sys.platform.startswith("win") and self._static:
+            layout = self._keyboard.get_current_layout()
+            events = self._event_cache.get(layout)
+            if events is None:
+                self._events = self._parse_spec(self._spec)
+                self._event_cache[layout] = self._events
+
+        return super(BaseKeyboardAction, self)._execute(data)
