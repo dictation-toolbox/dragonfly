@@ -191,6 +191,14 @@ class Keyboard(BaseKeyboard):
     alt_code = win32con.VK_MENU
 
     @classmethod
+    def get_current_layout(cls):
+        # Get the current window's keyboard layout.
+        thread_id = win32process.GetWindowThreadProcessId(
+            win32gui.GetForegroundWindow()
+        )[0]
+        return win32api.GetKeyboardLayout(thread_id)
+
+    @classmethod
     def send_keyboard_events(cls, events):
         """
         Send a sequence of keyboard events.
@@ -213,11 +221,7 @@ class Keyboard(BaseKeyboard):
                 is_text (boolean): True means that the keypress is targeted
                     at a window or control that accepts Unicode text.
         """
-        # Get the current window's keyboard layout.
-        thread_id = win32process.GetWindowThreadProcessId(
-            win32gui.GetForegroundWindow()
-        )[0]
-        layout = windll.user32.GetKeyboardLayout(thread_id)
+        layout = cls.get_current_layout()
 
         # Process and send keyboard events.
         items = []
