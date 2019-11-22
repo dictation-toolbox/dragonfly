@@ -10,3 +10,4 @@ json-rpc
 Werkzeug
 requests
 sphinx_rtd_theme
+lark-parser
