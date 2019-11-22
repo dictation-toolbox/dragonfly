@@ -52,7 +52,19 @@ class Typeable(object):
         self._code = code
         self._modifiers = modifiers
         self._name = name
+
+        # Only used on Windows, but kept here for argument compatibility
+        # between platforms.
         self._is_text = is_text
+
+    def update(self, hardware_events_required):
+        """
+        Update keypress information.
+
+        :rtype: bool
+        :returns: success
+        """
+        return True
 
     def __repr__(self):
         """Return information useful for debugging."""
@@ -61,31 +73,21 @@ class Typeable(object):
 
     def on_events(self, timeout=0):
         """Return events for pressing this key down."""
-        if self._is_text:
-            events = [(self._code, True, timeout, True)]
-        else:
-            events = [(m, True, 0) for m in self._modifiers]
-            events.append((self._code, True, timeout))
+        events = [(m, True, 0) for m in self._modifiers]
+        events.append((self._code, True, timeout))
         return events
 
     def off_events(self, timeout=0):
         """Return events for releasing this key."""
-        if self._is_text:
-            events = [(self._code, False, timeout, True)]
-        else:
-            events = [(m, False, 0) for m in self._modifiers]
-            events.append((self._code, False, timeout))
-            events.reverse()
+        events = [(m, False, 0) for m in self._modifiers]
+        events.append((self._code, False, timeout))
+        events.reverse()
         return events
 
     def events(self, timeout=0):
         """Return events for pressing and then releasing this key."""
-        if self._is_text:
-            events = [(self._code, True, timeout, True),
-                      (self._code, False, timeout, True)]
-        else:
-            events = [(self._code, True, 0), (self._code, False, timeout)]
-            for m in self._modifiers[-1::-1]:
-                events.insert(0, (m, True, 0))
-                events.append((m, False, 0))
+        events = [(self._code, True, 0), (self._code, False, timeout)]
+        for m in self._modifiers[-1::-1]:
+            events.insert(0, (m, True, 0))
+            events.append((m, False, 0))
         return events

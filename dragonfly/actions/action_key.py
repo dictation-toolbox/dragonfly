@@ -182,18 +182,61 @@ with the *l*: ::
     Key("w-l").execute()
 
 
+Windows key support
+............................................................................
+
+Keyboard events sent by :class:`Key` actions on Windows are calculated using
+the current foreground window's keyboard layout. The class will fallback on
+Unicode events for keys not typeable with the current layout.
+
+The :class:`Key` action can be used to type arbitrary Unicode characters on
+Windows using the `relevant Windows API
+<https://docs.microsoft.com/en-us/windows/desktop/api/winuser/ns-winuser-tagkeybdinput#remarks>`__.
+This is disabled by default because it ignores the up/down status of
+modifier keys (e.g. ctrl).
+
+It can be enabled by changing the ``unicode_keyboard`` setting in
+`~/.dragonfly2-speech/settings.cfg` to ``True``::
+
+    unicode_keyboard = True
+
+The ``use_hardware`` parameter can be set to ``True`` if you need to
+selectively require hardware events for a :class:`Key` action::
+
+    # Only copy if 'c' is a typeable key.
+    Key("c-c", use_hardware=True).execute()
+
+If the Unicode keyboard is not enabled or the ``use_hardware`` parameter is
+``True``, then no keys will be typed and an error will be logged for
+untypeable keys::
+
+   action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'c'
+
+Unlike the :class:`Text` action, individual :class:`Key` actions can send
+both hardware *and* Unicode events. So the following example will work if
+the Unicode keyboard is enabled::
+
+    # Type 'σμ' and then press ctrl-z.
+    Key(u"σ, μ, c-z").execute()
+
+Note that the 'z' in this example will be typed if the current layout cannot
+type the character.
+
+
 X11 key support
 ............................................................................
 
-This class can be used to type arbitrary keys and Unicode characters on
-X11/Linux. It is not limited to the key names listed above, although all of
-them will work too.
+This :class:`Key` action can be used to type arbitrary keys and Unicode
+characters on X11/Linux. It is not limited to the key names listed above,
+although all of them will work too.
 
-Unicode characters are supported by passing their Unicode code point to the
-keyboard implementation. For example, the character ``'€'`` is converted to
-``'U20AC'``. The Unicode code point can also be passed directly, e.g. with
-``Key('U20AC')``.
+Unicode characters are supported on X11 by passing their Unicode code point
+to the keyboard implementation. For example, the character ``'€'`` is
+converted to ``'U20AC'``. The Unicode code point can also be passed
+directly, e.g. with ``Key('U20AC')``.
 
+Unlike on Windows, the :class:`Key` action is able to use modifiers with
+Unicode characters on X11.
 
 
 Example X11 key actions
@@ -224,17 +267,15 @@ Key class reference
 
 """
 
-import os
+import sys
 
-from .action_base  import DynStrActionBase, ActionError
-from .typeables    import typeables
-from .keyboard     import Keyboard
-
-_ON_X11 = os.environ.get("XDG_SESSION_TYPE") == "x11"
+from .action_base           import ActionError
+from .action_base_keyboard  import BaseKeyboardAction
+from .typeables             import typeables
 
 #---------------------------------------------------------------------------
 
-class Key(DynStrActionBase):
+class Key(BaseKeyboardAction):
 
     """
         Keystroke emulation action.
@@ -243,6 +284,10 @@ class Key(DynStrActionBase):
          - *spec* (*str*) -- keystroke specification
          - *static* (boolean) -- flag indicating whether the
            specification contains dynamic elements
+         - *use_hardware* (boolean) --
+           if *True*, send keyboard events using hardware emulation instead
+           of as Unicode text. This will respect the up/down status of
+           modifier keys.
 
         The format of the keystroke specification *spec* is described in
         :ref:`RefKeySpec`.
@@ -270,18 +315,24 @@ class Key(DynStrActionBase):
         }
     interval_factor = 0.01
     interval_default = 0.0
-    _keyboard = Keyboard()
 
     def _parse_spec(self, spec):
         # Iterate through the keystrokes specified in spec, parsing
         #  each individually.
         events = []
+        error_message = None
+        hardware_events_required = self.require_hardware_events()
         for single in spec.split(self._key_separator):
-            events.extend(self._parse_single(single))
-        return events
+            key_events, error_message = self._parse_single(
+                single, hardware_events_required
+            )
+            if error_message:
+                break
 
-    def _parse_single(self, spec):
+            events.extend(key_events)
+        return events, error_message
 
+    def _parse_single(self, spec, hardware_events_required):
         # Remove leading and trailing whitespace.
         spec = spec.strip()
         if not spec:
@@ -340,15 +391,47 @@ class Key(DynStrActionBase):
             raise ActionError("Invalid key spec: %s" % spec)
 
         # Check if the key name is valid.
+        error_message = ("Keyboard interface cannot type this character: %r"
+                         % keyname)
         code = typeables.get(keyname)
-        if code is None and _ON_X11:
-            # Delegate to the keyboard class on X11/Linux. Any invalid keys
-            # will cause error messages later than normal, but this allows
-            # using valid key symbols that dragonfly doesn't define.
+        is_windows = sys.platform.startswith("win")
+        if code is None and not is_windows:
+            # Delegate to the keyboard class. Any invalid keys will cause
+            # error messages later than normal, but this allows using valid
+            # key symbols that dragonfly doesn't define.
             code = self._keyboard.get_typeable(keyname)
-        elif code is None:
-            # Raise an error on other platforms.
-            raise ActionError("Invalid key name: %r" % keyname)
+            typeables[keyname] = code
+
+        elif code is None and is_windows:
+            # Handle this differently on Windows.
+            if len(keyname) > 1:
+                # Raise an error on Windows for unknown keys that aren't
+                # single characters.
+                raise ActionError("Invalid key name: %r" % keyname)
+
+            # Otherwise get a new Typeable.
+            try:
+                code = self._keyboard.get_typeable(keyname)
+            except ValueError:
+                if hardware_events_required:
+                    # Return an error message to display when this action
+                    # is executed.
+                    return [], error_message
+
+                # Use the Unicode keyboard instead.
+                try:
+                    code = self._keyboard.get_typeable(keyname,
+                                                       is_text=True)
+                except ValueError:
+                    return [], error_message
+
+            # Save the typeable.
+            typeables[keyname] = code
+        else:
+            # Update the Typeable. Return an error message if this fails.
+            # Note: this only does anything on Windows.
+            if not code.update(hardware_events_required):
+                return [], error_message
 
         if inner_pause is not None:
             s = inner_pause
@@ -406,8 +489,14 @@ class Key(DynStrActionBase):
             else:
                 events = code.off_events(outer_pause)
 
-        return events
+        return events, None
 
     def _execute_events(self, events):
-        self._keyboard.send_keyboard_events(events)
+        events, error_message = events
+
+        # Raise any message about invalid keys.
+        if error_message:
+            raise ActionError(error_message)
+        else:
+            self._keyboard.send_keyboard_events(events)
         return True

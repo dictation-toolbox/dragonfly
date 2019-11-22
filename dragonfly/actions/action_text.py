@@ -68,6 +68,13 @@ emulation. If you use such applications, add their executable names to the
 ``hardware_apps`` list in the configuration file mentioned above to make
 dragonfly always use hardware emulation for them.
 
+If hardware emulation is required, then the action will use the keyboard
+layout of the foreground window when calculating keyboard events. If any of
+the specified characters are not typeable using the current window's
+keyboard layout, then an error will be logged and no keys will be typed::
+
+    action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'c'
+
 These settings and parameters have no effect on other platforms.
 
 
@@ -107,70 +114,14 @@ from six import binary_type
 
 from ..engines import get_engine
 from ..util.clipboard import Clipboard
-from ..windows import Window
-from .action_base import ActionError, DynStrActionBase
+from .action_base import ActionError
+from .action_base_keyboard import BaseKeyboardAction
 from .action_key import Key
-from .keyboard import Keyboard
 from .typeables import typeables
 
 # ---------------------------------------------------------------------------
 
-UNICODE_KEYBOARD = False
-HARDWARE_APPS = [
-    "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
-]
-PAUSE_DEFAULT = 0.005
-
-
-def load_configuration():
-    """Locate and load configuration."""
-    import io
-    import os
-    try:
-        import configparser
-    except ImportError:
-        import ConfigParser as configparser
-
-    global UNICODE_KEYBOARD
-    global HARDWARE_APPS
-    global PAUSE_DEFAULT
-
-    home = os.path.expanduser("~")
-    config_folder = os.path.join(home, ".dragonfly2-speech")
-    config_file = "settings.cfg"
-    config_path = os.path.join(config_folder, config_file)
-
-    if not os.path.exists(config_folder):
-        os.mkdir(config_folder)
-    if not os.path.exists(config_path):
-        with io.open(config_path, "w") as f:
-            # Write the default values to the config file.
-            f.write(u'[Text]\n')
-            f.write(u'hardware_apps = %s\n' % "|".join(HARDWARE_APPS))
-            f.write(u'unicode_keyboard = %s\n' % UNICODE_KEYBOARD)
-            f.write(u'pause_default = %f\n' % PAUSE_DEFAULT)
-
-    parser = configparser.ConfigParser()
-    parser.read(config_path)
-    if parser.has_option("Text", "hardware_apps"):
-        HARDWARE_APPS = parser.get("Text", "hardware_apps").lower().split("|")
-    if parser.has_option("Text", "unicode_keyboard"):
-        UNICODE_KEYBOARD = parser.getboolean("Text", "unicode_keyboard")
-    if parser.has_option("Text", "pause_default"):
-        PAUSE_DEFAULT = parser.getfloat("Text", "pause_default")
-
-load_configuration()
-
-
-def require_hardware_emulation():
-    """Return `True` if the current context requires hardware emulation."""
-    from os.path import basename
-    foreground_executable = basename(Window.get_foreground()
-                                     .executable.lower())
-    return (not UNICODE_KEYBOARD) or (foreground_executable in HARDWARE_APPS)
-
-
-class Text(DynStrActionBase):
+class Text(BaseKeyboardAction):
     """
     `Action` that sends keyboard events to type text.
 
@@ -204,8 +155,6 @@ class Text(DynStrActionBase):
             self.unicode_events = unicode_events
             self.unicode_error_message = unicode_error_message
 
-    _keyboard = Keyboard()
-    _pause_default = PAUSE_DEFAULT
     _specials = {
                  "\n": typeables["enter"],
                  "\t": typeables["tab"],
@@ -220,16 +169,15 @@ class Text(DynStrActionBase):
 
         # Set other members and call the super constructor.
         self._autofmt = autofmt
-        self._use_hardware = use_hardware
 
         if isinstance(spec, binary_type):
             spec = spec.decode(getpreferredencoding())
 
-        DynStrActionBase.__init__(self, spec=spec, static=static)
+        BaseKeyboardAction.__init__(self, spec=spec, static=static,
+                                    use_hardware=use_hardware)
 
     def _parse_spec(self, spec):
         """Convert the given *spec* to keyboard events."""
-        from struct import unpack
         hardware_events = []
         unicode_events = []
         hardware_error_message = None
@@ -249,18 +197,19 @@ class Text(DynStrActionBase):
                     hardware_error_message = ("Keyboard interface cannot type this"
                                               " character: %r (in %r)"
                                               % (character, spec))
-                # Add Unicode events.
-                byte_stream = character.encode("utf-16-le")
-                for short in unpack("<" + str(len(byte_stream) // 2) + "H",
-                                    byte_stream):
-                    try:
-                        typeable = self._keyboard.get_typeable(short,
-                                                               is_text=True)
-                        unicode_events.extend(typeable.events(self._pause * 0.5))
-                    except ValueError:
-                        unicode_error_message = ("Keyboard interface cannot type "
-                                                 "this character: %r (in %r)" %
-                                                 (character, spec))
+
+                # Calculate and add Unicode events only if necessary.
+                if not sys.platform.startswith("win"):
+                    continue
+
+                try:
+                    typeable = self._keyboard.get_typeable(character,
+                                                           is_text=True)
+                    unicode_events.extend(typeable.events(self._pause * 0.5))
+                except ValueError:
+                    unicode_error_message = ("Keyboard interface cannot type "
+                                             "this character: %r (in %r)" %
+                                             (character, spec))
         return self.Events(hardware_events, hardware_error_message,
                            unicode_events, unicode_error_message)
 
@@ -303,13 +252,7 @@ class Text(DynStrActionBase):
             events = self._parse_spec(prefix + text + suffix)
 
         # Send keyboard events.
-        use_hardware_events = (
-            self._use_hardware or require_hardware_emulation() or
-
-            # Always use hardware_events for non-Windows platforms.
-            not sys.platform.startswith("win")
-        )
-        if use_hardware_events:
+        if self.require_hardware_events():
             error_message = events.hardware_error_message
             keyboard_events = events.hardware_events
         else:

@@ -20,13 +20,18 @@
 
 """This file implements the Win32 keyboard interface using sendinput."""
 
+from locale import getpreferredencoding
+from struct import unpack
 import time
+
+from six import binary_type, text_type
+
+import win32api
 import win32con
+import win32gui
+import win32process
 
-from ctypes import windll, c_char, c_wchar
-from six import text_type, PY2
-
-from ._base import BaseKeyboard, Typeable
+from ._base import BaseKeyboard, Typeable as BaseTypeable
 from ..sendinput import KeyboardInput, make_input_array, send_input_array
 
 
@@ -129,12 +134,99 @@ class Win32KeySymbols(object):
     BROWSER_FORWARD = win32con.VK_BROWSER_FORWARD
 
 
+class Typeable(BaseTypeable):
+
+    __slots__ = ("_code", "_modifiers", "_name", "_is_text", "_char")
+
+    def __init__(self, code, modifiers=(), name=None, is_text=False,
+                 char=None):
+        BaseTypeable.__init__(self, code, modifiers, name, is_text)
+        self._char = char
+
+    def update(self, hardware_events_required):
+        # Nothing to do for virtual keys.
+        if self._char is None:
+            return True
+
+        # Get updated key code and modifiers for this Typeable.
+        try:
+            self._is_text = False
+            code, modifiers = Keyboard.get_keycode_and_modifiers(self._char)
+        except ValueError:
+            if hardware_events_required:
+                return False
+
+            # Fallback on Unicode events.
+            code, modifiers = self._char, ()
+            self._is_text = True
+
+        # Set key code and modifiers.
+        self._code, self._modifiers = code, modifiers
+        return True
+
+    def _unicode_events(self, down, timeout):
+        character = self._code
+        if not isinstance(character, text_type):
+            raise TypeError("cannot create Unicode events for character: %r"
+                            % character)
+
+        # Construct the UTF-16 (LE) events that sendinput expects.
+        events = []
+        byte_stream = character.encode("utf-16-le")
+        format_string = "<" + str(len(byte_stream) // 2) + "H"
+        for short in unpack(format_string, byte_stream):
+            if down is True or down is False:
+                events.extend([(short, down, timeout, True)])
+            else:  # both for events()
+                events.extend([(short, True, timeout, True),
+                               (short, False, timeout, True)])
+        return events
+
+    def on_events(self, timeout=0):
+        """Return events for pressing this key down."""
+        if self._is_text:
+            events = self._unicode_events(True, timeout)
+        else:
+            events = [(m, True, 0) for m in self._modifiers]
+            events.append((self._code, True, timeout))
+        return events
+
+    def off_events(self, timeout=0):
+        """Return events for releasing this key."""
+        if self._is_text:
+            events = self._unicode_events(False, timeout)
+        else:
+            events = [(m, False, 0) for m in self._modifiers]
+            events.append((self._code, False, timeout))
+            events.reverse()
+        return events
+
+    def events(self, timeout=0):
+        """Return events for pressing and then releasing this key."""
+        if self._is_text:
+            events = self._unicode_events("both", timeout)
+        else:
+            events = [(self._code, True, 0), (self._code, False, timeout)]
+            for m in self._modifiers[-1::-1]:
+                events.insert(0, (m, True, 0))
+                events.append((m, False, 0))
+        return events
+
+
 class Keyboard(BaseKeyboard):
     """Static class wrapper around SendInput."""
 
     shift_code = win32con.VK_SHIFT
     ctrl_code = win32con.VK_CONTROL
     alt_code = win32con.VK_MENU
+
+    @classmethod
+    def get_current_layout(cls):
+        # Get the current window's keyboard layout.
+        thread_id = win32process.GetWindowThreadProcessId(
+            win32gui.GetForegroundWindow()
+        )[0]
+        return win32api.GetKeyboardLayout(thread_id)
 
     @classmethod
     def send_keyboard_events(cls, events):
@@ -159,11 +251,15 @@ class Keyboard(BaseKeyboard):
                 is_text (boolean): True means that the keypress is targeted
                     at a window or control that accepts Unicode text.
         """
+        layout = cls.get_current_layout()
+
+        # Process and send keyboard events.
         items = []
         for event in events:
             if len(event) == 3:
                 keycode, down, timeout = event
-                input_structure = KeyboardInput(keycode, down)
+                input_structure = KeyboardInput(keycode, down,
+                                                layout=layout)
             elif len(event) == 4 and event[3]:
                 character, down, timeout = event[:3]
                 input_structure = KeyboardInput(0, down, scancode=character)
@@ -180,13 +276,13 @@ class Keyboard(BaseKeyboard):
 
     @classmethod
     def _get_initial_keycode(cls, char):
-        layout = windll.user32.GetKeyboardLayout(0)
-        if isinstance(char, str) and PY2:
-            code = windll.user32.VkKeyScanExA(c_char(char), layout)
-        elif isinstance(char, text_type):  # unicode for PY2, str for PY3
-            code = windll.user32.VkKeyScanExW(c_wchar(char), layout)
-        else:
+        # Get the code for this character.
+        layout = cls.get_current_layout()
+        try:
+            code = win32api.VkKeyScanEx(char, layout)
+        except TypeError:
             code = -1
+
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
         return code
@@ -216,7 +312,10 @@ class Keyboard(BaseKeyboard):
 
     @classmethod
     def get_typeable(cls, char, is_text=False):
+        if isinstance(char, binary_type):
+            char = char.decode(getpreferredencoding())
         if is_text:
             return Typeable(char, is_text=True)
+
         code, modifiers = cls.get_keycode_and_modifiers(char)
-        return Typeable(code, modifiers)
+        return Typeable(code, modifiers, name=char, char=char)
