@@ -182,18 +182,61 @@ with the *l*: ::
     Key("w-l").execute()
 
 
+Windows key support
+............................................................................
+
+Keyboard events sent by :class:`Key` actions on Windows are calculated using
+the current foreground window's keyboard layout. The class will fallback on
+Unicode events for keys not typeable with the current layout.
+
+The :class:`Key` action can be used to type arbitrary Unicode characters on
+Windows using the `relevant Windows API
+<https://docs.microsoft.com/en-us/windows/desktop/api/winuser/ns-winuser-tagkeybdinput#remarks>`__.
+This is disabled by default because it ignores the up/down status of
+modifier keys (e.g. ctrl).
+
+It can be enabled by changing the ``unicode_keyboard`` setting in
+`~/.dragonfly2-speech/settings.cfg` to ``True``::
+
+    unicode_keyboard = True
+
+The ``use_hardware`` parameter can be set to ``True`` if you need to
+selectively require hardware events for a :class:`Key` action::
+
+    # Only copy if 'c' is a typeable key.
+    Key("c-c", use_hardware=True).execute()
+
+If the Unicode keyboard is not enabled or the ``use_hardware`` parameter is
+``True``, then no keys will be typed and an error will be logged for
+untypeable keys::
+
+   action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'c'
+
+Unlike the :class:`Text` action, individual :class:`Key` actions can send
+both hardware *and* Unicode events. So the following example will work if
+the Unicode keyboard is enabled::
+
+    # Type 'σμ' and then press ctrl-z.
+    Key(u"σ, μ, c-z").execute()
+
+Note that the 'z' in this example will be typed if the current layout cannot
+type the character.
+
+
 X11 key support
 ............................................................................
 
-This class can be used to type arbitrary keys and Unicode characters on
-X11/Linux. It is not limited to the key names listed above, although all of
-them will work too.
+This :class:`Key` action can be used to type arbitrary keys and Unicode
+characters on X11/Linux. It is not limited to the key names listed above,
+although all of them will work too.
 
-Unicode characters are supported by passing their Unicode code point to the
-keyboard implementation. For example, the character ``'€'`` is converted to
-``'U20AC'``. The Unicode code point can also be passed directly, e.g. with
-``Key('U20AC')``.
+Unicode characters are supported on X11 by passing their Unicode code point
+to the keyboard implementation. For example, the character ``'€'`` is
+converted to ``'U20AC'``. The Unicode code point can also be passed
+directly, e.g. with ``Key('U20AC')``.
 
+Unlike on Windows, the :class:`Key` action is able to use modifiers with
+Unicode characters on X11.
 
 
 Example X11 key actions

@@ -68,6 +68,13 @@ emulation. If you use such applications, add their executable names to the
 ``hardware_apps`` list in the configuration file mentioned above to make
 dragonfly always use hardware emulation for them.
 
+If hardware emulation is required, then the action will use the keyboard
+layout of the foreground window when calculating keyboard events. If any of
+the specified characters are not typeable using the current window's
+keyboard layout, then an error will be logged and no keys will be typed::
+
+    action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'c'
+
 These settings and parameters have no effect on other platforms.
 
 
