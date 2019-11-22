@@ -278,16 +278,18 @@ class Key(BaseKeyboardAction):
         #  each individually.
         events = []
         error_message = None
+        hardware_events_required = self.require_hardware_events()
         for single in spec.split(self._key_separator):
-            key_events, error_message = self._parse_single(single)
+            key_events, error_message = self._parse_single(
+                single, hardware_events_required
+            )
             if error_message:
                 break
 
             events.extend(key_events)
         return events, error_message
 
-    def _parse_single(self, spec):
-
+    def _parse_single(self, spec, hardware_events_required):
         # Remove leading and trailing whitespace.
         spec = spec.strip()
         if not spec:
@@ -346,6 +348,8 @@ class Key(BaseKeyboardAction):
             raise ActionError("Invalid key spec: %s" % spec)
 
         # Check if the key name is valid.
+        error_message = ("Keyboard interface cannot type this character: %r"
+                         % keyname)
         code = typeables.get(keyname)
         is_windows = sys.platform.startswith("win")
         if code is None and not is_windows:
@@ -366,9 +370,7 @@ class Key(BaseKeyboardAction):
             try:
                 code = self._keyboard.get_typeable(keyname)
             except ValueError:
-                error_message = ("Keyboard interface cannot type this "
-                                 "character: %r" % keyname)
-                if self.require_hardware_events():
+                if hardware_events_required:
                     # Return an error message to display when this action
                     # is executed.
                     return [], error_message
@@ -383,9 +385,10 @@ class Key(BaseKeyboardAction):
             # Save the typeable.
             typeables[keyname] = code
         else:
-            # Update the Typeable.
+            # Update the Typeable. Return an error message if this fails.
             # Note: this only does anything on Windows.
-            code.update()
+            if not code.update(hardware_events_required):
+                return [], error_message
 
         if inner_pause is not None:
             s = inner_pause

@@ -57,9 +57,14 @@ class Typeable(object):
         # between platforms.
         self._is_text = is_text
 
-    def update(self):
-        """Update keypress information."""
-        pass
+    def update(self, hardware_events_required):
+        """
+        Update keypress information.
+
+        :rtype: bool
+        :returns: success
+        """
+        return True
 
     def __repr__(self):
         """Return information useful for debugging."""

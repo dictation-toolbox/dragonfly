@@ -143,21 +143,26 @@ class Typeable(BaseTypeable):
         BaseTypeable.__init__(self, code, modifiers, name, is_text)
         self._char = char
 
-    def update(self):
+    def update(self, hardware_events_required):
         # Nothing to do for virtual keys.
         if self._char is None:
-            return
+            return True
 
         # Get updated key code and modifiers for this Typeable.
         try:
+            self._is_text = False
             code, modifiers = Keyboard.get_keycode_and_modifiers(self._char)
         except ValueError:
+            if hardware_events_required:
+                return False
+
             # Fallback on Unicode events.
             code, modifiers = self._char, ()
             self._is_text = True
 
         # Set key code and modifiers.
         self._code, self._modifiers = code, modifiers
+        return True
 
     def _unicode_events(self, down, timeout):
         character = self._code
