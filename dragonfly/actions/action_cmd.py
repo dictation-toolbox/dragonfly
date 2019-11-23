@@ -131,7 +131,7 @@ class RunCommand(ActionBase):
     synchronous = False
 
     def __init__(self, command=None, process_command=None,
-                 synchronous=False):
+                 synchronous=False, hide_window=True):
         """
             Constructor arguments:
              - *command* (str or list) -- the command to run when this
@@ -145,6 +145,10 @@ class RunCommand(ActionBase):
              - *synchronous* (bool, default *False*) -- whether to wait
                until :meth:`process_command` has finished executing before
                continuing.
+             - *hide_window* (bool, default *True*) -- whether to hide the
+               application window. Set to *False* if using this action with
+               GUI programs. This argument only applies to Windows. It has
+               no effect on other platforms.
 
         """
         ActionBase.__init__(self)
@@ -166,6 +170,7 @@ class RunCommand(ActionBase):
                             "None")
 
         self._process_command = process_command
+        self._hide_window = hide_window
 
         # Set the string used for representing actions.
         if isinstance(self.command, list):
@@ -201,7 +206,7 @@ class RunCommand(ActionBase):
 
         # Suppress showing the new CMD.exe window on Windows.
         startupinfo = None
-        if os.name == 'nt':
+        if os.name == 'nt' and self._hide_window:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
