@@ -57,11 +57,14 @@ Class reference
 
 import os.path
 from subprocess           import Popen
+import time
 
 from six import string_types
 
 from .action_base         import ActionBase, ActionError
 from .action_focuswindow  import FocusWindow
+from .action_waitwindow   import WaitWindow
+from ..windows            import Window
 
 
 #---------------------------------------------------------------------------
@@ -84,6 +87,9 @@ class StartApp(ActionBase):
              - *cwd* (*str*, default *None*) --
                if not *None*, then start the application in this
                directory
+             - *focus_after_start* (*bool*, default *False*) --
+               if *True*, then attempt to bring the window to the foreground
+               after starting the application.
 
             A single *list* or *tuple* argument can be used instead of
             variable arguments.
@@ -95,10 +101,10 @@ class StartApp(ActionBase):
 
         self._args = args
 
-        if "cwd" in kwargs:  self._cwd = kwargs.pop("cwd")
-        else:                self._cwd = None
+        self._cwd = kwargs.pop("cwd", None)
+        self._focus_after_start = kwargs.pop("focus_after_start", False)
         if kwargs:
-            raise ArgumentError("Invalid keyword arguments: %r" % kwargs)
+            raise ActionError("Invalid keyword arguments: %r" % kwargs)
 
         # Expand any variables within path names.
         self._args = [self._interpret(a) for a in self._args]
@@ -117,9 +123,29 @@ class StartApp(ActionBase):
     def _execute(self, data=None):
         self._log.debug("Starting app: %r" % (self._args,))
         try:
-            Popen(self._args, cwd=self._cwd)
+            process = Popen(self._args, cwd=self._cwd)
         except Exception as e:
             raise ActionError("Failed to start app %s: %s" % (self._str, e))
+
+        if self._focus_after_start:
+            timeout = 1.0
+            exe = self._args[0]
+            action = WaitWindow(executable=exe, timeout=timeout)
+            if action.execute():
+                # Bring the window to the foreground.
+                Window.get_foreground().set_foreground()
+            else:
+                target = process.pid
+                start = time.time()
+                while time.time() - start < timeout:
+                    found = False
+                    for window in Window.get_matching_windows(exe):
+                        if window.pid == target:
+                            window.set_foreground()
+                            found = True
+                            break
+                    if found:
+                        break
 
 
 #---------------------------------------------------------------------------
@@ -152,6 +178,10 @@ class BringApp(StartApp):
              - *title* (*str*, default *None*) --
                if not *None*, then matching existing windows using this
                title.
+             - *focus_after_start* (*bool*, default *False*) --
+               if *True*, then attempt to bring the window to the foreground
+               after starting the application. Does nothing if the
+               application is already running.
 
         """
         self._title = kwargs.pop("title", None)
