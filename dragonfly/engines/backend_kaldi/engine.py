@@ -58,7 +58,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        input_device_index=None, retain_dir=None, vad_aggressiveness=3,
+        input_device_index=None, retain_dir=None, retain_audio=None, vad_aggressiveness=3,
         vad_padding_start_ms=150, vad_padding_end_ms=150, vad_complex_padding_end_ms=500,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         alternative_dictation=None, cloud_dictation_lang='en-US',
@@ -84,12 +84,16 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if not (isinstance(retain_dir, string_types) or (retain_dir is None)):
             self._log.error("Invalid retain_dir: %r" % retain_dir)
             retain_dir = None
+        if retain_audio and not retain_dir:
+            self._log.error("retain_audio=True requires retain_dir to be set; making retain_audio=False instead")
+            retain_audio = False
 
         self._options = dict(
             model_dir = model_dir,
             tmp_dir = tmp_dir,
             input_device_index = input_device_index,
             retain_dir = retain_dir,
+            retain_audio = bool(retain_audio) if retain_audio is not None else bool(retain_dir),
             vad_aggressiveness = vad_aggressiveness,
             vad_padding_start_ms = vad_padding_start_ms,
             vad_padding_end_ms = vad_padding_end_ms,
@@ -137,7 +141,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             end_window_ms=self._options['vad_padding_end_ms'],
             complex_end_window_ms=self._options['vad_complex_padding_end_ms'],
             )
-        self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0), save_dir=self._options['retain_dir'])
+        self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0),
+            save_dir=self._options['retain_dir'], save_audio=self._options['retain_audio'])
 
         self._any_exclusive_grammars = False
         self._in_phrase = False

@@ -277,19 +277,27 @@ class AudioStore(object):
     Also, optionally stores the last `maxlen` recognitions as lists [audio, text, grammar_name, rule_name, misrecognition],
     indexed in reverse order (0 is most recent), and advanced upon calling `finalize()`.
     Note: `finalize()` should be called after the recognition has been parsed and its actions executed.
+
+    Constrictor arguments:
+    - *save_audio* (bool, default *None*): whether to save the audio data (in addition to just the recognition metadata)
     """
 
-    def __init__(self, audio_obj, maxlen=None, save_dir=None, auto_save_predicate_func=None):
+    def __init__(self, audio_obj, maxlen=None, save_dir=None, save_audio=None, auto_save_predicate_func=None):
         self.audio_obj = audio_obj
         self.maxlen = maxlen
         self.save_dir = save_dir
+        self.save_audio = save_audio
         if self.save_dir:
-            _log.info("retaining audio and recognition metadata to '%s'", self.save_dir)
+            if self.save_audio:
+                _log.info("retaining audio and recognition metadata to '%s'", self.save_dir)
+            else:
+                _log.info("retaining recognition metadata to '%s'", self.save_dir)
         self.auto_save_predicate_func = auto_save_predicate_func
         self.deque = collections.deque(maxlen=maxlen) if maxlen else None
         self.blocks = []
 
     current_audio_data = property(lambda self: b''.join(self.blocks))
+    current_audio_length_ms = property(lambda self: len(self.blocks) * self.audio_obj.block_duration_ms)
 
     def add_block(self, block):
         self.blocks.append(block)
@@ -310,12 +318,16 @@ class AudioStore(object):
         if not self.save_dir:
             return
         if not os.path.isdir(self.save_dir):
-            _log.warning("Audio was not retained because '%s' was not a directory" % self.save_dir)
+            _log.warning("Recognition data was not retained because '%s' was not a directory" % self.save_dir)
             return
 
-        filename = os.path.join(self.save_dir, "retain_%s.wav" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f"))
         entry = self.deque[index]
-        self.audio_obj.write_wav(filename, entry.audio)
+        if self.save_audio:
+            filename = os.path.join(self.save_dir, "retain_%s.wav" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f"))
+            self.audio_obj.write_wav(filename, entry.audio)
+        else:
+            filename = ''
+
         with open(os.path.join(self.save_dir, "retain.tsv"), 'a', encoding='utf-8') as tsv_file:
             tsv_file.write(u'\t'.join([
                     filename,
