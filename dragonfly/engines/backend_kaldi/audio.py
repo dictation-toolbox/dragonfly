@@ -339,10 +339,12 @@ class AudioStore(object):
                     text_type(entry.misrecognition),
                 ]) + '\n')
 
-    def save_all(self):
+    def save_all(self, remove=True):
         if self.deque:
             for i in reversed(range(len(self.deque))):
                 self.save(i)
+            if remove:
+                self.deque.clear()
 
     def __getitem__(self, key):
         return self.deque[key]

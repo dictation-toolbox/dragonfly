@@ -113,6 +113,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._timer_manager = DelegateTimerManager(0.02, self)
 
         self._saving_adaptation_state = False
+        self._doing_recognition = False
+        self._deferred_disconnect = False
 
     def connect(self):
         """ Connect to back-end SR engine. """
@@ -151,14 +153,18 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._ignore_current_phrase = False
 
     def disconnect(self):
-        """ Disconnect from back-end SR engine. """
-        if self._audio:
-            self._audio.destroy()
-            self._audio = None
-            self._audio_iter = None
-            self.audio_store = None
-        self._compiler = None
-        self._decoder = None
+        """ Disconnect from back-end SR engine. Exits from ``do_recognition()``. """
+        if self._doing_recognition:
+            self._deferred_disconnect = True
+        else:
+            self._deferred_disconnect = False
+            if self._audio:
+                self._audio.destroy()
+                self._audio = None
+                self._audio_iter = None
+                self.audio_store = None
+            self._compiler = None
+            self._decoder = None
 
     def print_mic_list(self):
         MicAudio.print_list()
@@ -257,22 +263,23 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._log.debug("do_recognition: timeout %s" % timeout)
         if not self._decoder:
             raise EngineError("Cannot recognize before connect()")
-
-        self.prepare_for_recognition()
-
-        if timeout != None:
-            end_time = time.time() + timeout
-            timed_out = True
-        self._in_phrase = False
-        in_complex = False
-
-        self._audio.start()
-        self._log.info("Listening...")
-        next(self._audio_iter)
+        self._doing_recognition = True
 
         try:
+            self.prepare_for_recognition()
+
+            if timeout != None:
+                end_time = time.time() + timeout
+                timed_out = True
+            self._in_phrase = False
+            in_complex = False
+
+            self._audio.start()
+            self._log.info("Listening...")
+            next(self._audio_iter)  # Prime the audio iterator
+
             # Loop until timeout (if set) or until disconnect() is called.
-            while self._decoder and ((not timeout) or (time.time() < end_time)):
+            while (not self._deferred_disconnect) and ((not timeout) or (time.time() < end_time)):
                 self.prepare_for_recognition()
                 block = self._audio_iter.send(in_complex)
 
@@ -323,6 +330,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 self.call_timer_callback()
 
         finally:
+            self._doing_recognition = False
             if self._audio:
                 self._audio.stop()
             if self.audio_store:
