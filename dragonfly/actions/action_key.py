@@ -336,7 +336,7 @@ class Key(BaseKeyboardAction):
         # Remove leading and trailing whitespace.
         spec = spec.strip()
         if not spec:
-            return []
+            return [], None
 
         # Parse modifier prefix.
         index = spec.find(self._modifier_prefix_delimiter)
