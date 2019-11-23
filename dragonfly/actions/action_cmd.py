@@ -53,12 +53,18 @@ Example using a command list instead of a string::
 
 Example using the optional function parameter::
 
+    from __future__ import print_function
+    from locale import getpreferredencoding
+    from six import binary_type
     from dragonfly import RunCommand
 
     def func(proc):
         # Read lines from the process.
+        encoding = getpreferredencoding()
         for line in iter(proc.stdout.readline, b''):
-            print(line)
+            if isinstance(line, binary_type):
+                line = line.decode(encoding)
+            print(line, end='')
 
     RunCommand('ping -w 4 localhost', func).execute()
 
@@ -68,6 +74,14 @@ Example using the optional synchronous parameter::
     from dragonfly import RunCommand
 
     RunCommand('ping -w 4 localhost', synchronous=True).execute()
+
+
+Example using the optional hide_window parameter::
+
+    from dragonfly import RunCommand
+
+    # Use hide_window=False for running GUI applications via RunCommand.
+    RunCommand('notepad.exe', hide_window=False).execute()
 
 
 Example using the subprocess's :class:`Popen` object::
@@ -84,6 +98,9 @@ Example using the subprocess's :class:`Popen` object::
 
 Example using a subclass::
 
+    from __future__ import print_function
+    from locale import getpreferredencoding
+    from six import binary_type
     from dragonfly import RunCommand
 
     class Ping(RunCommand):
@@ -91,8 +108,11 @@ Example using a subclass::
         synchronous = True
         def process_command(self, proc):
             # Read lines from the process.
+            encoding = getpreferredencoding()
             for line in iter(proc.stdout.readline, b''):
-                print(line)
+                if isinstance(line, binary_type):
+                    line = line.decode(encoding)
+                print(line, end='')
 
     Ping().execute()
 
