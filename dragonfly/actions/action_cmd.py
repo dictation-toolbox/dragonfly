@@ -102,12 +102,15 @@ Class reference
 
 """
 
+from __future__ import print_function
+
+import locale
 import os
 import shlex
 import subprocess
 import threading
 
-from six import string_types
+from six import string_types, binary_type
 
 from .action_base import ActionBase
 from ..engines import get_engine
@@ -186,8 +189,12 @@ class RunCommand(ActionBase):
             By default this method prints lines from the subprocess until it
             exits.
         """
+        encoding = locale.getpreferredencoding()
         for line in iter(proc.stdout.readline, b''):
-            print(line)
+            if isinstance(line, binary_type):
+                line = line.decode(encoding)
+
+            print(line, end='')
 
     def _execute(self, data=None):
         self._log.info("Executing: %s" % self.command)
