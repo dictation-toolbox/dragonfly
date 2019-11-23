@@ -53,12 +53,18 @@ Example using a command list instead of a string::
 
 Example using the optional function parameter::
 
+    from __future__ import print_function
+    from locale import getpreferredencoding
+    from six import binary_type
     from dragonfly import RunCommand
 
     def func(proc):
         # Read lines from the process.
+        encoding = getpreferredencoding()
         for line in iter(proc.stdout.readline, b''):
-            print(line)
+            if isinstance(line, binary_type):
+                line = line.decode(encoding)
+            print(line, end='')
 
     RunCommand('ping -w 4 localhost', func).execute()
 
@@ -68,6 +74,14 @@ Example using the optional synchronous parameter::
     from dragonfly import RunCommand
 
     RunCommand('ping -w 4 localhost', synchronous=True).execute()
+
+
+Example using the optional hide_window parameter::
+
+    from dragonfly import RunCommand
+
+    # Use hide_window=False for running GUI applications via RunCommand.
+    RunCommand('notepad.exe', hide_window=False).execute()
 
 
 Example using the subprocess's :class:`Popen` object::
@@ -84,6 +98,9 @@ Example using the subprocess's :class:`Popen` object::
 
 Example using a subclass::
 
+    from __future__ import print_function
+    from locale import getpreferredencoding
+    from six import binary_type
     from dragonfly import RunCommand
 
     class Ping(RunCommand):
@@ -91,8 +108,11 @@ Example using a subclass::
         synchronous = True
         def process_command(self, proc):
             # Read lines from the process.
+            encoding = getpreferredencoding()
             for line in iter(proc.stdout.readline, b''):
-                print(line)
+                if isinstance(line, binary_type):
+                    line = line.decode(encoding)
+                print(line, end='')
 
     Ping().execute()
 
@@ -102,14 +122,18 @@ Class reference
 
 """
 
+from __future__ import print_function
+
+import locale
 import os
 import shlex
 import subprocess
 import threading
 
-from six import string_types
+from six import string_types, binary_type
 
 from .action_base import ActionBase
+from ..engines import get_engine
 
 # --------------------------------------------------------------------------
 
@@ -127,7 +151,7 @@ class RunCommand(ActionBase):
     synchronous = False
 
     def __init__(self, command=None, process_command=None,
-                 synchronous=False):
+                 synchronous=False, hide_window=True):
         """
             Constructor arguments:
              - *command* (str or list) -- the command to run when this
@@ -141,6 +165,10 @@ class RunCommand(ActionBase):
              - *synchronous* (bool, default *False*) -- whether to wait
                until :meth:`process_command` has finished executing before
                continuing.
+             - *hide_window* (bool, default *True*) -- whether to hide the
+               application window. Set to *False* if using this action with
+               GUI programs. This argument only applies to Windows. It has
+               no effect on other platforms.
 
         """
         ActionBase.__init__(self)
@@ -162,6 +190,7 @@ class RunCommand(ActionBase):
                             "None")
 
         self._process_command = process_command
+        self._hide_window = hide_window
 
         # Set the string used for representing actions.
         if isinstance(self.command, list):
@@ -185,15 +214,19 @@ class RunCommand(ActionBase):
             By default this method prints lines from the subprocess until it
             exits.
         """
+        encoding = locale.getpreferredencoding()
         for line in iter(proc.stdout.readline, b''):
-            print(line)
+            if isinstance(line, binary_type):
+                line = line.decode(encoding)
+
+            print(line, end='')
 
     def _execute(self, data=None):
         self._log.info("Executing: %s" % self.command)
 
         # Suppress showing the new CMD.exe window on Windows.
         startupinfo = None
-        if os.name == 'nt':
+        if os.name == 'nt' and self._hide_window:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
@@ -239,6 +272,23 @@ class RunCommand(ActionBase):
         else:
             # Execute in a new daemonized thread so that the command cannot
             # stop the SR engine from exiting.
-            t = threading.Thread(target=call)
-            t.setDaemon(True)
-            t.start()
+            thread = threading.Thread(target=call)
+            thread.setDaemon(True)
+            thread.start()
+
+            # Start a timer if using natlink to allow asynchronous execution
+            # to work.
+            engine = get_engine()
+            if engine.name == "natlink":
+                import natlink
+                def natlink_timer():
+                    # Let the thread run for a bit.
+                    if thread.is_alive():
+                        thread.join(0.002)
+                    else:
+                        timer.stop()
+                try:
+                    timer = engine.create_timer(natlink_timer, 0.02)
+                except natlink.NatError:
+                    # Ignore errors if natConnect() hasn't been called.
+                    pass
