@@ -159,10 +159,15 @@ class Win32Window(BaseWindow):
 
     close = _win32gui_post(win32con.WM_CLOSE)
 
-    def _get_window_module(self):
+    def _get_window_pid(self):
         # Get this window's process ID.
         pid = c_ulong()
         windll.user32.GetWindowThreadProcessId(self._handle, pointer(pid))
+        return pid.value
+
+    def _get_window_module(self):
+        # Get this window's process ID.
+        pid = self._get_window_pid()
 
         # Get the process handle of this window's process ID.
         #  Access permission flags:

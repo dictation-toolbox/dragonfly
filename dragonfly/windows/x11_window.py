@@ -258,25 +258,7 @@ class X11Window(BaseWindow):
         return (self._get_properties_from_xprop("WM_CLASS")
                 .get('cls_name', ''))
 
-    @property
-    def cls(self):
-        """ Read-only access to the window's class. """
-        return (self._get_properties_from_xprop("WM_CLASS")
-                .get('cls', ''))
-
-    @property
-    def pid(self):
-        """
-        Read-only access to the window's process ID.
-
-        This will be the PID of the window's process, not any subprocess.
-
-        If the window has no associated process id, this will return
-        ``None``.
-
-        :returns: pid
-        :rtype: int | None
-        """
+    def _get_window_pid(self):
         # Set the pid once when it is needed.
         if self._pid == -1:
             p = '_NET_WM_PID'
@@ -286,6 +268,12 @@ class X11Window(BaseWindow):
             self._pid = pid
 
         return self._pid
+
+    @property
+    def cls(self):
+        """ Read-only access to the window's class. """
+        return (self._get_properties_from_xprop("WM_CLASS")
+                .get('cls', ''))
 
     @property
     def role(self):
