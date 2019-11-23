@@ -22,8 +22,8 @@
 Audio input/output classes for Kaldi backend
 """
 
-from __future__ import division
-import collections, wave, logging, os, datetime, time
+from __future__ import division, print_function
+import collections, itertools, wave, logging, os, datetime, time
 from io import open
 
 from six import binary_type, text_type, print_
@@ -177,31 +177,42 @@ class VADAudio(MicAudio):
         super(VADAudio, self).__init__(**kwargs)
         self.vad = webrtcvad.Vad(aggressiveness)
 
-    def vad_collector(self, padding_start_ms=300, padding_end_ms=100, complex_padding_end_ms=None, ratio=0.8, blocks=None, nowait=False):
+    def vad_collector(self, start_window_ms=150, start_padding_ms=100,
+        end_window_ms=150, end_padding_ms=None, complex_end_window_ms=None,
+        ratio=0.8, blocks=None, nowait=False,
+        ):
         """Generator/coroutine that yields series of consecutive audio blocks comprising each phrase, separated by yielding a single None.
             Determines voice activity by ratio of blocks in padding_ms. Uses a buffer to include padding_ms prior to being triggered.
             Example: (block, ..., block, None, block, ..., block, None, ...)
                       |----phrase-----|        |----phrase-----|
         """
-        num_padding_start_blocks = max(1, int((padding_start_ms / ratio) // self.block_duration_ms))
-        num_padding_end_blocks = max(1, int((padding_end_ms / ratio) // self.block_duration_ms))
-        num_complex_padding_end_blocks = max(1, int(((complex_padding_end_ms or padding_end_ms) / ratio) // self.block_duration_ms))
+        assert end_padding_ms == None, "end_padding_ms not supported yet"
+        num_start_window_blocks = max(1, int(start_window_ms // self.block_duration_ms))
+        num_start_padding_blocks = max(0, int((start_padding_ms or 0) // self.block_duration_ms))
+        num_end_window_blocks = max(1, int(end_window_ms // self.block_duration_ms))
+        num_complex_end_window_blocks = max(1, int((complex_end_window_ms or end_window_ms) // self.block_duration_ms))
+        num_end_padding_blocks = max(0, int((end_padding_ms or 0) // self.block_duration_ms))
+        _log.debug("%s: vad_collector: num_start_window_blocks=%s num_end_window_blocks=%s num_complex_end_window_blocks=%s",
+            self, num_start_window_blocks, num_end_window_blocks, num_complex_end_window_blocks)
         audio_reconnect_threshold_blocks = 5
         audio_reconnect_threshold_time = 50 * self.block_duration_ms / 1000
-        _log.debug("%s: vad_collector: num_padding_start_blocks=%s num_padding_end_blocks=%s num_complex_padding_end_blocks=%s",
-            self, num_padding_start_blocks, num_padding_end_blocks, num_complex_padding_end_blocks)
 
-        if blocks is None: blocks = self.iter(nowait=nowait)
-        start_buffer = collections.deque(maxlen=num_padding_start_blocks)
-        end_buffer = collections.deque(maxlen=num_padding_end_blocks)
-        complex_end_buffer = collections.deque(maxlen=num_complex_padding_end_blocks)
+        ring_buffer = collections.deque(maxlen=max(
+            (num_start_window_blocks + num_start_padding_blocks),
+            (num_end_window_blocks + num_end_padding_blocks),
+            (num_complex_end_window_blocks + num_end_padding_blocks),
+        ))
+        ring_buffer_recent_slice = lambda num_blocks: itertools.islice(ring_buffer, max(0, (len(ring_buffer) - num_blocks)), None)
+
         triggered = False
         in_complex_phrase = False
         num_empty_blocks = 0
         last_good_block_time = time.time()
 
+        if blocks is None: blocks = self.iter(nowait=nowait)
         for block in blocks:
             if block is False or block is None:
+                # Bad/empty block
                 num_empty_blocks += 1
                 if (num_empty_blocks >= audio_reconnect_threshold_blocks) and (time.time() - last_good_block_time >= audio_reconnect_threshold_time):
                     _log.warning("%s: no good block received recently, so reconnecting audio")
@@ -211,34 +222,53 @@ class VADAudio(MicAudio):
                 in_complex_phrase = yield block
 
             else:
+                # Good block
                 num_empty_blocks = 0
                 last_good_block_time = time.time()
                 is_speech = self.vad.is_speech(block, self.sample_rate)
+                is_speech_char = '|' if is_speech else '.'
 
                 if not triggered:
                     # Between phrases
-                    start_buffer.append((block, is_speech))
-                    num_voiced = len([1 for block, speech in start_buffer if speech])
-                    if num_voiced > ratio * start_buffer.maxlen:
+                    ring_buffer.append((block, is_speech))
+                    num_voiced = len([1 for (_, speech) in ring_buffer_recent_slice(num_start_window_blocks) if speech])
+                    if num_voiced >= (num_start_window_blocks * ratio):
                         # Start of phrase
                         triggered = True
-                        for block, _ in start_buffer:
+                        for block, _ in ring_buffer_recent_slice(num_start_padding_blocks + num_start_window_blocks):
+                            # print('|' if is_speech else '.', end='')
+                            # print('|' if in_complex_phrase else '.', end='')
                             in_complex_phrase = yield block
-                        start_buffer.clear()
+                        # print('#', end='')
+                        ring_buffer.clear()
 
                 else:
                     # Ongoing phrase
                     in_complex_phrase = yield block
-                    end_buffer.append((block, is_speech))
-                    complex_end_buffer.append((block, is_speech))
-                    num_unvoiced = len([1 for block, speech in end_buffer if not speech])
-                    num_complex_unvoiced = len([1 for block, speech in complex_end_buffer if not speech])
-                    if (not in_complex_phrase and num_unvoiced > ratio * end_buffer.maxlen) or (in_complex_phrase and num_complex_unvoiced > ratio * complex_end_buffer.maxlen):
+                    # print('|' if is_speech else '.', end='')
+                    # print('|' if in_complex_phrase else '.', end='')
+                    ring_buffer.append((block, is_speech))
+                    num_unvoiced = len([1 for (_, speech) in ring_buffer_recent_slice(num_end_window_blocks) if not speech])
+                    num_complex_unvoiced = len([1 for (_, speech) in ring_buffer_recent_slice(num_complex_end_window_blocks) if not speech])
+                    if (not in_complex_phrase and num_unvoiced >= (num_end_window_blocks * ratio)) or \
+                        (in_complex_phrase and num_complex_unvoiced >= (num_complex_end_window_blocks * ratio)):
                         # End of phrase
                         triggered = False
                         in_complex_phrase = yield None
-                        end_buffer.clear()
-                        complex_end_buffer.clear()
+                        # print('*')
+                        ring_buffer.clear()
+
+    def debug_print_simple(self):
+        print("block_duration_ms=%s" % self.block_duration_ms)
+        for block in self.iter(nowait=False):
+            is_speech = self.vad.is_speech(block, self.sample_rate)
+            print('|' if is_speech else '.', end='')
+
+    def debug_loop(self, *args, **kwargs):
+        audio_iter = self.vad_collector(*args, **kwargs)
+        next(audio_iter)
+        while True:
+            block = audio_iter.send(False)
 
 
 class AudioStore(object):

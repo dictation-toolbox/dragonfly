@@ -59,7 +59,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def __init__(self, model_dir=None, tmp_dir=None,
         input_device_index=None, retain_dir=None, vad_aggressiveness=3,
-        vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500,
+        vad_padding_start_ms=150, vad_padding_end_ms=150, vad_complex_padding_end_ms=500,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         alternative_dictation=None, cloud_dictation_lang='en-US',
         ):
@@ -133,9 +133,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._audio = VADAudio(aggressiveness=self._options['vad_aggressiveness'], start=False, input_device_index=self._options['input_device_index'])
         self._audio_iter = self._audio.vad_collector(nowait=True,
-            padding_start_ms=self._options['vad_padding_start_ms'],
-            padding_end_ms=self._options['vad_padding_end_ms'],
-            complex_padding_end_ms=self._options['vad_complex_padding_end_ms'],
+            start_window_ms=self._options['vad_padding_start_ms'],
+            end_window_ms=self._options['vad_padding_end_ms'],
+            complex_end_window_ms=self._options['vad_complex_padding_end_ms'],
             )
         self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0), save_dir=self._options['retain_dir'])
 
