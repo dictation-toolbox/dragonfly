@@ -112,6 +112,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._recognition_observer_manager = KaldiRecObsManager(self)
         self._timer_manager = DelegateTimerManager(0.02, self)
 
+        self._saving_adaptation_state = False
+
     def connect(self):
         """ Connect to back-end SR engine. """
         if self._decoder:
@@ -132,7 +134,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         top_fst = self._compiler.compile_top_fst()
         dictation_fst_file = self._compiler.dictation_fst_filepath
         self._decoder = KaldiAgfNNet3Decoder(model_dir=self._compiler.model_dir, tmp_dir=self._compiler.tmp_dir,
-            top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file)
+            top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file, save_adaptation_state=False)
         self._compiler.decoder = self._decoder
 
         self._audio = VADAudio(aggressiveness=self._options['vad_aggressiveness'], start=False, input_device_index=self._options['input_device_index'])
@@ -306,6 +308,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                         output = self._compiler.untranslate_output(output)
                         kaldi_rule, parsed_output = self._parse_recognition(output)
                         self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
+                        if self._saving_adaptation_state and parsed_output != '':  # Don't save adaptation state for empty recognitions
+                            self._decoder.save_adaptation_state()
                         if self.audio_store and kaldi_rule:
                             self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name, likelihood)
 
@@ -339,16 +343,19 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._ignore_current_phrase = True
         return True
 
-    saving_adaptation_state = property(lambda self: self._decoder.saving_adaptation_state,
-        doc="Whether or not the engine is currently saving adaptation state.")
+    saving_adaptation_state = property(lambda self: self._saving_adaptation_state,
+        doc="Whether or not the engine is currently automatically saving adaptation state between utterances.")
+    @saving_adaptation_state.setter
+    def saving_adaptation_state(self, value):
+        self._saving_adaptation_state = value
 
     def start_saving_adaptation_state(self):
-        """ Enable saving of adaptation state, which improves recognition accuracy in the short term, but is not stored between runs. """
-        self._decoder.saving_adaptation_state = True
+        """ Enable automatic saving of adaptation state between utterances, which may improve recognition accuracy in the short term, but is not stored between runs. """
+        self.saving_adaptation_state = True
 
     def stop_saving_adaptation_state(self):
-        """ Disables saving of adaptation state, which you might want to do when you expect there to be noise and don't want it to pollute your current adaptation state. """
-        self._decoder.saving_adaptation_state = False
+        """ Disables automatic saving of adaptation state between utterances, which you might want to do when you expect there to be noise and don't want it to pollute your current adaptation state. """
+        self.saving_adaptation_state = False
 
     def reset_adaptation_state(self):
         self._decoder.reset_adaptation_state()
