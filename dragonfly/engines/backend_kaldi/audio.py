@@ -23,7 +23,7 @@ Audio input/output classes for Kaldi backend
 """
 
 from __future__ import division, print_function
-import collections, itertools, wave, logging, os, datetime, time
+import collections, contextlib, datetime, itertools, logging, os, time, wave
 from io import open
 
 from six import binary_type, text_type, print_
@@ -40,17 +40,19 @@ class MicAudio(object):
     """Streams raw audio from microphone. Data is received in a separate thread, and stored in a buffer, to be read from."""
 
     FORMAT = pyaudio.paInt16
-    RATE = 16000
+    SAMPLE_WIDTH = 2
+    SAMPLE_RATE = 16000
     CHANNELS = 1
     BLOCKS_PER_SECOND = 50
+    BLOCK_SIZE_SAMPLES = int(SAMPLE_RATE / float(BLOCKS_PER_SECOND))  # Block size in number of samples
+    BLOCK_DURATION_MS = int(1000 * BLOCK_SIZE_SAMPLES // SAMPLE_RATE)  # Block duration in milliseconds
 
     def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None):
         self.callback = callback if callback is not None else lambda in_data: self.buffer_queue.put(in_data, block=False)
         self.flush_queue = flush_queue
         self.input_device_index = input_device_index
 
-        self.sample_rate = self.RATE
-        self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.block_duration_ms))
+        self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.BLOCK_DURATION_MS))
         self.pa = pyaudio.PyAudio()
         self._connect(start=start)
 
@@ -62,25 +64,22 @@ class MicAudio(object):
         self.stream = self.pa.open(
             format=self.FORMAT,
             channels=self.CHANNELS,
-            rate=self.sample_rate,
+            rate=self.SAMPLE_RATE,
             input=True,
-            frames_per_buffer=self.block_size,
+            frames_per_buffer=self.BLOCK_SIZE_SAMPLES,
             stream_callback=proxy_callback,
             input_device_index=self.input_device_index,
             start=bool(start),
         )
         self.active = True
         info = self.pa.get_default_input_device_info() if self.input_device_index is None else self.pa.get_device_info_by_index(self.input_device_index)
-        _log.info("streaming audio from '%s': %i sample_rate, %i block_duration_ms", info['name'], self.sample_rate, self.block_duration_ms)
+        _log.info("streaming audio from '%s': %i sample_rate, %i block_duration_ms", info['name'], self.SAMPLE_RATE, self.BLOCK_DURATION_MS)
 
     def destroy(self):
         self.stream.stop_stream()
         self.stream.close()
         self.pa.terminate()
         self.active = False
-
-    block_size = property(lambda self: int(self.sample_rate / float(self.BLOCKS_PER_SECOND)), doc="Block size in number of samples")
-    block_duration_ms = property(lambda self: int(1000 * self.block_size // self.sample_rate), doc="Block duration in milliseconds")
 
     def reconnect(self):
         self.stream.stop_stream()
@@ -127,8 +126,8 @@ class MicAudio(object):
         assert isinstance(data, binary_type)
         length_bytes = len(data)
         assert self.FORMAT == pyaudio.paInt16
-        length_samples = length_bytes / 2
-        return (float(length_samples) / self.sample_rate)
+        length_samples = length_bytes / self.SAMPLE_WIDTH
+        return (float(length_samples) / self.SAMPLE_RATE)
 
     def write_wav(self, filename, data):
         # _log.debug("write wav %s", filename)
@@ -136,8 +135,8 @@ class MicAudio(object):
         wf.setnchannels(self.CHANNELS)
         # wf.setsampwidth(self.pa.get_sample_size(FORMAT))
         assert self.FORMAT == pyaudio.paInt16
-        wf.setsampwidth(2)
-        wf.setframerate(self.sample_rate)
+        wf.setsampwidth(self.SAMPLE_WIDTH)
+        wf.setframerate(self.SAMPLE_RATE)
         wf.writeframes(data)
         wf.close()
 
@@ -187,15 +186,15 @@ class VADAudio(MicAudio):
                       |----phrase-----|        |----phrase-----|
         """
         assert end_padding_ms == None, "end_padding_ms not supported yet"
-        num_start_window_blocks = max(1, int(start_window_ms // self.block_duration_ms))
-        num_start_padding_blocks = max(0, int((start_padding_ms or 0) // self.block_duration_ms))
-        num_end_window_blocks = max(1, int(end_window_ms // self.block_duration_ms))
-        num_complex_end_window_blocks = max(1, int((complex_end_window_ms or end_window_ms) // self.block_duration_ms))
-        num_end_padding_blocks = max(0, int((end_padding_ms or 0) // self.block_duration_ms))
+        num_start_window_blocks = max(1, int(start_window_ms // self.BLOCK_DURATION_MS))
+        num_start_padding_blocks = max(0, int((start_padding_ms or 0) // self.BLOCK_DURATION_MS))
+        num_end_window_blocks = max(1, int(end_window_ms // self.BLOCK_DURATION_MS))
+        num_complex_end_window_blocks = max(1, int((complex_end_window_ms or end_window_ms) // self.BLOCK_DURATION_MS))
+        num_end_padding_blocks = max(0, int((end_padding_ms or 0) // self.BLOCK_DURATION_MS))
         _log.debug("%s: vad_collector: num_start_window_blocks=%s num_end_window_blocks=%s num_complex_end_window_blocks=%s",
             self, num_start_window_blocks, num_end_window_blocks, num_complex_end_window_blocks)
         audio_reconnect_threshold_blocks = 5
-        audio_reconnect_threshold_time = 50 * self.block_duration_ms / 1000
+        audio_reconnect_threshold_time = 50 * self.BLOCK_DURATION_MS / 1000
 
         ring_buffer = collections.deque(maxlen=max(
             (num_start_window_blocks + num_start_padding_blocks),
@@ -225,7 +224,7 @@ class VADAudio(MicAudio):
                 # Good block
                 num_empty_blocks = 0
                 last_good_block_time = time.time()
-                is_speech = self.vad.is_speech(block, self.sample_rate)
+                is_speech = self.vad.is_speech(block, self.SAMPLE_RATE)
                 is_speech_char = '|' if is_speech else '.'
 
                 if not triggered:
@@ -259,9 +258,9 @@ class VADAudio(MicAudio):
                         ring_buffer.clear()
 
     def debug_print_simple(self):
-        print("block_duration_ms=%s" % self.block_duration_ms)
+        print("block_duration_ms=%s" % self.BLOCK_DURATION_MS)
         for block in self.iter(nowait=False):
-            is_speech = self.vad.is_speech(block, self.sample_rate)
+            is_speech = self.vad.is_speech(block, self.SAMPLE_RATE)
             print('|' if is_speech else '.', end='')
 
     def debug_loop(self, *args, **kwargs):
@@ -297,7 +296,7 @@ class AudioStore(object):
         self.blocks = []
 
     current_audio_data = property(lambda self: b''.join(self.blocks))
-    current_audio_length_ms = property(lambda self: len(self.blocks) * self.audio_obj.block_duration_ms)
+    current_audio_length_ms = property(lambda self: len(self.blocks) * self.audio_obj.BLOCK_DURATION_MS)
 
     def add_block(self, block):
         self.blocks.append(block)
@@ -368,3 +367,31 @@ class AudioStoreEntry(object):
 
     def set(self, key, value):
         setattr(self, key, value)
+
+
+class WavAudio(object):
+
+    @classmethod
+    def read_file(cls, filename):
+        """ Yields raw audio blocks from wav file. """
+        if not os.path.isfile(filename):
+            raise IOError("'%s' is not a file. Please use a different file path.")
+
+        with contextlib.closing(wave.open(filename, 'rb')) as file:
+            # Validate the wave file's header
+            if file.getnchannels() != MicAudio.CHANNELS:
+                raise ValueError("WAV file '%s' should use %d channel(s), not %d!"
+                           % (filename, MicAudio.CHANNELS, file.getnchannels()))
+            elif file.getsampwidth() != MicAudio.SAMPLE_WIDTH:
+                raise ValueError("WAV file '%s' should use sample width %d, not "
+                           "%d!" % (filename, MicAudio.SAMPLE_WIDTH, file.getsampwidth()))
+            elif file.getframerate() != MicAudio.SAMPLE_RATE:
+                raise ValueError("WAV file '%s' should use sample rate %d, not "
+                           "%d!" % (filename, MicAudio.SAMPLE_RATE, file.getframerate()))
+
+            for _ in range(0, int(file.getnframes() / MicAudio.BLOCK_SIZE_SAMPLES) + 1):
+                data = file.readframes(MicAudio.BLOCK_SIZE_SAMPLES)
+                if not data:
+                    break
+                yield data
+            yield None

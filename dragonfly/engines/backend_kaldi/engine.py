@@ -38,7 +38,7 @@ try:
     import kaldi_active_grammar
     from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
     from .compiler                  import KaldiCompiler
-    from .audio                     import MicAudio, VADAudio, AudioStore
+    from .audio                     import MicAudio, VADAudio, AudioStore, WavAudio
     ENGINE_AVAILABLE = True
 except ImportError:
     # Import a few things here optionally for readability (the engine won't
@@ -255,7 +255,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         """ Can be called optionally before ``do_recognition()`` to speed up its starting of active recognition. """
         self._compiler.prepare_for_recognition()
 
-    def _do_recognition(self, timeout=None, single=False):
+    def _do_recognition(self, timeout=None, single=False, audio_iter=None):
         """
             Loops performing recognition, by default forever, or for *timeout* seconds, or for a single recognition if *single=True*.
             Returns ``False`` if timeout occurred without a recognition.
@@ -268,20 +268,25 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         try:
             self.prepare_for_recognition()
 
+            self._in_phrase = False
+            self._ignore_current_phrase = False
+            in_complex = False
+            timed_out = False
+
             if timeout != None:
                 end_time = time.time() + timeout
                 timed_out = True
-            self._in_phrase = False
-            in_complex = False
 
-            self._audio.start()
+            if audio_iter == None:
+                self._audio.start()
+                audio_iter = self._audio_iter
             self._log.info("Listening...")
-            next(self._audio_iter)  # Prime the audio iterator
+            next(audio_iter)  # Prime the audio iterator
 
             # Loop until timeout (if set) or until disconnect() is called.
             while (not self._deferred_disconnect) and ((not timeout) or (time.time() < end_time)):
                 self.prepare_for_recognition()
-                block = self._audio_iter.send(in_complex)
+                block = audio_iter.send(in_complex)
 
                 if block is False:
                     # No audio block available
@@ -329,9 +334,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
                 self.call_timer_callback()
 
+        except StopIteration:
+            if audio_iter == self._audio_iter:
+                self._log.warning("audio iterator stopped unexpectedly")
+
         finally:
             self._doing_recognition = False
-            if self._audio:
+            if audio_iter == self._audio_iter and self._audio:
                 self._audio.stop()
             if self.audio_store:
                 self.audio_store.save_all()
@@ -340,6 +349,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     in_phrase = property(lambda self: self._in_phrase,
         doc="Whether or not the engine is currently in the middle of hearing a phrase from the user.")
+
+    def recognize_wave_file(self, filename, **kwargs):
+        """ Does recognition on given wave file, treating it as a single utterance (without VAD), then returns. """
+        self.do_recognition(audio_iter=WavAudio.read_file(filename), **kwargs)
 
     def ignore_current_phrase(self):
         """
