@@ -59,7 +59,7 @@ class FocusWindow(ActionBase):
         else:           self.executable = None
         if title:       self.title = title.lower()
         else:           self.title = None
-        if index:       self.index = index.lower()
+        if index:       self.index = index
         else:           self.index = None
         if filter_func: self.filter_func = filter_func
         else:           self.filter_func = None
