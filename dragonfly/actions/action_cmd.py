@@ -278,9 +278,14 @@ class RunCommand(ActionBase):
 
             # Start a timer if using natlink to allow asynchronous execution
             # to work.
+            try:
+                import natlink
+                if not natlink.isNatSpeakRunning():
+                    return
+            except ImportError:
+                return
             engine = get_engine()
             if engine.name == "natlink":
-                import natlink
                 def natlink_timer():
                     # Let the thread run for a bit.
                     if thread.is_alive():
