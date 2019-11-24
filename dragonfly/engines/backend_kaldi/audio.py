@@ -181,7 +181,7 @@ class VADAudio(MicAudio):
         ratio=0.8, blocks=None, nowait=False,
         ):
         """Generator/coroutine that yields series of consecutive audio blocks comprising each phrase, separated by yielding a single None.
-            Determines voice activity by ratio of blocks in padding_ms. Uses a buffer to include padding_ms prior to being triggered.
+            Determines voice activity by ratio of blocks in window_ms. Uses a buffer to include window_ms prior to being triggered.
             Example: (block, ..., block, None, block, ..., block, None, ...)
                       |----phrase-----|        |----phrase-----|
         """
@@ -225,7 +225,6 @@ class VADAudio(MicAudio):
                 num_empty_blocks = 0
                 last_good_block_time = time.time()
                 is_speech = self.vad.is_speech(block, self.SAMPLE_RATE)
-                is_speech_char = '|' if is_speech else '.'
 
                 if not triggered:
                     # Between phrases
