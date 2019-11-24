@@ -54,15 +54,13 @@ class FocusWindow(ActionBase):
     """
 
     def __init__(self, executable=None, title=None, index=None,
-            filter_func=None):
+                 filter_func=None):
         if executable:  self.executable = executable.lower()
         else:           self.executable = None
         if title:       self.title = title.lower()
         else:           self.title = None
-        if index:       self.index = index
-        else:           self.index = None
-        if filter_func: self.filter_func = filter_func
-        else:           self.filter_func = None
+        self.index = index
+        self.filter_func = filter_func
         ActionBase.__init__(self)
 
         arguments = []
