@@ -176,8 +176,15 @@ class BringApp(StartApp):
                if not *None*, then start the application in this
                directory
              - *title* (*str*, default *None*) --
-               if not *None*, then matching existing windows using this
+               if not *None*, then match existing windows using this
                title.
+             - *index* (*str* or *int*) -- zero-based index of the target
+               window, for multiple matching windows; can be a string (for
+               substitution) but must be convertible to an integer.
+             - *filter_func* (*callable*) -- called with a single argument
+               (the window object), and should return ``True`` for your
+               target windows; example:
+               ``lambda window: window.get_position().dy > 100``.
              - *focus_after_start* (*bool*, default *False*) --
                if *True*, then attempt to bring the window to the foreground
                after starting the application. Does nothing if the
@@ -185,13 +192,18 @@ class BringApp(StartApp):
 
         """
         self._title = kwargs.pop("title", None)
+        self._index = kwargs.pop("index", None)
+        self._filter_func = kwargs.pop("filter_func", None)
         StartApp.__init__(self, *args, **kwargs)
 
     def _execute(self, data=None):
         self._log.debug("Bringing app: %r" % (self._args,))
         target = self._args[0].lower()
         title = self._title
-        focus_action = FocusWindow(executable=target, title=title)
+        index = self._index
+        filter_func = self._filter_func
+        focus_action = FocusWindow(executable=target, title=title,
+                                   index=index, filter_func=filter_func)
         # Attempt to focus on an existing window.
         if not focus_action.execute():
             # Failed to focus on an existing window, so start
