@@ -62,6 +62,8 @@ def main():
         # auto_add_to_user_lexicon=True,  # set to True to possibly use cloud for pronunciations
         # lazy_compilation=True,  # set to True to parallelize & speed up loading
         # cloud_dictation=None,  # set to 'gcloud' to use cloud dictation
+        # retain_dir=None,  # set to a writable directory path to retain recognition metadata and/or audio data
+        # retain_audio=None,  # set to True to retain speech data wave files in the retain_dir (if set)
     )
 
     # Call connect() now that the engine configuration is set.
