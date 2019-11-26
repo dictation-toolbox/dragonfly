@@ -35,7 +35,7 @@ setup_log()
 common_names = [
     "test_accessibility",
     "test_actions",
-    # "test_contexts",  # disabled for now
+    "test_contexts",
     "test_engine_nonexistent",
     "test_log",
     "test_parser",
@@ -82,24 +82,27 @@ else:
 
 # Define doctests for each engine.
 engine_tests_dict = {
-    "sapi5": common_names + [
+    "sapi5": [
         "test_engine_sapi5",
         "test_language_en_number",
-    ],
-    "sphinx": common_names + [
+    ] + common_names,
+
+    "sphinx": [
         "test_engine_sphinx",
         "test_language_en_number",
         "test_dictation",
-    ],
-    "kaldi": common_names + [
+    ] + common_names,
+
+    "kaldi": [
         "test_engine_kaldi",
         # "test_language_en_number",
-    ],
-    "text": common_names + language_names + [
-        "test_contexts",
+    ] + common_names,
+
+    "text": [
         "test_engine_text",
         "test_dictation",
-    ],
+    ] + common_names + language_names,
+
     "natlink": natlink_names,
 }
 
@@ -112,8 +115,9 @@ engine_tests_dict['sapi5'].remove(recobs_doctest)
 # engine_tests_dict['kaldi'].remove(lists_doctest)
 
 
-# Add 'sapi5inproc' as an alias of 'sapi5'.
+# Add aliases of 'sapi5'.
 engine_tests_dict['sapi5inproc'] = engine_tests_dict['sapi5']
+engine_tests_dict['sapi5shared'] = engine_tests_dict['sapi5']
 
 
 # ==========================================================================

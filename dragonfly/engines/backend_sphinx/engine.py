@@ -555,16 +555,11 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                                 % (lst, e))
 
     def set_exclusiveness(self, grammar, exclusive):
-        # Disable/enable each grammar.
-        for g in self.grammars:
-            if exclusive:
-                g.disable()
-            else:
-                g.enable()
+        wrapper = self._get_grammar_wrapper(grammar)
+        if not wrapper:
+            return
 
-        # Enable the specified grammar if it was supposed to be exclusive.
-        if exclusive:
-            grammar.enable()
+        wrapper.exclusive = exclusive
 
     # -----------------------------------------------------------------------
     # Miscellaneous methods.
@@ -652,7 +647,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Call process_begin for all grammars so that any out of context
         # grammar will not be used.
-        for wrapper in self._grammar_wrappers.values():
+        for wrapper in self._grammar_wrappers.copy().values():
             wrapper.process_begin(fg_window)
 
         if not mimicking:
@@ -809,10 +804,21 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Otherwise do grammar processing.
         processing_occurred = False
         hypotheses = {}
+        wrappers = self._grammar_wrappers.copy().values()
 
-        # Collect each active grammar's GrammarWrapper.
-        wrappers = [w for w in self._grammar_wrappers.values()
-                    if w.grammar_active]
+        # Count exclusive grammars.
+        exclusive_count = 0
+        for wrapper in wrappers:
+            if wrapper.exclusive:
+                exclusive_count += 1
+
+        # Collect each active grammar wrapper.
+        # Only include exclusive grammars if at least one is loaded.
+        if exclusive_count:
+            wrappers = [w for w in wrappers
+                        if w.exclusive and w.grammar_active]
+        else:
+            wrappers = [w for w in wrappers if w.grammar_active]
 
         # No grammar has been loaded.
         if not wrappers:
