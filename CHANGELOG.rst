@@ -11,6 +11,64 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add FocusWindow constructor arguments to select by index or filter by
+  passed function (thanks `@daanzu`_).
+* Add extra FocusWindow arguments to BringApp action to use for window
+  matching.
+* Add Natlink engine support for retaining recognition data (thanks
+  `@daanzu`_).
+* Add RunCommand 'hide_window' argument for using the action class with GUI
+  applications.
+* Add StartApp and BringApp 'focus_after_start' argument for raising started
+  applications.
+* Add unified 'engine.do_recognition()' method for recognising in a loop
+  from any engine.
+
+Changed
+~~~~~~~
+* Add much faster `Lark-based`_ parser for compound specs (thanks
+  `@mrob95`_).
+* Allow retaining Kaldi engine recognition metadata without audio data
+  (thanks `@daanzu`_).
+* Change Key action to allow typing Unicode on Windows.
+* Change StartApp and BringApp to allow a single list/tuple constructor
+  argument.
+* Change dragonfly's test suite to use *pytest* instead.
+* Change engine recognition loops to exit on engine.disconnect().
+* Change the base Rule class's default 'exported' value to True (thanks
+  `@daanzu`_).
+* Implement the PlaySound action for other platforms using pyaudio.
+* Make other various optimisations and changes (thanks `@mrob95`_).
+* Various improvements to the Kaldi engine (thanks `@daanzu`_).
+
+Fixed
+~~~~~
+* Change Key and Text actions to handle multiple keyboard layouts on
+  Windows.
+* Change NatlinkEngine.mimic() to handle string arguments.
+* Change X11Window class to handle xdotool/xprop errors gracefully instead
+  of panicking.
+* Fix Win32Window.get_matching_windows() and the FocusWindow action for
+  recent Dragon versions.
+* Fix a few bugs with the RunCommand, StartApp and BringApp actions.
+* Fix bug with Kaldi retain audio support where the last dictation wasn't
+  retained (thanks `@comodoro`_).
+* Fix engine bugs where grammars could not be loaded/unloaded during
+  Grammar.process_begin() (thanks `@mrob95`_).
+* Fix various bugs related to grammar exclusivity.
+
+Removed
+~~~~~~~
+* Remove no longer used EngineTestSuite class.
+* Remove unfinished command family app sub-package (dragonfly.apps.family).
+* Remove unused Win32 dialog and control classes.
+
+
 0.18.0_ - 2019-10-13
 --------------------
 
@@ -657,3 +715,4 @@ This release is the first in the Git version control system.
 .. _Aenea: https://github.com/dictation-toolbox/aenea
 .. _pynput: https://github.com/moses-palmer/pynput
 .. _Kaldi engine: https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html
+.. _Lark-based: https://github.com/lark-parser/lark
