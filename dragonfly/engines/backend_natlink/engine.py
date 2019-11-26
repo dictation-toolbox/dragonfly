@@ -229,6 +229,9 @@ class NatlinkEngine(EngineBase):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
+        if isinstance(words, string_types):
+            words = words.split()
+
         try:
             prepared_words = []
             encoding = getpreferredencoding()
