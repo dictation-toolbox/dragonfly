@@ -24,6 +24,7 @@ class GrammarWrapper(object):
         self._observer_manager = observer_manager
         self.set_search = True
         self._search_name = search_name
+        self.exclusive = False
 
         # Compile the grammar into a JSGF grammar and set the language.
         self._jsgf_grammar = engine.compiler.compile_grammar(grammar)
