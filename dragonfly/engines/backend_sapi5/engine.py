@@ -204,11 +204,12 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         self._log.debug("Setting exclusiveness of grammar %s to %s."
                         % (grammar.name, exclusive))
         wrapper = self._get_grammar_wrapper(grammar)
-        if exclusive:
+        if exclusive and wrapper.handle.State != constants.SGSExclusive:
             wrapper.state_before_exclusive = wrapper.handle.State
             wrapper.handle.State = constants.SGSExclusive
-        elif wrapper.handle.State == constants.SGSExclusive:
-            assert wrapper.state_before_exclusive in (constants.SGSEnabled, constants.SGSDisabled)
+        elif not exclusive and wrapper.handle.State == constants.SGSExclusive:
+            assert wrapper.state_before_exclusive in (constants.SGSEnabled,
+                                                      constants.SGSDisabled)
             wrapper.handle.State = wrapper.state_before_exclusive
         # grammar_handle.SetGrammarState(constants.SPGS_EXCLUSIVE)
 
