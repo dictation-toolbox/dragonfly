@@ -115,8 +115,9 @@ engine_tests_dict['sapi5'].remove(recobs_doctest)
 # engine_tests_dict['kaldi'].remove(lists_doctest)
 
 
-# Add 'sapi5inproc' as an alias of 'sapi5'.
+# Add aliases of 'sapi5'.
 engine_tests_dict['sapi5inproc'] = engine_tests_dict['sapi5']
+engine_tests_dict['sapi5shared'] = engine_tests_dict['sapi5']
 
 
 # ==========================================================================
