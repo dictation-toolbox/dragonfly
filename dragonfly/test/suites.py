@@ -35,7 +35,7 @@ setup_log()
 common_names = [
     "test_accessibility",
     "test_actions",
-    # "test_contexts",  # disabled for now
+    "test_contexts",
     "test_engine_nonexistent",
     "test_log",
     "test_parser",
@@ -96,7 +96,6 @@ engine_tests_dict = {
         # "test_language_en_number",
     ],
     "text": common_names + language_names + [
-        "test_contexts",
         "test_engine_text",
         "test_dictation",
     ],
