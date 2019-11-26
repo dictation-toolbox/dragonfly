@@ -38,7 +38,7 @@ try:
     import kaldi_active_grammar
     from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
     from .compiler                  import KaldiCompiler
-    from .audio                     import MicAudio, VADAudio, AudioStore
+    from .audio                     import MicAudio, VADAudio, AudioStore, WavAudio
     ENGINE_AVAILABLE = True
 except ImportError:
     # Import a few things here optionally for readability (the engine won't
@@ -58,8 +58,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        input_device_index=None, retain_dir=None, vad_aggressiveness=3,
-        vad_padding_start_ms=300, vad_padding_end_ms=100, vad_complex_padding_end_ms=500,
+        input_device_index=None, retain_dir=None, retain_audio=None, vad_aggressiveness=3,
+        vad_padding_start_ms=150, vad_padding_end_ms=150, vad_complex_padding_end_ms=500,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         alternative_dictation=None, cloud_dictation_lang='en-US',
         ):
@@ -84,12 +84,16 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if not (isinstance(retain_dir, string_types) or (retain_dir is None)):
             self._log.error("Invalid retain_dir: %r" % retain_dir)
             retain_dir = None
+        if retain_audio and not retain_dir:
+            self._log.error("retain_audio=True requires retain_dir to be set; making retain_audio=False instead")
+            retain_audio = False
 
         self._options = dict(
             model_dir = model_dir,
             tmp_dir = tmp_dir,
             input_device_index = input_device_index,
             retain_dir = retain_dir,
+            retain_audio = bool(retain_audio) if retain_audio is not None else bool(retain_dir),
             vad_aggressiveness = vad_aggressiveness,
             vad_padding_start_ms = vad_padding_start_ms,
             vad_padding_end_ms = vad_padding_end_ms,
@@ -107,6 +111,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self.audio_store = None
         self._recognition_observer_manager = KaldiRecObsManager(self)
         self._timer_manager = DelegateTimerManager(0.02, self)
+
+        self._saving_adaptation_state = False
+        self._doing_recognition = False
+        self._deferred_disconnect = False
 
     def connect(self):
         """ Connect to back-end SR engine. """
@@ -128,30 +136,35 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         top_fst = self._compiler.compile_top_fst()
         dictation_fst_file = self._compiler.dictation_fst_filepath
         self._decoder = KaldiAgfNNet3Decoder(model_dir=self._compiler.model_dir, tmp_dir=self._compiler.tmp_dir,
-            top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file)
+            top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file, save_adaptation_state=False)
         self._compiler.decoder = self._decoder
 
         self._audio = VADAudio(aggressiveness=self._options['vad_aggressiveness'], start=False, input_device_index=self._options['input_device_index'])
         self._audio_iter = self._audio.vad_collector(nowait=True,
-            padding_start_ms=self._options['vad_padding_start_ms'],
-            padding_end_ms=self._options['vad_padding_end_ms'],
-            complex_padding_end_ms=self._options['vad_complex_padding_end_ms'],
+            start_window_ms=self._options['vad_padding_start_ms'],
+            end_window_ms=self._options['vad_padding_end_ms'],
+            complex_end_window_ms=self._options['vad_complex_padding_end_ms'],
             )
-        self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0), save_dir=self._options['retain_dir'])
+        self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0),
+            save_dir=self._options['retain_dir'], save_audio=self._options['retain_audio'])
 
         self._any_exclusive_grammars = False
         self._in_phrase = False
         self._ignore_current_phrase = False
 
     def disconnect(self):
-        """ Disconnect from back-end SR engine. """
-        if self._audio:
-            self._audio.destroy()
-            self._audio = None
-            self._audio_iter = None
-            self.audio_store = None
-        self._compiler = None
-        self._decoder = None
+        """ Disconnect from back-end SR engine. Exits from ``do_recognition()``. """
+        if self._doing_recognition:
+            self._deferred_disconnect = True
+        else:
+            self._deferred_disconnect = False
+            if self._audio:
+                self._audio.destroy()
+                self._audio = None
+                self._audio_iter = None
+                self.audio_store = None
+            self._compiler = None
+            self._decoder = None
 
     def print_mic_list(self):
         MicAudio.print_list()
@@ -242,7 +255,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         """ Can be called optionally before ``do_recognition()`` to speed up its starting of active recognition. """
         self._compiler.prepare_for_recognition()
 
-    def _do_recognition(self, timeout=None, single=False):
+    def _do_recognition(self, timeout=None, single=False, audio_iter=None):
         """
             Loops performing recognition, by default forever, or for *timeout* seconds, or for a single recognition if *single=True*.
             Returns ``False`` if timeout occurred without a recognition.
@@ -250,24 +263,30 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._log.debug("do_recognition: timeout %s" % timeout)
         if not self._decoder:
             raise EngineError("Cannot recognize before connect()")
-
-        self.prepare_for_recognition()
-
-        if timeout != None:
-            end_time = time.time() + timeout
-            timed_out = True
-        self._in_phrase = False
-        in_complex = False
-
-        self._audio.start()
-        self._log.info("Listening...")
-        next(self._audio_iter)
+        self._doing_recognition = True
 
         try:
+            self.prepare_for_recognition()
+
+            self._in_phrase = False
+            self._ignore_current_phrase = False
+            in_complex = False
+            timed_out = False
+
+            if timeout != None:
+                end_time = time.time() + timeout
+                timed_out = True
+
+            if audio_iter == None:
+                self._audio.start()
+                audio_iter = self._audio_iter
+            self._log.info("Listening...")
+            next(audio_iter)  # Prime the audio iterator
+
             # Loop until timeout (if set) or until disconnect() is called.
-            while self._decoder and ((not timeout) or (time.time() < end_time)):
+            while (not self._deferred_disconnect) and ((not timeout) or (time.time() < end_time)):
                 self.prepare_for_recognition()
-                block = self._audio_iter.send(in_complex)
+                block = audio_iter.send(in_complex)
 
                 if block is False:
                     # No audio block available
@@ -301,6 +320,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                         output = self._compiler.untranslate_output(output)
                         kaldi_rule, parsed_output = self._parse_recognition(output)
                         self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
+                        if self._saving_adaptation_state and parsed_output != '':  # Don't save adaptation state for empty recognitions
+                            self._decoder.save_adaptation_state()
                         if self.audio_store and kaldi_rule:
                             self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name, likelihood)
 
@@ -313,8 +334,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
                 self.call_timer_callback()
 
+        except StopIteration:
+            if audio_iter == self._audio_iter:
+                self._log.warning("audio iterator stopped unexpectedly")
+
         finally:
-            if self._audio:
+            self._doing_recognition = False
+            if audio_iter == self._audio_iter and self._audio:
                 self._audio.stop()
             if self.audio_store:
                 self.audio_store.save_all()
@@ -323,6 +349,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     in_phrase = property(lambda self: self._in_phrase,
         doc="Whether or not the engine is currently in the middle of hearing a phrase from the user.")
+
+    def recognize_wave_file(self, filename, **kwargs):
+        """ Does recognition on given wave file, treating it as a single utterance (without VAD), then returns. """
+        self.do_recognition(audio_iter=WavAudio.read_file(filename), **kwargs)
 
     def ignore_current_phrase(self):
         """
@@ -334,16 +364,19 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._ignore_current_phrase = True
         return True
 
-    saving_adaptation_state = property(lambda self: self._decoder.saving_adaptation_state,
-        doc="Whether or not the engine is currently saving adaptation state.")
+    saving_adaptation_state = property(lambda self: self._saving_adaptation_state,
+        doc="Whether or not the engine is currently automatically saving adaptation state between utterances.")
+    @saving_adaptation_state.setter
+    def saving_adaptation_state(self, value):
+        self._saving_adaptation_state = value
 
     def start_saving_adaptation_state(self):
-        """ Enable saving of adaptation state, which improves recognition accuracy in the short term, but is not stored between runs. """
-        self._decoder.saving_adaptation_state = True
+        """ Enable automatic saving of adaptation state between utterances, which may improve recognition accuracy in the short term, but is not stored between runs. """
+        self.saving_adaptation_state = True
 
     def stop_saving_adaptation_state(self):
-        """ Disables saving of adaptation state, which you might want to do when you expect there to be noise and don't want it to pollute your current adaptation state. """
-        self._decoder.saving_adaptation_state = False
+        """ Disables automatic saving of adaptation state between utterances, which you might want to do when you expect there to be noise and don't want it to pollute your current adaptation state. """
+        self.saving_adaptation_state = False
 
     def reset_adaptation_state(self):
         self._decoder.reset_adaptation_state()
@@ -363,9 +396,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             todo_grammar_wrappers = set(self._grammar_wrappers.values()) - processed_grammar_wrappers
 
     def _compute_kaldi_rules_activity(self, phrase_start=True):
-        fg_window = Window.get_foreground()
-        for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
-            if phrase_start:
+        if phrase_start:
+            fg_window = Window.get_foreground()
+            for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
                 grammar_wrapper.phrase_start_callback(fg_window)
         self.prepare_for_recognition()
         self._active_kaldi_rules = []
@@ -418,6 +451,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     self._log.error("unable to parse recognition: %r" % output)
                 self._recognition_observer_manager.notify_failure()
                 return None, ''
+            self._log.log(12, "Alignment (word,time,length): %s" % self._decoder.get_word_align(output))
 
         else:
             raise EngineError("Invalid _compiler.parsing_framework")

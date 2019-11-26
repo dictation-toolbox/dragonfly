@@ -22,8 +22,8 @@
 Audio input/output classes for Kaldi backend
 """
 
-from __future__ import division
-import collections, wave, logging, os, datetime, time
+from __future__ import division, print_function
+import collections, contextlib, datetime, itertools, logging, os, time, wave
 from io import open
 
 from six import binary_type, text_type, print_
@@ -40,17 +40,19 @@ class MicAudio(object):
     """Streams raw audio from microphone. Data is received in a separate thread, and stored in a buffer, to be read from."""
 
     FORMAT = pyaudio.paInt16
-    RATE = 16000
+    SAMPLE_WIDTH = 2
+    SAMPLE_RATE = 16000
     CHANNELS = 1
     BLOCKS_PER_SECOND = 50
+    BLOCK_SIZE_SAMPLES = int(SAMPLE_RATE / float(BLOCKS_PER_SECOND))  # Block size in number of samples
+    BLOCK_DURATION_MS = int(1000 * BLOCK_SIZE_SAMPLES // SAMPLE_RATE)  # Block duration in milliseconds
 
     def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None):
         self.callback = callback if callback is not None else lambda in_data: self.buffer_queue.put(in_data, block=False)
         self.flush_queue = flush_queue
         self.input_device_index = input_device_index
 
-        self.sample_rate = self.RATE
-        self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.block_duration_ms))
+        self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.BLOCK_DURATION_MS))
         self.pa = pyaudio.PyAudio()
         self._connect(start=start)
 
@@ -62,25 +64,22 @@ class MicAudio(object):
         self.stream = self.pa.open(
             format=self.FORMAT,
             channels=self.CHANNELS,
-            rate=self.sample_rate,
+            rate=self.SAMPLE_RATE,
             input=True,
-            frames_per_buffer=self.block_size,
+            frames_per_buffer=self.BLOCK_SIZE_SAMPLES,
             stream_callback=proxy_callback,
             input_device_index=self.input_device_index,
             start=bool(start),
         )
         self.active = True
         info = self.pa.get_default_input_device_info() if self.input_device_index is None else self.pa.get_device_info_by_index(self.input_device_index)
-        _log.info("streaming audio from '%s': %i sample_rate, %i block_duration_ms", info['name'], self.sample_rate, self.block_duration_ms)
+        _log.info("streaming audio from '%s': %i sample_rate, %i block_duration_ms", info['name'], self.SAMPLE_RATE, self.BLOCK_DURATION_MS)
 
     def destroy(self):
         self.stream.stop_stream()
         self.stream.close()
         self.pa.terminate()
         self.active = False
-
-    block_size = property(lambda self: int(self.sample_rate / float(self.BLOCKS_PER_SECOND)), doc="Block size in number of samples")
-    block_duration_ms = property(lambda self: int(1000 * self.block_size // self.sample_rate), doc="Block duration in milliseconds")
 
     def reconnect(self):
         self.stream.stop_stream()
@@ -127,8 +126,8 @@ class MicAudio(object):
         assert isinstance(data, binary_type)
         length_bytes = len(data)
         assert self.FORMAT == pyaudio.paInt16
-        length_samples = length_bytes / 2
-        return (float(length_samples) / self.sample_rate)
+        length_samples = length_bytes / self.SAMPLE_WIDTH
+        return (float(length_samples) / self.SAMPLE_RATE)
 
     def write_wav(self, filename, data):
         # _log.debug("write wav %s", filename)
@@ -136,8 +135,8 @@ class MicAudio(object):
         wf.setnchannels(self.CHANNELS)
         # wf.setsampwidth(self.pa.get_sample_size(FORMAT))
         assert self.FORMAT == pyaudio.paInt16
-        wf.setsampwidth(2)
-        wf.setframerate(self.sample_rate)
+        wf.setsampwidth(self.SAMPLE_WIDTH)
+        wf.setframerate(self.SAMPLE_RATE)
         wf.writeframes(data)
         wf.close()
 
@@ -177,31 +176,42 @@ class VADAudio(MicAudio):
         super(VADAudio, self).__init__(**kwargs)
         self.vad = webrtcvad.Vad(aggressiveness)
 
-    def vad_collector(self, padding_start_ms=300, padding_end_ms=100, complex_padding_end_ms=None, ratio=0.8, blocks=None, nowait=False):
+    def vad_collector(self, start_window_ms=150, start_padding_ms=100,
+        end_window_ms=150, end_padding_ms=None, complex_end_window_ms=None,
+        ratio=0.8, blocks=None, nowait=False,
+        ):
         """Generator/coroutine that yields series of consecutive audio blocks comprising each phrase, separated by yielding a single None.
-            Determines voice activity by ratio of blocks in padding_ms. Uses a buffer to include padding_ms prior to being triggered.
+            Determines voice activity by ratio of blocks in window_ms. Uses a buffer to include window_ms prior to being triggered.
             Example: (block, ..., block, None, block, ..., block, None, ...)
                       |----phrase-----|        |----phrase-----|
         """
-        num_padding_start_blocks = max(1, int((padding_start_ms / ratio) // self.block_duration_ms))
-        num_padding_end_blocks = max(1, int((padding_end_ms / ratio) // self.block_duration_ms))
-        num_complex_padding_end_blocks = max(1, int(((complex_padding_end_ms or padding_end_ms) / ratio) // self.block_duration_ms))
+        assert end_padding_ms == None, "end_padding_ms not supported yet"
+        num_start_window_blocks = max(1, int(start_window_ms // self.BLOCK_DURATION_MS))
+        num_start_padding_blocks = max(0, int((start_padding_ms or 0) // self.BLOCK_DURATION_MS))
+        num_end_window_blocks = max(1, int(end_window_ms // self.BLOCK_DURATION_MS))
+        num_complex_end_window_blocks = max(1, int((complex_end_window_ms or end_window_ms) // self.BLOCK_DURATION_MS))
+        num_end_padding_blocks = max(0, int((end_padding_ms or 0) // self.BLOCK_DURATION_MS))
+        _log.debug("%s: vad_collector: num_start_window_blocks=%s num_end_window_blocks=%s num_complex_end_window_blocks=%s",
+            self, num_start_window_blocks, num_end_window_blocks, num_complex_end_window_blocks)
         audio_reconnect_threshold_blocks = 5
-        audio_reconnect_threshold_time = 50 * self.block_duration_ms / 1000
-        _log.debug("%s: vad_collector: num_padding_start_blocks=%s num_padding_end_blocks=%s num_complex_padding_end_blocks=%s",
-            self, num_padding_start_blocks, num_padding_end_blocks, num_complex_padding_end_blocks)
+        audio_reconnect_threshold_time = 50 * self.BLOCK_DURATION_MS / 1000
 
-        if blocks is None: blocks = self.iter(nowait=nowait)
-        start_buffer = collections.deque(maxlen=num_padding_start_blocks)
-        end_buffer = collections.deque(maxlen=num_padding_end_blocks)
-        complex_end_buffer = collections.deque(maxlen=num_complex_padding_end_blocks)
+        ring_buffer = collections.deque(maxlen=max(
+            (num_start_window_blocks + num_start_padding_blocks),
+            (num_end_window_blocks + num_end_padding_blocks),
+            (num_complex_end_window_blocks + num_end_padding_blocks),
+        ))
+        ring_buffer_recent_slice = lambda num_blocks: itertools.islice(ring_buffer, max(0, (len(ring_buffer) - num_blocks)), None)
+
         triggered = False
         in_complex_phrase = False
         num_empty_blocks = 0
         last_good_block_time = time.time()
 
+        if blocks is None: blocks = self.iter(nowait=nowait)
         for block in blocks:
             if block is False or block is None:
+                # Bad/empty block
                 num_empty_blocks += 1
                 if (num_empty_blocks >= audio_reconnect_threshold_blocks) and (time.time() - last_good_block_time >= audio_reconnect_threshold_time):
                     _log.warning("%s: no good block received recently, so reconnecting audio")
@@ -211,34 +221,52 @@ class VADAudio(MicAudio):
                 in_complex_phrase = yield block
 
             else:
+                # Good block
                 num_empty_blocks = 0
                 last_good_block_time = time.time()
-                is_speech = self.vad.is_speech(block, self.sample_rate)
+                is_speech = self.vad.is_speech(block, self.SAMPLE_RATE)
 
                 if not triggered:
                     # Between phrases
-                    start_buffer.append((block, is_speech))
-                    num_voiced = len([1 for block, speech in start_buffer if speech])
-                    if num_voiced > ratio * start_buffer.maxlen:
+                    ring_buffer.append((block, is_speech))
+                    num_voiced = len([1 for (_, speech) in ring_buffer_recent_slice(num_start_window_blocks) if speech])
+                    if num_voiced >= (num_start_window_blocks * ratio):
                         # Start of phrase
                         triggered = True
-                        for block, _ in start_buffer:
+                        for block, _ in ring_buffer_recent_slice(num_start_padding_blocks + num_start_window_blocks):
+                            # print('|' if is_speech else '.', end='')
+                            # print('|' if in_complex_phrase else '.', end='')
                             in_complex_phrase = yield block
-                        start_buffer.clear()
+                        # print('#', end='')
+                        ring_buffer.clear()
 
                 else:
                     # Ongoing phrase
                     in_complex_phrase = yield block
-                    end_buffer.append((block, is_speech))
-                    complex_end_buffer.append((block, is_speech))
-                    num_unvoiced = len([1 for block, speech in end_buffer if not speech])
-                    num_complex_unvoiced = len([1 for block, speech in complex_end_buffer if not speech])
-                    if (not in_complex_phrase and num_unvoiced > ratio * end_buffer.maxlen) or (in_complex_phrase and num_complex_unvoiced > ratio * complex_end_buffer.maxlen):
+                    # print('|' if is_speech else '.', end='')
+                    # print('|' if in_complex_phrase else '.', end='')
+                    ring_buffer.append((block, is_speech))
+                    num_unvoiced = len([1 for (_, speech) in ring_buffer_recent_slice(num_end_window_blocks) if not speech])
+                    num_complex_unvoiced = len([1 for (_, speech) in ring_buffer_recent_slice(num_complex_end_window_blocks) if not speech])
+                    if (not in_complex_phrase and num_unvoiced >= (num_end_window_blocks * ratio)) or \
+                        (in_complex_phrase and num_complex_unvoiced >= (num_complex_end_window_blocks * ratio)):
                         # End of phrase
                         triggered = False
                         in_complex_phrase = yield None
-                        end_buffer.clear()
-                        complex_end_buffer.clear()
+                        # print('*')
+                        ring_buffer.clear()
+
+    def debug_print_simple(self):
+        print("block_duration_ms=%s" % self.BLOCK_DURATION_MS)
+        for block in self.iter(nowait=False):
+            is_speech = self.vad.is_speech(block, self.SAMPLE_RATE)
+            print('|' if is_speech else '.', end='')
+
+    def debug_loop(self, *args, **kwargs):
+        audio_iter = self.vad_collector(*args, **kwargs)
+        next(audio_iter)
+        while True:
+            block = audio_iter.send(False)
 
 
 class AudioStore(object):
@@ -247,19 +275,27 @@ class AudioStore(object):
     Also, optionally stores the last `maxlen` recognitions as lists [audio, text, grammar_name, rule_name, misrecognition],
     indexed in reverse order (0 is most recent), and advanced upon calling `finalize()`.
     Note: `finalize()` should be called after the recognition has been parsed and its actions executed.
+
+    Constrictor arguments:
+    - *save_audio* (bool, default *None*): whether to save the audio data (in addition to just the recognition metadata)
     """
 
-    def __init__(self, audio_obj, maxlen=None, save_dir=None, auto_save_predicate_func=None):
+    def __init__(self, audio_obj, maxlen=None, save_dir=None, save_audio=None, auto_save_predicate_func=None):
         self.audio_obj = audio_obj
         self.maxlen = maxlen
         self.save_dir = save_dir
+        self.save_audio = save_audio
         if self.save_dir:
-            _log.info("retaining audio and recognition metadata to '%s'", self.save_dir)
+            if self.save_audio:
+                _log.info("retaining audio and recognition metadata to '%s'", self.save_dir)
+            else:
+                _log.info("retaining recognition metadata to '%s'", self.save_dir)
         self.auto_save_predicate_func = auto_save_predicate_func
         self.deque = collections.deque(maxlen=maxlen) if maxlen else None
         self.blocks = []
 
     current_audio_data = property(lambda self: b''.join(self.blocks))
+    current_audio_length_ms = property(lambda self: len(self.blocks) * self.audio_obj.BLOCK_DURATION_MS)
 
     def add_block(self, block):
         self.blocks.append(block)
@@ -280,12 +316,16 @@ class AudioStore(object):
         if not self.save_dir:
             return
         if not os.path.isdir(self.save_dir):
-            _log.warning("Audio was not retained because '%s' was not a directory" % self.save_dir)
+            _log.warning("Recognition data was not retained because '%s' was not a directory" % self.save_dir)
             return
 
-        filename = os.path.join(self.save_dir, "retain_%s.wav" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f"))
         entry = self.deque[index]
-        self.audio_obj.write_wav(filename, entry.audio)
+        if self.save_audio:
+            filename = os.path.join(self.save_dir, "retain_%s.wav" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f"))
+            self.audio_obj.write_wav(filename, entry.audio)
+        else:
+            filename = ''
+
         with open(os.path.join(self.save_dir, "retain.tsv"), 'a', encoding='utf-8') as tsv_file:
             tsv_file.write(u'\t'.join([
                     filename,
@@ -297,12 +337,12 @@ class AudioStore(object):
                     text_type(entry.misrecognition),
                 ]) + '\n')
 
-    def save_all(self):
-        if self.deque is None:
-            return
-
-        for i in reversed(range(len(self.deque))):
-            self.save(i)
+    def save_all(self, remove=True):
+        if self.deque:
+            for i in reversed(range(len(self.deque))):
+                self.save(i)
+            if remove:
+                self.deque.clear()
 
     def __getitem__(self, key):
         return self.deque[key]
@@ -326,3 +366,31 @@ class AudioStoreEntry(object):
 
     def set(self, key, value):
         setattr(self, key, value)
+
+
+class WavAudio(object):
+
+    @classmethod
+    def read_file(cls, filename):
+        """ Yields raw audio blocks from wav file. """
+        if not os.path.isfile(filename):
+            raise IOError("'%s' is not a file. Please use a different file path.")
+
+        with contextlib.closing(wave.open(filename, 'rb')) as file:
+            # Validate the wave file's header
+            if file.getnchannels() != MicAudio.CHANNELS:
+                raise ValueError("WAV file '%s' should use %d channel(s), not %d!"
+                           % (filename, MicAudio.CHANNELS, file.getnchannels()))
+            elif file.getsampwidth() != MicAudio.SAMPLE_WIDTH:
+                raise ValueError("WAV file '%s' should use sample width %d, not "
+                           "%d!" % (filename, MicAudio.SAMPLE_WIDTH, file.getsampwidth()))
+            elif file.getframerate() != MicAudio.SAMPLE_RATE:
+                raise ValueError("WAV file '%s' should use sample rate %d, not "
+                           "%d!" % (filename, MicAudio.SAMPLE_RATE, file.getframerate()))
+
+            for _ in range(0, int(file.getnframes() / MicAudio.BLOCK_SIZE_SAMPLES) + 1):
+                data = file.readframes(MicAudio.BLOCK_SIZE_SAMPLES)
+                if not data:
+                    break
+                yield data
+            yield None

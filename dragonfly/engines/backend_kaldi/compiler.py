@@ -81,7 +81,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         self.added_word = False
         self.internal_grammar = InternalGrammar('!kaldi_engine_internal')
 
-    impossible_word = property(lambda self: self._longest_word)  # FIXME
+    impossible_word = property(lambda self: self._longest_word.lower())  # FIXME
     unknown_word = '<unk>'
 
     def get_weight(self, obj, name):
@@ -337,4 +337,4 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     # @trace_compile
     def _compile_impossible(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # FIXME: not impossible enough (lower probability?)
-        fst.add_arc(src_state, dst_state, self.impossible_word.lower())
+        fst.add_arc(src_state, dst_state, self.impossible_word)
