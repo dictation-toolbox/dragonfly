@@ -82,23 +82,27 @@ else:
 
 # Define doctests for each engine.
 engine_tests_dict = {
-    "sapi5": common_names + [
+    "sapi5": [
         "test_engine_sapi5",
         "test_language_en_number",
-    ],
-    "sphinx": common_names + [
+    ] + common_names,
+
+    "sphinx": [
         "test_engine_sphinx",
         "test_language_en_number",
         "test_dictation",
-    ],
-    "kaldi": common_names + [
+    ] + common_names,
+
+    "kaldi": [
         "test_engine_kaldi",
         # "test_language_en_number",
-    ],
-    "text": common_names + language_names + [
+    ] + common_names,
+
+    "text": [
         "test_engine_text",
         "test_dictation",
-    ],
+    ] + common_names + language_names,
+
     "natlink": natlink_names,
 }
 
