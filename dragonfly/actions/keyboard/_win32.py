@@ -315,7 +315,7 @@ class Keyboard(BaseKeyboard):
         if isinstance(char, binary_type):
             char = char.decode(getpreferredencoding())
         if is_text:
-            return Typeable(char, is_text=True)
+            return Typeable(char, is_text=True, char=char)
 
         code, modifiers = cls.get_keycode_and_modifiers(char)
         return Typeable(code, modifiers, name=char, char=char)
