@@ -11,6 +11,16 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Fixed
+~~~~~
+* Change the Key action to accept all escaped or encoded characters as key
+  names on Windows.
+* Fix a bug where the Key/Text 'use_hardware' argument is ignored.
+
+
 0.19.0_ - 2019-11-26
 --------------------
 
