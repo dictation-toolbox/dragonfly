@@ -404,9 +404,17 @@ class Key(BaseKeyboardAction):
 
         elif code is None and is_windows:
             # Handle this differently on Windows.
-            if len(keyname) > 1:
+            invalid_key_name = (
+                len(keyname) > 1 and
+
+                # Check if 'keyname' is an encoded character or code point.
+                (keyname.encode('unicode-escape', errors='ignore')
+                 .startswith(b"\\\\"))
+            )
+            if invalid_key_name:
                 # Raise an error on Windows for unknown keys that aren't
-                # single characters.
+                # single characters, encoded characters or Unicode code
+                # points.
                 raise ActionError("Invalid key name: %r" % keyname)
 
             # Otherwise get a new Typeable.
