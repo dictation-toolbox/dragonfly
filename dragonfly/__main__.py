@@ -82,12 +82,9 @@ def test_with_engine(args):
         except KeyboardInterrupt:
             pass
 
-    # Unload all grammars (required if using natlink remotely).
-    for grammar in engine.grammars:
-        grammar.unload()
-
-    # Disconnect the engine.
-    engine.disconnect()
+        # Unload all grammars (required if using natlink remotely).
+        for grammar in engine.grammars:
+            grammar.unload()
 
     # Return the success of this command.
     return return_code
