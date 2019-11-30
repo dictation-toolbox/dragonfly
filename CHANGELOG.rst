@@ -11,6 +11,20 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Changed
+~~~~~~~
+* Change dragonfly's CLI test command to accept zero file arguments.
+
+Fixed
+~~~~~
+* Fix Kaldi ListRef bug not updating list (thanks `@daanzu`_).
+* Fix a bug with dragonfly's CLI 'test' command where grammars weren't
+  properly unloaded.
+
+
 0.19.1_ - 2019-11-28
 --------------------
 
