@@ -135,6 +135,8 @@ class WordFlags(FlagContainer):
         # Miscellaneous flags
         "no_format",           # Don't apply formatting (like Cap)
         "not_after_period",    # Suppress this word after a word ending in period (like full-stop after etc.)
+
+        "use_spoken_form",     # Treat this as a normal word
     )
 
 
@@ -341,9 +343,10 @@ class WordParserDns11(WordParserBase):
         "left-*":           WordFlags("no_cap_reset", "no_space_after"),
         "right-*":          WordFlags("no_cap_reset", "no_space_before", "no_space_reset"),
         "open paren":       WordFlags("no_space_after"),
-        "close paren":       WordFlags("no_space_before"),
+        "close paren":      WordFlags("no_space_before"),
         "slash":            WordFlags("no_space_after", "no_space_before"),
 
+        "numeral":          WordFlags("use_spoken_form"),
         # below are two examples of Dragon custom vocabulary with formatting
         # these would have to be added to the Dragon vocabulary for users to use them
         # "len":              WordFlags("no_space_after"), # shorter name for (
@@ -408,7 +411,7 @@ class WordParserDns11(WordParserBase):
 
         word = Word(written, spoken, word_flags)
         self._log.debug("Parsed input {0!r} -> {1}".format(input, word))
-#        print ("Parsed input {0!r} -> {1}".format(input, word))
+        # print ("Parsed input {0!r} -> {1}".format(input, word))
         return word
 
 
@@ -515,7 +518,8 @@ class WordFormatter(object):
         else:                                  prefix = " "
 
         # Determine formatted written form.
-        if   word.flags.no_format:         written = word.written
+        if   word.flags.use_spoken_form:   written = word.spoken
+        elif word.flags.no_format:         written = word.written
         elif state.cap_mode and not word.flags.no_title_cap:
                                            written = self.capitalize_all(word.written)
         elif state.upper_mode:             written = self.upper_all(word.written)
