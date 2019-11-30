@@ -114,7 +114,7 @@ def make_arg_parser():
         "engine.mimic() after command modules are loaded."
     )
     parser_test.add_argument(
-        "files", metavar="file", nargs="+", type=argparse.FileType("r"),
+        "files", metavar="file", nargs="*", type=argparse.FileType("r"),
         help="Command module file(s)."
     )
     parser_test.add_argument(
