@@ -276,7 +276,7 @@ class AudioStore(object):
     indexed in reverse order (0 is most recent), and advanced upon calling `finalize()`.
     Note: `finalize()` should be called after the recognition has been parsed and its actions executed.
 
-    Constrictor arguments:
+    Constructor arguments:
     - *save_audio* (bool, default *None*): whether to save the audio data (in addition to just the recognition metadata)
     """
 
@@ -334,7 +334,7 @@ class AudioStore(object):
                     entry.rule_name,
                     entry.text,
                     text_type(entry.likelihood),
-                    text_type(entry.misrecognition),
+                    text_type(entry.tag),
                 ]) + '\n')
 
     def save_all(self, remove=True):
@@ -354,15 +354,15 @@ class AudioStore(object):
         return True
 
 class AudioStoreEntry(object):
-    __slots__ = ('audio', 'grammar_name', 'rule_name', 'text', 'likelihood', 'misrecognition')
+    __slots__ = ('audio', 'grammar_name', 'rule_name', 'text', 'likelihood', 'tag')
 
-    def __init__(self, audio, grammar_name, rule_name, text, likelihood, misrecognition):
+    def __init__(self, audio, grammar_name, rule_name, text, likelihood, tag):
         self.audio = audio
         self.grammar_name = grammar_name
         self.rule_name = rule_name
         self.text = text
         self.likelihood = likelihood
-        self.misrecognition = misrecognition
+        self.tag = tag
 
     def set(self, key, value):
         setattr(self, key, value)
