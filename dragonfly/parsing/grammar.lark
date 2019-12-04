@@ -3,6 +3,7 @@
 // ? means that the rule will be inlined iff there is a single child
 ?alternative: sequence ("|" sequence)*
 ?sequence: single*
+         | sequence "{" WORD "}"  -> special
 
 ?single: WORD+               -> literal
       | "<" WORD ">"         -> reference
@@ -11,7 +12,7 @@
 
 // Match anything which is not whitespace or a control character,
 // we will let the engine handle invalid words
-WORD: /[^\s\[\]<>|()]+/
+WORD: /[^\s\[\]<>|(){}]+/
 
 %import common.WS_INLINE
 %ignore WS_INLINE

@@ -15,6 +15,7 @@ def check_parse_tree(spec, expected):
     tree = spec_parser.parse(spec)
     output = CompoundTransformer(extras).transform(tree)
     assert output.element_tree_string() == expected.element_tree_string()
+    return output
 
 
 class TestLarkParser(unittest.TestCase):
@@ -68,6 +69,27 @@ class TestLarkParser(unittest.TestCase):
 
     def test_unicode(self):
         check_parse_tree(u"touché", Literal(u"touché"))
+
+    def test_special_in_sequence(self):
+        output = check_parse_tree(
+            " test <an_extra> [op] {test_special}",
+            Sequence([Literal(u"test"), extras["an_extra"], Optional(Literal(u"op"))]),
+        )
+        assert output.test_special == True
+        assert all(getattr(child, 'test_special', None) == None for child in output.children)
+
+    def test_special_in_alternative(self):
+        output = check_parse_tree(
+            "foo | bar {test_special} | baz",
+            Alternative([
+                Literal(u"foo"),
+                Literal(u"bar"),
+                Literal(u"baz"),
+            ]),
+        )
+        assert getattr(output.children[0], 'test_special', None) == None
+        assert output.children[1].test_special == True
+        assert getattr(output.children[2], 'test_special', None) == None
 
 
 # ===========================================================================

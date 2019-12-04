@@ -41,3 +41,18 @@ class CompoundTransformer(Transformer):
         except KeyError:
             raise Exception("Unknown reference name %r" % (str(ref)))
 
+    def special(self, args):
+        child, specifier = args
+        if '=' in specifier:
+            name, value = specifier.split('=')
+        else:
+            name = specifier
+
+        if name in ['weight', 'w']:
+            child.weight = float(value)
+        elif name in ['test_special']:
+            child.test_special = True
+        else:
+            raise ParseError("Unrecognized special specifier: {%s}" % str(specifier))
+
+        return child
