@@ -167,6 +167,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 self.audio_store = None
             self._compiler = None
             self._decoder = None
+            self._grammar_wrappers = {}  # From EngineBase
 
     def print_mic_list(self):
         MicAudio.print_list()
@@ -237,8 +238,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._recognition_observer_manager.notify_begin()
         kaldi_rules_activity = self._compute_kaldi_rules_activity()
+        self.prepare_for_recognition()  # Redundant?
 
-        self.prepare_for_recognition()
         kaldi_rule, parsed_output = self._parse_recognition(output, mimic=True)
         if not kaldi_rule:
             raise MimicFailure("No matching rule found for %r." % (output,))
@@ -403,13 +404,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
                 grammar_wrapper.phrase_start_callback(fg_window)
         self.prepare_for_recognition()
-        self._active_kaldi_rules = []
+        self._active_kaldi_rules = set()
         self._kaldi_rules_activity = [False] * self._compiler.num_kaldi_rules
         for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
             if grammar_wrapper.active and (not self._any_exclusive_grammars or (self._any_exclusive_grammars and grammar_wrapper.exclusive)):
                 for kaldi_rule in grammar_wrapper.kaldi_rule_by_rule_dict.values():
                     if kaldi_rule.active:
-                        self._active_kaldi_rules.append(kaldi_rule)
+                        self._active_kaldi_rules.add(kaldi_rule)
                         self._kaldi_rules_activity[kaldi_rule.id] = True
         self._log.debug("active kaldi_rules: %s", [kr.name for kr in self._active_kaldi_rules])
         return self._kaldi_rules_activity
