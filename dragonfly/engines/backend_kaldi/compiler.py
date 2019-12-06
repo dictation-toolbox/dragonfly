@@ -206,8 +206,12 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def unload_grammar(self, grammar, rules, engine):
         for rule in rules:
             kaldi_rule = self.kaldi_rule_by_rule_dict[rule]
+            # Unload kaldi_rule: destroy() handles KaldiAGCompiler stuff; we must handle ours
             kaldi_rule.destroy()
             del self.kaldi_rule_by_rule_dict[rule]
+            for kaldi_rules_set in self.kaldi_rules_by_listreflist_dict.values():
+                kaldi_rules_set.discard(kaldi_rule)
+            # NOTE: the kaldi_rule_by_rule_dict we returned from compile_grammar() is not updated, but it should be dropped upon unload anyway!
 
     def update_list(self, lst, grammar):
         # Note: we update all rules in all grammars that reference this list (unlike WSR/natlink?)
