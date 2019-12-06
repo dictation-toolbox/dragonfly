@@ -148,6 +148,9 @@ Mouse class reference
 
 """
 
+# pylint: disable=R0201
+# Suppress warnings about handler functions defined as Mouse methods.
+
 from .action_base       import DynStrActionBase, ActionError
 from ..windows.window   import Window
 
@@ -184,7 +187,7 @@ class Mouse(DynStrActionBase):
                     if handler(self, part, events):
                         handled = True
                         break
-                except Exception as e:
+                except Exception:
                     continue
             if not handled:
                 raise ActionError("Invalid mouse spec: %r (in %r)"
@@ -275,12 +278,12 @@ class Mouse(DynStrActionBase):
         return True
 
     _handlers = [
-                 _process_window_position,
-                 _process_screen_position,
-                 _process_relative_position,
-                 _process_button,
-                 _process_pause,
-                ]
+        _process_window_position,
+        _process_screen_position,
+        _process_relative_position,
+        _process_button,
+        _process_pause,
+    ]
 
     def _parse_position(self, spec):
         spec = spec.strip()

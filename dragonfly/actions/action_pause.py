@@ -54,6 +54,8 @@ class Pause(DynStrActionBase):
         interval = float(spec) / 100
         return interval
 
+    # pylint: disable=W0221
+    # Arguments differ from DynStrActionBase._execute_events().
     def _execute_events(self, interval):
         time.sleep(interval)
         return True

@@ -57,6 +57,7 @@ class Typeable(object):
         # between platforms.
         self._is_text = is_text
 
+    # pylint: disable=no-self-use,unused-argument
     def update(self, hardware_events_required):
         """
         Update keypress information.

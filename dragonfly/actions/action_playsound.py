@@ -71,6 +71,10 @@ Class reference
 
 """
 
+# pylint: disable=E0401,C0413
+# This file imports from optional or Win32-only packages depending on the
+# platform.
+
 from ctypes import CFUNCTYPE, c_char_p, c_int, cdll
 
 import os

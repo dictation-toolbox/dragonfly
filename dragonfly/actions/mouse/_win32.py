@@ -18,9 +18,12 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import win32con
+# pylint: disable=E0401
+# This file imports Win32-only symbols.
 
 from ctypes import windll, pointer, c_long, c_ulong, Structure
+
+import win32con
 
 from dragonfly.actions.sendinput import (MouseInput, make_input_array,
                                          send_input_array)
@@ -32,9 +35,9 @@ from ._base import BaseButtonEvent, MoveEvent
 
 class Point(Structure):
     _fields_ = [
-                ('x',  c_long),
-                ('y',  c_long),
-               ]
+        ('x',  c_long),
+        ('y',  c_long),
+    ]
 
 
 def get_cursor_position():

@@ -36,7 +36,7 @@ Example usage
 The following example brings Notepad to the foreground if it is already
 open, otherwise it starts Notepad::
 
-   BringApp(r"C:\Windows\system32\\notepad.exe").execute()
+   BringApp(r"C:\\Windows\\system32\\notepad.exe").execute()
 
 Note that the path to *notepad.exe* given above might not be correct for
 your computer, since it depends on the operating system and its
@@ -113,7 +113,8 @@ class StartApp(ActionBase):
 
         self._str = str(", ".join(repr(a) for a in self._args))
 
-    def _interpret(self, path):
+    @classmethod
+    def _interpret(cls, path):
         if not isinstance(path, string_types):
             raise TypeError("expected string argument for path, but got "
                             "%s" % path)
@@ -121,7 +122,7 @@ class StartApp(ActionBase):
         return os.path.expanduser(os.path.expandvars(path))
 
     def _execute(self, data=None):
-        self._log.debug("Starting app: %r" % (self._args,))
+        self._log.debug("Starting app: %r", self._args)
         try:
             process = Popen(self._args, cwd=self._cwd)
         except Exception as e:
@@ -197,7 +198,7 @@ class BringApp(StartApp):
         StartApp.__init__(self, *args, **kwargs)
 
     def _execute(self, data=None):
-        self._log.debug("Bringing app: %r" % (self._args,))
+        self._log.debug("Bringing app: %r", self._args)
         target = self._args[0].lower()
         title = self._title
         index = self._index

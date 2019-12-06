@@ -18,6 +18,12 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+# pylint: disable=W0603
+# Suppress warnings about global statements used for configuration.
+
+# pylint: disable=E1111
+# Implementations of BaseKeyboardAction return different types for events.
+
 import io
 import os
 from os.path import basename

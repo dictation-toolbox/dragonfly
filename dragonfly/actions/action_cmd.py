@@ -206,6 +206,7 @@ class RunCommand(ActionBase):
         """
         return self._proc
 
+    # pylint: disable=no-self-use
     def process_command(self, proc):
         """
             Method to override for custom handling of the command's
@@ -222,7 +223,7 @@ class RunCommand(ActionBase):
             print(line, end='')
 
     def _execute(self, data=None):
-        self._log.info("Executing: %s" % self.command)
+        self._log.info("Executing: %s", self.command)
 
         # Suppress showing the new CMD.exe window on Windows.
         startupinfo = None
@@ -244,7 +245,7 @@ class RunCommand(ActionBase):
                                           startupinfo=startupinfo)
         except Exception as e:
             self._log.exception("Exception from starting subprocess %s: "
-                                "%s" % (self._str, e))
+                                "%s", self._str, e)
             return False
 
         # Call process_command either synchronously or asynchronously.
@@ -258,42 +259,44 @@ class RunCommand(ActionBase):
                 return_code = self._proc.wait()
                 if return_code != 0:
                     self._log.error("Command %s failed with return code "
-                                    "%d" % (self._str, return_code))
+                                    "%d", self._str, return_code)
                     return False
+                return True
             except Exception as e:
-                self._log.exception("Exception processing command %s: %s"
-                                    % (self._str, e))
+                self._log.exception("Exception processing command %s: %s",
+                                    self._str, e)
                 return False
             finally:
                 self._proc = None
 
         if self.synchronous:
             return call()
-        else:
-            # Execute in a new daemonized thread so that the command cannot
-            # stop the SR engine from exiting.
-            thread = threading.Thread(target=call)
-            thread.setDaemon(True)
-            thread.start()
 
-            # Start a timer if using natlink to allow asynchronous execution
-            # to work.
+        # Execute in a new daemonized thread so that the command cannot
+        # stop the SR engine from exiting.
+        thread = threading.Thread(target=call)
+        thread.setDaemon(True)
+        thread.start()
+
+        # Start a timer if using natlink to allow asynchronous execution
+        # to work.
+        try:
+            import natlink
+            if not natlink.isNatSpeakRunning():
+                return True
+        except ImportError:
+            return True
+        engine = get_engine()
+        if engine.name == "natlink":
+            def natlink_timer():
+                # Let the thread run for a bit.
+                if thread.is_alive():
+                    thread.join(0.002)
+                else:
+                    timer.stop()
             try:
-                import natlink
-                if not natlink.isNatSpeakRunning():
-                    return
-            except ImportError:
-                return
-            engine = get_engine()
-            if engine.name == "natlink":
-                def natlink_timer():
-                    # Let the thread run for a bit.
-                    if thread.is_alive():
-                        thread.join(0.002)
-                    else:
-                        timer.stop()
-                try:
-                    timer = engine.create_timer(natlink_timer, 0.02)
-                except natlink.NatError:
-                    # Ignore errors if natConnect() hasn't been called.
-                    pass
+                timer = engine.create_timer(natlink_timer, 0.02)
+            except natlink.NatError:
+                # Ignore errors if natConnect() hasn't been called.
+                pass
+        return True

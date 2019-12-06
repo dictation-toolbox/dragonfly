@@ -121,7 +121,7 @@ Key names
    ``~`` or ``tilde``, ``[`` or ``leftbracket`` or ``lbracket``,
    ``]`` or ``rightbracket`` or ``rbracket``,
    ``{`` or ``leftbrace`` or ``lbrace``,
-   ``}`` or ``rightbrace`` or ``rbrace``, ``\`` or ``backslash``,
+   ``}`` or ``rightbrace`` or ``rbrace``, ``\\`` or ``backslash``,
    ``|`` or ``bar``, ``colon``, ``;`` or ``semicolon``,
    ``'`` or ``apostrophe`` or ``singlequote`` or ``squote``,
    ``"`` or ``quote`` or ``doublequote`` or ``dquote``, ``comma``,
@@ -333,6 +333,10 @@ class Key(BaseKeyboardAction):
         return events, error_message
 
     def _parse_single(self, spec, hardware_events_required):
+        # pylint: disable=R0912,R0914,R0915
+        # Suppress warnings about too many branches, variables and
+        # statements.
+
         # Remove leading and trailing whitespace.
         spec = spec.strip()
         if not spec:
@@ -362,7 +366,7 @@ class Key(BaseKeyboardAction):
         outer_pause = None
 
         delimiters = [(c, i + index) for i, c in enumerate(spec[index:])
-                                     if c in self._delimiter_characters]
+                      if c in self._delimiter_characters]
         delimiter_sequence = "".join([d[0] for d in delimiters])
         delimiter_index = [d[1] for d in delimiters]
 
@@ -482,7 +486,7 @@ class Key(BaseKeyboardAction):
                 events = []
                 for m in modifiers:
                     events.extend(m.on_events())
-                for i in range(repeat - 1):
+                for _ in range(repeat - 1):
                     events.extend(code.events(inner_pause))
                 events.extend(code.events(outer_pause))
                 for m in modifiers[-1::-1]:

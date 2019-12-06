@@ -44,7 +44,7 @@ def _add_typeable(name, char):
     # the current keyboard layout.
     try:
         typeables[name] = keyboard.get_typeable(char)
-    except ValueError as e:
+    except ValueError:
         # Errors or log messages will occur later if code attempts to use
         # missing typeables.
         pass

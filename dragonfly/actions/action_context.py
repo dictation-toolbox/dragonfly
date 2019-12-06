@@ -57,7 +57,7 @@ class ContextAction(ActionBase):
     `Aenea <https://github.com/dictation-toolbox/aenea>`__ project by Alex
     Roper and has been modified to work without Aenea's functionality.
     '''
-    def __init__(self, default=None, actions=[]):
+    def __init__(self, default=None, actions=None):
         '''
             Constructor arguments:
              - *default* (action object, default *do nothing*) -- the
@@ -68,6 +68,9 @@ class ContextAction(ActionBase):
                first matching context will be executed.
 
         '''
+        if actions is None:
+            actions = []
+
         # Use a new ActionBase action (to do nothing) if default is None.
         self.default = default if default is not None else ActionBase()
 
@@ -95,9 +98,10 @@ class ContextAction(ActionBase):
             for (context, action) in self.actions:
                 if context.matches(win.executable, win.title, win.handle):
                     return action.execute(data)
-            else:
-                return self.default.execute(data)
+
+            # Execute the default action and return the success.
+            return self.default.execute(data)
         except Exception as e:
             self._log.exception("Exception from matching context or "
-                                "executing action %s: %s" % (self._str, e))
+                                "executing action %s: %s", self._str, e)
             return False

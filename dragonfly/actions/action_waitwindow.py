@@ -85,7 +85,7 @@ class WaitWindow(ActionBase):
         self._str = ", ".join(string)
 
     def _execute(self, data=None):
-        self._log.debug("Waiting for window context: %s" % self)
+        self._log.debug("Waiting for window context: %s", self)
         start_time = time.time()
         while 1:
             foreground = Window.get_foreground()

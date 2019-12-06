@@ -81,7 +81,7 @@ class Playback(ActionBase):
 
         # Mimic the series of recognitions.
         for words, interval in self._series:
-            self._log.debug("Mimicking recognition: %r" % (words,))
+            self._log.debug("Mimicking recognition: %r", words)
             try:
                 engine.mimic(words)
                 if interval and self._speed:
