@@ -22,7 +22,7 @@
 Compiler classes for Kaldi backend
 """
 
-import collections, logging, os.path, re, subprocess
+import collections, logging, os.path, re, subprocess, types
 
 from .testing                   import debug_timer
 from .dictation                 import AlternativeDictation, DefaultDictation
@@ -83,13 +83,6 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     impossible_word = property(lambda self: self._longest_word.lower())  # FIXME
     unknown_word = '<unk>'
-
-    def get_weight(self, obj, name='weight'):
-        """ Gets the weight of given grammar or rule, checking for invalid values. """
-        weight = float(getattr(obj, name, 1))
-        if weight < 0:
-            raise CompilerError("Weight cannot be negative, but %s %s is %s" % (obj, name, weight))
-        return weight
 
     #-----------------------------------------------------------------------
     # Methods for handling lexicon translation.
@@ -356,6 +349,22 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     #-----------------------------------------------------------------------
     # Utility methods.
+
+    def get_weight(self, obj, name='weight'):
+        """ Gets the weight of given grammar or rule, checking for invalid values. """
+        weight = getattr(obj, name, 1)
+        try:
+            weight = float(weight)
+        except TypeError:
+            # Ignore crazy string method handling on Dictation elements; otherwise error
+            if not (isinstance(obj, elements_.Dictation) and isinstance(weight, types.FunctionType)):
+                self._log.error("%s: Weight must be a numeric, but %s %s is %s" % (self, obj, name, weight))
+                import pdb; pdb.set_trace()
+            weight = 1
+        if weight < 0:
+            self._log.error("%s: Weight cannot be negative, but %s %s is %s" % (self, obj, name, weight))
+            weight = 0
+        return weight
 
     def add_weight_linkage(self, outer_src_state, dst_state, weight, fst):
         """ Returns new source state. Only modifies if weight is non-default. """
