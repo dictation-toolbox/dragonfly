@@ -325,6 +325,7 @@ class WordParserDns11(WordParserBase):
         "spelling-cap":     WordFlags("no_format", "no_space_reset", "cap_next_force"),
         "letter":           WordFlags("no_space_after"),
         "uppercase-letter": WordFlags("no_space_after"),
+        "numeral":          WordFlags("no_space_after"),
 
         "period":           WordFlags("two_spaces_after", "cap_next", "no_space_before", "not_after_period"),
         "question-mark":    WordFlags("two_spaces_after", "cap_next", "no_space_before"),
@@ -341,7 +342,7 @@ class WordParserDns11(WordParserBase):
         "left-*":           WordFlags("no_cap_reset", "no_space_after"),
         "right-*":          WordFlags("no_cap_reset", "no_space_before", "no_space_reset"),
         "open paren":       WordFlags("no_space_after"),
-        "close paren":       WordFlags("no_space_before"),
+        "close paren":      WordFlags("no_space_before"),
         "slash":            WordFlags("no_space_after", "no_space_before"),
 
         # below are two examples of Dragon custom vocabulary with formatting
