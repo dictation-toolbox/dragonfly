@@ -18,6 +18,9 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+# pylint: disable=E0401
+# This file imports a Win32-only module.
+
 import win32api
 
 from .base_monitor import BaseMonitor

@@ -18,6 +18,9 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+# pylint: disable=E0401
+# This file imports MacOS-only symbols.
+
 from AppKit import NSScreen
 
 from .base_monitor import BaseMonitor

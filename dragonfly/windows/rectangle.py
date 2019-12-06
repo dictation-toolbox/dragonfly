@@ -22,7 +22,6 @@
     This file implements a Rectangle class for geometric operations.
 """
 
-
 import copy
 from dragonfly.windows.point import Point
 
@@ -63,7 +62,7 @@ class Rectangle(Point):
     p2 = property(fget=lambda self: self.p1 + self._size,
                   doc="Protected access to p2 attribute.")
     size = property(fget=lambda self: self._size.copy() ,
-                  doc="Protected access to size attribute.")
+                    doc="Protected access to size attribute.")
 
     x1 = Point.x
     y1 = Point.y
@@ -72,20 +71,20 @@ class Rectangle(Point):
         self._size.x = x    # Use type checking of Point class.
         self._size._x -= self._x
     x2 = property(fget=lambda self: self._x + self._size._x,
-                 fset=_set_x2,
-                 doc="Protected access to x2 attribute.")
+                  fset=_set_x2,
+                  doc="Protected access to x2 attribute.")
 
     def _set_y2(self, y):
         self._size.y = y    # Use type checking of Point class.
         self._size._y -= self._y
     y2 = property(fget=lambda self: self._y + self._size._y,
-                 fset=_set_y2,
-                 doc="Protected access to y2 attribute.")
+                  fset=_set_y2,
+                  doc="Protected access to y2 attribute.")
 
     def _get_center(self):
         return self.p1 + Point(self._size.x / 2, self._size.y / 2)
     center = property(fget=_get_center,
-                  doc="Dynamic access to center attribute.")
+                      doc="Dynamic access to center attribute.")
 
     dx = property(fget=lambda self: self._size.x,
                   doc="Protected access to dx attribute.")
@@ -93,13 +92,14 @@ class Rectangle(Point):
                   doc="Protected access to dy attribute.")
 
     x_center = property(fget=lambda self: self.x + self._size.x / 2,
-                  doc="Protected access to x_center attribute.")
+                        doc="Protected access to x_center attribute.")
     y_center = property(fget=lambda self: self.y + self._size.y / 2,
-                  doc="Protected access to y_center attribute.")
+                        doc="Protected access to y_center attribute.")
 
     ltwh = property(fget=lambda self: (int(self._x), int(self._y),
-                        int(self._size._x), int(self._size._y)),
-                  doc="Shortcut to left-top-with-height tuple.")
+                                       int(self._size._x),
+                                       int(self._size._y)),
+                    doc="Shortcut to left-top-with-height tuple.")
 
     #-----------------------------------------------------------------------
     # Methods for manipulating rectangle objects.
@@ -109,6 +109,8 @@ class Rectangle(Point):
         self += other
 
     def renormalize(self, src, dst):
+        # pylint: disable=W0212
+        # Suppress warnings about protected member access.
         p1 = self.p1.renormalize(src, dst)
         p2 = self.p2.renormalize(src, dst)
         self._x = p1.x
@@ -122,7 +124,7 @@ class Rectangle(Point):
     def contains(self, p):
         """Test whether this rectangle instance contains a point."""
         assert isinstance(p, Point)
-        return (self.x1 <= p.x < self.x2 and self.y1 <= p.y < self.y2)
+        return self.x1 <= p.x < self.x2 and self.y1 <= p.y < self.y2
 
 
 #===========================================================================

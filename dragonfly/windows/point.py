@@ -22,6 +22,9 @@
     This file implements a Point class for geometry operations.
 """
 
+# pylint: disable=W0212
+# Suppress warnings about protected member access (e.g for '_x').
+
 import math
 
 from six import integer_types
@@ -35,8 +38,8 @@ class Point(object):
 
     def __init__(self, x=None, y=None):
         self._x = 0.0; self._y = 0.0
-        if x != None: self.x = x
-        if y != None: self.y = y
+        if x is not None: self.x = x
+        if y is not None: self.y = y
 
     def copy(self):     return Point(x=self._x, y=self._y)
     def __copy__(self): return self.copy()
@@ -110,6 +113,8 @@ class Point(object):
 
     def translate(self, dx, dy):
         """camp point."""
+        # pylint: disable=R0201
+        # Suppress no-self-use warning.
         other = Point(dx, dy)
         self += other
 

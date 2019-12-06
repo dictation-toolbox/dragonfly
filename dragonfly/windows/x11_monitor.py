@@ -57,6 +57,9 @@ class X11Monitor(BaseMonitor):
 
     @classmethod
     def get_all_monitors(cls):
+        # pylint: disable=R0912,R0914,R0915
+        # Suppress warnings about too many local variables.
+
         # Get updated monitor information from xrandr.
         try:
             p = Popen(["xrandr"], stdout=PIPE)
@@ -70,7 +73,6 @@ class X11Monitor(BaseMonitor):
             # Handle non-zero return codes.
             if p.wait() > 0:
                 print(stdout)
-                print(stderr)
                 raise RuntimeError("xrandr exited with non-zero return "
                                    "code %d" % p.returncode)
         except Exception as e:
