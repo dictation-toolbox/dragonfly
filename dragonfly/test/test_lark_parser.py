@@ -70,7 +70,7 @@ class TestLarkParser(unittest.TestCase):
     def test_unicode(self):
         check_parse_tree(u"touché", Literal(u"touché"))
 
-    def test_special_in_sequence(self):
+    def test_bool_special_in_sequence(self):
         output = check_parse_tree(
             " test <an_extra> [op] {test_special}",
             Sequence([Literal(u"test"), extras["an_extra"], Optional(Literal(u"op"))]),
@@ -78,7 +78,15 @@ class TestLarkParser(unittest.TestCase):
         assert output.test_special == True
         assert all(getattr(child, 'test_special', None) == None for child in output.children)
 
-    def test_special_in_alternative(self):
+    def test_other_special_in_sequence(self):
+        output = check_parse_tree(
+            " test <an_extra> [op] {test_special=4}",
+            Sequence([Literal(u"test"), extras["an_extra"], Optional(Literal(u"op"))]),
+        )
+        assert output.test_special == 4
+        assert all(getattr(child, 'test_special', None) == None for child in output.children)
+
+    def test_bool_special_in_alternative(self):
         output = check_parse_tree(
             "foo | bar {test_special} | baz",
             Alternative([
@@ -89,6 +97,19 @@ class TestLarkParser(unittest.TestCase):
         )
         assert getattr(output.children[0], 'test_special', None) == None
         assert output.children[1].test_special == True
+        assert getattr(output.children[2], 'test_special', None) == None
+
+    def test_other_special_in_alternative(self):
+        output = check_parse_tree(
+            "foo | bar {test_special=4} | baz",
+            Alternative([
+                Literal(u"foo"),
+                Literal(u"bar"),
+                Literal(u"baz"),
+            ]),
+        )
+        assert getattr(output.children[0], 'test_special', None) == None
+        assert output.children[1].test_special == 4
         assert getattr(output.children[2], 'test_special', None) == None
 
 
