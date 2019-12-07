@@ -229,7 +229,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_sequence(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         children = element.children
         # Optimize for special lengths
         if len(children) == 0:
@@ -257,7 +257,8 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
                 else:
                     # Cannot do optimize path, because of epsilon loop, so finish up with Sequence path
-                    self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string; falling back to inefficient non-optimize path!" % self)
+                    self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string;"
+                        " falling back to inefficient non-optimize path. (this is not that bad)" % self)
                     states = [src_state, s2] + [fst.add_state() for i in range(len(children)-2)] + [dst_state]
                     for i, child in enumerate(children[1:], start=1):
                         s1 = states[i]
@@ -277,13 +278,13 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_alternative(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         for child in element.children:
             self.compile_element(child, src_state, dst_state, grammar, kaldi_rule, fst)
 
     # @trace_compile
     def _compile_optional(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         self.compile_element(element.children[0], src_state, dst_state, grammar, kaldi_rule, fst)
         fst.add_arc(src_state, dst_state, None)
 
@@ -321,7 +322,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_list_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         # list_rule_name = "__list_%s" % element.list.name
         if element.list not in grammar.lists:
             # Should only happen during initial compilation; during updates, we must skip this
@@ -332,7 +333,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         # fst.add_arc(src_state, dst_state, '#nonterm:dictation', olabel=WFST.eps)
         extra_state = fst.add_state()
         cloud_dictation = isinstance(element, (AlternativeDictation, DefaultDictation)) and element.cloud
@@ -361,15 +362,16 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
                 self._log.error("%s: Weight must be a numeric, but %s %s is %s" % (self, obj, name, weight))
                 import pdb; pdb.set_trace()
             weight = 1
-        if weight < 0:
-            self._log.error("%s: Weight cannot be negative, but %s %s is %s" % (self, obj, name, weight))
-            weight = 0
+        if weight <= 0:
+            self._log.error("%s: Weight cannot be negative or 0, but %s %s is %s" % (self, obj, name, weight))
+            weight = 1e-9
         return weight
 
     def add_weight_linkage(self, outer_src_state, dst_state, weight, fst):
-        """ Returns new source state. Only modifies if weight is non-default. """
+        """ Returns new source state, to be used by the caller as the effective source state. Only modifies if weight is non-default. """
         if (weight is None) or (weight == 1):
             return outer_src_state
+        # self._log.debug("%s: Adding weight linkage for weight=%s" % (self, weight))
         inner_src_state = fst.add_state()
         fst.add_arc(outer_src_state, inner_src_state, None, weight=weight)
         return inner_src_state
