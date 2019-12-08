@@ -46,13 +46,11 @@ class CompoundTransformer(Transformer):
         if '=' in specifier:
             name, value = specifier.split('=')
         else:
-            name = specifier
+            name, value = specifier, True
 
         if name in ['weight', 'w']:
             child.weight = float(value)
-        elif name in ['test_special']:
-            child.test_special = True
         else:
-            raise ParseError("Unrecognized special specifier: {%s}" % str(specifier))
+            setattr(child, name, value)
 
         return child
