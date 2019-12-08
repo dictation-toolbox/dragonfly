@@ -45,6 +45,18 @@ class CompoundTransformer(Transformer):
         child, specifier = args
         if '=' in specifier:
             name, value = specifier.split('=')
+
+            # Try to convert the value to a bool, None or a float.
+            if value in ['True', 'False']:
+                value = bool(value)
+            elif value == 'None':
+                value = None
+            else:
+                try:
+                    value = float(value)
+                except ValueError:
+                    # Conversion failed, value is just a string.
+                    pass
         else:
             name, value = specifier, True
 
