@@ -23,9 +23,11 @@
     class used during recognition decoding.
 """
 
+# pylint: disable=too-many-instance-attributes,no-self-use
 
 from locale import getpreferredencoding
-import logging
+
+from logging import getLogger, DEBUG
 
 from six import PY2, text_type, binary_type
 
@@ -34,7 +36,7 @@ from ..error import GrammarError
 
 class State(object):
 
-    _log_decode = logging.getLogger("grammar.decode")
+    _log_decode = getLogger("grammar.decode")
 
     # -----------------------------------------------------------------------
     # Methods for initialization.
@@ -174,7 +176,7 @@ class State(object):
         return None
 
     def _log_step(self, parser, message):
-        if not self._log_decode or not self._log_decode.isEnabledFor(logging.DEBUG):
+        if not self._log_decode or not self._log_decode.isEnabledFor(DEBUG):
             return
         indent = u"   " * self._depth
         output = u"%s%s: %s" % (indent, message, parser)
@@ -216,6 +218,7 @@ class Node(object):
     __slots__ = ("parent", "children", "actor", "results",
                  "begin", "end", "depth", "engine")
 
+    # pylint: disable=too-many-arguments
     def __init__(self, parent, actor, results, begin, end, depth, engine):
         self.parent = parent
         self.actor = actor
@@ -244,7 +247,7 @@ class Node(object):
         else:
             return "%s%s -> %r\n" % (indent, str(self), self.value()) \
                 + "\n".join([n  .pretty_string(indent + "  ")
-                            for n in self.children])
+                             for n in self.children])
 
     def _get_name(self):
         return self.actor.name

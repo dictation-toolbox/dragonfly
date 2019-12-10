@@ -21,6 +21,9 @@
 """
     This file implements the ConnectionGrammar class.
 """
+
+# pylint: disable=expression-not-assigned
+
 from six import string_types
 
 try:
@@ -75,7 +78,7 @@ class ConnectionGrammar(Grammar):
             self.disconnect()
         except Exception as e:
             self._log.warning("Grammar %s: failed to disconnect from "
-                              "%r: %s." % (self, self._app_name, e))
+                              "%r: %s.", self, self._app_name, e)
 
     # -----------------------------------------------------------------------
     # Methods for context management.
@@ -114,9 +117,8 @@ class ConnectionGrammar(Grammar):
             self._application = Dispatch(self._app_name)
         except com_error as e:
             if self._log_begin:
-                self._log_begin.warning("Grammar %s: failed to"
-                                        " connect to %r: %s."
-                                        % (self, self._app_name, e))
+                self._log_begin.warning("Grammar %s: failed to connect to "
+                                        "%r: %s.", self, self._app_name, e)
             return False
         else:
             [r.activate() for r in self._rules if not r.active]
@@ -137,7 +139,6 @@ class ConnectionGrammar(Grammar):
             the application.  The COM connection is available
             through the ``self.application`` attribute.
         """
-        pass
 
     def connection_down(self):
         """
@@ -149,4 +150,3 @@ class ConnectionGrammar(Grammar):
             This method should be overridden by derived classes
             if they need to clean up after disconnection.
         """
-        pass

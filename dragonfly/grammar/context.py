@@ -164,6 +164,7 @@ class Context(object):
                functionality.
 
         """
+        # pylint: disable=unused-argument,no-self-use
         return True
 
 
@@ -173,6 +174,7 @@ class Context(object):
 class LogicAndContext(Context):
 
     def __init__(self, *children):
+        Context.__init__(self)
         self._children = children
         self._str = ", ".join(str(child) for child in children)
 
@@ -186,6 +188,7 @@ class LogicAndContext(Context):
 class LogicOrContext(Context):
 
     def __init__(self, *children):
+        Context.__init__(self)
         self._children = children
         self._str = ", ".join(str(child) for child in children)
 
@@ -199,6 +202,7 @@ class LogicOrContext(Context):
 class LogicNotContext(Context):
 
     def __init__(self, child):
+        Context.__init__(self)
         self._child = child
         self._str = str(child)
 
@@ -238,6 +242,8 @@ class AppContext(Context):
 
     def __init__(self, executable=None, title=None, exclude=False,
                  **kwargs):
+        # pylint: disable=too-many-branches
+        # Suppress warnings about too many if-else branches.
         Context.__init__(self)
 
         # Allow Unicode or strings to be used for executables and titles.
@@ -285,6 +291,8 @@ class AppContext(Context):
     # Matching methods.
 
     def matches(self, executable, title, handle):
+        # pylint: disable=too-many-branches
+        # Suppress warnings about too many if-else branches.
         executable = executable.lower()
         title = title.lower()
 
@@ -295,7 +303,8 @@ class AppContext(Context):
                     found = True
                     break
             if self._exclude == found:
-                self._log_match.debug("%s: No match, executable doesn't match." % self)
+                self._log_match.debug("%s: No match, executable doesn't "
+                                      "match.", self)
                 return False
 
         if self._title:
@@ -305,7 +314,8 @@ class AppContext(Context):
                     found = True
                     break
             if self._exclude == found:
-                self._log_match.debug("%s: No match, title doesn't match." % self)
+                self._log_match.debug("%s: No match, title doesn't match.",
+                                      self)
                 return False
 
         if self._kwargs:
@@ -320,8 +330,8 @@ class AppContext(Context):
                     attr_value = getattr(window, attr)
                 except AttributeError:
                     self._log_match.warning("%s: Skipped missing window"
-                                            " attribute '%s'"
-                                            % (self, attr))
+                                            " attribute '%s'",
+                                            self, attr)
                     continue
 
                 # Check if the window attribute matched.
@@ -336,11 +346,11 @@ class AppContext(Context):
 
             if self._exclude == found:
                 self._log_match.debug("%s: No match, not all extra"
-                                      " attributes match." % self)
+                                      " attributes match.", self)
                 return False
 
         if self._log_match:
-            self._log_match.debug("%s: Match." % self)
+            self._log_match.debug("%s: Match.", self)
         return True
 
 
@@ -376,7 +386,7 @@ class FuncContext(Context):
         self._defaults = defaults
         self._str = "%s" % (self._function,)
 
-        (args, varargs, varkw, defaults) = inspect.getargspec(self._function)
+        (args, _, varkw, defaults) = inspect.getargspec(self._function)
         if varkw:  self._filter_keywords = False
         else:      self._filter_keywords = True
         self._valid_keywords = set(args)
@@ -393,6 +403,7 @@ class FuncContext(Context):
         try:
             return bool(self._function(**arguments))
         except:
-            self._log.exception("Exception from function %s:" % self._function.__name__)
+            self._log.exception("Exception from function %s:",
+                                self._function.__name__)
             # Fallback to matching
             return True

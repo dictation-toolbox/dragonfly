@@ -24,6 +24,8 @@ Rule class
 
 """
 
+# pylint: disable=unused-variable,too-many-instance-attributes,no-self-use
+
 import logging
 
 from .context import Context
@@ -139,15 +141,17 @@ class Rule(object):
     def _get_grammar(self):
         return self._grammar
     def _set_grammar(self, grammar):
-       # if self._grammar is None:
-            self._grammar = grammar
-       # elif grammar is None:
-       #     self._grammar = None
-       # elif grammar != self._grammar:
-       #     self._log.error("rule: %s" % self)
-       #     raise TypeError("The grammar object a Dragonfly rule"
-       #         " cannot be changed after it has been set (%s != %s)."
-       #         % (grammar, self._grammar))
+        self._grammar = grammar
+        # if self._grammar is None:
+        #     self._grammar = grammar
+        # elif grammar is None:
+        #     self._grammar = None
+        # elif grammar != self._grammar:
+        #     self._log.error("rule: %s" % self)
+        #     raise TypeError("The grammar object a Dragonfly rule"
+        #         " cannot be changed after it has been set (%s != %s)."
+        #         % (grammar, self._grammar))
+
     grammar = property(_get_grammar, _set_grammar,
                        doc="This rule's grammar object.  (Set once)")
 
@@ -215,8 +219,8 @@ class Rule(object):
             try:
                 self._grammar.deactivate_rule(self)
             except Exception as e:
-                self._log.warning("Failed to deactivate rule: %s (%s)"
-                                  % (self, e))
+                self._log.warning("Failed to deactivate rule: %s (%s)",
+                                  self, e)
             self._active = False
 
     #-----------------------------------------------------------------------
@@ -250,7 +254,6 @@ class Rule(object):
             state.decode_retry(self)
 
         state.decode_failure(self)
-        return
 
     def value(self, node):
         """
@@ -298,7 +301,6 @@ class Rule(object):
                functionality when the start of a phrase is detected.
 
         """
-        pass
 
     def process_results(self, data):
         pass
@@ -320,12 +322,12 @@ class Rule(object):
                functionality when a top-level rule is recognized.
 
         """
-        pass
 
 
 class ImportedRule(Rule):
 
     def __init__(self, name):
+        Rule.__init__(self)
         self._name = name
         self._imported = True
         self._exported = False
