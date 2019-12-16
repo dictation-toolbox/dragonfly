@@ -67,8 +67,20 @@ class DarwinWindow(BaseWindow):
 
     @classmethod
     def get_all_windows(cls):
-        # FIXME
-        return []
+        script = '''
+        global appIds
+        tell application "System Events"
+            set appIds to {}
+            repeat with theProcess in (application processes)
+                if not background only of theProcess then
+                    set appIds to appIds & name of theProcess
+                end if
+            end repeat
+        end tell
+        return appIds
+        '''
+        return [cls.get_window(app_id) for app_id in
+                applescript.AppleScript(script).run()]
 
     #-----------------------------------------------------------------------
     # Methods for initialization and introspection.
