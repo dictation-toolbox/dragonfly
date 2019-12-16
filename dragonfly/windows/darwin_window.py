@@ -162,7 +162,15 @@ class DarwinWindow(BaseWindow):
 
     def set_position(self, rectangle):
         assert isinstance(rectangle, Rectangle)
-        raise NotImplementedError()
+        script = '''
+        tell application "System Events"
+            set firstWindow to first window of application process "%s"
+            set position of firstWindow to {%d, %d}
+            set size of firstWindow to {%d, %d}
+        end tell
+        ''' % (self._id, rectangle.x, rectangle.y, rectangle.dx,
+               rectangle.dy)
+        applescript.AppleScript(script).run()
 
     #-----------------------------------------------------------------------
     # Methods for miscellaneous window control.
@@ -180,4 +188,10 @@ class DarwinWindow(BaseWindow):
         raise NotImplementedError()
 
     def set_foreground(self):
-        raise NotImplementedError()
+        script = '''
+        tell application "%s"
+            set firstWindow to id of first window
+            activate firstWindow
+        end tell
+        ''' % self._id
+        applescript.AppleScript(script).run()
