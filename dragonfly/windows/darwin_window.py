@@ -20,7 +20,7 @@
 
 import locale
 
-from six import binary_type, string_types
+from six import binary_type, string_types, integer_types
 import applescript
 
 from .base_window import BaseWindow
@@ -81,8 +81,8 @@ class DarwinWindow(BaseWindow):
     # Methods that control attribute access.
 
     def _set_id(self, id):
-        if not isinstance(id, string_types):
-            raise TypeError("Window id/handle must be a string,"
+        if not isinstance(id, (string_types, integer_types)):
+            raise TypeError("Window id/handle must be an int or string,"
                             " but received {0!r}".format(id))
         self._id = id
         self._windows_by_id[id] = self
