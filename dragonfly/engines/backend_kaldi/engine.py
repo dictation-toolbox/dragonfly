@@ -320,7 +320,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     self._decoder.decode(b'', True)
                     output, likelihood = self._decoder.get_output()
                     if not self._ignore_current_phrase:
-                        output = self._compiler.untranslate_output(output)
+                        # output = self._compiler.untranslate_output(output)
                         kaldi_rule, parsed_output = self._parse_recognition(output)
                         self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
                         if self._saving_adaptation_state and parsed_output != '':  # Don't save adaptation state for empty recognitions
@@ -454,7 +454,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     self._log.error("unable to parse recognition: %r" % output)
                 self._recognition_observer_manager.notify_failure()
                 return None, ''
-            self._log.log(12, "Alignment (word,time,length): %s" % self._decoder.get_word_align(output))
+
+            if self._log.isEnabledFor(12):
+                try:
+                    self._log.log(12, "Alignment (word,time,length): %s" % self._decoder.get_word_align(output))
+                except KaldiError as e:
+                    self._log.warning("Exception logging word alignment")
 
         else:
             raise EngineError("Invalid _compiler.parsing_framework")
