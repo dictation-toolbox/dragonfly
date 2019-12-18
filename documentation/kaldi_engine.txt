@@ -295,6 +295,12 @@ phone set (with or without stress), but the model and
 ``user_lexicon.txt`` file store pronunciations using `"X-SAMPA"
 <https://en.wikipedia.org/wiki/X-SAMPA>`_ phone set.
 
+When hand-crafting pronunciations, you can look online for examples.
+Also, for X-SAMPA pronunciations, you can look in the model's
+``lexicon.txt`` file, which lists all of its words and their
+pronunciations (in X-SAMPA). Look for words with similar sounds to
+what you are speaking.
+
 To empty your user lexicon, you can simply delete ``user_lexicon.txt``,
 or run::
 
@@ -417,8 +423,11 @@ API for that project, create a service account, download a private key
 as JSON, and set an environment variable
 ``GOOGLE_APPLICATION_CREDENTIALS`` to the path to the JSON file. Details
 are in `Google's documentation
-<https://cloud.google.com/speech-to-text/docs/quickstart>`_. Then, run
-the Kaldi backend with the ``cloud_dictation='gcloud'`` option.
+<https://cloud.google.com/speech-to-text/docs/quickstart>`_
+(specifically steps 1 and 2 of `the Before You Begin section
+<https://cloud.google.com/speech-to-text/docs/quickstart-protocol#before_you_begin>`_).
+Then, run the Kaldi backend with the ``alternative_dictation='gcloud'``
+option.
 
 If this is too cumbersome for you and there is sufficient interest, I
 could set up a paid service where you pay me via PayPal/Stripe to fund
