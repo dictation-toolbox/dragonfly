@@ -272,12 +272,14 @@ class VADAudio(MicAudio):
 class AudioStore(object):
     """
     Stores the current audio data being recognized, which is cleared upon calling `finalize()`.
-    Also, optionally stores the last `maxlen` recognitions as lists [audio, text, grammar_name, rule_name, misrecognition],
+    Also, optionally stores the last `maxlen` recognitions as `AudioStoreEntry` objects,
     indexed in reverse order (0 is most recent), and advanced upon calling `finalize()`.
     Note: `finalize()` should be called after the recognition has been parsed and its actions executed.
 
     Constructor arguments:
-    - *save_audio* (bool, default *None*): whether to save the audio data (in addition to just the recognition metadata)
+    - *maxlen* (*int*, default *None*): if set, the number of previous recognitions to temporarily store.
+    - *save_dir* (*str*, default *None*): if set, the directory to save the `retain.tsv` file and optionally wav files.
+    - *save_audio* (*bool*, default *None*): whether to save the audio data (in addition to just the recognition metadata).
     """
 
     def __init__(self, audio_obj, maxlen=None, save_dir=None, save_audio=None, auto_save_predicate_func=None):
@@ -301,7 +303,8 @@ class AudioStore(object):
         self.blocks.append(block)
 
     def finalize(self, text, grammar_name, rule_name, likelihood=None):
-        entry = AudioStoreEntry(self.current_audio_data, grammar_name, rule_name, text, likelihood, False)
+        """ Finalizes current utterance, creating its AudioStoreEntry and saving it (if enabled). """
+        entry = AudioStoreEntry(self.current_audio_data, grammar_name, rule_name, text, likelihood, '')
         if self.deque is not None:
             if len(self.deque) == self.deque.maxlen:
                 self.save(-1)  # Save oldest, which is about to be evicted
@@ -311,6 +314,7 @@ class AudioStore(object):
         self.blocks = []
 
     def save(self, index):
+        """ Saves AudioStoreEntry for given index (0 is most recent). """
         if slice(index).indices(len(self.deque))[1] >= len(self.deque):
             raise EngineError("Invalid index to save in AudioStore")
         if not self.save_dir:
@@ -320,16 +324,16 @@ class AudioStore(object):
             return
 
         entry = self.deque[index]
-        if self.save_audio:
+        if self.save_audio or entry.force_save:
             filename = os.path.join(self.save_dir, "retain_%s.wav" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f"))
-            self.audio_obj.write_wav(filename, entry.audio)
+            self.audio_obj.write_wav(filename, entry.audio_data)
         else:
             filename = ''
 
         with open(os.path.join(self.save_dir, "retain.tsv"), 'a', encoding='utf-8') as tsv_file:
             tsv_file.write(u'\t'.join([
                     filename,
-                    text_type(self.audio_obj.get_wav_length_s(entry.audio)),
+                    text_type(self.audio_obj.get_wav_length_s(entry.audio_data)),
                     entry.grammar_name,
                     entry.rule_name,
                     entry.text,
@@ -354,18 +358,21 @@ class AudioStore(object):
         return True
 
 class AudioStoreEntry(object):
-    __slots__ = ('audio', 'grammar_name', 'rule_name', 'text', 'likelihood', 'tag')
+    __slots__ = ('audio_data', 'grammar_name', 'rule_name', 'text', 'likelihood', 'tag', 'force_save')
 
-    def __init__(self, audio, grammar_name, rule_name, text, likelihood, tag):
-        self.audio = audio
+    def __init__(self, audio_data, grammar_name, rule_name, text, likelihood, tag, force_save=False):
+        self.audio_data = audio_data
         self.grammar_name = grammar_name
         self.rule_name = rule_name
         self.text = text
         self.likelihood = likelihood
         self.tag = tag
+        self.force_save = force_save
 
     def set(self, key, value):
+        """ Sets given key (as *str*) to value, returning the AudioStoreEntry for chaining; usable in `lambda`s. """
         setattr(self, key, value)
+        return self
 
 
 class WavAudio(object):
