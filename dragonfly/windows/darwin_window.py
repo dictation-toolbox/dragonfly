@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # This file is part of Aenea
 #
@@ -19,6 +20,8 @@
 # Modified from Aenea's server_osx.py file.
 
 import locale
+import logging
+import psutil
 
 from six import binary_type, string_types, integer_types
 import applescript
@@ -33,6 +36,8 @@ class DarwinWindow(BaseWindow):
         placement.
 
     """
+
+    _log = logging.getLogger("window")
 
     #-----------------------------------------------------------------------
     # Class methods to create new Window objects.
@@ -102,8 +107,14 @@ class DarwinWindow(BaseWindow):
     #-----------------------------------------------------------------------
     # Methods and properties for window attributes.
 
-    def _get_window_properties(self):
-        cmd = '''
+    def get_properties(self):
+        """
+        Method to get the properties of a macOS window.
+
+        :rtype: dict
+        :returns: window properties
+        """
+        script = '''
         tell application "System Events" to tell application process "%s"
             try
                 get properties of window 1
@@ -112,8 +123,9 @@ class DarwinWindow(BaseWindow):
             end try
         end tell
         ''' % self._id
-        script = applescript.AppleScript(cmd)
-        properties = script.run()
+        properties = applescript.AppleScript(script).run()
+        if not properties:
+            return {}
 
         result = {}
         encoding = locale.getpreferredencoding()
@@ -128,35 +140,65 @@ class DarwinWindow(BaseWindow):
             result[key] = value
         return result
 
+    def get_attribute(self, attribute):
+        """
+        Method to get an attribute of a macOS window.
+
+        :param attribute: attribute name
+        :type attribute: string
+        :returns: attribute value
+        """
+        script = '''
+         tell application "%s"
+            try
+                get %s of window 1
+            on error errmess
+                log errmess
+            end try
+        end tell
+        ''' % (self._id, attribute)
+        return applescript.AppleScript(script).run()
+
     def _get_window_text(self):
-        return self._get_window_properties()['pnam']
+        return self.get_properties().get('pnam', '')
 
     def _get_class_name(self):
-        return self._get_window_properties()['pcls']
+        return self.get_properties().get('pcls', '')
 
     def _get_window_module(self):
         return self._id  # The window ID is the app name on macOS.
 
     def _get_window_pid(self):
-        raise NotImplementedError()
+        if not (self._id and isinstance(self._id, string_types)):
+            # Can't match against numerical / empty / null app bundle ID.
+            return -1
+
+        for process in psutil.process_iter(attrs=['pid', 'exe']):
+            exe = process.info['exe']
+            if exe and exe.endswith(self._id):
+                # Return the ID of the first matching process.
+                return process.info['pid']
+
+        # No match.
+        return -1
 
     @property
     def is_minimized(self):
-        raise NotImplementedError()
+        return self.get_attribute('miniaturized')
 
     @property
     def is_maximized(self):
-        raise NotImplementedError()
+        return self.get_attribute('zoomed')
 
     @property
     def is_visible(self):
-        raise NotImplementedError()
+        return self.get_attribute('visible')
 
     #-----------------------------------------------------------------------
     # Methods related to window geometry.
 
     def get_position(self):
-        props = self._get_window_properties()
+        props = self.get_properties()
         return Rectangle(props['posn'][0], props['posn'][1],
                          props['ptsz'][0], props['ptsz'][1])
 
@@ -175,23 +217,55 @@ class DarwinWindow(BaseWindow):
     #-----------------------------------------------------------------------
     # Methods for miscellaneous window control.
 
+    def _press_window_button(self, button_subrole, action):
+        # Note: The negation symbol ¬ is used to split long lines in
+        # AppleScript.
+        script = u'''
+        tell application "System Events"
+            perform action "%s" of (first button whose subrole is "%s") of ¬
+            first window of process "%s"
+        end tell
+        ''' % (action, button_subrole, self._id)
+        try:
+            applescript.AppleScript(script).run()
+            return True
+        except applescript.ScriptError as err:
+            self._log.error("Failed to perform window button action "
+                            "%s -> %s: %s", button_subrole, action, err)
+            return False
+
     def minimize(self):
-        raise NotImplementedError()
+        return self._press_window_button("AXMinimizeButton", "AXPress")
 
     def maximize(self):
-        raise NotImplementedError()
+        return self._press_window_button("AXFullScreenButton",
+                                         "AXZoomWindow")
+
+    def full_screen(self):
+        """
+        Enable full screen mode for this window.
+
+        **Note**: this doesn't allow transitioning out of full screen mode.
+        """
+        return self._press_window_button("AXFullScreenButton", "AXPress")
 
     def restore(self):
-        raise NotImplementedError()
+        # Toggle maximized/minimized state if necessary.
+        if self.is_maximized:
+            return self.maximize()
+
+        if self.is_minimized:
+            return self.minimize()
+
+        return True
 
     def close(self):
-        raise NotImplementedError()
+        return self._press_window_button("AXCloseButton", "AXPress")
 
     def set_foreground(self):
         script = '''
         tell application "%s"
-            set firstWindow to id of first window
-            activate firstWindow
+            activate window 1
         end tell
         ''' % self._id
         applescript.AppleScript(script).run()
