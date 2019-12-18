@@ -121,9 +121,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if self._decoder:
             return
 
-        kag_version = kaldi_active_grammar.__version__
-        alternative_dictation=self._options['alternative_dictation']
-        self._log.info("Loading KaldiEngine v%s (using alternative_dictation=%s) in process %s." % (kag_version, alternative_dictation, os.getpid()))
+        self._log.info("Loading Kaldi-Active-Grammar v%s in process %s." % (kaldi_active_grammar.__version__, os.getpid()))
+        self._log.info("Kaldi options: %s" % self._options)
         # subprocess.call(['vsjitdebugger', '-p', str(os.getpid())]); time.sleep(5)
 
         self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
