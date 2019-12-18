@@ -179,7 +179,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         self._log.debug("%s: Compiling rule %s%s." % (self, rule.name, ' [EXPORTED]' if export else ''))
 
         if export:
-            # Only need to handle weight here if this is the entrance (rule root), not from a RuleRef (handled in _compile_rule_ref).
+            # Root rule, so must handle grammar's weight, in addition to this rule's weight
             weight = self.get_weight(grammar) * self.get_weight(rule)
             outer_src_state = fst.add_state(initial=True)
             inner_src_state = fst.add_state()
@@ -187,9 +187,11 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
             dst_state = fst.add_state(final=True)
 
         else:
-            # Weight was handled by the RuleRef that called us.
+            # Only handle this rule's weight
+            weight = self.get_weight(rule)
             outer_src_state = fst.add_state()
-            inner_src_state = outer_src_state
+            inner_src_state = fst.add_state()
+            fst.add_arc(outer_src_state, inner_src_state, None, weight=weight)
             dst_state = fst.add_state()
 
         self.compile_element(rule.element, inner_src_state, dst_state, grammar, kaldi_rule, fst)
@@ -315,7 +317,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        weight = self.get_weight(element) * self.get_weight(element.rule)  # Handle weight internally below, without adding a state
+        weight = self.get_weight(element)  # Handle weight internally below without adding a state
         rule_src_state, rule_dst_state = self._compile_rule(element.rule, grammar, kaldi_rule, fst, export=False)
         fst.add_arc(src_state, rule_src_state, None, weight=weight)
         fst.add_arc(rule_dst_state, dst_state, None)
