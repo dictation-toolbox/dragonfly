@@ -29,6 +29,10 @@ if sys.platform.startswith("win"):
 elif os.environ.get("XDG_SESSION_TYPE") == "x11":
     from .x11_window import X11Window as Window
 
+# Mac OS
+elif sys.platform == "darwin":
+    from .darwin_window import DarwinWindow as Window
+
 # Unsupported
 else:
     from .fake_window import FakeWindow as Window
