@@ -19,3 +19,6 @@ The :class:`FakeWindow` class will be used on unsupported platforms.
 
 .. automodule:: dragonfly.windows.x11_window
    :members:
+
+.. automodule:: dragonfly.windows.darwin_window
+   :members:
