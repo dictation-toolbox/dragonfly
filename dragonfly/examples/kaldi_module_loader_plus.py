@@ -51,7 +51,7 @@ def notify(message):
 
 
 # --------------------------------------------------------------------------
-# Sleep/wake grammar.
+# Sleep/wake grammar. (This can be unused or removed if you don't want it.)
 
 sleeping = False
 
