@@ -5,7 +5,7 @@ Most engine functionality is tested here, although the tests are done
 entirely via `mimic`, so there are some things which have to be tested
 manually.
 
-These tests assume that the `kaldi_model_zamia` model is used.
+These tests assume that the `kaldi_model` model is used.
 
 Adapted from `test_engine_sphinx.py`.
 """

@@ -112,17 +112,15 @@ def main():
         __file__ = os.path.join(path, "kaldi_module_loader_plus.py")
 
     # Set any configuration options here as keyword arguments.
-    engine = get_engine("kaldi",
-        model_dir='kaldi_model_zamia',
-        # tmp_dir='kaldi_model_zamia.tmp',  # default for temporary directory
+    # See Kaldi engine documentation for all available options and more info.
+    engine = get_engine('kaldi',
+        # model_dir='kaldi_model',  # default model directory
         # vad_aggressiveness=3,  # default aggressiveness of VAD
-        # vad_padding_start_ms=300,  # default ms of required silence before VAD
-        # vad_padding_end_ms=100,  # default ms of required silence after VAD
+        # vad_padding_start_ms=150,  # default ms of required silence before VAD
+        # vad_padding_end_ms=150,  # default ms of required silence after VAD
         # vad_complex_padding_end_ms=500,  # default ms of required silence after VAD for complex utterances
         # input_device_index=None,  # set to an int to choose a non-default microphone
-        # auto_add_to_user_lexicon=True,  # set to True to possibly use cloud for pronunciations
         # lazy_compilation=True,  # set to True to parallelize & speed up loading
-        # cloud_dictation=None,  # set to 'gcloud' to use cloud dictation
         # retain_dir=None,  # set to a writable directory path to retain recognition metadata and/or audio data
         # retain_audio=None,  # set to True to retain speech data wave files in the retain_dir (if set)
     )

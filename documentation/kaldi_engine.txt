@@ -147,7 +147,7 @@ the ``get_engine()`` function, which passes them to the
 .. code:: Python
 
   engine = get_engine("kaldi",
-    model_dir='kaldi_model_zamia',
+    model_dir='kaldi_model',
     tmp_dir='kaldi_tmp',
     input_device_index=None,
     retain_dir=None,
@@ -319,7 +319,7 @@ elements specifically until the dictation model is recompiled.
 Recompilation is quite time consuming (on the order of 15 minutes), but
 can be performed by running::
 
-  python -m kaldi_active_grammar compile_dictation_graph -m kaldi_model_zamia
+  python -m kaldi_active_grammar compile_dictation_graph -m kaldi_model
 
 **Entirely new words added to the user lexicon** will not be recognized
 during dictation elements specifically at all currently.
