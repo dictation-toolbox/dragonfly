@@ -228,9 +228,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        if isinstance(words, tuple):
-            words = list(words)
-        self._log.debug("Start of mimic: %r" % words)
+        self._log.debug("Start of mimic: %s" % repr(words))
         try:
             output = words if isinstance(words, string_types) else " ".join(words)
             output = self._compiler.untranslate_output(output)
