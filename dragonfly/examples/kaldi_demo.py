@@ -39,7 +39,7 @@ class ExampleDictationRule(dragonfly.MappingRule):
 # Load engine before instantiating rules/grammars!
 # Set any configuration options here as keyword arguments.
 engine = dragonfly.get_engine("kaldi",
-    model_dir='kaldi_model_zamia',
+    model_dir='kaldi_model',
     # tmp_dir='kaldi_tmp',  # default for temporary directory
     # vad_aggressiveness=3,  # default aggressiveness of VAD
     # vad_padding_ms=300,  # default ms of required silence surrounding VAD

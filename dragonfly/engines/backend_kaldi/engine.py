@@ -121,7 +121,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if self._decoder:
             return
 
-        self._log.debug("Loading KaldiEngine in process %s." % os.getpid())
+        self._log.info("Loading Kaldi-Active-Grammar v%s in process %s." % (kaldi_active_grammar.__version__, os.getpid()))
+        self._log.info("Kaldi options: %s" % self._options)
         # subprocess.call(['vsjitdebugger', '-p', str(os.getpid())]); time.sleep(5)
 
         self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
@@ -165,6 +166,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 self.audio_store = None
             self._compiler = None
             self._decoder = None
+            self._grammar_wrappers = {}  # From EngineBase
 
     def print_mic_list(self):
         MicAudio.print_list()
@@ -226,7 +228,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        self._log.debug("Start of mimic: %r" % words)
+        self._log.debug("Start of mimic: %s" % repr(words))
         try:
             output = words if isinstance(words, string_types) else " ".join(words)
             output = self._compiler.untranslate_output(output)
@@ -235,8 +237,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._recognition_observer_manager.notify_begin()
         kaldi_rules_activity = self._compute_kaldi_rules_activity()
+        self.prepare_for_recognition()  # Redundant?
 
-        self.prepare_for_recognition()
         kaldi_rule, parsed_output = self._parse_recognition(output, mimic=True)
         if not kaldi_rule:
             raise MimicFailure("No matching rule found for %r." % (output,))
@@ -317,7 +319,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     self._decoder.decode(b'', True)
                     output, likelihood = self._decoder.get_output()
                     if not self._ignore_current_phrase:
-                        output = self._compiler.untranslate_output(output)
+                        # output = self._compiler.untranslate_output(output)
                         kaldi_rule, parsed_output = self._parse_recognition(output)
                         self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
                         if self._saving_adaptation_state and parsed_output != '':  # Don't save adaptation state for empty recognitions
@@ -401,13 +403,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
                 grammar_wrapper.phrase_start_callback(fg_window)
         self.prepare_for_recognition()
-        self._active_kaldi_rules = []
+        self._active_kaldi_rules = set()
         self._kaldi_rules_activity = [False] * self._compiler.num_kaldi_rules
         for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
             if grammar_wrapper.active and (not self._any_exclusive_grammars or (self._any_exclusive_grammars and grammar_wrapper.exclusive)):
                 for kaldi_rule in grammar_wrapper.kaldi_rule_by_rule_dict.values():
                     if kaldi_rule.active:
-                        self._active_kaldi_rules.append(kaldi_rule)
+                        self._active_kaldi_rules.add(kaldi_rule)
                         self._kaldi_rules_activity[kaldi_rule.id] = True
         self._log.debug("active kaldi_rules: %s", [kr.name for kr in self._active_kaldi_rules])
         return self._kaldi_rules_activity
@@ -451,11 +453,17 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     self._log.error("unable to parse recognition: %r" % output)
                 self._recognition_observer_manager.notify_failure()
                 return None, ''
-            self._log.log(12, "Alignment (word,time,length): %s" % self._decoder.get_word_align(output))
+
+            if self._log.isEnabledFor(12):
+                try:
+                    self._log.log(12, "Alignment (word,time,length): %s" % self._decoder.get_word_align(output))
+                except KaldiError as e:
+                    self._log.warning("Exception logging word alignment")
 
         else:
             raise EngineError("Invalid _compiler.parsing_framework")
 
+        words = tuple(words)
         self._recognition_observer_manager.notify_recognition(words)
         grammar_wrapper = self._get_grammar_wrapper(kaldi_rule.parent_grammar)
         with debug_timer(self._log.debug, "dragonfly parse time"):

@@ -22,7 +22,7 @@
 Compiler classes for Kaldi backend
 """
 
-import collections, logging, os.path, re, subprocess
+import collections, logging, os.path, re, subprocess, types
 
 from .testing                   import debug_timer
 from .dictation                 import AlternativeDictation, DefaultDictation
@@ -83,12 +83,6 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     impossible_word = property(lambda self: self._longest_word.lower())  # FIXME
     unknown_word = '<unk>'
-
-    def get_weight(self, obj, name):
-        weight = float(getattr(obj, name, 1))
-        if weight < 0:
-            raise CompilerError("Weight cannot be negative, but %s %s is %s" % (obj, name, weight))
-        return weight
 
     #-----------------------------------------------------------------------
     # Methods for handling lexicon translation.
@@ -185,14 +179,16 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         self._log.debug("%s: Compiling rule %s%s." % (self, rule.name, ' [EXPORTED]' if export else ''))
 
         if export:
-            weight = self.get_weight(grammar, 'weight') * self.get_weight(rule, 'weight')
+            # Root rule, so must handle grammar's weight, in addition to this rule's weight
+            weight = self.get_weight(grammar) * self.get_weight(rule)
             outer_src_state = fst.add_state(initial=True)
             inner_src_state = fst.add_state()
             fst.add_arc(outer_src_state, inner_src_state, None, weight=weight)
             dst_state = fst.add_state(final=True)
 
         else:
-            weight = self.get_weight(rule, 'weight')
+            # Only handle this rule's weight
+            weight = self.get_weight(rule)
             outer_src_state = fst.add_state()
             inner_src_state = fst.add_state()
             fst.add_arc(outer_src_state, inner_src_state, None, weight=weight)
@@ -205,8 +201,12 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def unload_grammar(self, grammar, rules, engine):
         for rule in rules:
             kaldi_rule = self.kaldi_rule_by_rule_dict[rule]
+            # Unload kaldi_rule: destroy() handles KaldiAGCompiler stuff; we must handle ours
             kaldi_rule.destroy()
             del self.kaldi_rule_by_rule_dict[rule]
+            for kaldi_rules_set in self.kaldi_rules_by_listreflist_dict.values():
+                kaldi_rules_set.discard(kaldi_rule)
+            # NOTE: the kaldi_rule_by_rule_dict we returned from compile_grammar() is not updated, but it should be dropped upon unload anyway!
 
     def update_list(self, lst, grammar):
         # Note: we update all rules in all grammars that reference this list (unlike WSR/natlink?)
@@ -231,13 +231,17 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_sequence(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         children = element.children
         # Optimize for special lengths
-        if len(children) <= 0:
+        if len(children) == 0:
+            fst.add_arc(src_state, dst_state, None)
             return
+
         elif len(children) == 1:
             return self.compile_element(children[0], src_state, dst_state, grammar, kaldi_rule, fst)
-        else:  # len(children) > 1:
+
+        else:  # len(children) >= 2:
             # Handle Repetition elements differently as a special case
             is_repetition = isinstance(element, elements_.Repetition)
             if is_repetition and element.optimize:
@@ -255,7 +259,8 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
                 else:
                     # Cannot do optimize path, because of epsilon loop, so finish up with Sequence path
-                    self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string; falling back to inefficient non-optimize path!" % self)
+                    self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string;"
+                        " falling back to inefficient non-optimize path. (this is not that bad)" % self)
                     states = [src_state, s2] + [fst.add_state() for i in range(len(children)-2)] + [dst_state]
                     for i, child in enumerate(children[1:], start=1):
                         s1 = states[i]
@@ -275,46 +280,51 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_alternative(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         for child in element.children:
             self.compile_element(child, src_state, dst_state, grammar, kaldi_rule, fst)
 
     # @trace_compile
     def _compile_optional(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         self.compile_element(element.children[0], src_state, dst_state, grammar, kaldi_rule, fst)
         fst.add_arc(src_state, dst_state, None)
 
     # @trace_compile
     def _compile_literal(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
-        # "insert" new states for individual words
+        weight = self.get_weight(element)  # Handle weight internally below, without adding a state
         words = element.words
         words = list(map(text_type, words))
+        # words = self.translate_words(words)
 
         # Special case optimize single-word literal
         if len(words) == 1:
-            # words = self.translate_words(words)
             word = words[0].lower()
             if word not in self.lexicon_words:
                 word = self.handle_oov_word(word)
-            fst.add_arc(src_state, dst_state, word)
+            fst.add_arc(src_state, dst_state, word, weight=weight)
 
         else:
-            # words = self.translate_words(words)
             words = [word.lower() for word in words]
             for i in range(len(words)):
                 if words[i] not in self.lexicon_words:
                     words[i] = self.handle_oov_word(words[i])
+            # "Insert" new states for individual words
             states = [src_state] + [fst.add_state() for i in range(len(words)-1)] + [dst_state]
             for i, word in enumerate(words):
-                fst.add_arc(states[i], states[i + 1], word)
+                fst.add_arc(states[i], states[i + 1], word, weight=weight)
+                weight = None  # Only need to set weight on first arc
 
     # @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
+        weight = self.get_weight(element)  # Handle weight internally below without adding a state
         rule_src_state, rule_dst_state = self._compile_rule(element.rule, grammar, kaldi_rule, fst, export=False)
-        fst.add_arc(src_state, rule_src_state, None)
+        fst.add_arc(src_state, rule_src_state, None, weight=weight)
         fst.add_arc(rule_dst_state, dst_state, None)
 
     # @trace_compile
     def _compile_list_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         # list_rule_name = "__list_%s" % element.list.name
         if element.list not in grammar.lists:
             # Should only happen during initial compilation; during updates, we must skip this
@@ -325,6 +335,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
+        src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         # fst.add_arc(src_state, dst_state, '#nonterm:dictation', olabel=WFST.eps)
         extra_state = fst.add_state()
         cloud_dictation = isinstance(element, (AlternativeDictation, DefaultDictation)) and element.cloud
@@ -337,4 +348,32 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     # @trace_compile
     def _compile_impossible(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         # FIXME: not impossible enough (lower probability?)
-        fst.add_arc(src_state, dst_state, self.impossible_word)
+        fst.add_arc(src_state, dst_state, self.impossible_word, weight=0)
+
+    #-----------------------------------------------------------------------
+    # Utility methods.
+
+    def get_weight(self, obj, name='weight'):
+        """ Gets the weight of given grammar or rule, checking for invalid values. """
+        weight = getattr(obj, name, 1)
+        try:
+            weight = float(weight)
+        except TypeError:
+            # Ignore crazy string method handling on Dictation elements; otherwise error
+            if not (isinstance(obj, elements_.Dictation) and isinstance(weight, types.FunctionType)):
+                self._log.error("%s: Weight must be a numeric, but %s %s is %s" % (self, obj, name, weight))
+                import pdb; pdb.set_trace()
+            weight = 1
+        if weight <= 0:
+            self._log.error("%s: Weight cannot be negative or 0, but %s %s is %s" % (self, obj, name, weight))
+            weight = 1e-9
+        return weight
+
+    def add_weight_linkage(self, outer_src_state, dst_state, weight, fst):
+        """ Returns new source state, to be used by the caller as the effective source state. Only modifies if weight is non-default. """
+        if (weight is None) or (weight == 1):
+            return outer_src_state
+        # self._log.debug("%s: Adding weight linkage for weight=%s" % (self, weight))
+        inner_src_state = fst.add_state()
+        fst.add_arc(outer_src_state, inner_src_state, None, weight=weight)
+        return inner_src_state
