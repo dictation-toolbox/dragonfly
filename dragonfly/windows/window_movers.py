@@ -26,7 +26,7 @@ Window mover classes
 
 import math
 import random
-from math          import sqrt
+
 from .point        import Point
 from .rectangle    import Rectangle, unit
 from ..engines     import get_engine
@@ -104,6 +104,10 @@ def linear_resize_path(max_count=10):
 
 #===========================================================================
 
+# pylint: disable=R0902,R0913
+# Suppress warnings about too many instance attributes and constructor
+# arguments.
+
 class PathBase(object):
 
     _interval = 0.025
@@ -163,28 +167,31 @@ class PathBase(object):
 
 class WindowMover(object):
 
-    def __init__(self, fraction_generator, position_generator, size_generator, speed=1.0):
+    def __init__(self, fraction_generator, position_generator,
+                 size_generator, speed=1.0):
         self._fraction_generator = fraction_generator
         self._position_generator = position_generator
         self._size_generator     = size_generator
         self._speed = speed
 
     def move_window(self, window, origin, destination):
-        path = PathBase(window, origin, destination, self._fraction_generator, self._position_generator, self._size_generator)
+        path = PathBase(window, origin, destination,
+                        self._fraction_generator, self._position_generator,
+                        self._size_generator)
         path.start()
 
 
 #===========================================================================
 
 window_movers = {
-                 "spline":   WindowMover(
-                                         sine_fraction_generator(),
-                                         spline_path(),
-                                         linear_resize_path(20),
-                                        ),
-                 "linear":   WindowMover(
-                                         linear_fraction_generator(),
-                                         linear_path(),
-                                         linear_resize_path(20),
-                                        ),
-                }
+    "spline":   WindowMover(
+        sine_fraction_generator(),
+        spline_path(),
+        linear_resize_path(20),
+    ),
+    "linear":   WindowMover(
+        linear_fraction_generator(),
+        linear_path(),
+        linear_resize_path(20),
+    ),
+}

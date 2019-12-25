@@ -79,6 +79,7 @@ class Paste(DynStrActionBase):
     except:
         _default_paste = Key("s-insert/20")
 
+    # pylint: disable=redefined-builtin
     def __init__(self, contents, format=None, paste=None, static=False):
         if not format:
             format = self._default_format

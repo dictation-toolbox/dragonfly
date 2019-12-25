@@ -17,6 +17,8 @@
 
 # This file is based on Aenea's X11 key_press implementations.
 
+# pylint: disable=abstract-method
+
 from locale import getpreferredencoding
 
 from six import PY2

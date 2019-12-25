@@ -27,13 +27,16 @@ creating grammar element structures based on a simple text format.
 
 """
 
+# pylint: disable=W0223
+# Suppress abstract method warnings.
+
 import locale
+import logging
 import re
 
 from six import string_types, binary_type
 
 from dragonfly.grammar.elements_basic import Alternative, ElementBase
-import logging
 
 from dragonfly.parsing.parse import spec_parser, CompoundTransformer, ParseError
 
@@ -47,6 +50,7 @@ class Compound(Alternative):
 
     def __init__(self, spec, extras=None, actions=None, name=None,
                  value=None, value_func=None, elements=None, default=None):
+        # pylint: disable=too-many-arguments,too-many-branches
         if isinstance(spec, binary_type):
             spec = spec.decode(locale.getpreferredencoding())
 
@@ -63,17 +67,17 @@ class Compound(Alternative):
             mapping = {}
             for element in extras:
                 if not isinstance(element, ElementBase):
-                    self._log.error("Invalid extras item: %s" % element)
+                    self._log.error("Invalid extras item: %s", element)
                     raise TypeError("Invalid extras item: %s" % element)
                 if not element.name:
-                    self._log.error("Extras item does not have a name: %s" % element)
+                    self._log.error("Extras item does not have a name: %s", element)
                     raise TypeError("Extras item does not have a name: %s" % element)
                 if element.name in mapping:
-                    self._log.warning("Multiple extras items with the same name: %s" % element)
+                    self._log.warning("Multiple extras items with the same name: %s", element)
                 mapping[element.name] = element
             extras = mapping
         elif not isinstance(extras, dict):
-            self._log.error("Invalid extras argument: %s" % extras)
+            self._log.error("Invalid extras argument: %s", extras)
             raise TypeError("Invalid extras argument: %s" % extras)
 
         # Temporary transition code so that both "elements" and "extras"
@@ -88,17 +92,17 @@ class Compound(Alternative):
         try:
             tree = self._parser.parse(spec)
         except Exception as e:
-            self._log.error("Exception raised parsing %r: %s" % (spec, e))
+            self._log.error("Exception raised parsing %r: %s", spec, e)
             raise ParseError("Exception raised parsing %r: %s" % (spec, e))
 
         try:
             element = CompoundTransformer(self._extras).transform(tree)
         except Exception as e:
-            self._log.error("Exception raised transforming %r: %s" % (spec, e))
+            self._log.error("Exception raised transforming %r: %s", spec, e)
             raise ParseError("Exception raised transforming %r: %s" % (spec, e))
 
         Alternative.__init__(self, (element,), name=name,
-                                       default=default)
+                             default=default)
 
     def __repr__(self):
         arguments = ["%r" % self._spec]
@@ -120,7 +124,7 @@ class Compound(Alternative):
             try:
                 value = self._value_func(node, extras)
             except Exception as e:
-                self._log.warning("Exception from value_func: %s" % e)
+                self._log.warning("Exception from value_func: %s", e)
                 raise
             return value
         elif self._value is not None:
@@ -134,13 +138,17 @@ class Compound(Alternative):
 
 class Choice(Alternative):
     """
-        Element allowing a dictionary of phrases to be recognised to be mapped to objects to be used in an action.
+        Element allowing a dictionary of phrases to be recognised to be
+        mapped to objects to be used in an action.
 
         Constructor arguments:
             - *name* (*str*) -- the name of this element
-            - *choices* (*dict*) -- dictionary mapping recognised phrases to returned values
-            - *extras* (*list*, default: *None*) -- a list of included extras
-            - *default* (default: *None*) -- the default value of this element
+            - *choices* (*dict*) -- dictionary mapping recognised phrases to
+              returned values
+            - *extras* (*list*, default: *None*) -- a list of included
+              extras
+            - *default* (default: *None*) -- the default value of this
+              element
 
         Example:
 
@@ -183,4 +191,4 @@ class Choice(Alternative):
 
         # Initialize super class.
         Alternative.__init__(self, children=children,
-                                       name=name, default=default)
+                             name=name, default=default)

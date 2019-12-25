@@ -111,7 +111,7 @@ class Function(ActionBase):
         self._str = function.__name__
 
         # TODO Use inspect.signature instead; getargspec is deprecated.
-        (args, varargs, varkw, defaults) = getargspec(self._function)
+        (args, _, varkw, defaults) = getargspec(self._function)
         if varkw:  self._filter_keywords = False
         else:      self._filter_keywords = True
         self._valid_keywords = set(args)
@@ -135,6 +135,6 @@ class Function(ActionBase):
         try:
             self._function(**arguments)
         except Exception as e:
-            self._log.exception("Exception from function %s:"
-                                % self._function.__name__)
+            self._log.exception("Exception from function %s:",
+                                self._function.__name__)
             raise ActionError("%s: %s" % (self, e))

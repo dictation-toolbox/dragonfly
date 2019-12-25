@@ -24,6 +24,12 @@ Window class for Windows
 
 """
 
+# pylint: disable=E0401
+# This file imports Win32-only symbols.
+
+# pylint: disable=E0213,E1120,W0212
+# Suppress warnings about _win32gui_func() lambdas and protected access.
+
 from ctypes          import windll, pointer, c_wchar, c_ulong
 
 import win32gui

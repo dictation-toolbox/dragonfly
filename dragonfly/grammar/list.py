@@ -61,22 +61,26 @@ class ListBase(object):
     #-----------------------------------------------------------------------
     # Protected attribute access.
 
-    valid_types = property(lambda self: self._valid_types,
-        doc = "The types of object at a Dragonfly list can contain.")
+    valid_types = property(
+        lambda self: string_types,
+        doc="The types of object at a Dragonfly list can contain.")
 
     name = property(lambda self: self._name,
-        doc = "Read-only access to a list's name.")
+                    doc="Read-only access to a list's name.")
 
     def _get_grammar(self):
         return self._grammar
+
     def _set_grammar(self, grammar):
-#        if self._grammar is None:
-            self._grammar = grammar
-#        else:
-#            raise TypeError("The grammar object a Dragonfly list"
-#                " is bound to cannot be changed after it has been set.")
+        self._grammar = grammar
+        # if self._grammar is None:
+        #     self._grammar = grammar
+        # else:
+        #     raise TypeError("The grammar object a Dragonfly list is bound "
+        #                     "to cannot be changed after it has been set.")
+
     grammar = property(_get_grammar, _set_grammar,
-        doc = "Set-once access to a list's grammar object.")
+                       doc="Set-once access to a list's grammar object.")
 
     #-----------------------------------------------------------------------
     # Notify the grammar of a list modification.
@@ -124,7 +128,6 @@ class List(ListBase, list):
 
     #-----------------------------------------------------------------------
     # Overridden list methods.
-
     def __add__(self, *args, **kwargs):
         result = list.__add__(self, *args, **kwargs)
         self._update(); return result
@@ -132,6 +135,7 @@ class List(ListBase, list):
         result = list.__delitem__(self, *args, **kwargs)
         self._update(); return result
     def __delslice__(self, *args, **kwargs):
+        # pylint: disable=no-member
         result = list.__delslice__(self, *args, **kwargs)
         self._update(); return result
     def __iadd__(self, *args, **kwargs):
@@ -156,6 +160,7 @@ class List(ListBase, list):
         result = list.__setitem__(self, *args, **kwargs)
         self._update(); return result
     def __setslice__(self, *args, **kwargs):
+        # pylint: disable=no-member
         result = list.__setslice__(self, *args, **kwargs)
         self._update(); return result
     def append(self, *args, **kwargs):

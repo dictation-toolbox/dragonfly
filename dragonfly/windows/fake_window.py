@@ -18,6 +18,9 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+# pylint: disable=W0622
+# Suppress warnings about redefining the built-in 'id' function.
+
 from .base_window import BaseWindow
 from .rectangle import Rectangle
 

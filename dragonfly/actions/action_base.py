@@ -86,12 +86,12 @@ class ActionBase(object):
         return BoundAction(self, data)
 
     def execute(self, data=None):
-        self._log_exec.debug("Executing action: %s (%s)" % (self, data))
+        self._log_exec.debug("Executing action: %s (%s)", self, data)
         try:
-            if self._execute(data) == False:
+            if self._execute(data) is False:
                 raise ActionError(str(self))
         except ActionError as e:
-            self._log_exec.error("Execution failed: %s" % e)
+            self._log_exec.error("Execution failed: %s", e)
             return False
         return True
 
@@ -102,6 +102,9 @@ class ActionBase(object):
 #---------------------------------------------------------------------------
 
 class DynStrActionBase(ActionBase):
+
+    # pylint: disable=E1111,R1710
+    # Suppress warnings about return statements in some methods.
 
     #-----------------------------------------------------------------------
     # Initialization methods.
@@ -149,12 +152,12 @@ class DynStrActionBase(ActionBase):
                 try:
                     spec = self._spec % data
                 except KeyError:
-                    self._log_exec.error("%s: Spec %r doesn't match data %r."
-                                         % (self, self._spec, data))
+                    self._log_exec.error("%s: Spec %r doesn't match data "
+                                         "%r.", self, self._spec, data)
                     return False
 
-            self._log_exec.debug("%s: Parsing dynamic spec: %r"
-                                 % (self, spec))
+            self._log_exec.debug("%s: Parsing dynamic spec: %r",
+                                 self, spec)
             events = self._parse_spec(spec)
             self._execute_events(events)
 
@@ -245,14 +248,16 @@ class ActionRepetition(ActionBase):
         else:
             raise ActionError("Invalid repeat factor: %r" % (self._factor,))
 
-        for index in range(repeat):
-            if self._action.execute(data) == False:
+        for _ in range(repeat):
+            if self._action.execute(data) is False:
                 raise ActionError(str(self))
 
 
 #---------------------------------------------------------------------------
 
 class Repeat(object):
+    # pylint: disable=line-too-long
+
     """
         Action repeat factor.
 

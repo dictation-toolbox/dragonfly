@@ -23,6 +23,9 @@ Window class for X11
 
 """
 
+# pylint: disable=W0622
+# Suppress warnings about redefining the built-in 'id' function.
+
 from __future__ import print_function
 
 import locale
@@ -430,7 +433,7 @@ class X11Window(BaseWindow):
         # with the window focused. Only maximize if set_foreground()
         # succeeded.
         return self.set_foreground() and self._run_xdotool_command_simple([
-                'keydown', 'Alt_L', 'key', 'F10', 'keyup', 'Alt_L'
+            'keydown', 'Alt_L', 'key', 'F10', 'keyup', 'Alt_L'
         ])
 
     def maximize(self):

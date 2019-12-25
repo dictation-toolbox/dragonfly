@@ -50,7 +50,7 @@ class RecognitionObserver(object):
     def __del__(self):
         try:
             self.unregister()
-        except Exception as e:
+        except Exception:
             pass
 
     def register(self):
@@ -72,7 +72,6 @@ class RecognitionObserver(object):
         Method called when the observer is registered and speech start is
         detected.
         """
-        pass
 
     def on_recognition(self, words):
         """
@@ -85,14 +84,12 @@ class RecognitionObserver(object):
         :param words: recognized words
         :type words: tuple
         """
-        pass
 
     def on_failure(self):
         """
         Method called when speech failed to decode to a grammar rule or to
         dictation.
         """
-        pass
 
 
 #---------------------------------------------------------------------------
@@ -140,6 +137,7 @@ class RecognitionHistory(list, RecognitionObserver):
 
     def _recognition_to_item(self, words):
         """"""
+        # pylint: disable=no-self-use
         return words
 
 

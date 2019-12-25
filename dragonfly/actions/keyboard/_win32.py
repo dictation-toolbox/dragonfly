@@ -20,6 +20,9 @@
 
 """This file implements the Win32 keyboard interface using sendinput."""
 
+# pylint: disable=E0401
+# This file imports Win32-only symbols.
+
 from locale import getpreferredencoding
 from struct import unpack
 import time

@@ -19,9 +19,10 @@ import sys
 import threading
 import time
 import logging
-logging.basicConfig()
 
 from dragonfly import Key, Text
+
+logging.basicConfig()
 
 XEV_PATH = "/usr/bin/xev"
 

@@ -110,7 +110,7 @@ class CompoundRule(Rule):
         if exported is not None:
             pass
         elif (hasattr(self.__class__, "exported")
-            and not isinstance(self.__class__.exported, property)):
+              and not isinstance(self.__class__.exported, property)):
             exported = self.__class__.exported
         else:
             exported = self._default_exported
@@ -120,7 +120,7 @@ class CompoundRule(Rule):
         assert isinstance(extras, (list, tuple))
         for item in extras:
             assert isinstance(item, ElementBase)
-        assert exported == True or exported == False
+        assert exported in (True, False)
 
         self._name     = name
         self._spec     = spec
@@ -145,10 +145,10 @@ class CompoundRule(Rule):
         """
         # Prepare *extras* dict for passing to _process_recognition().
         extras = {
-                  "_grammar":  self.grammar,
-                  "_rule":     self,
-                  "_node":     node,
-                 }
+            "_grammar":  self.grammar,
+            "_rule":     self,
+            "_node":     node,
+        }
         extras.update(self._defaults)
         for name, element in self._extras.items():
             extra_node = node.get_child_by_name(name, shallow=True)
@@ -175,4 +175,3 @@ class CompoundRule(Rule):
               extras list contained within this recognition.
               Maps element name -> element value.
         """
-        pass

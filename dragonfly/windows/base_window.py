@@ -24,6 +24,10 @@ Base Window class
 
 """
 
+# pylint: disable=W0622,R0904
+# Suppress warnings about redefining the built-in 'id' function and too many
+# public methods.
+
 from locale import getpreferredencoding
 
 from six import string_types, integer_types, binary_type
@@ -350,4 +354,5 @@ class BaseWindow(object):
                 # If the given window mover name isn't found, don't animate.
                 self.set_position(rectangle)
             else:
-                window_mover.move_window(self, self.get_position(), rectangle)
+                window_mover.move_window(self, self.get_position(),
+                                         rectangle)

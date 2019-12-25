@@ -57,6 +57,7 @@ class Grammar(object):
 
     """
 
+    # pylint: disable=too-many-instance-attributes
     _log_load     = logging.getLogger("grammar.load")
     _log_begin    = logging.getLogger("grammar.begin")
     _log_results  = logging.getLogger("grammar.results")
@@ -91,7 +92,7 @@ class Grammar(object):
         except Exception as e:
             try:
                 self._log.exception("Exception during grammar unloading:"
-                                    " %s" % (e,))
+                                    " %s", e)
             except Exception as e:
                 pass
 
@@ -169,8 +170,8 @@ class Grammar(object):
 
     def add_rule(self, rule):
         """ Add a rule to this grammar. """
-        self._log_load.debug("Grammar %s: adding rule %s."
-                             % (self._name, rule.name))
+        self._log_load.debug("Grammar %s: adding rule %s.",
+                             self._name, rule.name)
 
         # Check for correct type and duplicate rules or rule names.
         if self._loaded:
@@ -191,8 +192,8 @@ class Grammar(object):
 
     def remove_rule(self, rule):
         """ Remove a rule from this grammar. """
-        self._log_load.debug("Grammar %s: removing rule %s."
-                             % (self._name, rule.name))
+        self._log_load.debug("Grammar %s: removing rule %s.",
+                             self._name, rule.name)
 
         # Check for correct type.
         if self._loaded:
@@ -208,8 +209,8 @@ class Grammar(object):
 
     def add_list(self, lst):
         """ Add a list to this grammar. """
-        self._log_load.debug("Grammar %s: adding list %s."
-                             % (self._name, lst.name))
+        self._log_load.debug("Grammar %s: adding list %s.",
+                             self._name, lst.name)
 
         # Make sure that the list can be loaded and is not a duplicate.
         if self._loaded:
@@ -268,8 +269,8 @@ class Grammar(object):
             the rule itself is activated by the user.
 
         """
-        self._log_load.debug("Grammar %s: activating rule %s."
-                             % (self._name, rule.name))
+        self._log_load.debug("Grammar %s: activating rule %s.",
+                             self._name, rule.name)
 
         # Check for correct type and valid rule instance.
         assert self._loaded
@@ -293,8 +294,8 @@ class Grammar(object):
             the rule itself is deactivated by the user.
 
         """
-        self._log_load.debug("Grammar %s: deactivating rule %s."
-                             % (self._name, rule.name))
+        self._log_load.debug("Grammar %s: deactivating rule %s.",
+                             self._name, rule.name)
 
         # Check for correct type and valid rule instance.
         assert self._loaded
@@ -318,8 +319,8 @@ class Grammar(object):
             the list itself is modified by the user.
 
         """
-        self._log_load.debug("Grammar %s: updating list %s."
-                             % (self._name, lst.name))
+        self._log_load.debug("Grammar %s: updating list %s.",
+                             self._name, lst.name)
 
         # Check for correct type and valid list instance.
         #        assert self._loaded
@@ -339,8 +340,8 @@ class Grammar(object):
     def load(self):
         """ Load this grammar into its SR engine. """
 
-        self._log_load.debug("Grammar %s: loading into engine %s."
-                             % (self._name, self._engine))
+        self._log_load.debug("Grammar %s: loading into engine %s.",
+                             self._name, self._engine)
 
         # Prevent loading the same grammar multiple times.
         if self._loaded:
@@ -355,10 +356,11 @@ class Grammar(object):
         for rule in self._rules:
             # Explicitly compare to False so that uninitialized rules (which
             # have active set to None) are activated.
-            if rule.active != False:
+            if rule.active is not False:
                 rule.activate(force=True)
         # Update all lists loaded in this grammar.
         for lst in self._lists:
+            # pylint: disable=protected-access
             lst._update()
 
         #        self._log_load.warning(self.get_complexity_string())
@@ -369,7 +371,7 @@ class Grammar(object):
         # Prevent unloading the same grammar multiple times.
         if not self._loaded:
             return
-        self._log_load.debug("Grammar %s: unloading." % self._name)
+        self._log_load.debug("Grammar %s: unloading.", self._name)
 
         self._engine.unload_grammar(self)
         self._loaded = False
@@ -431,10 +433,12 @@ class Grammar(object):
              - *handle* -- window handle to the foreground window.
 
         """
-        self._log_begin.debug("Grammar %s: detected beginning of utterance."
-                              % self._name)
-        self._log_begin.debug("Grammar %s:     executable '%s', title '%s'."
-                              % (self._name, executable, title))
+        # pylint: disable=expression-not-assigned
+
+        self._log_begin.debug("Grammar %s: detected beginning of "
+                              "utterance.", self._name)
+        self._log_begin.debug("Grammar %s: executable '%s', title '%s'.",
+                              self._name, executable, title)
 
         if not self._enabled:
             # Grammar is disabled, so deactivate all active rules.
@@ -458,9 +462,9 @@ class Grammar(object):
                 self.exit_context()
             [r.deactivate() for r in self._rules if r.active]
 
-        self._log_begin.debug("Grammar %s:     active rules: %s."
-                              % (self._name,
-                                 [r.name for r in self._rules if r.active]))
+        self._log_begin.debug("Grammar %s:     active rules: %s.",
+                              self._name,
+                              [r.name for r in self._rules if r.active])
 
     def enter_context(self):
         """
@@ -472,7 +476,6 @@ class Grammar(object):
             match positively.
 
         """
-        pass
 
     def exit_context(self):
         """
@@ -484,7 +487,6 @@ class Grammar(object):
             match positively anymore.
 
         """
-        pass
 
     def _process_begin(self, executable, title, handle):
         """
@@ -506,4 +508,3 @@ class Grammar(object):
              - *handle* -- window handle to the foreground window.
 
         """
-        pass

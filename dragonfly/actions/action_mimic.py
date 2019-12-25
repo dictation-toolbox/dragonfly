@@ -115,7 +115,7 @@ class Mimic(ActionBase):
                 raise ActionError("Invalid extra data type: %r" % extra)
 
         # Mimic the series of words.
-        self._log.debug("Mimicking recognition: %r" % (words,))
+        self._log.debug("Mimicking recognition: %r", words)
         try:
             engine.disable_recognition_observers()
             engine.mimic(words)

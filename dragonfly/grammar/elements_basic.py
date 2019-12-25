@@ -61,19 +61,22 @@ classes listed above:
 
 """
 
+# pylint: disable=abstract-method,no-self-use,too-many-lines
+# Suppress a few warnings.
+
 import copy
+import itertools
 import logging
+
 from six import integer_types, string_types
 
 from .rule_base  import Rule
 from .list       import ListBase, DictList
 
-from itertools import count
-
 #===========================================================================
 # Element base class.
 
-id_generator = count()
+id_generator = itertools.count()
 
 class ElementBase(object):
     """ Base class for all other element classes. """
@@ -396,6 +399,7 @@ class Optional(ElementBase):
     # Methods for runtime recognition processing.
 
     def decode(self, state):
+        # pylint: disable=unused-variable
         state.decode_attempt(self)
 
         # If in greedy mode, allow the child to decode before.
@@ -422,7 +426,6 @@ class Optional(ElementBase):
 
         # No more decoding possibilities available, failure.
         state.decode_failure(self)
-        return
 
     def value(self, node):
         """
@@ -504,6 +507,7 @@ class Alternative(ElementBase):
         for child in self._children:
 
             # Iterate through this child's possible decoding states.
+            # pylint: disable=unused-variable
             for result in child.decode(state):
                 state.decode_success(self)
                 yield state
@@ -560,6 +564,8 @@ class Repetition(Sequence):
         the rule will fail to match.
 
     """
+
+    # pylint: disable=redefined-builtin,unused-variable
 
     def __init__(self, child, min=1, max=None, name=None, default=None,
                  optimize=True):
@@ -783,6 +789,7 @@ class RuleRef(ElementBase):
         state.decode_attempt(self)
 
         # Allow the rule to attempt decoding.
+        # pylint: disable=unused-variable
         for result in self._rule.decode(state):
             state.decode_success(self)
             yield state
@@ -790,7 +797,6 @@ class RuleRef(ElementBase):
 
         # The rule failed to deliver a valid decoding, failure.
         state.decode_failure(self)
-        return
 
     def value(self, node):
         return node.children[0].value()
@@ -800,6 +806,7 @@ class RuleRef(ElementBase):
 
 class ListRef(ElementBase):
 
+    # pylint: disable=redefined-builtin
     def __init__(self, name, list, key=None, default=None):
         self._list = None
         self._key = None
@@ -817,7 +824,7 @@ class ListRef(ElementBase):
 
     def __repr__(self):
         arguments = []
-        if self._list != None:
+        if self._list is not None:
             arguments.append(repr(self._list.name))
         if self._key:
             arguments.append("key=%r" % self._key)
@@ -863,7 +870,6 @@ class ListRef(ElementBase):
 
         # If the word is not in the list, or on retry, failure.
         state.decode_failure(self)
-        return
 
     def value(self, node):
         words = node.words()
@@ -873,6 +879,7 @@ class ListRef(ElementBase):
 
 class DictListRef(ListRef):
 
+    # pylint: disable=redefined-builtin
     def __init__(self, name, dict, key=None, default=None):
         if not isinstance(dict, DictList):
             raise TypeError("Dict object of %s object must be a"
@@ -914,7 +921,6 @@ class Empty(ElementBase):
         state.decode_retry(self)
 
         state.decode_failure(self)
-        return
 
     def value(self, node):
         return self._value
@@ -931,11 +937,16 @@ class Dictation(ElementBase):
             - *name* (*str*, default: *None*) --
               the name of this element
 
-        Returns a string-like :class:`DictationContainerBase` object containing the recognised words.
+        Returns a string-like :class:`DictationContainerBase` object
+        containing the recognised words.
         By default this is formatted as a lowercase sentence.
-        Alternative formatting can be applied by calling string methods like `replace` or `upper` on a :class:`Dictation` object, or
-        by passing an arbitrary formatting function (taking and returning a string) to the `apply` method.
-        Camel case text can be produced using the `camel` method. For example:
+        Alternative formatting can be applied by calling string methods like
+        `replace` or `upper` on a :class:`Dictation` object, or by passing
+        an arbitrary formatting function (taking and returning a string) to
+        the `apply` method.
+
+        Camel case text can be produced using the `camel` method. For
+        example:
 
         .. code:: python
 
@@ -944,6 +955,8 @@ class Dictation(ElementBase):
             Dictation("snake_text").lower().replace(" ", "_")
             Dictation("camelText").camel()
     """
+
+    # pylint: disable=redefined-builtin
     def __init__(self, name=None, format=True, default=None):
         ElementBase.__init__(self, name, default=default)
         self._format_words = format
@@ -1006,11 +1019,15 @@ class Dictation(ElementBase):
 
 class Modifier(Alternative):
     """
-        Element allowing direct modification of the output of another element at recognition time.
+        Element allowing direct modification of the output of another
+        element at recognition time.
 
         Constructor arguments:
-            - *element* (*Element*) -- The element to be recognised, e.g. :class:`Dictation` or :class:`Repetition`, with appropriate arguments passed.
-            - *modifier* (*function*) -- A function to be applied to the value of this element when it is recognised.
+            - *element* (*Element*) -- The element to be recognised, e.g.
+              :class:`Dictation` or :class:`Repetition`, with appropriate
+              arguments passed.
+            - *modifier* (*function*) -- A function to be applied to the
+              value of this element when it is recognised.
 
         Examples:
 
@@ -1018,14 +1035,18 @@ class Modifier(Alternative):
 
             # Recognises an integer, returns the integer plus one
             Modifier(IntegerRef("plus1", 1, 20), lambda n: n+1)
-            # Recognises a series of integers, returns them separated by commas as a string
-            Modifier(Repetition(IntegerRef("", 0, 10), min=1, max=5, name="num_seq"),
-                lambda r: ", ".join(map(str, r))),
+
+            # Recognises a series of integers, returns them separated by
+            # commas as a string
+            int_rep = Repetition(IntegerRef("", 0, 10), min=1, max=5,
+                                 name="num_seq")
+            Modifier(int_rep, lambda r: ", ".join(map(str, r)))
 
     """
     def __init__(self, element, modifier=None):
         self._modifier = modifier
-        Alternative.__init__(self, children=(element,), name=element.name, default=element.default)
+        Alternative.__init__(self, children=(element,), name=element.name,
+                             default=element.default)
 
     def value(self, node):
         initial_value = Alternative.value(self, node)
@@ -1054,7 +1075,6 @@ class Impossible(ElementBase):
         state.decode_attempt(self)
 
         state.decode_failure(self)
-        return
 
 
 #---------------------------------------------------------------------------

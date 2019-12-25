@@ -22,6 +22,12 @@
 This file implements an interface to the Windows system clipboard.
 """
 
+# pylint: disable=E0401
+# This file imports Win32-only modules.
+
+# pylint: disable=W0622
+# Suppress warnings about redefining the built-in 'format' function.
+
 from six import text_type, integer_types
 
 import win32clipboard
@@ -45,12 +51,12 @@ class Clipboard(BaseClipboard):
     format_locale    = win32con.CF_LOCALE
     format_hdrop     = win32con.CF_HDROP
     format_names = {
-                    format_text:     "text",
-                    format_oemtext:  "oemtext",
-                    format_unicode:  "unicode",
-                    format_locale:   "locale",
-                    format_hdrop:    "hdrop",
-                   }
+        format_text:     "text",
+        format_oemtext:  "oemtext",
+        format_unicode:  "unicode",
+        format_locale:   "locale",
+        format_hdrop:    "hdrop",
+    }
 
     @classmethod
     def get_system_text(cls):
@@ -201,7 +207,7 @@ class Clipboard(BaseClipboard):
              - *format* (int) -- the clipboard format to look for.
 
         """
-        return (format in self._contents)
+        return format in self._contents
 
     def get_format(self, format):
         """
