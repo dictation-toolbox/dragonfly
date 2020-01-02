@@ -124,7 +124,8 @@ class NatlinkEngine(EngineBase):
                         % (self, grammar.name))
 
         grammar_object = self.natlink.GramObj()
-        wrapper = GrammarWrapper(grammar, grammar_object, self)
+        wrapper = GrammarWrapper(grammar, grammar_object, self,
+                                 self._recognition_observer_manager)
         grammar_object.setBeginCallback(wrapper.begin_callback)
         grammar_object.setResultsCallback(wrapper.results_callback)
         grammar_object.setHypothesisCallback(None)
@@ -349,10 +350,11 @@ class NatlinkEngine(EngineBase):
 
 class GrammarWrapper(object):
 
-    def __init__(self, grammar, grammar_object, engine):
+    def __init__(self, grammar, grammar_object, engine, observer_manager):
         self.grammar = grammar
         self.grammar_object = grammar_object
         self.engine = engine
+        self.observer_manager = observer_manager
 
     def begin_callback(self, module_info):
         executable, title, handle = tuple(map_word(word)
@@ -398,6 +400,10 @@ class GrammarWrapper(object):
             s.initialize_decoding()
             for result in r.decode(s):
                 if s.finished():
+                    # Notify observers using the manager *before*
+                    # processing.
+                    self.observer_manager.notify_recognition(words)
+
                     self._retain_audio(words, results, r.name)
                     root = s.build_parse_tree()
                     r.process_recognition(root)
