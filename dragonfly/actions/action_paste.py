@@ -93,6 +93,7 @@ class Paste(DynStrActionBase):
             self.contents = contents
         self.format = format
         self.paste = paste
+        self._on_windows = sys.platform.startswith("win")
         DynStrActionBase.__init__(self, spec, static=static)
 
     def _parse_spec(self, spec):
@@ -112,8 +113,7 @@ class Paste(DynStrActionBase):
         # Convert the string to the appropriate type. Only use a binary
         # string if on Windows and using the CF_TEXT clipboard format.
         binary_string = isinstance(events, binary_type)
-        on_windows = sys.platform.startswith("win")
-        text_format = on_windows and self.format == CF_TEXT
+        text_format = self._on_windows and self.format == CF_TEXT
         if text_format and not binary_string:
             events = events.encode(getpreferredencoding())
 
