@@ -85,7 +85,7 @@ setup(
       long_description = read("README.rst"),
       include_package_data=True,
       install_requires=[
-                        "setuptools >= 0.6c7",
+                        "setuptools >= 40.0.0",
                         "six",
                         "pyperclip >= 1.7.0",
                         "enum34;python_version<'3.4'",
