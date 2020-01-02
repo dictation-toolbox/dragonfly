@@ -10,6 +10,7 @@ James Stout <james.wolf.stout@gmail.com>
 Jason Smythe <jason@smythemail.za.net>
 LexiconCode <thequietplace@protonmail.com>
 Mike Roberts <42875462+mrob95@users.noreply.github.com>
+Shervin Emami <shervin.emami@gmail.com>
 Tyler Elliott <tylercal@gmail.com>
 Vojta Drabek <vojta.drabek@gmail.com>
 lexxish <meandro7@gmail.com>
