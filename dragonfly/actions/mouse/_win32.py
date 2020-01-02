@@ -107,8 +107,18 @@ PLATFORM_WHEEL_FLAGS = {
 class ButtonEvent(BaseButtonEvent):
 
     def execute(self, window):
+        # Ensure that the primary mouse button is the *left* button before
+        # sending events.
+        primary_changed = windll.user32.SwapMouseButton(0)
+
+        # Prepare and send the mouse events.
         zero = pointer(c_ulong(0))
         inputs = [MouseInput(0, 0, flag[1], flag[0], 0, zero)
                   for flag in self._flags]
         array = make_input_array(inputs)
         send_input_array(array)
+
+        # Swap the primary mouse button back if it was previously set to
+        # *right*.
+        if primary_changed:
+            windll.user32.SwapMouseButton(1)
