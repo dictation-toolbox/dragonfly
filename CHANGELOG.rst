@@ -14,15 +14,40 @@ commit history and will be placed under headings in this file over time.
 Unreleased_
 -----------
 
+Added
+~~~~~
+* Add DarwinWindow class for macOS using 'py-applescript' (thanks to various
+  Aenea contributors).
+* Add Kaldi engine support for defining your own, external engine to use for
+  dictation elements (thanks `@daanzu`_).
+* Add Kaldi engine support for weights on individual rule elements
+  (thanks `@daanzu`_).
+* Add support for special specifiers in Compound specs
+  (thanks `@daanzu`_).
+
 Changed
 ~~~~~~~
+* Change Kaldi default model directory to 'kaldi_model' (thanks `@daanzu`_).
 * Change dragonfly's CLI test command to accept zero file arguments.
+* Clean up code in grammar, actions and windows sub-packages.
+* Improve overall Kaldi engine recognition accuracy (thanks `@daanzu`_).
+* Make a few minor Windows-related speed optimizations
+  (thanks `@Versatilus`_).
 
 Fixed
 ~~~~~
-* Fix Kaldi ListRef bug not updating list (thanks `@daanzu`_).
+* Add missing DNS parser entry for the special "numeral" word.
+* Fix a Windows bug where the wrong mouse buttons will be pressed if the
+  primary/secondary buttons are inverted.
 * Fix a bug with dragonfly's CLI 'test' command where grammars weren't
   properly unloaded.
+* Fix on_recognition() observer callback for the natlink engine.
+* Fix various Kaldi engine bugs (thanks `@daanzu`_).
+* Fix wsr_module_loader_plus.py for newer Python versions.
+
+Removed
+~~~~~~~
+* Remove basic Kaldi module loader 'kaldi_module_loader.py'.
 
 
 0.19.1_ - 2019-11-28
