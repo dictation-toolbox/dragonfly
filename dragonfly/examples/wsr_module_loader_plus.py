@@ -51,9 +51,9 @@ sound_mappings = {
     "ack":              r"C:\Windows\media\Speech Disambiguation.wav",
 }
 
-def play_sound(sound, async=True):
+def play_sound(sound, async_=True):
     if sound in sound_mappings: sound = sound_mappings[sound]
-    winsound.PlaySound(sound, winsound.SND_FILENAME | (winsound.SND_ASYNC if async else 0))
+    winsound.PlaySound(sound, winsound.SND_FILENAME | (winsound.SND_ASYNC if async_ else 0))
 
 
 # --------------------------------------------------------------------------
