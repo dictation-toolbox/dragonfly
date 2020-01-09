@@ -146,6 +146,7 @@ def run_pytest_suite(engine_name):
         # Use some doctest options for compatibility with both Python 2.7
         # and 3.
         args = [
+            # '-s',  # Uncomment this to have access to stdout/stdin
             '-o',
             'doctest_optionflags=ALLOW_UNICODE IGNORE_EXCEPTION_DETAIL'
         ] + paths
