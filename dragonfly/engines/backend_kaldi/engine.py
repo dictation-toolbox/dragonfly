@@ -26,6 +26,7 @@ import collections, os, subprocess, threading, time
 
 from six import integer_types, string_types, print_
 from six.moves import zip
+from packaging.version import Version
 
 from ..base                     import (EngineBase, EngineError, MimicFailure,
                                         DelegateTimerManager, DelegateTimerManagerInterface, DictationContainerBase)
@@ -69,14 +70,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if not ENGINE_AVAILABLE:
             self._log.error("%s: Failed to import Kaldi engine dependencies. Are they installed?" % self)
             raise EngineError("Failed to import Kaldi engine dependencies.")
+        # Compatible release version specification
+        # https://stackoverflow.com/questions/11887762/how-do-i-compare-version-numbers-in-python/21065570
         with open(os.path.join(os.path.dirname(__file__), 'kag_version.txt')) as file:
-            required_kag_version = file.read().strip()
-        # Compatible release version specification (we could use pkg_resources.require, but is it always installed?)
-        required_kag_version_split = required_kag_version.split('.')
-        kag_version = kaldi_active_grammar.__version__
-        kag_version_split = kag_version.split('.')
-        assert len(required_kag_version_split) == len(kag_version_split) == 3
-        if not ((kag_version_split[:-1] == required_kag_version_split[:-1]) and (kag_version_split[-1] >= required_kag_version_split[-1])):
+            required_kag_version = Version(file.read().strip())
+        kag_version = Version(kaldi_active_grammar.__version__)
+        if not ((kag_version >= required_kag_version) and (kag_version.release[0:2] == required_kag_version.release[0:2])):
             self._log.error("%s: Incompatible kaldi_active_grammar version %s! Expected ~= %s!" % (self, kag_version, required_kag_version))
             self._log.error("See https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
             raise EngineError("Incompatible kaldi_active_grammar version")
