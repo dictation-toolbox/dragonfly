@@ -81,6 +81,9 @@ class CommandModuleDirectory(object):
     _log = logging.getLogger("directory")
 
     def __init__(self, path, excludes=None):
+        if excludes is None:
+            excludes = []
+
         self._path = os.path.abspath(path)
         self._excludes = excludes
         self._modules = {}
