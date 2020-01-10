@@ -107,6 +107,13 @@ class CommandModuleDirectory(object):
                 module_ = self._modules[path]
                 module_.check_freshness()
 
+    @property
+    def successfully_loaded(self):
+        return not any([
+            module_ for module_ in self._modules.values()
+            if not module_.loaded
+        ])
+
     def _get_valid_paths(self):
         self._log.info("Looking for command modules here: %s" % (self._path,))
         valid_paths = []
