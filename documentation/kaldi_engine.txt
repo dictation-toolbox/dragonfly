@@ -151,6 +151,8 @@ the ``get_engine()`` function, which passes them to the
     tmp_dir='kaldi_tmp',
     input_device_index=None,
     retain_dir=None,
+    retain_audio=None,
+    retain_metadata=None,
     vad_aggressiveness=3,
     vad_padding_start_ms=150,
     vad_padding_end_ms=150,
@@ -177,14 +179,23 @@ the ``get_engine()`` function, which passes them to the
   a list your available input devices and their corresponding indexes, call
   ``get_engine('kaldi').print_mic_list()``
 
-* ``retain_dir`` (``str|None``) -- Retains recognized audio & metadata in the
-  given directory, saving audio to ``retain_[timestamp].wav`` file and
-  metadata to ``retain.tsv``. See below for more information.
+* ``retain_dir`` (``str|None``) -- Retains recognized audio and/or
+  metadata in the given directory, saving audio to
+  ``retain_[timestamp].wav`` file and metadata to ``retain.tsv``. What is
+  automatically retained it is determined by ``retain_audio`` and
+  ``retain_metadata``. If both are ``False`` but this is set, you can
+  actively choose to retain a given recognition. See below for more
+  information.
 
-* ``retain_audio`` (``bool|None``) -- Whether to retain audio data, in
-  addition to the recognition metadata. If ``True``, then requires
-  ``retain_dir`` to be set. If ``None``, then defaults to ``True`` if
-  ``retain_dir`` to be set. See below for more information.
+* ``retain_audio`` (``bool|None``) -- Whether to retain audio data for
+  all recognitions. If ``True``, then requires ``retain_dir`` to be set.
+  If ``None``, then defaults to ``True`` if ``retain_dir`` is set to
+  ``True``. See below for more information.
+
+* ``retain_metadata`` (``bool|None``) -- Whether to retain metadata for
+  all recognitions. If ``True``, then requires ``retain_dir`` to be set.
+  If ``None``, then defaults to ``True`` if ``retain_dir`` is set to
+  ``True``. See below for more information.
 
 * ``vad_aggressiveness`` (``int``) -- Aggressiveness of the Voice Activity
   Detector: an integer between ``0`` and ``3``, where ``0`` is the least

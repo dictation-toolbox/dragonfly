@@ -59,7 +59,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        input_device_index=None, retain_dir=None, retain_audio=None, vad_aggressiveness=3,
+        input_device_index=None, retain_dir=None, retain_audio=None, retain_metadata=None, vad_aggressiveness=3,
         vad_padding_start_ms=150, vad_padding_end_ms=150, vad_complex_padding_end_ms=500,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         alternative_dictation=None, cloud_dictation_lang='en-US',
@@ -93,6 +93,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             input_device_index = input_device_index,
             retain_dir = retain_dir,
             retain_audio = bool(retain_audio) if retain_audio is not None else bool(retain_dir),
+            retain_metadata = bool(retain_metadata) if retain_metadata is not None else bool(retain_dir),
             vad_aggressiveness = vad_aggressiveness,
             vad_padding_start_ms = vad_padding_start_ms,
             vad_padding_end_ms = vad_padding_end_ms,
@@ -146,7 +147,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             complex_end_window_ms=self._options['vad_complex_padding_end_ms'],
             )
         self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0),
-            save_dir=self._options['retain_dir'], save_audio=self._options['retain_audio'])
+            save_dir=self._options['retain_dir'], save_audio=self._options['retain_audio'], save_metadata=self._options['retain_metadata'])
 
         self._any_exclusive_grammars = False
         self._in_phrase = False
@@ -323,8 +324,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                         self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
                         if self._saving_adaptation_state and parsed_output != '':  # Don't save adaptation state for empty recognitions
                             self._decoder.save_adaptation_state()
-                        if self.audio_store and kaldi_rule:
-                            self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name, likelihood)
+                        if self.audio_store:
+                            if kaldi_rule and parsed_output != '':  # Don't store audio/metadata for empty recognitions
+                                self.audio_store.finalize(parsed_output,
+                                    kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name,
+                                    likelihood=likelihood, has_dictation=kaldi_rule.has_dictation)
+                            else:
+                                self.audio_store.cancel()
 
                     self._in_phrase = False
                     self._ignore_current_phrase = False

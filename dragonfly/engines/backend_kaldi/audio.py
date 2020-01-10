@@ -279,19 +279,18 @@ class AudioStore(object):
     Constructor arguments:
     - *maxlen* (*int*, default *None*): if set, the number of previous recognitions to temporarily store.
     - *save_dir* (*str*, default *None*): if set, the directory to save the `retain.tsv` file and optionally wav files.
-    - *save_audio* (*bool*, default *None*): whether to save the audio data (in addition to just the recognition metadata).
+    - *save_metadata* (*bool*, default *None*): whether to automatically save the recognition metadata.
+    - *save_audio* (*bool*, default *None*): whether to automatically save the recognition audio data (in addition to just the recognition metadata).
     """
 
-    def __init__(self, audio_obj, maxlen=None, save_dir=None, save_audio=None, auto_save_predicate_func=None):
+    def __init__(self, audio_obj, maxlen=None, save_dir=None, save_audio=None, save_metadata=None, auto_save_predicate_func=None):
         self.audio_obj = audio_obj
         self.maxlen = maxlen
         self.save_dir = save_dir
         self.save_audio = save_audio
+        self.save_metadata = save_metadata
         if self.save_dir:
-            if self.save_audio:
-                _log.info("retaining audio and recognition metadata to '%s'", self.save_dir)
-            else:
-                _log.info("retaining recognition metadata to '%s'", self.save_dir)
+            _log.info("retaining recognition audio and/or metadata to '%s'", self.save_dir)
         self.auto_save_predicate_func = auto_save_predicate_func
         self.deque = collections.deque(maxlen=maxlen) if maxlen else None
         self.blocks = []
@@ -302,15 +301,18 @@ class AudioStore(object):
     def add_block(self, block):
         self.blocks.append(block)
 
-    def finalize(self, text, grammar_name, rule_name, likelihood=None):
+    def finalize(self, text, grammar_name, rule_name, likelihood=None, tag='', has_dictation=None):
         """ Finalizes current utterance, creating its AudioStoreEntry and saving it (if enabled). """
-        entry = AudioStoreEntry(self.current_audio_data, grammar_name, rule_name, text, likelihood, '')
+        entry = AudioStoreEntry(self.current_audio_data, grammar_name, rule_name, text, likelihood, tag, has_dictation)
         if self.deque is not None:
             if len(self.deque) == self.deque.maxlen:
                 self.save(-1)  # Save oldest, which is about to be evicted
             self.deque.appendleft(entry)
         # if self.auto_save_predicate_func and self.auto_save_predicate_func(*entry):
         #     self.save(0)
+        self.blocks = []
+
+    def cancel(self):
         self.blocks = []
 
     def save(self, index):
@@ -324,6 +326,8 @@ class AudioStore(object):
             return
 
         entry = self.deque[index]
+        if not self.save_audio and not self.save_metadata and not entry.force_save:
+            return
         if self.save_audio or entry.force_save:
             filename = os.path.join(self.save_dir, "retain_%s.wav" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f"))
             self.audio_obj.write_wav(filename, entry.audio_data)
@@ -339,6 +343,7 @@ class AudioStore(object):
                     entry.text,
                     text_type(entry.likelihood),
                     text_type(entry.tag),
+                    text_type(entry.has_dictation),
                 ]) + '\n')
 
     def save_all(self, remove=True):
@@ -354,19 +359,19 @@ class AudioStore(object):
         return len(self.deque)
     def __bool__(self):
         return True
-    def __nonzero__(self):
-        return True
+    __nonzero__ = __bool__  # PY2 compatibility
 
 class AudioStoreEntry(object):
-    __slots__ = ('audio_data', 'grammar_name', 'rule_name', 'text', 'likelihood', 'tag', 'force_save')
+    __slots__ = ('audio_data', 'grammar_name', 'rule_name', 'text', 'likelihood', 'tag', 'has_dictation', 'force_save')
 
-    def __init__(self, audio_data, grammar_name, rule_name, text, likelihood, tag, force_save=False):
+    def __init__(self, audio_data, grammar_name, rule_name, text, likelihood, tag, has_dictation, force_save=False):
         self.audio_data = audio_data
         self.grammar_name = grammar_name
         self.rule_name = rule_name
         self.text = text
         self.likelihood = likelihood
         self.tag = tag
+        self.has_dictation = has_dictation
         self.force_save = force_save
 
     def set(self, key, value):
