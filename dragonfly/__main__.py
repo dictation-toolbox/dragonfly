@@ -1,66 +1,123 @@
 import argparse
 import logging
+import os
 import sys
 import time
 
-from dragonfly import get_engine, MimicFailure
-from dragonfly.loader import CommandModule
+from dragonfly import get_engine, MimicFailure, EngineError
+from dragonfly.loader import CommandModule, CommandModuleDirectory
 
-logging.basicConfig()
 LOG = logging.getLogger("command")
 
 
-def test_with_engine(args):
-    # Initialise the specified engine, catching and reporting errors.
-    try:
-        engine = get_engine(args.engine)
-        LOG.debug("Testing with engine '%s'", args.engine)
-    except Exception as e:
-        LOG.error(e)
-        return 1
+#---------------------------------------------------------------------------
+# CLI helper functions.
 
-    # Set the logging level of the root logger.
+def _set_logging_level(args):
     if args.quiet:
         args.log_level = "WARNING"
-    logging.root.setLevel(getattr(logging, args.log_level))
+
+    # Set up logging with the specified logging level.
+    logging.basicConfig(level=getattr(logging, args.log_level))
+
+
+def _init_engine(args):
+    try:
+        # Initialize the specified engine, catching and reporting errors.
+        # Pass specified engine options (if any).
+        options = args.engine_options
+        engine = get_engine(args.engine, **options)
+    except EngineError as e:
+        LOG.error(e)
+        engine = None
 
     # Set the engine language if necessary.
-    if engine.name == "text":
-        engine.language = args.language
+    if engine and args.language != engine.language:
+        try:
+            engine.language = args.language
+        except AttributeError:
+            LOG.error("Cannot set language for engine %r", engine.name)
+            engine = None
 
-    # Connect to the engine, load grammar modules, take input from stdin and
+    return engine
+
+
+def _load_cmd_modules(args):
+    # Load each command module. Errors during loading will be caught and
+    # logged.
+    return_code = 0
+    for f in args.files:
+        module_ = CommandModule(f.name)
+        module_.load()
+        if not module_.loaded:
+            return_code = 1
+
+        # Also close each file object created by argparse.
+        f.close()
+
+    # Return the overall success of module loading.
+    return return_code
+
+
+def _on_begin():
+    print("Speech start detected.")
+
+
+def _on_recognition(words):
+    print("Recognized: %s" % " ".join(words))
+
+
+def _on_failure():
+    print("Sorry, what was that?")
+
+
+def _do_recognition(engine, args):
+    # Start the engine's main recognition loop, registering recognition
+    # callback functions only if necessary.
+    try:
+        if not args.no_recobs_messages:
+            engine.do_recognition(_on_begin, _on_recognition, _on_failure)
+        else:
+            engine.do_recognition()
+    except KeyboardInterrupt:
+        pass
+
+
+#---------------------------------------------------------------------------
+# Main CLI functions.
+
+def cli_cmd_test(args):
+    # Set the logging level.
+    _set_logging_level(args)
+
+    # Initialise the specified engine. Return early if there was an error.
+    engine = _init_engine(args)
+    if engine is None:
+        return 1
+
+    # Connect to the engine, load command modules, take input from stdin and
     # disconnect from the engine if interrupted or if EOF is received.
+    LOG.debug("Testing with engine '%s'", args.engine)
     with engine.connection():
-        # Load each module. Errors during loading will be caught and logged.
-        # Use the overall success of module loading and/or mimic calls as
-        # the return code.
-        return_code = 0
-        for f in args.files:
-            module_ = CommandModule(f.name)
-            module_.load()
+        # Load each command module. Errors during loading will be caught and
+        # logged. Use the overall success of module loading and/or mimic
+        # calls as the return code.
+        return_code = _load_cmd_modules(args)
 
-            if not module_.loaded:
-                return_code = 1
-
-            # Also close each file object created by argparse.
-            f.close()
+        # Return early if --no-input was specified.
+        if args.no_input:
+            return return_code
 
         # Get the number of seconds to delay between each mimic() call
-        # (default 0).
+        # (default 0). Log a message if the delay is non-zero.
         delay = args.delay
-
-        # Read lines from stdin and pass them to engine.mimic. Strip excess
-        # white space from each line. Report any mimic failures.
-        if args.no_input:
-            # Return early if --no-input was specified.
-            return return_code
-        LOG.info("Enter commands to mimic followed by new lines.")
-
-        # Log a message about delay if necessary.
         if delay:
             LOG.info("Calls to mimic() will be delayed by %.2f seconds "
                      "as specified", delay)
 
+        # Read lines from stdin and pass them to engine.mimic. Strip excess
+        # white space from each line. Report any mimic failures.
+        LOG.info("Enter commands to mimic followed by new lines.")
         try:
             # Use iter to avoid a bug in Python 2.x:
             # https://bugs.python.org/issue3907
@@ -82,18 +139,101 @@ def test_with_engine(args):
         except KeyboardInterrupt:
             pass
 
-        # Unload all grammars (required if using natlink remotely).
-        for grammar in engine.grammars:
-            grammar.unload()
-
     # Return the success of this command.
     return return_code
 
 
+def cli_cmd_load(args):
+    # Set the logging level.
+    _set_logging_level(args)
+
+    # Initialise the specified engine. Return early if there was an error.
+    engine = _init_engine(args)
+    if engine is None:
+        return 1
+
+    # Connect the engine, load each command module and start the main
+    # recognition loop. The loop will normally exit on engine.disconnect()
+    # or a keyboard interrupt.
+    LOG.debug("Recognizing with engine '%s'", args.engine)
+    with engine.connection():
+        return_code = _load_cmd_modules(args)
+
+        # Return early if --no-input was specified.
+        if args.no_input:
+            return return_code
+
+        _do_recognition(engine, args)
+
+    # Return the success of module loading.
+    return return_code
+
+
+def cli_cmd_load_directory(args):
+    # Set the logging level.
+    _set_logging_level(args)
+
+    # Initialise the specified engine. Return early if there was an error.
+    engine = _init_engine(args)
+    if engine is None:
+        return 1
+
+    # Connect the engine, load each command module and start the main
+    # recognition loop. The loop will normally exit on engine.disconnect()
+    # or a keyboard interrupt.
+    LOG.debug("Recognizing with engine '%s'", args.engine)
+    with engine.connection():
+        directory = CommandModuleDirectory(args.module_dir)
+        directory.load()
+        return_code = 0 if directory.successfully_loaded else 1
+
+        # Return early if --no-input was specified.
+        if args.no_input:
+            return return_code
+
+        _do_recognition(engine, args)
+
+    # Return the success of module loading.
+    return return_code
+
+
 _COMMAND_MAP = {
-    "test": test_with_engine
+    "test": cli_cmd_test,
+    "load": cli_cmd_load,
+    "load-directory": cli_cmd_load_directory,
 }
 
+
+#---------------------------------------------------------------------------
+# argparse helper functions.
+
+def _build_argument(*args, **kwargs):
+    return args, kwargs
+
+
+def _add_arguments(parser, *arguments):
+    for (args, kwargs) in arguments:
+        parser.add_argument(*args, **kwargs)
+
+
+def _engine_options_string(string):
+    if '=' not in string:
+        msg = "%r is not a valid option string" % string
+        raise argparse.ArgumentTypeError(msg)
+
+    # Return any key/value arguments in a tuple.
+    return dict(sub_string.split('=') for sub_string in string.split(','))
+
+
+def _valid_directory_path(string):
+    if not os.path.isdir(string):
+        msg = "%r is not a valid directory path" % string
+        raise argparse.ArgumentTypeError(msg)
+    return string
+
+
+#---------------------------------------------------------------------------
+# Main argparse functions.
 
 def make_arg_parser():
     parser = argparse.ArgumentParser(
@@ -103,6 +243,39 @@ def make_arg_parser():
     )
     subparsers = parser.add_subparsers(dest='command')
 
+    # Define common arguments.
+    cmd_module_files_argument = _build_argument(
+        "files", metavar="file", nargs="*", type=argparse.FileType("r"),
+        help="Command module file(s)."
+    )
+    engine_options_argument = _build_argument(
+        "-o", "--engine-options", default={}, type=_engine_options_string,
+        help="One or more engine options to be passed to *get_engine()*. "
+             "Each option should specify a key word argument and value. "
+             "Multiple options should be separated by commas (',')."
+    )
+    language_argument = _build_argument(
+        "--language", default="en",
+        help="Speaker language to use. Only applies if using an engine "
+        "backend that supports changing the language (e.g. the \"text\" "
+        "engine)."
+    )
+    no_input_argument = _build_argument(
+        "-n", "--no-input", default=False, action="store_true",
+        help="Whether to load command modules and then exit without "
+             "reading input from stdin or recognizing speech."
+    )
+    log_level_argument = _build_argument(
+        "-l", "--log-level", default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Log level to use."
+    )
+    quiet_argument = _build_argument(
+        "-q", "--quiet", default=False, action="store_true",
+        help="Equivalent to '-l WARNING' -- suppresses INFO and DEBUG "
+             "logging."
+    )
+
     # Create the parser for the "test" command.
     parser_test = subparsers.add_parser(
         "test",
@@ -110,39 +283,62 @@ def make_arg_parser():
         "dragonfly engine. By default input from stdin is passed to "
         "engine.mimic() after command modules are loaded."
     )
-    parser_test.add_argument(
-        "files", metavar="file", nargs="*", type=argparse.FileType("r"),
-        help="Command module file(s)."
+    engine_argument = _build_argument(
+        "-e", "--engine", default="text",
+        help="Name of the engine to use for testing."
     )
-    parser_test.add_argument(
+    delay_argument = _build_argument(
         "-d", "--delay", default=0, type=float,
         help="Time in seconds to delay before mimicking each command. This "
         "is useful for testing contexts."
     )
-    parser_test.add_argument(
-        "-e", "--engine", default="text",
-        help="Name of the engine to use for testing."
+    _add_arguments(
+        parser_test,
+        cmd_module_files_argument, engine_argument, engine_options_argument,
+        language_argument, no_input_argument, delay_argument,
+        log_level_argument, quiet_argument
     )
-    parser_test.add_argument(
-        "--language", default="en",
-        help="Speaker language to use for testing. Only applies if using "
-             "the \"text\" engine."
+
+    # Define common arguments for the "load" and "load-directory" commands.
+    engine_argument = _build_argument(
+        "-e", "--engine", default=None,
+        help="Name of the engine to use for loading and recognizing from "
+             "command modules. By default, this is the first available "
+             "engine backend."
     )
-    parser_test.add_argument(
-        "-l", "--log-level", default="INFO",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        help="Log level to use."
+    no_recobs_messages_argument = _build_argument(
+        "--no-recobs-messages", default=False, action="store_true",
+        help="Disable recognition state messages for each spoken phrase."
     )
-    parser_test.add_argument(
-        "-n", "--no-input", default=False, action="store_true",
-        help="Whether to load command modules and then exit without "
-             "reading input from stdin."
+
+    # Create the parser for the "load" command.
+    parser_load = subparsers.add_parser(
+        "load", help="Load and recognize from command module files."
     )
-    parser_test.add_argument(
-        "-q", "--quiet", default=False, action="store_true",
-        help="Equivalent to '-l WARNING' -- suppresses INFO and DEBUG "
-             "logging."
+    _add_arguments(
+        parser_load,
+        cmd_module_files_argument, engine_argument, engine_options_argument,
+        language_argument, no_input_argument, no_recobs_messages_argument,
+        log_level_argument, quiet_argument
     )
+
+    # Create the parser for the "load-directory" command.
+    parser_load_directory = subparsers.add_parser(
+        "load-directory",
+        help="Load and recognize from command module files in a directory."
+    )
+    module_dir_argument = _build_argument(
+        "module_dir", type=_valid_directory_path,
+        help="Directory with command module files."
+    )
+    _add_arguments(
+        parser_load_directory,
+        module_dir_argument, engine_argument, engine_options_argument,
+        language_argument, no_input_argument, no_recobs_messages_argument,
+        log_level_argument, quiet_argument
+    )
+
+    # Return the argument parser.
     return parser
 
 
