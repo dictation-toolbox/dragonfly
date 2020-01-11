@@ -33,7 +33,7 @@ affiliated with the dragonfly project itself).
 * `Engine Configuration`_
 * `Cross-platform`_
 * `User Lexicon`_
-* `Grammar/Rule Weights`_
+* `Grammar/Rule/Element Weights`_
 * `Retaining Audio and/or Recognition Metadata`_
 * `Alternative/Cloud Dictation`_
 
@@ -152,8 +152,8 @@ the ``get_engine()`` function, which passes them to the
     input_device_index=None,
     retain_dir=None,
     vad_aggressiveness=3,
-    vad_padding_start_ms=300,
-    vad_padding_end_ms=100,
+    vad_padding_start_ms=150,
+    vad_padding_end_ms=150,
     vad_complex_padding_end_ms=500,
     auto_add_to_user_lexicon=True,
     lazy_compilation=True,
@@ -337,26 +337,37 @@ recognized, possibly with the addition of a weight parameter.
 Future development work includes improving on these issues.
 
 
-Grammar/Rule Weights
+Grammar/Rule/Element Weights
 ----------------------------------------------------------------------------
-Grammars and/or rules can have a weight specified, where grammars/rules
-with higher weight value are more likely to be recognized, compared to
-their peers, for an ambiguous recognition. This can be used to adjust
-the probability of them be recognized.
+Grammars, rules, and/or elements can have a weight specified, where
+those with higher weight value are more likely to be recognized,
+compared to their peers, for an ambiguous recognition. This can be used
+to adjust the probability of them be recognized.
 
-The default weight value is ``1``. Two competing rules with weights of
-``1`` and ``2`` will result in the latter being twice as likely to be
-recognized then if the weights were equal. Similarly for ``1`` and
-``0.5``. An example::
+The default weight value for everything is ``1.0``. The exact meaning of
+the weight number is somewhat inscrutable, but you can treat larger
+values as more likely to be recognized, and smaller values as less
+likely. **Note:** you may need to use much larger or smaller numbers
+than you might expect to achieve your desired results, possibly orders
+of magnitude (base 10).
+
+An example::
 
   class WeightExample1Rule(MappingRule):
-      mapping = { "i scream": ActionBase() }
+      mapping = { "kiss this guy": ActionBase() }
   class WeightExample2Rule(MappingRule):
-      mapping = { "ice cream": ActionBase() }
+      mapping = { "kiss the sky": ActionBase() }
       weight = 2
+  class WeightExample3Rule(MappingRule):
+      mapping = {
+        "start listening {weight=0.01}": ActionBase(),  # Be less eager to wake up!
+        "halt listening": ActionBase(),
+        "go (north | nowhere {w=0.01} | south)": ActionBase(),
+      }
 
 The weight of a grammar is effectively propagated equally to its child
-rules, on top of their own weights.
+rules, on top of their own weights. Similarly for rules propagating
+weights to child elements.
 
 
 Retaining Audio and/or Recognition Metadata
@@ -372,6 +383,15 @@ stored in the metadata. For example, mark it as incorrect with a rule
 containing::
 
   "action whoops": Function(lambda: engines.get_engine().audio_store[0].set('tag', 'misrecognition'))
+
+Or, you can mark it specifically to be saved, even if ``retain_audio``
+is ``False`` and recognitions are not normally saved, as long as
+``retain_dir`` is set. This also demonstrates that ``.set()`` can be
+chained to tag it at the same time::
+
+  "action corrected": Function(lambda: engines.get_engine().audio_store[0].set('tag', 'corrected').set('force_save', True))
+
+This is useful for retaining only known-correct data for later training.
 
 
 Alternative/Cloud Dictation
@@ -389,6 +409,15 @@ in another language, or some other reason. You can use one of:
 * a cloud speech recognition engine
 
 **Note:** This feature is completely optional and disabled by default!
+
+You can enable this by setting the ``alternative_dictation`` engine
+option. Valid options:
+
+* ``'gcloud'``: Cloud dictation with Google Cloud Speech-to-Text
+* A ``callable`` object: Any external engine. The callable must accept at
+  least one argument (for the audio data) and any keyword arguments. The
+  audio data is passed in standard Linear16 (``int``) PCM encoding. The
+  callable should return the recognized text.
 
 Cloud Dictation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
