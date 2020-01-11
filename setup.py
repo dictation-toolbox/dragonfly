@@ -43,10 +43,13 @@ class test(Command):
         # (long option, short option, description)
         # '=' means an argument should be supplied.
         ('test-suite=', None, 'Dragonfly engine to test (default: "text")'),
+        ('pytest-options=', 'o',
+            'pytest options (ex: "-s" to expose stdout/stdin)'),
     ]
 
     def initialize_options(self):
         self.test_suite = 'text'
+        self.pytest_options = ''
 
     def finalize_options(self):
         # Check that 'test_suite' is an engine name.
@@ -55,10 +58,13 @@ class test(Command):
         assert suite in engine_tests_dict.keys(), \
             "the test suite value must be an engine name, not '%s'" % suite
 
+        # Split pytest options into a list.
+        self.pytest_options = self.pytest_options.split()
+
     def run(self):
         from dragonfly.test.suites import run_pytest_suite
         print("Test suite running for engine '%s'" % self.test_suite)
-        result = run_pytest_suite(self.test_suite)
+        result = run_pytest_suite(self.test_suite, self.pytest_options)
 
         # Exit using pytest's return code.
         exit(int(result))
