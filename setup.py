@@ -43,7 +43,8 @@ class test(Command):
         # (long option, short option, description)
         # '=' means an argument should be supplied.
         ('test-suite=', None, 'Dragonfly engine to test (default: "text")'),
-        ('pytest-options=', 'o', 'pytest options'),
+        ('pytest-options=', 'o',
+            'pytest options (ex: "-s" to expose stdout/stdin)'),
     ]
 
     def initialize_options(self):
