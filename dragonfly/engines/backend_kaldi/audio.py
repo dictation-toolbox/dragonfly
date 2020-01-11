@@ -50,7 +50,7 @@ class MicAudio(object):
     def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None):
         self.callback = callback if callback is not None else lambda in_data: self.buffer_queue.put(in_data, block=False)
         self.flush_queue = flush_queue
-        self.input_device_index = input_device_index
+        self.input_device_index = int(input_device_index) if input_device_index is not None else None
 
         self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.BLOCK_DURATION_MS))
         self.pa = pyaudio.PyAudio()
