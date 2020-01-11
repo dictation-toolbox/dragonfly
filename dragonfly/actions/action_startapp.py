@@ -190,11 +190,16 @@ class BringApp(StartApp):
                if *True*, then attempt to bring the window to the foreground
                after starting the application. Does nothing if the
                application is already running.
+             - *focus_only* (*bool*, default *False*) -- if *True*, then
+               attempt to focus a matching window without raising it by
+               using the *set_focus()* method instead of *set_foreground()*.
+               This argument may do nothing depending on the platform.
 
         """
         self._title = kwargs.pop("title", None)
         self._index = kwargs.pop("index", None)
         self._filter_func = kwargs.pop("filter_func", None)
+        self._focus_only = kwargs.pop("focus_only", False)
         StartApp.__init__(self, *args, **kwargs)
 
     def _execute(self, data=None):
@@ -203,8 +208,10 @@ class BringApp(StartApp):
         title = self._title
         index = self._index
         filter_func = self._filter_func
+        focus_only = self._focus_only
         focus_action = FocusWindow(executable=target, title=title,
-                                   index=index, filter_func=filter_func)
+                                   index=index, filter_func=filter_func,
+                                   focus_only=focus_only)
         # Attempt to focus on an existing window.
         if not focus_action.execute():
             # Failed to focus on an existing window, so start
