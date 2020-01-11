@@ -19,6 +19,18 @@
 #
 # Modified from Aenea's server_osx.py file.
 
+"""
+Window class for macOS
+============================================================================
+
+"""
+
+# pylint: disable=E0401
+# This file imports MacOS-only symbols.
+
+# pylint: disable=W0622
+# Suppress warnings about redefining the built-in 'id' function.
+
 import locale
 import logging
 import psutil
