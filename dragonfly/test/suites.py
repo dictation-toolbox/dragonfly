@@ -123,7 +123,7 @@ engine_tests_dict['sapi5shared'] = engine_tests_dict['sapi5']
 # ==========================================================================
 
 
-def run_pytest_suite(engine_name):
+def run_pytest_suite(engine_name, pytest_options):
     # Get test file paths.
     paths = []
     for name in engine_tests_dict[engine_name]:
@@ -143,10 +143,9 @@ def run_pytest_suite(engine_name):
     engine._timer_manager.disable()
     try:
         # Run doctests through pytest.main() now that the engine is set up.
-        # Use some doctest options for compatibility with both Python 2.7
-        # and 3.
-        args = [
-            # '-s',  # Uncomment this to have access to stdout/stdin
+        # Pass any specified pytest options, followed by doctest options for
+        # compatibility with both Python 2.7 and 3.
+        args = pytest_options + [
             '-o',
             'doctest_optionflags=ALLOW_UNICODE IGNORE_EXCEPTION_DETAIL'
         ] + paths
