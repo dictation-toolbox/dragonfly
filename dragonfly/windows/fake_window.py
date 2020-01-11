@@ -99,3 +99,6 @@ class FakeWindow(BaseWindow):
 
     def set_foreground(self):
         pass
+
+    def set_focus(self):
+        pass

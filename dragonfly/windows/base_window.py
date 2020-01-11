@@ -336,6 +336,15 @@ class BaseWindow(object):
         """ Set the window as the foreground (active) window. """
         raise NotImplementedError()
 
+    def set_focus(self):
+        """
+        Set the window as the active window without raising it.
+
+        *Note*: this method will behave like :meth:`set_foreground()` in
+        environments where this isn't possible.
+        """
+        raise NotImplementedError()
+
     def move(self, rectangle, animate=None):
         """
         Move the window, optionally animating its movement.

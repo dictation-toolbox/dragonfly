@@ -238,3 +238,8 @@ class Win32Window(BaseWindow):
 
             # Set the foreground window.
             self._set_foreground()
+
+    def set_focus(self):
+        # Setting window focus without raising the window doesn't appear to
+        # be possible in Windows, so fallback on set_foreground().
+        self.set_foreground()

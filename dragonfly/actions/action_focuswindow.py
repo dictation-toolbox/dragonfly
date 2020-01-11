@@ -47,6 +47,10 @@ class FocusWindow(ActionBase):
            (the window object), and should return ``True`` for your
            target windows; example:
            ``lambda window: window.get_position().dy > 100``.
+         - *focus_only* (*bool*, default *False*) -- if *True*, then
+           attempt to focus the window without raising it by using the
+           *Window.set_focus()* method instead of *set_foreground()*.
+           This argument may do nothing depending on the platform.
 
         This action searches all visible windows for a window which
         matches the given parameters.
@@ -54,13 +58,14 @@ class FocusWindow(ActionBase):
     """
 
     def __init__(self, executable=None, title=None, index=None,
-                 filter_func=None):
+                 filter_func=None, focus_only=False):
         if executable:  self.executable = executable.lower()
         else:           self.executable = None
         if title:       self.title = title.lower()
         else:           self.title = None
         self.index = index
         self.filter_func = filter_func
+        self.focus_only = focus_only
         ActionBase.__init__(self)
 
         arguments = []
@@ -68,6 +73,7 @@ class FocusWindow(ActionBase):
         if title:       arguments.append("title=%r" % title)
         if index:       arguments.append("index=%r" % index)
         if filter_func: arguments.append("filter_func=%r" % filter_func)
+        if focus_only:  arguments.append("focus_only=%r" % focus_only)
         self._str = ", ".join(arguments)
 
     def _execute(self, data=None):
@@ -84,8 +90,13 @@ class FocusWindow(ActionBase):
         # Get the first matching window and bring it to the foreground.
         windows = Window.get_matching_windows(executable, title)
         if self.filter_func:
-            windows = [window for window in windows if self.filter_func(window)]
+            windows = [window for window in windows
+                       if self.filter_func(window)]
         if windows and (index < len(windows)):
-            windows[index].set_foreground()
+            window = windows[index]
+            if self.focus_only:
+                window.set_focus()
+            else:
+                window.set_foreground()
         else:
             raise ActionError("Failed to find window (%s)." % self._str)
