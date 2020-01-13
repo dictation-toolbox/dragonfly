@@ -261,8 +261,9 @@ for words in grammars & language models in order to recognize them. The
 default model comes with a large dictionary, but obviously cannot
 include all possible words. There are multiple ways of handling this.
 
-**Ignoring unknown words:** If you use words in your grammars that are *not* in the
-dictionary, a message similar to the following will be printed::
+**Ignoring unknown words:** If you use words in your grammars that are
+*not* in the dictionary, a message similar to the following will be
+printed::
 
   Word not in lexicon (will not be recognized): 'notaword'
 
@@ -320,6 +321,11 @@ or run::
 **Preserving Your User Lexicon:** When changing models, you can (and
 probably should) copy your ``user_lexicon.txt`` file from your old model
 directory to the new one. This will let you keep your additions.
+
+Also, if there is a ``user_lexicon.txt`` file in the current working
+directory of your initial loader script, its contents will be
+automatically added to the ``user_lexicon.txt`` in the active model when
+it is loaded.
 
 User Lexicon and Dictation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
