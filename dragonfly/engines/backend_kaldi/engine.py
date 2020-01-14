@@ -26,6 +26,7 @@ import collections, os, subprocess, threading, time
 
 from six import integer_types, string_types, print_
 from six.moves import zip
+from packaging.version import Version
 
 from ..base                     import (EngineBase, EngineError, MimicFailure,
                                         DelegateTimerManager, DelegateTimerManagerInterface, DictationContainerBase)
@@ -58,7 +59,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        input_device_index=None, retain_dir=None, retain_audio=None, vad_aggressiveness=3,
+        input_device_index=None, retain_dir=None, retain_audio=None, retain_metadata=None, vad_aggressiveness=3,
         vad_padding_start_ms=150, vad_padding_end_ms=150, vad_complex_padding_end_ms=500,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         alternative_dictation=None, cloud_dictation_lang='en-US',
@@ -69,14 +70,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if not ENGINE_AVAILABLE:
             self._log.error("%s: Failed to import Kaldi engine dependencies. Are they installed?" % self)
             raise EngineError("Failed to import Kaldi engine dependencies.")
+        # Compatible release version specification
+        # https://stackoverflow.com/questions/11887762/how-do-i-compare-version-numbers-in-python/21065570
         with open(os.path.join(os.path.dirname(__file__), 'kag_version.txt')) as file:
-            required_kag_version = file.read().strip()
-        # Compatible release version specification (we could use pkg_resources.require, but is it always installed?)
-        required_kag_version_split = required_kag_version.split('.')
-        kag_version = kaldi_active_grammar.__version__
-        kag_version_split = kag_version.split('.')
-        assert len(required_kag_version_split) == len(kag_version_split) == 3
-        if not ((kag_version_split[:-1] == required_kag_version_split[:-1]) and (kag_version_split[-1] >= required_kag_version_split[-1])):
+            required_kag_version = Version(file.read().strip())
+        kag_version = Version(kaldi_active_grammar.__version__)
+        if not ((kag_version >= required_kag_version) and (kag_version.release[0:2] == required_kag_version.release[0:2])):
             self._log.error("%s: Incompatible kaldi_active_grammar version %s! Expected ~= %s!" % (self, kag_version, required_kag_version))
             self._log.error("See https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
             raise EngineError("Incompatible kaldi_active_grammar version")
@@ -94,13 +93,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             input_device_index = input_device_index,
             retain_dir = retain_dir,
             retain_audio = bool(retain_audio) if retain_audio is not None else bool(retain_dir),
-            vad_aggressiveness = vad_aggressiveness,
-            vad_padding_start_ms = vad_padding_start_ms,
-            vad_padding_end_ms = vad_padding_end_ms,
-            vad_complex_padding_end_ms = vad_complex_padding_end_ms,
-            auto_add_to_user_lexicon = auto_add_to_user_lexicon,
-            lazy_compilation = lazy_compilation,
-            invalidate_cache = invalidate_cache,
+            retain_metadata = bool(retain_metadata) if retain_metadata is not None else bool(retain_dir),
+            vad_aggressiveness = int(vad_aggressiveness),
+            vad_padding_start_ms = int(vad_padding_start_ms),
+            vad_padding_end_ms = int(vad_padding_end_ms),
+            vad_complex_padding_end_ms = int(vad_complex_padding_end_ms),
+            auto_add_to_user_lexicon = bool(auto_add_to_user_lexicon),
+            lazy_compilation = bool(lazy_compilation),
+            invalidate_cache = bool(invalidate_cache),
             alternative_dictation = alternative_dictation,
             cloud_dictation_lang = cloud_dictation_lang,
         )
@@ -147,7 +147,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             complex_end_window_ms=self._options['vad_complex_padding_end_ms'],
             )
         self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0),
-            save_dir=self._options['retain_dir'], save_audio=self._options['retain_audio'])
+            save_dir=self._options['retain_dir'], save_audio=self._options['retain_audio'], save_metadata=self._options['retain_metadata'])
 
         self._any_exclusive_grammars = False
         self._in_phrase = False
@@ -324,8 +324,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                         self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
                         if self._saving_adaptation_state and parsed_output != '':  # Don't save adaptation state for empty recognitions
                             self._decoder.save_adaptation_state()
-                        if self.audio_store and kaldi_rule:
-                            self.audio_store.finalize(parsed_output, kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name, likelihood)
+                        if self.audio_store:
+                            if kaldi_rule and parsed_output != '':  # Don't store audio/metadata for empty recognitions
+                                self.audio_store.finalize(parsed_output,
+                                    kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name,
+                                    likelihood=likelihood, has_dictation=kaldi_rule.has_dictation)
+                            else:
+                                self.audio_store.cancel()
 
                     self._in_phrase = False
                     self._ignore_current_phrase = False

@@ -92,6 +92,7 @@ setup(
       include_package_data=True,
       install_requires=[
                         "setuptools >= 40.0.0",
+                        "packaging >= 19.0",
                         "six",
                         "pyperclip >= 1.7.0",
                         "enum34;python_version<'3.4'",
