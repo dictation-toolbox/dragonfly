@@ -395,8 +395,20 @@ recognition, using the ``retain_dir`` engine parameter.
 
 **Note:** This feature is completely optional and disabled by default!
 
-You can also mark the previous recognition with a single text tag to be
-stored in the metadata. For example, mark it as incorrect with a rule
+The metadata is saved `TSV
+<https://en.wikipedia.org/wiki/Tab-separated_values>` format, with
+fields in the following order:
+
+* ``audio_data``: file name of the audio file for the recognition
+* ``grammar_name``: name of the recognized grammar
+* ``rule_name``: name of the recognized rule
+* ``text``: text of the recognition
+* ``likelihood``: the engine's estimated confidence of the recognition (not very reliable)
+* ``tag``: a single text tag, described below
+* ``has_dictation``: whether the recognition contained (in part) a dictation element
+
+**Tag:** You can mark the previous recognition with a single text tag to
+be stored in the metadata. For example, mark it as incorrect with a rule
 containing::
 
   "action whoops": Function(lambda: engines.get_engine().audio_store[0].set('tag', 'misrecognition'))
