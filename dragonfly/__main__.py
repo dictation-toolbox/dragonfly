@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import re
 import sys
 import time
 
@@ -221,8 +222,10 @@ def _engine_options_string(string):
         msg = "%r is not a valid option string" % string
         raise argparse.ArgumentTypeError(msg)
 
-    # Return any key/value arguments in a tuple.
-    return dict(sub_string.split('=') for sub_string in string.split(','))
+    # Return a dictionary off any key/value arguments separated by commas or
+    # spaces. Filter out empty strings.
+    return dict(sub_string.split('=')
+                for sub_string in re.split('[,\\s]', string) if sub_string)
 
 
 def _valid_directory_path(string):
@@ -252,7 +255,7 @@ def make_arg_parser():
         "-o", "--engine-options", default={}, type=_engine_options_string,
         help="One or more engine options to be passed to *get_engine()*. "
              "Each option should specify a key word argument and value. "
-             "Multiple options should be separated by commas (',')."
+             "Multiple options should be separated by spaces or commas."
     )
     language_argument = _build_argument(
         "--language", default="en",
