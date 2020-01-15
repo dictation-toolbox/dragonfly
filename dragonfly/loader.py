@@ -49,17 +49,18 @@ class CommandModule(object):
         return self._loaded
 
     def load(self):
-        self._log.info("%s: Loading module: '%s'" % (self, self._path))
+        self._log.info("%s: Loading module: '%s'", self, self._path)
 
         # Prepare namespace in which to execute the
         namespace = {"__file__": self._path}
 
         # Attempt to execute the module; handle any exceptions.
         try:
+            # pylint: disable=exec-used
             exec(compile(open(self._path).read(), self._path, 'exec'),
                  namespace)
         except Exception as e:
-            self._log.exception("%s: Error loading module: %s" % (self, e))
+            self._log.exception("%s: Error loading module: %s", self, e)
             self._loaded = False
             return
 
@@ -67,7 +68,7 @@ class CommandModule(object):
         self._namespace = namespace
 
     def unload(self):
-        self._log.info("%s: Unloading module: '%s'" % (self, self._path))
+        self._log.info("%s: Unloading module: '%s'", self, self._path)
 
     def check_freshness(self):
         pass
@@ -115,7 +116,7 @@ class CommandModuleDirectory(object):
         ])
 
     def _get_valid_paths(self):
-        self._log.info("Looking for command modules here: %s" % (self._path,))
+        self._log.info("Looking for command modules here: %s", self._path)
         valid_paths = []
         for filename in os.listdir(self._path):
             path = os.path.abspath(os.path.join(self._path, filename))
@@ -127,5 +128,5 @@ class CommandModuleDirectory(object):
             if path in self._excludes:
                 continue
             valid_paths.append(path)
-        self._log.info("Valid paths: %s" % (", ".join(valid_paths),))
+        self._log.info("Valid paths: %s", ", ".join(valid_paths))
         return valid_paths
