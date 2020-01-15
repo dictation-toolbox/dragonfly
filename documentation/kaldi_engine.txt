@@ -396,7 +396,7 @@ recognition, using the ``retain_dir`` engine parameter.
 **Note:** This feature is completely optional and disabled by default!
 
 The metadata is saved `TSV
-<https://en.wikipedia.org/wiki/Tab-separated_values>` format, with
+<https://en.wikipedia.org/wiki/Tab-separated_values>`__ format, with
 fields in the following order:
 
 * ``audio_data``: file name of the audio file for the recognition
