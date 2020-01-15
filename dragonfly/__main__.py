@@ -184,7 +184,11 @@ def cli_cmd_load_directory(args):
     # or a keyboard interrupt.
     LOG.debug("Recognizing with engine '%s'", args.engine)
     with engine.connection():
-        directory = CommandModuleDirectory(args.module_dir)
+        if args.recursive:
+            LOG.info("Loading command modules in sub-directories as "
+                     "specified (recursive mode).")
+        directory = CommandModuleDirectory(args.module_dir,
+                                           recursive=args.recursive)
         directory.load()
         return_code = 0 if directory.loaded else 1
 
@@ -239,6 +243,9 @@ def _valid_directory_path(string):
 # Main argparse functions.
 
 def make_arg_parser():
+    # pylint: disable=too-many-locals
+    # Suppress warnings about too many local variables in this function.
+
     parser = argparse.ArgumentParser(
         prog="python -m dragonfly",
         description="Command-line interface to the Dragonfly speech "
@@ -335,11 +342,16 @@ def make_arg_parser():
         "module_dir", type=_valid_directory_path,
         help="Directory with command module files."
     )
+    recursive_argument =  _build_argument(
+        "-r", "--recursive", default=False, action="store_true",
+        help="Whether to recursively load command modules in "
+             "sub-directories."
+    )
     _add_arguments(
         parser_load_directory,
-        module_dir_argument, engine_argument, engine_options_argument,
-        language_argument, no_input_argument, no_recobs_messages_argument,
-        log_level_argument, quiet_argument
+        module_dir_argument, recursive_argument, engine_argument,
+        engine_options_argument, language_argument, no_input_argument,
+        no_recobs_messages_argument, log_level_argument, quiet_argument
     )
 
     # Return the argument parser.
