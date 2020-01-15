@@ -81,12 +81,13 @@ class CommandModuleDirectory(object):
 
     _log = logging.getLogger("directory")
 
-    def __init__(self, path, excludes=None):
+    def __init__(self, path, excludes=None, recursive=False):
         if excludes is None:
             excludes = []
 
         self._path = os.path.abspath(path)
         self._excludes = excludes
+        self._recursive = recursive
         self._modules = {}
 
     def load(self):
@@ -101,7 +102,11 @@ class CommandModuleDirectory(object):
         # Add any new modules.
         for path in valid_paths:
             if path not in self._modules:
-                module_ = CommandModule(path)
+                if os.path.isfile(path):
+                    module_ = CommandModule(path)
+                elif os.path.isdir(path):
+                    module_ = CommandModuleDirectory(path, self._excludes,
+                                                     self._recursive)
                 module_.load()
                 self._modules[path] = module_
             else:
@@ -120,13 +125,25 @@ class CommandModuleDirectory(object):
         valid_paths = []
         for filename in os.listdir(self._path):
             path = os.path.abspath(os.path.join(self._path, filename))
-            if not os.path.isfile(path):
-                continue
-            if not (os.path.basename(path).startswith("_") and
-                    os.path.splitext(path)[1] == ".py"):
+            if not (self._recursive or os.path.isfile(path)):
                 continue
             if path in self._excludes:
+                continue
+
+            # Only apply _*.py to files, not directories.
+            is_file = os.path.isfile(path)
+            if is_file and not (os.path.basename(path).startswith("_") and
+                                os.path.splitext(path)[1] == ".py"):
                 continue
             valid_paths.append(path)
         self._log.info("Valid paths: %s", ", ".join(valid_paths))
         return valid_paths
+
+    def unload(self):
+        self._log.info("%s: Unloading directory: '%s'", self, self._path)
+        for path, module_ in tuple(self._modules.items()):
+            del self._modules[path]
+            module_.unload()
+
+    def check_freshness(self):
+        pass
