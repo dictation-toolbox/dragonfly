@@ -186,7 +186,7 @@ def cli_cmd_load_directory(args):
     with engine.connection():
         directory = CommandModuleDirectory(args.module_dir)
         directory.load()
-        return_code = 0 if directory.successfully_loaded else 1
+        return_code = 0 if directory.loaded else 1
 
         # Return early if --no-input was specified.
         if args.no_input:

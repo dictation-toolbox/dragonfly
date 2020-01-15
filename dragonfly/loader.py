@@ -108,7 +108,7 @@ class CommandModuleDirectory(object):
                 module_.check_freshness()
 
     @property
-    def successfully_loaded(self):
+    def loaded(self):
         return not any([
             module_ for module_ in self._modules.values()
             if not module_.loaded
