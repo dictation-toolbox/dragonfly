@@ -245,6 +245,7 @@ def make_arg_parser():
                     "recognition framework"
     )
     subparsers = parser.add_subparsers(dest='command')
+    subparsers.required = True
 
     # Define common arguments.
     cmd_module_files_argument = _build_argument(
