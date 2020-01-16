@@ -11,9 +11,11 @@ Command-line Interface (CLI)
 
 Usage Examples
 ----------------------------------------------------------------------------
-Below are some examples using the *test* sub-command. All of them should
-work in Bash.
+Below are some examples using each of the available sub-commands. All
+examples should work in Bash. Most should work in Windows PowerShell.
 
+:code:`test` examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. code:: shell
 
    # Load a command module and mimic two commands separately.
@@ -30,3 +32,62 @@ work in Bash.
    # Test loading two modules with the sphinx engine and exit without
    # checking input.
    python -m dragonfly test -e sphinx --no-input module1.py module2.py
+
+   # Load a command module with the text engine's language set to German.
+   python -m dragonfly test --language de module.py
+
+   # Use the --delay command to test context-dependent commands.
+   echo "save file" | python -m dragonfly test --delay 1 _notepad_example.py
+
+
+:code:`load` examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code:: shell
+
+   # Load command modules and recognize speech in a loop using the default
+   # engine.
+   python -m dragonfly load _*.py
+
+   # Load command modules and exit afterwards.
+   python -m dragonfly load --no-input _*.py
+
+   # Load command modules and disable recognition state messages such as
+   # "Speech start detected".
+   python -m dragonfly load --no-recobs-messages _*.py
+
+   # Load one command module with the Sphinx engine.
+   python -m dragonfly load --engine sphinx sphinx_commands.py
+
+   # Initialize the Kaldi engine backend with custom arguments, then load
+   # command modules and recognize speech.
+   python -m dragonfly load _*.py --engine kaldi --engine-options " \
+       model_dir=kaldi_model_zamia \
+       vad_padding_end_ms=300"
+
+
+:code:`load-directory` examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code:: shell
+
+   # Load command modules in the "command-modules" directory and recognize
+   # speech in a loop using the default engine.
+   python -m dragonfly load-directory command-modules
+
+   # Load command modules in the "command-modules" directory and any sub-
+   # directories, then recognize speech in a loop using the default engine.
+   python -m dragonfly load-directory -r command-modules
+   python -m dragonfly load-directory --recursive command-modules
+
+   # Load command modules in the "command-modules" directory and recognize
+   # speech without printing recognition state messages.
+   python -m dragonfly load-directory --no-recobs-messages command-modules
+
+   # Load command modules in the "wsr-modules" directory and recognize
+   # speech using the WSR/SAPI5 in-process engine backend.
+   python -m dragonfly load-directory -e sapi5inproc wsr-modules
+
+   # Initialize the Kaldi engine backend with some custom arguments, then
+   # load command modules in the current directory and recognize speech.
+   python -m dragonfly load-directory . --engine kaldi --engine-options " \
+       model_dir=kaldi_model_zamia \
+       vad_padding_end_ms=300"
