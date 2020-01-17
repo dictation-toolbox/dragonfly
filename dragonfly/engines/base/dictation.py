@@ -221,8 +221,9 @@ class DictationContainerBase(object):
     def __getitem__(self, key):
         return self.__str__()[key]
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.__str__())
+    __nonzero__ = __bool__  # PY2 compatibility
 
     def __len__(self):
         return len(self.__str__())
