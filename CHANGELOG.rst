@@ -11,6 +11,38 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add optional recursive mode to CommandModuleDirectory class.
+* Add new load and load-directory CLI commands as alternatives to module
+  loader scripts.
+* Add Window.set_focus() method for focusing windows without raising them
+  (only supported on X11).
+* Add 'focus_only' argument to BringApp and FocusWindow actions to support
+  focusing windows without raising them (only supported on X11).
+
+Changed
+~~~~~~~
+* Add missing CommandModule properties and methods to CommandModuleDirectory
+  class.
+* Change Kaldi retain support to allow retaining only specifically chosen
+  recognitions (thanks `@daanzu`_).
+* Change setup.py test command to support running the test suites with
+  different pytest options (thanks `@daanzu`_).
+
+Fixed
+~~~~~
+* Fix Kaldi version number checking (thanks `@daanzu`_).
+* Fix Python 2/3 bool incompatibility with dictation containers
+  (thanks `@daanzu`_).
+* Fix bug with CommandModuleDirectory 'excludes' constructor parameter.
+* Fix bug with the command-line interface where the 'command' argument
+  wasn't required.
+
+
 0.20.0_ - 2020-01-03
 --------------------
 
