@@ -469,7 +469,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             raise EngineError("Invalid _compiler.parsing_framework")
 
         words = tuple(words)
-        self._recognition_observer_manager.notify_recognition(words)
         grammar_wrapper = self._get_grammar_wrapper(kaldi_rule.parent_grammar)
         with debug_timer(self._log.debug, "dragonfly parse time"):
             grammar_wrapper.recognition_callback(words, kaldi_rule.parent_rule, words_are_dictation)
@@ -510,9 +509,11 @@ class GrammarWrapper(object):
             state.initialize_decoding()
             for result in rule.decode(state):
                 if state.finished():
+                    self.engine._recognition_observer_manager.notify_recognition(words)
                     root = state.build_parse_tree()
                     with debug_timer(self.engine._log.debug, "rule execution time"):
                         rule.process_recognition(root)
+                    self.engine._recognition_observer_manager.notify_post_recognition(words, rule)
                     return
 
         except Exception as e:

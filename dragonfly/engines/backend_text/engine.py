@@ -313,6 +313,11 @@ class GrammarWrapper(object):
                     except Exception as e:
                         self._log.exception("Failed to process rule "
                                             "'%s': %s" % (r.name, e))
+
+                    self._observer_manager.notify_post_recognition(
+                        tuple([word for word, _ in words]),
+                        r
+                    )
                     return True
 
         self._log.debug("Grammar %s: failed to decode recognition %r."

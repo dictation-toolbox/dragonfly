@@ -766,6 +766,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                     "keyphrase '%s': %s" % (speech, e)
                 )
 
+        self._recognition_observer_manager.notify_post_recognition(words, None)
+
         return result
 
     @classmethod
@@ -1184,6 +1186,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         words = tuple(keyphrase.strip().split())
         if words and notify:
             self._recognition_observer_manager.notify_recognition(words)
+            self._recognition_observer_manager.notify_post_recognition(words, None)
 
         # Restore the callbacks to normal
         def hypothesis(hyp):

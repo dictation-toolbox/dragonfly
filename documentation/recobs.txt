@@ -12,6 +12,11 @@ recognition state events:
    processing (i.e. ``Rule.process_recognition()``).
  * ``on_failure()`` -- called when speech failed to decode to a grammar rule
    or to dictation.
+ * ``on_end()`` -- called when speech ends, either with a successful
+   recognition or in failure.
+ * ``on_post_recognition()`` -- called *after* all rule processing has
+   completed after a successful recognition.
+    called when speech successfully decoded to a
 
 .. automodule:: dragonfly.grammar.recobs
    :members:

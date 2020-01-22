@@ -86,6 +86,7 @@ class RecObsManagerBase(object):
                 self._log.exception("Exception during on_recognition()"
                                     " method of recognition observer %s: %s"
                                     % (observer, e))
+        self.notify_end()
 
     def notify_failure(self):
         for observer in self._observers:
@@ -94,6 +95,27 @@ class RecObsManagerBase(object):
                     observer.on_failure()
             except Exception as e:
                 self._log.exception("Exception during on_failure()"
+                                    " method of recognition observer %s: %s"
+                                    % (observer, e))
+        self.notify_end()
+
+    def notify_end(self):
+        for observer in self._observers:
+            try:
+                if hasattr(observer, "on_end"):
+                    observer.on_end()
+            except Exception as e:
+                self._log.exception("Exception during on_end()"
+                                    " method of recognition observer %s: %s"
+                                    % (observer, e))
+
+    def notify_post_recognition(self, words, rule):
+        for observer in self._observers:
+            try:
+                if hasattr(observer, "on_post_recognition"):
+                    observer.on_post_recognition(words, rule)
+            except Exception as e:
+                self._log.exception("Exception during on_post_recognition()"
                                     " method of recognition observer %s: %s"
                                     % (observer, e))
 

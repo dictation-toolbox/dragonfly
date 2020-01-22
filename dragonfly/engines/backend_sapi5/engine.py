@@ -613,6 +613,7 @@ class GrammarWrapper(object):
                         self.recobs_manager.notify_recognition(words)
                         root = s.build_parse_tree()
                         r.process_recognition(root)
+                        self.recobs_manager.notify_post_recognition(words, r)
                         return
 
         except Exception as e:

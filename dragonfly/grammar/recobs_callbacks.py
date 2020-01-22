@@ -68,6 +68,16 @@ class CallbackRecognitionObserver(RecognitionObserver):
         if self._event == "on_failure" and callable(self._function):
             self._function()
 
+    def on_end(self):
+        """"""
+        if self._event == "on_end" and callable(self._function):
+            self._function()
+
+    def on_post_recognition(self, words, rule):
+        """"""
+        if self._event == "on_post_recognition" and callable(self._function):
+            self._function(words, rule)
+
 
 def register_beginning_callback(function):
     """
@@ -112,3 +122,36 @@ def register_failure_callback(function):
     :rtype: CallbackRecognitionObserver
     """
     return CallbackRecognitionObserver("on_failure", function)
+
+
+def register_ending_callback(function):
+    """
+    Register a callback function to be called when speech ends, either
+    successfully (after calling the recognition callback) or in failure
+    (after calling the failure callback).
+
+    The :class:`CallbackRecognitionObserver` object returned from this
+    function can be used to unregister the callback function.
+
+    :param function: callback function
+    :type function: callable
+    :returns: recognition observer
+    :rtype: CallbackRecognitionObserver
+    """
+    return CallbackRecognitionObserver("on_end", function)
+
+
+def register_post_recognition_callback(function):
+    """
+    Register a callback function to be called after all rule processing
+    has completed after recognition success.
+
+    The :class:`CallbackRecognitionObserver` object returned from this
+    function can be used to unregister the callback function.
+
+    :param function: callback function
+    :type function: callable
+    :returns: recognition observer
+    :rtype: CallbackRecognitionObserver
+    """
+    return CallbackRecognitionObserver("on_post_recognition", function)
