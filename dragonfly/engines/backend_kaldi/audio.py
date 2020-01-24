@@ -23,7 +23,7 @@ Audio input/output classes for Kaldi backend
 """
 
 from __future__ import division, print_function
-import collections, contextlib, datetime, itertools, logging, os, time, wave
+import collections, contextlib, datetime, itertools, logging, os, time, threading, wave
 from io import open
 
 from six import PY2, binary_type, text_type, print_
@@ -54,6 +54,7 @@ class MicAudio(object):
 
         self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.BLOCK_DURATION_MS))
         self.stream = None
+        self.thread = None
         self._connect(start=start)
 
     def _connect(self, start=None):
@@ -67,14 +68,30 @@ class MicAudio(object):
             blocksize=self.BLOCK_SIZE_SAMPLES,
             # latency=80,
             device=self.input_device_index,
-            callback=proxy_callback,
+            # callback=proxy_callback,
         )
+        self.thread = threading.Thread(target=self._reader_thread, args=(callback,))
+        self.thread.daemon = True
+        self.thread.start()
         if start:
             self.start()
         device_info = sounddevice.query_devices(self.stream.device)
         hostapi_info = sounddevice.query_hostapis(device_info['hostapi'])
         _log.info("streaming audio from '%s' using %s: %i sample_rate, %i block_duration_ms, %i latency_ms",
             device_info['name'], hostapi_info['name'], self.stream.samplerate, self.BLOCK_DURATION_MS, int(self.stream.latency*1000))
+
+    def _reader_thread(self, callback):
+        # while self.stream and self.stream.active and not self.stream.closed:
+        while self.stream and not self.stream.closed:
+            read_available = self.stream.read_available
+            if read_available >= self.stream.blocksize:
+                in_data, overflowed = self.stream.read(self.stream.blocksize)
+                # print('_reader_thread', read_available, len(in_data), overflowed, self.stream.blocksize)
+                if overflowed:
+                    _log.warning("audio stream overflow")
+                callback(in_data)
+            else:
+                time.sleep(0.001)
 
     def destroy(self):
         self.stream.close()
@@ -212,7 +229,7 @@ class VADAudio(MicAudio):
                 # Bad/empty block
                 num_empty_blocks += 1
                 if (num_empty_blocks >= audio_reconnect_threshold_blocks) and (time.time() - last_good_block_time >= audio_reconnect_threshold_time):
-                    _log.warning("%s: no good block received recently, so reconnecting audio")
+                    _log.warning("%s: no good block received recently, so reconnecting audio", self)
                     self.reconnect()
                     num_empty_blocks = 0
                     last_good_block_time = time.time()
