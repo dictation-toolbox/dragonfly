@@ -750,8 +750,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Notify observers if a keyphrase was matched.
         result = speech if speech in self._keyphrase_functions else ""
-        if result:
-            words = tuple(result.split())
+        words = tuple(result.split())
+        if words:
             self._recognition_observer_manager.notify_recognition(words)
 
         # Call the registered function if there was a match and the function
@@ -766,7 +766,11 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                     "keyphrase '%s': %s" % (speech, e)
                 )
 
-        self._recognition_observer_manager.notify_post_recognition(words, None)
+        # Notify observers after calling the keyphrase function.
+        if words:
+            self._recognition_observer_manager.notify_post_recognition(
+                words, None
+            )
 
         return result
 
