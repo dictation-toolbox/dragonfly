@@ -16,7 +16,6 @@ recognition state events:
    recognition or in failure.
  * ``on_post_recognition()`` -- called *after* all rule processing has
    completed after a successful recognition.
-    called when speech successfully decoded to a
 
 .. automodule:: dragonfly.grammar.recobs
    :members:
