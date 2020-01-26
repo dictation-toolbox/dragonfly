@@ -54,6 +54,14 @@ class NatlinkRecObsManager(RecObsManagerBase):
             return
 
         super(NatlinkRecObsManager, self).notify_recognition(words)
+
+    def notify_post_recognition(self, words, rule):
+        if self._complete_flag:
+            return
+
+        super(NatlinkRecObsManager, self).notify_post_recognition(
+            words, rule
+        )
         self._complete_flag = True
 
     def _activate(self):
@@ -91,6 +99,7 @@ class NatlinkRecObsGrammar(Grammar):
 
     def process_recognition_other(self, words):
         self._manager.notify_recognition(words)
+        self._manager.notify_post_recognition(words, None)
 
     def process_recognition_failure(self):
         self._manager.notify_failure()

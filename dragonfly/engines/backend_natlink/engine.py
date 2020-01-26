@@ -407,6 +407,10 @@ class GrammarWrapper(object):
                     self._retain_audio(words, results, r.name)
                     root = s.build_parse_tree()
                     r.process_recognition(root)
+
+                    # Notify observers using the manager *after*
+                    # processing.
+                    self.observer_manager.notify_post_recognition(words, r)
                     return
 
         NatlinkEngine._log.warning("Grammar %s: failed to decode"
