@@ -26,8 +26,9 @@ Nonexistent words can be parsed, but don't have any formatting info::
 This helper function allows for a compact notation of input string tests::
 
     >>> from dragonfly.engines.backend_natlink.dictation_format import WordFormatter
+    >>> from six import string_types
     >>> def format_dictation_dns11(input):
-    ...     if isinstance(input, basestring):
+    ...     if isinstance(input, string_types):
     ...         input = input.split()
     ...     return WordFormatter(parser=WordParserDns11()).format_dictation(input)
     >>> format_dictation_dns11("hello world")
