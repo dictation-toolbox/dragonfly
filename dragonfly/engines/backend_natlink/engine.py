@@ -31,6 +31,8 @@ Detecting sleep mode
 
 import os.path
 import sys
+import platform
+import struct
 import pywintypes
 from datetime import datetime
 from locale import getpreferredencoding
@@ -72,13 +74,20 @@ class NatlinkEngine(EngineBase):
     def __init__(self, retain_dir=None):
         EngineBase.__init__(self)
 
+        self.platform = platform.system()
+        if self.platform != 'Windows':
+            raise EngineError("'{}' is not currently supported by Natlink.".format(self.platform))
+
         self.natlink = None
         try:
             import natlink
         except ImportError:
             self._log.error("%s: failed to import natlink module." % self)
-            raise EngineError("Failed to import the Natlink module.")
+            raise EngineError("Requested engine 'natlink' is not available: Natlink is not installed.")
         self.natlink = natlink
+
+        if struct.calcsize("P") == 8:  # 64-bit
+            raise EngineError("The python environment is 64-bit. Natlink requires a 32-bit python environment")
 
         self._grammar_count = 0
         self._recognition_observer_manager = NatlinkRecObsManager(self)
