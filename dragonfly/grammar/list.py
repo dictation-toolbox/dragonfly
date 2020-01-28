@@ -57,6 +57,8 @@ class ListBase(object):
     def __init__(self, name):
         self._name = name
         self._grammar = None
+        self._batch_mode = False
+        self._batch_updates = False
 
     #-----------------------------------------------------------------------
     # Protected attribute access.
@@ -83,9 +85,27 @@ class ListBase(object):
                        doc="Set-once access to a list's grammar object.")
 
     #-----------------------------------------------------------------------
+    # Context manager methods for optimizing update_list() calls.
+
+    def __enter__(self):
+        self._batch_mode = True
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self._batch_mode = False
+        if self._batch_updates:
+            self._update()
+            self._batch_updates = False
+
+    #-----------------------------------------------------------------------
     # Notify the grammar of a list modification.
 
     def _update(self):
+        # Return early for batch mode. A single update_list() call will
+        # occur in __exit__(), after a 'with' block.
+        if self._batch_mode:
+            self._batch_updates = True
+            return
+
         invalid = [i for i in self if not isinstance(i, string_types)]
         if invalid:
             raise TypeError("Dragonfly lists can only contain"
