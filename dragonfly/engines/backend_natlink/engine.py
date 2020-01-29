@@ -78,6 +78,9 @@ class NatlinkEngine(EngineBase):
         if self.platform != 'Windows':
             raise EngineError("'{}' is not currently supported by Natlink.".format(self.platform))
 
+        if struct.calcsize("P") == 8:  # 64-bit
+            raise EngineError("The python environment is 64-bit. Natlink requires a 32-bit python environment")
+        
         self.natlink = None
         try:
             import natlink
@@ -85,9 +88,6 @@ class NatlinkEngine(EngineBase):
             self._log.error("%s: failed to import natlink module." % self)
             raise EngineError("Requested engine 'natlink' is not available: Natlink is not installed.")
         self.natlink = natlink
-
-        if struct.calcsize("P") == 8:  # 64-bit
-            raise EngineError("The python environment is 64-bit. Natlink requires a 32-bit python environment")
 
         self._grammar_count = 0
         self._recognition_observer_manager = NatlinkRecObsManager(self)
