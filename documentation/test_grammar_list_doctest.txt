@@ -179,3 +179,29 @@ object::
     TypeError: List argument to ListRef constructor must be a Dragonfly list.
     >>> print(ListRef("list_fruit_ref", List("list_fruit")))  # Succeeds.
     ListRef('list_fruit')
+
+
+List context manager
+----------------------------------------------------------------------------
+
+List operations can be performed optimally via Python's ``with`` statement::
+
+    >>> list_fruit = List("list_fruit")
+    >>> element = Sequence([Literal("item"), ListRef("list_fruit_ref", list_fruit)])
+    >>> tester_fruit = ElementTester(element)
+    >>> tester_fruit.load()
+    >>> with list_fruit:
+    ...     list_fruit.append("apple")
+    ...     list_fruit.append("banana")
+    ...
+    >>> list_fruit
+    ['apple', 'banana']
+    >>> tester_fruit.recognize("item apple")
+    [u'item', u'apple']
+    >>> tester_fruit.recognize("item banana")
+    [u'item', u'banana']
+
+Tear down test tooling::
+
+    >>> # Explicitly unload tester grammar.
+    >>> tester_fruit.unload()
