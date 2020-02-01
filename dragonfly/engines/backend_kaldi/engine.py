@@ -509,11 +509,11 @@ class GrammarWrapper(object):
             state.initialize_decoding()
             for result in rule.decode(state):
                 if state.finished():
-                    self.engine._recognition_observer_manager.notify_recognition(words)
                     root = state.build_parse_tree()
+                    self.engine._recognition_observer_manager.notify_recognition(words, rule, root)
                     with debug_timer(self.engine._log.debug, "rule execution time"):
                         rule.process_recognition(root)
-                    self.engine._recognition_observer_manager.notify_post_recognition(words, rule)
+                    self.engine._recognition_observer_manager.notify_post_recognition(words, rule, root)
                     return
 
         except Exception as e:

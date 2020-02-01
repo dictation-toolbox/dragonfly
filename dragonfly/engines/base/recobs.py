@@ -24,6 +24,7 @@ Recognition observer base class
 
 """
 
+import inspect
 import logging
 
 
@@ -77,11 +78,15 @@ class RecObsManagerBase(object):
                                     " method of recognition observer %s: %s"
                                     % (observer, e))
 
-    def notify_recognition(self, words):
+    def notify_recognition(self, words, rule, node):
         for observer in self._observers:
             try:
                 if hasattr(observer, "on_recognition"):
-                    observer.on_recognition(words)
+                    (arg_names, _, kwargs_name, _) = inspect.getargspec(observer.on_recognition)
+                    kwargs = dict(rule=rule, node=node)
+                    if not kwargs_name:
+                        kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
+                    observer.on_recognition(words, **kwargs)
             except Exception as e:
                 self._log.exception("Exception during on_recognition()"
                                     " method of recognition observer %s: %s"
@@ -109,11 +114,15 @@ class RecObsManagerBase(object):
                                     " method of recognition observer %s: %s"
                                     % (observer, e))
 
-    def notify_post_recognition(self, words, rule):
+    def notify_post_recognition(self, words, rule, node):
         for observer in self._observers:
             try:
                 if hasattr(observer, "on_post_recognition"):
-                    observer.on_post_recognition(words, rule)
+                    (arg_names, _, kwargs_name, _) = inspect.getargspec(observer.on_post_recognition)
+                    kwargs = dict(rule=rule, node=node)
+                    if not kwargs_name:
+                        kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
+                    observer.on_post_recognition(words, **kwargs)
             except Exception as e:
                 self._log.exception("Exception during on_post_recognition()"
                                     " method of recognition observer %s: %s"

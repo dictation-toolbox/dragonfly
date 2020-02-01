@@ -24,6 +24,8 @@ Recognition state change callbacks
 
 """
 
+import inspect
+
 from .recobs import RecognitionObserver
 
 
@@ -58,10 +60,14 @@ class CallbackRecognitionObserver(RecognitionObserver):
         if self._event == "on_begin" and callable(self._function):
             self._function()
 
-    def on_recognition(self, words):
+    def on_recognition(self, words, rule, node):
         """"""
         if self._event == "on_recognition" and callable(self._function):
-            self._function(words)
+            (arg_names, _, kwargs_name, _) = inspect.getargspec(self._function)
+            kwargs = dict(rule=rule, node=node)
+            if not kwargs_name:
+                kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
+            self._function(words, **kwargs)
 
     def on_failure(self):
         """"""
@@ -73,10 +79,14 @@ class CallbackRecognitionObserver(RecognitionObserver):
         if self._event == "on_end" and callable(self._function):
             self._function()
 
-    def on_post_recognition(self, words, rule):
+    def on_post_recognition(self, words, rule, node):
         """"""
         if self._event == "on_post_recognition" and callable(self._function):
-            self._function(words, rule)
+            (arg_names, _, kwargs_name, _) = inspect.getargspec(self._function)
+            kwargs = dict(rule=rule, node=node)
+            if not kwargs_name:
+                kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
+            self._function(words, **kwargs)
 
 
 def register_beginning_callback(function):

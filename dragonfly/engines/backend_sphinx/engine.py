@@ -752,7 +752,9 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         result = speech if speech in self._keyphrase_functions else ""
         words = tuple(result.split())
         if words:
-            self._recognition_observer_manager.notify_recognition(words)
+            self._recognition_observer_manager.notify_recognition(
+                words, None, None
+            )
 
         # Call the registered function if there was a match and the function
         # is callable.
@@ -769,7 +771,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Notify observers after calling the keyphrase function.
         if words:
             self._recognition_observer_manager.notify_post_recognition(
-                words, None
+                words, None, None
             )
 
         return result
@@ -1189,8 +1191,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         keyphrase = self.config.WAKE_PHRASE
         words = tuple(keyphrase.strip().split())
         if words and notify:
-            self._recognition_observer_manager.notify_recognition(words)
-            self._recognition_observer_manager.notify_post_recognition(words, None)
+            self._recognition_observer_manager.notify_recognition(words, None, None)
+            self._recognition_observer_manager.notify_post_recognition(words, None, None)
 
         # Restore the callbacks to normal
         def hypothesis(hyp):
