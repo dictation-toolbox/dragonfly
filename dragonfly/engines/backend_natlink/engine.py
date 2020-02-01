@@ -75,8 +75,6 @@ class NatlinkEngine(EngineBase):
         EngineBase.__init__(self)
 
         self.platform = platform.system()
-        if self.platform != 'Windows':
-            raise EngineError("'{}' is not currently supported by Natlink.".format(self.platform))
 
         if struct.calcsize("P") == 8:  # 64-bit
             raise EngineError("The python environment is 64-bit. Natlink requires a 32-bit python environment")
