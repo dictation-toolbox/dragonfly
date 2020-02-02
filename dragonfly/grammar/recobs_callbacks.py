@@ -26,6 +26,8 @@ Recognition state change callbacks
 
 import inspect
 
+import six
+
 from .recobs import RecognitionObserver
 
 
@@ -60,10 +62,19 @@ class CallbackRecognitionObserver(RecognitionObserver):
         if self._event == "on_begin" and callable(self._function):
             self._function()
 
+    def _get_function_parameter_names(self):
+        # Py2/3 compatible method for getting the 'args' and 'varkw' values
+        # for a function object (avoids deprecation warnings in Py3).
+        if six.PY2:
+            argspec = inspect.getargspec(self._function)
+        else:
+            argspec = inspect.getfullargspec(self._function)
+        return argspec[0], argspec[2]
+
     def on_recognition(self, words, rule, node):
         """"""
         if self._event == "on_recognition" and callable(self._function):
-            (arg_names, _, kwargs_name, _) = inspect.getargspec(self._function)
+            arg_names, kwargs_name = self._get_function_parameter_names()
             kwargs = dict(rule=rule, node=node)
             if not kwargs_name:
                 kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
@@ -82,7 +93,7 @@ class CallbackRecognitionObserver(RecognitionObserver):
     def on_post_recognition(self, words, rule, node):
         """"""
         if self._event == "on_post_recognition" and callable(self._function):
-            (arg_names, _, kwargs_name, _) = inspect.getargspec(self._function)
+            arg_names, kwargs_name = self._get_function_parameter_names()
             kwargs = dict(rule=rule, node=node)
             if not kwargs_name:
                 kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }

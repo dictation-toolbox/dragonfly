@@ -27,8 +27,20 @@ Recognition observer base class
 import inspect
 import logging
 
+import six
 
 #---------------------------------------------------------------------------
+
+
+def _get_function_parameters(function):
+    # Py2/3 compatible function for getting the 'args' and 'varkw' values
+    # for a function object (avoids deprecation warnings in Py3).
+    if six.PY2:
+        argspec = inspect.getargspec(function)
+    else:
+        argspec = inspect.getfullargspec(function)
+    return argspec[0], argspec[2]
+
 
 class RecObsManagerBase(object):
 
@@ -82,7 +94,9 @@ class RecObsManagerBase(object):
         for observer in self._observers:
             try:
                 if hasattr(observer, "on_recognition"):
-                    (arg_names, _, kwargs_name, _) = inspect.getargspec(observer.on_recognition)
+                    arg_names, kwargs_name = _get_function_parameters(
+                        observer.on_recognition
+                    )
                     kwargs = dict(rule=rule, node=node)
                     if not kwargs_name:
                         kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
@@ -118,7 +132,9 @@ class RecObsManagerBase(object):
         for observer in self._observers:
             try:
                 if hasattr(observer, "on_post_recognition"):
-                    (arg_names, _, kwargs_name, _) = inspect.getargspec(observer.on_post_recognition)
+                    arg_names, kwargs_name = _get_function_parameters(
+                        observer.on_post_recognition
+                    )
                     kwargs = dict(rule=rule, node=node)
                     if not kwargs_name:
                         kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
