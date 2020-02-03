@@ -205,7 +205,8 @@ class EngineBase(object):
     #  Miscellaneous methods.
 
     def do_recognition(self, begin_callback=None, recognition_callback=None,
-                       failure_callback=None, *args, **kwargs):
+                       failure_callback=None, end_callback=None,
+                       post_recognition_callback=None, *args, **kwargs):
         """
         Recognize speech in a loop until interrupted or :meth:`disconnect`
         is called.
@@ -224,11 +225,19 @@ class EngineBase(object):
         :param failure_callback: optional function to be called on
             recognition failure.
         :type failure_callback: callable | None
+        :param end_callback: optional function to be called when speech
+            ends, either successfully (after calling the recognition
+            callback) or in failure (after calling the failure callback).
+        :type end_callback: callable | None
+        :param post_recognition_callback: optional function to be called
+            after all rule processing has completed.
+        :type post_recognition_callback: callable | None
         """
         # Import locally to avoid cycles.
         from dragonfly.grammar.recobs_callbacks import (
             register_beginning_callback, register_recognition_callback,
-            register_failure_callback
+            register_failure_callback, register_ending_callback,
+            register_post_recognition_callback
         )
 
         if begin_callback:
@@ -237,6 +246,10 @@ class EngineBase(object):
             register_recognition_callback(recognition_callback)
         if failure_callback:
             register_failure_callback(failure_callback)
+        if end_callback:
+            register_ending_callback(end_callback)
+        if post_recognition_callback:
+            register_post_recognition_callback(post_recognition_callback)
 
         # Call _do_recognition() to start recognizing.
         self._do_recognition(*args, **kwargs)

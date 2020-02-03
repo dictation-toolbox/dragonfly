@@ -45,7 +45,9 @@ from .grammar.recobs    import (RecognitionObserver, RecognitionHistory,
 from .grammar.recobs_callbacks   import (CallbackRecognitionObserver,
                                          register_beginning_callback,
                                          register_recognition_callback,
-                                         register_failure_callback)
+                                         register_failure_callback,
+                                         register_ending_callback,
+                                         register_post_recognition_callback)
 
 # --------------------------------------------------------------------------
 

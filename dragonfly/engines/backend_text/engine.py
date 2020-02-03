@@ -302,14 +302,23 @@ class GrammarWrapper(object):
             s.initialize_decoding()
             for _ in r.decode(s):
                 if s.finished():
-                    # Notify observers using the manager *before* processing.
-                    self._observer_manager.notify_recognition(
-                        tuple([word for word, _ in words])
-                    )
-
                     try:
                         root = s.build_parse_tree()
+
+                        # Notify observers using the manager *before* processing.
+                        self._observer_manager.notify_recognition(
+                            tuple([word for word, _ in words]),
+                            r,
+                            root
+                        )
+
                         r.process_recognition(root)
+
+                        self._observer_manager.notify_post_recognition(
+                            tuple([word for word, _ in words]),
+                            r,
+                            root
+                        )
                     except Exception as e:
                         self._log.exception("Failed to process rule "
                                             "'%s': %s" % (r.name, e))

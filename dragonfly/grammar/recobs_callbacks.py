@@ -24,6 +24,10 @@ Recognition state change callbacks
 
 """
 
+import inspect
+
+import six
+
 from .recobs import RecognitionObserver
 
 
@@ -58,15 +62,42 @@ class CallbackRecognitionObserver(RecognitionObserver):
         if self._event == "on_begin" and callable(self._function):
             self._function()
 
-    def on_recognition(self, words):
+    def _get_function_parameter_names(self):
+        # Py2/3 compatible method for getting the 'args' and 'varkw' values
+        # for a function object (avoids deprecation warnings in Py3).
+        if six.PY2:
+            argspec = inspect.getargspec(self._function)
+        else:
+            argspec = inspect.getfullargspec(self._function)
+        return argspec[0], argspec[2]
+
+    def on_recognition(self, words, rule, node):
         """"""
         if self._event == "on_recognition" and callable(self._function):
-            self._function(words)
+            arg_names, kwargs_name = self._get_function_parameter_names()
+            kwargs = dict(rule=rule, node=node)
+            if not kwargs_name:
+                kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
+            self._function(words, **kwargs)
 
     def on_failure(self):
         """"""
         if self._event == "on_failure" and callable(self._function):
             self._function()
+
+    def on_end(self):
+        """"""
+        if self._event == "on_end" and callable(self._function):
+            self._function()
+
+    def on_post_recognition(self, words, rule, node):
+        """"""
+        if self._event == "on_post_recognition" and callable(self._function):
+            arg_names, kwargs_name = self._get_function_parameter_names()
+            kwargs = dict(rule=rule, node=node)
+            if not kwargs_name:
+                kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
+            self._function(words, **kwargs)
 
 
 def register_beginning_callback(function):
@@ -112,3 +143,36 @@ def register_failure_callback(function):
     :rtype: CallbackRecognitionObserver
     """
     return CallbackRecognitionObserver("on_failure", function)
+
+
+def register_ending_callback(function):
+    """
+    Register a callback function to be called when speech ends, either
+    successfully (after calling the recognition callback) or in failure
+    (after calling the failure callback).
+
+    The :class:`CallbackRecognitionObserver` object returned from this
+    function can be used to unregister the callback function.
+
+    :param function: callback function
+    :type function: callable
+    :returns: recognition observer
+    :rtype: CallbackRecognitionObserver
+    """
+    return CallbackRecognitionObserver("on_end", function)
+
+
+def register_post_recognition_callback(function):
+    """
+    Register a callback function to be called after all rule processing
+    has completed after recognition success.
+
+    The :class:`CallbackRecognitionObserver` object returned from this
+    function can be used to unregister the callback function.
+
+    :param function: callback function
+    :type function: callable
+    :returns: recognition observer
+    :rtype: CallbackRecognitionObserver
+    """
+    return CallbackRecognitionObserver("on_post_recognition", function)

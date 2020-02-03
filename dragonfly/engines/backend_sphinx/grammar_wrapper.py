@@ -154,16 +154,25 @@ class GrammarWrapper(object):
             s.initialize_decoding()
             for _ in r.decode(s):
                 if s.finished():
+                    # Build the parse tree used to process this rule.
+                    root = s.build_parse_tree()
+
                     # Notify observers using the manager *before* processing.
                     self._observer_manager.notify_recognition(
-                        tuple([word for word, _ in words])
+                        tuple([word for word, _ in words]),
+                        r,
+                        root
                     )
 
                     # Process the rule if not in training mode.
                     if not self.engine.training_session_active:
                         try:
-                            root = s.build_parse_tree()
                             r.process_recognition(root)
+                            self._observer_manager.notify_post_recognition(
+                                tuple([word for word, _ in words]),
+                                r,
+                                root
+                            )
                         except Exception as e:
                             self._log.exception("Failed to process rule "
                                                 "'%s': %s" % (r.name, e))

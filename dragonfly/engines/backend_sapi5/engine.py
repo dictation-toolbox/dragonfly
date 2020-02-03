@@ -610,9 +610,10 @@ class GrammarWrapper(object):
                     if s.finished():
                         # Notify recognition observers, then process the
                         # rule.
-                        self.recobs_manager.notify_recognition(words)
                         root = s.build_parse_tree()
+                        self.recobs_manager.notify_recognition(words, r, root)
                         r.process_recognition(root)
+                        self.recobs_manager.notify_post_recognition(words, r, root)
                         return
 
         except Exception as e:
