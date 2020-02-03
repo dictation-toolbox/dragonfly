@@ -143,8 +143,8 @@ class List(ListBase, list):
 
     def set(self, other):
         """Set the contents of this list to the contents of another."""
-        self[:] = other
-        self._update()
+        with self:
+            self[:] = other
 
     #-----------------------------------------------------------------------
     # Overridden list methods.
@@ -232,9 +232,9 @@ class DictList(ListBase, dict):
 
     def set(self, other):
         """Set the contents of this dict to the contents of another."""
-        self.clear()
-        self.update(other)
-        self._update()
+        with self:
+            self.clear()
+            self.update(other)
 
     #-----------------------------------------------------------------------
     # Overridden dict methods.
