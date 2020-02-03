@@ -79,8 +79,6 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing natlink engine:"
                        " %s" % (e,))
-            log.exception(message)
-            traceback.print_exc()
             print(message)
             if name:
                 raise EngineError(message)
@@ -98,8 +96,6 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing sapi5 engine:"
                        " %s" % (e,))
-            log.exception(message)
-            traceback.print_exc()
             print(message)
             if name:
                 raise EngineError(message)
@@ -117,8 +113,6 @@ def get_engine(name=None, **kwargs):
             message = ("Exception while initializing sphinx engine:"
                        " %s" % (e,))
             log.exception(message)
-            traceback.print_exc()
-            print(message)
             if name:
                 raise EngineError(message)
 
@@ -134,8 +128,6 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing kaldi engine:"
                        " %s" % (e,))
-            log.exception(message)
-            traceback.print_exc()
             print(message)
             if name:
                 raise EngineError(message)
@@ -155,8 +147,6 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing text-input engine:"
                        " %s" % (e,))
-            log.exception(message)
-            traceback.print_exc()
             print(message)
             if name:
                 raise EngineError(message)
