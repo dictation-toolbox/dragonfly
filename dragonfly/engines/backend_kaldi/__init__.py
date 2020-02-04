@@ -25,6 +25,7 @@ SR back-end package for Kaldi
 """
 
 import logging
+import struct
 _log = logging.getLogger("engine.kaldi")
 
 
@@ -39,7 +40,11 @@ def is_engine_available(**kwargs):
     global _engine
     if _engine:
         return True
-
+    
+    if struct.calcsize("P") == 4:  # 32-bit
+        _log.error("The python environment is 32-bit. Kaldi requires a 64-bit python environment")
+        return False
+        
     return True
 
 

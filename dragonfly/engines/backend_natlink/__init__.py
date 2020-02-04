@@ -47,7 +47,7 @@ def is_engine_available(**kwargs):
         return True
 
     if struct.calcsize("P") == 8:  # 64-bit
-        _log.exception("The python environment is 64-bit. Natlink requires a 32-bit python environment")
+        _log.error("The python environment is 64-bit. Natlink requires a 32-bit python environment")
         return False
         
     # Attempt to import natlink.
