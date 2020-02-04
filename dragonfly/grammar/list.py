@@ -106,12 +106,20 @@ class ListBase(object):
             self._batch_updates = True
             return
 
-        invalid = [i for i in self if not isinstance(i, string_types)]
+        # Validate list items.
+        self._validate_items()
+
+        # If this list is part of a grammar, then notify it of the list
+        # changes.
+        if self._grammar:
+            self._grammar.update_list(self)
+
+    def _validate_items(self):
+        valid_types = self.valid_types
+        invalid = [i for i in self if not isinstance(i, valid_types)]
         if invalid:
             raise TypeError("Dragonfly lists can only contain"
                             " string objects; received: %r" % invalid)
-        if self._grammar:
-            self._grammar.update_list(self)
 
     #-----------------------------------------------------------------------
     # Accessor for the grammar to retrieve the list items.
