@@ -154,7 +154,14 @@ def get_engine(name=None, **kwargs):
     if not name:
         raise EngineError("No usable engines found.")
     else:
-        raise EngineError("Requested engine %r not available." % (name,))
+        valid_names = ["natlink", "kaldi", "sphinx", "sapi5shared"
+                       "sapi5inproc", "sapi5"]
+        if name not in valid_names:
+            raise EngineError("Requested engine %r is not a valid engine "
+                              "name." % (name,))
+        else:
+            raise EngineError("Requested engine %r not available."
+                              % (name,))
 
 
 # ---------------------------------------------------------------------------
