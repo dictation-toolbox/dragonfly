@@ -213,8 +213,7 @@ class List(ListBase, list):
         result = list.sort(self, *args, **kwargs)
         self._update(); return result
     def clear(self):
-        with self:
-            del self[:]
+        del self[:]
 
 #===========================================================================
 # Wrapper for Python's built-in dict type.
