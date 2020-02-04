@@ -18,13 +18,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-    This file implements List and DictList classes which behave
-    as built-in Python lists and dicts, but can be used within
-    Dragonfly grammars.
-"""
-
-
 # The overridden methods in the Dragonfly.list.List class were
 # automatically generated using the commented-out code immediately below.
 #
@@ -53,10 +46,13 @@ from six import string_types
 # Base class for dragonfly list objects.
 
 class ListBase(object):
+    """ Base class for dragonfly list objects. """
 
     def __init__(self, name):
         self._name = name
         self._grammar = None
+        self._batch_mode = False
+        self._batch_updates = False
 
     #-----------------------------------------------------------------------
     # Protected attribute access.
@@ -83,15 +79,47 @@ class ListBase(object):
                        doc="Set-once access to a list's grammar object.")
 
     #-----------------------------------------------------------------------
+    # Context manager methods for optimizing update_list() calls.
+
+    def __enter__(self):
+        self._batch_mode = True
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self._batch_mode = False
+        if self._batch_updates:
+            self._update()
+            self._batch_updates = False
+
+    #-----------------------------------------------------------------------
     # Notify the grammar of a list modification.
 
     def _update(self):
-        invalid = [i for i in self if not isinstance(i, string_types)]
+        """
+        Internal method that notifies the engine of list updates.
+
+        This method should be called internally by :class:`ListBase`sub-
+        classes when the list is modified.
+        """
+        # Return early for batch mode. A single update_list() call will
+        # occur in __exit__(), after a 'with' block.
+        if self._batch_mode:
+            self._batch_updates = True
+            return
+
+        # Validate list items.
+        self._validate_items()
+
+        # If this list is part of a grammar, then notify it of the list
+        # changes.
+        if self._grammar:
+            self._grammar.update_list(self)
+
+    def _validate_items(self):
+        valid_types = self.valid_types
+        invalid = [i for i in self if not isinstance(i, valid_types)]
         if invalid:
             raise TypeError("Dragonfly lists can only contain"
                             " string objects; received: %r" % invalid)
-        if self._grammar:
-            self._grammar.update_list(self)
 
     #-----------------------------------------------------------------------
     # Accessor for the grammar to retrieve the list items.
@@ -105,7 +133,10 @@ class ListBase(object):
 class List(ListBase, list):
     """
         Wrapper for Python's built-in list that supports automatic
-        Natlink notification of changes.
+        engine notification of changes.
+
+        Use :class:`~dragonfly.grammar.elements_basic.ListRef` elements
+        in a grammar rule to allow matching speech to list items.
     """
 
     def __init__(self, name, *args, **kwargs):
@@ -123,11 +154,12 @@ class List(ListBase, list):
 
     def set(self, other):
         """Set the contents of this list to the contents of another."""
-        self[:] = other
-        self._update()
+        with self:
+            self[:] = other
 
     #-----------------------------------------------------------------------
     # Overridden list methods.
+
     def __add__(self, *args, **kwargs):
         result = list.__add__(self, *args, **kwargs)
         self._update(); return result
@@ -184,7 +216,8 @@ class List(ListBase, list):
     def sort(self, *args, **kwargs):
         result = list.sort(self, *args, **kwargs)
         self._update(); return result
-
+    def clear(self):
+        del self[:]
 
 #===========================================================================
 # Wrapper for Python's built-in dict type.
@@ -192,9 +225,12 @@ class List(ListBase, list):
 class DictList(ListBase, dict):
     """
         Wrapper for Python's built-in dict that supports automatic
-        Natlink notification of changes.  The object's keys are used
-        as the elements of the Natlink list, while use of the associated
+        engine notification of changes.  The object's keys are used
+        as the elements of the engine list, while use of the associated
         values is left to the user.
+
+        Use :class:`~dragonfly.grammar.elements_basic.DictListRef` elements
+        in a grammar rule to allow matching speech to dictionary keys.
     """
 
     def __init__(self, name, *args, **kwargs):
@@ -212,9 +248,9 @@ class DictList(ListBase, dict):
 
     def set(self, other):
         """Set the contents of this dict to the contents of another."""
-        self.clear()
-        self.update(other)
-        self._update()
+        with self:
+            self.clear()
+            self.update(other)
 
     #-----------------------------------------------------------------------
     # Overridden dict methods.
