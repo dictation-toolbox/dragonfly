@@ -74,11 +74,6 @@ class NatlinkEngine(EngineBase):
     def __init__(self, retain_dir=None):
         EngineBase.__init__(self)
 
-        self.platform = platform.system()
-
-        if struct.calcsize("P") == 8:  # 64-bit
-            raise EngineError("The python environment is 64-bit. Natlink requires a 32-bit python environment")
-        
         self.natlink = None
         try:
             import natlink

@@ -25,6 +25,7 @@ SR back-end package for DNS and Natlink
 """
 
 import logging
+import struct
 _log = logging.getLogger("engine.natlink")
 
 
@@ -45,11 +46,15 @@ def is_engine_available(**kwargs):
     if _engine:
         return True
 
+    if struct.calcsize("P") == 8:  # 64-bit
+        _log.exception("The python environment is 64-bit. Natlink requires a 32-bit python environment")
+        return False
+        
     # Attempt to import natlink.
     try:
         import natlink
     except ImportError as e:
-        _log.info("Failed to import natlink package: %s" % (e,))
+        _log.info("Requested engine 'natlink' is not available: Natlink is not installed: %s" % (e,))
         return False
     except Exception as e:
         _log.exception("Exception during import of natlink package: %s" % (e,))
