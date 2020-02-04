@@ -1,0 +1,58 @@
+.. _RefListClasses:
+
+Lists
+============================================================================
+
+This section describes the following classes:
+
+ * :class:`dragonfly.grammar.list.ListBase` -- the base list class
+ * :class:`dragonfly.grammar.list.List` -- sub-class of Python's built-in
+   ``list`` type. It can be updated and modified without reloading a
+   grammar.
+ * :class:`dragonfly.grammar.list.DictList` -- sub-class of Python's
+   built-in ``dict`` type. It can be updated and modified without reloading
+   a grammar.
+
+The :ref:`RefListUpdates` section discusses possible performance issues with
+modifying Dragonfly lists and ways to avoid these issues altogether.
+
+
+List classes
+----------------------------------------------------------------------------
+
+.. automodule:: dragonfly.grammar.list
+   :members:
+   :member-order: bysource
+   :inherited-members:
+
+
+.. _RefListUpdates:
+
+List Updates
+----------------------------------------------------------------------------
+
+Lists are updated after each modifying operation, e.g. ``list.append()``,
+``list.remove()``, ``dict[key] = value``, ``dict.pop()``, etc. This is fine
+for a few list modifications here and there, but is inefficient for adding /
+removing many items at once.
+
+The simplest solution is to use the :class:`ListBase` context manager::
+
+  # Do list modification inside a 'with' block to only do one list update
+  # at the end.
+  my_list = List("my_list")
+  with my_list:
+      for x in range(50):
+          my_list.append(str(x))
+
+
+Some methods like ``list.extend()`` or ``dict.update()`` will also only
+update the list once afterwards::
+
+  # Add multiple list items using extend().
+  my_list = List("my_list")
+  my_list.extend([str(x) for x in range(50)])
+
+  # Add multiple dictionary keys using update().
+  dictionary = DictList("dictionary")
+  dictionary.update({str(x):x for x in range(50)})

@@ -11,6 +11,7 @@ object model.
 
     grammar
     rules
+    lists
     elements
     context
     recobs
@@ -39,12 +40,15 @@ classes are described in the :ref:`RefGrammarClasses` section.
 Rules
 ============================================================================
 
-:ref:`Rules <RefRules>` represent voice commands or parts of voice 
+:ref:`Rules <RefRuleClasses>` represent voice commands or parts of voice
 commands. Each rule has a single root :ref:`element 
 <RefObjectModelElements>`, the basis of a tree structure of elements 
 defining how the rule is built up out of speakable parts. The element 
 tree determines what a user must say to cause this rule to be 
-recognized. 
+recognized.
+
+The :class:`~dragonfly.grammar.rule_base.Rule` class and derived
+classes are described in the :ref:`RefRuleClasses` section.
 
 
 .. _RefObjectModelRulesExported:
@@ -113,6 +117,30 @@ does provide the following three built-in rules which can be imported:
    :class:`~dragonfly.grammar.elements_basic.Dictation` element
 
 
+.. _RefObjectModelLists:
+
+Lists
+============================================================================
+
+:ref:`Lists <RefListClasses>` are dynamic language elements which can be
+updated and modified without reloading a grammar. There are two list types:
+
+ * :class:`~dragonfly.grammar.list.List`
+   -- sub-class of Python's built-in ``list`` type
+
+ * :class:`~dragonfly.grammar.list.DictList`
+   -- sub-class of Python's built-in ``dict`` type
+
+Lists of either type can be instantiated and used like normal lists /
+dictionaries. They are meant to be used in Dragonfly rules via the special
+:class:`~dragonfly.grammar.elements_basic.ListRef` and
+:class:`~dragonfly.grammar.elements_basic.DictListRef` elements. The engine
+is automatically notified when lists are modified.
+
+The :class:`~dragonfly.grammar.list.ListBase` class and derived classes are
+described in the :ref:`RefListClasses` section. See the
+:ref:`RefGrammarListDocTests` for usage examples.
+
 .. _RefObjectModelElements:
 
 Elements
@@ -135,11 +163,15 @@ The most common elements are:
  * :class:`~dragonfly.grammar.elements_basic.RuleRef`
    -- a reference to another rule
  * :class:`~dragonfly.grammar.elements_basic.ListRef`
-   -- a reference to a list, which is a dynamic language element which
-   can be updated and modified without reloading the grammar
+   -- a reference to a Dragonfly :class:`~dragonfly.grammar.list.List`
+ * :class:`~dragonfly.grammar.elements_basic.DictListRef`
+   -- a reference to a Dragonfly :class:`~dragonfly.grammar.list.DictList`
  * :class:`~dragonfly.grammar.elements_basic.Dictation`
    -- a free-form dictation element which allows the speaker to say
    one or more natural language words
+
+
+See the :ref:`RefElementBasicDocTests` for element usage examples.
 
 The above mentioned element types are at the heart of 
 Dragonfly's object model.  But of course using them all the time 
@@ -150,3 +182,6 @@ element types from a string specification:
  * :class:`~dragonfly.grammar.elements_compound.Compound`
    -- a special element which parses a string 
    spec to create a hierarchy of basic elements.
+
+See the :ref:`RefElementCompoundDocTests` for
+:class:`~dragonfly.grammar.elements_compound.Compound` usage examples.

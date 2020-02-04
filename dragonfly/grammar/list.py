@@ -18,13 +18,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-    This file implements List and DictList classes which behave
-    as built-in Python lists and dicts, but can be used within
-    Dragonfly grammars.
-"""
-
-
 # The overridden methods in the Dragonfly.list.List class were
 # automatically generated using the commented-out code immediately below.
 #
@@ -53,6 +46,7 @@ from six import string_types
 # Base class for dragonfly list objects.
 
 class ListBase(object):
+    """ Base class for dragonfly list objects. """
 
     def __init__(self, name):
         self._name = name
@@ -100,6 +94,12 @@ class ListBase(object):
     # Notify the grammar of a list modification.
 
     def _update(self):
+        """
+        Internal method that notifies the engine of list updates.
+
+        This method should be called internally by :class:`ListBase`sub-
+        classes when the list is modified.
+        """
         # Return early for batch mode. A single update_list() call will
         # occur in __exit__(), after a 'with' block.
         if self._batch_mode:
@@ -133,7 +133,10 @@ class ListBase(object):
 class List(ListBase, list):
     """
         Wrapper for Python's built-in list that supports automatic
-        Natlink notification of changes.
+        engine notification of changes.
+
+        Use :class:`~dragonfly.grammar.elements_basic.ListRef` elements
+        in a grammar rule to allow matching speech to list items.
     """
 
     def __init__(self, name, *args, **kwargs):
@@ -156,6 +159,7 @@ class List(ListBase, list):
 
     #-----------------------------------------------------------------------
     # Overridden list methods.
+
     def __add__(self, *args, **kwargs):
         result = list.__add__(self, *args, **kwargs)
         self._update(); return result
@@ -221,9 +225,12 @@ class List(ListBase, list):
 class DictList(ListBase, dict):
     """
         Wrapper for Python's built-in dict that supports automatic
-        Natlink notification of changes.  The object's keys are used
-        as the elements of the Natlink list, while use of the associated
+        engine notification of changes.  The object's keys are used
+        as the elements of the engine list, while use of the associated
         values is left to the user.
+
+        Use :class:`~dragonfly.grammar.elements_basic.DictListRef` elements
+        in a grammar rule to allow matching speech to dictionary keys.
     """
 
     def __init__(self, name, *args, **kwargs):
