@@ -12,7 +12,7 @@ Command-line Interface (CLI)
 Usage Examples
 ----------------------------------------------------------------------------
 Below are some examples using each of the available sub-commands. All
-examples should work in Bash. Most should work in Windows PowerShell.
+examples should work in Bash, PowerShell, cmd.exe, etc.
 
 :code:`test` examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
