@@ -83,7 +83,10 @@ Class reference
 
 """
 
-from inspect                            import getargspec
+import inspect
+
+import six
+
 from dragonfly.actions.action_base      import ActionBase, ActionError
 
 
@@ -110,8 +113,15 @@ class Function(ActionBase):
         self._remap_data = remap_data or {}
         self._str = function.__name__
 
-        # TODO Use inspect.signature instead; getargspec is deprecated.
-        (args, _, varkw, defaults) = getargspec(self._function)
+        # Get argument names and defaults. Use getfullargspec() in Python 3
+        # to avoid deprecation warnings.
+        if six.PY2:
+            # pylint: disable=deprecated-method
+            argspec = inspect.getargspec(self._function)
+        else:
+            argspec = inspect.getfullargspec(self._function)
+
+        args, varkw = argspec[0], argspec[2]
         if varkw:  self._filter_keywords = False
         else:      self._filter_keywords = True
         self._valid_keywords = set(args)
