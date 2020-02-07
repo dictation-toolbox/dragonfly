@@ -29,29 +29,21 @@ import os
 import wave
 
 from six import binary_type, text_type, string_types, PY2
+from jsgf import RootGrammar, PublicRule, Literal
+from sphinxwrapper import PocketSphinx
 
 from dragonfly import Window
-from .recobs import SphinxRecObsManager
-from .timer import SphinxTimerManager
-from .training import write_training_data, write_transcript_files
 from ..base import (EngineBase, EngineError, MimicFailure,
                     DelegateTimerManagerInterface,
                     DictationContainerBase)
-
-try:
-    from jsgf import RootGrammar, PublicRule, Literal
-    from sphinxwrapper import PocketSphinx
-    from .compiler import SphinxJSGFCompiler
-    from .grammar_wrapper import GrammarWrapper
-    from .misc import (EngineConfig, WaveRecognitionObserver,
-                       get_decoder_config_object)
-    from .recording import PyAudioRecorder
-    ENGINE_AVAILABLE = True
-except ImportError:
-    # Import a few things here optionally for readability (the engine won't
-    # start without them) and so that autodoc can import this module without
-    # them.
-    ENGINE_AVAILABLE = False
+from .compiler import SphinxJSGFCompiler
+from .grammar_wrapper import GrammarWrapper
+from .misc import (EngineConfig, WaveRecognitionObserver,
+                   get_decoder_config_object)
+from .recobs import SphinxRecObsManager
+from .recording import PyAudioRecorder
+from .timer import SphinxTimerManager
+from .training import write_training_data, write_transcript_files
 
 
 class UnknownWordError(Exception):
@@ -83,9 +75,9 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Set up the engine logger
         logging.basicConfig()
 
-        if not ENGINE_AVAILABLE:
-            self._log.error("%s: Failed to import jsgf, pyaudio and/or "
-                            "sphinxwrapper. Are they installed?" % self)
+        try:
+            import sphinxwrapper, jsgf, pyaudio
+        except ImportError as e:
             raise EngineError("Failed to import Pocket Sphinx engine "
                               "dependencies.")
 

@@ -25,6 +25,9 @@ SR back-end package for DNS and Natlink
 """
 
 import logging
+import struct
+import platform
+
 _log = logging.getLogger("engine.natlink")
 
 
@@ -45,25 +48,39 @@ def is_engine_available(**kwargs):
     if _engine:
         return True
 
+    platform_name = platform.system()
+    if platform_name != 'Windows':
+        _log.warning("%s is not supported by the Natlink engine backend",
+                     platform_name)
+        return False
+
+    if struct.calcsize("P") == 8:  # 64-bit
+        _log.warning("The python environment is 64-bit. Natlink requires a "
+                     "32-bit python environment")
+        return False
+
     # Attempt to import natlink.
     try:
         import natlink
     except ImportError as e:
-        _log.info("Failed to import natlink package: %s" % (e,))
+        _log.warning("Requested engine 'natlink' is not available: Natlink "
+                     "is not installed: %s", e)
         return False
     except Exception as e:
-        _log.exception("Exception during import of natlink package: %s" % (e,))
+        _log.exception("Exception during import of natlink package: "
+                       "%s", e)
         return False
 
     try:
         if natlink.isNatSpeakRunning():
             return True
         else:
-            _log.info("Natlink is available but NaturallySpeaking is not"
-                      " running.")
+            _log.warning("Natlink is available but NaturallySpeaking is not"
+                         " running.")
             return False
     except Exception as e:
-        _log.exception("Exception during natlink.isNatSpeakRunning(): %s" % (e,))
+        _log.exception("Exception during natlink.isNatSpeakRunning(): "
+                       "%s", e)
         return False
 
 

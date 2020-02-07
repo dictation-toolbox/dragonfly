@@ -77,7 +77,7 @@ class NatlinkEngine(EngineBase):
             import natlink
         except ImportError:
             self._log.error("%s: failed to import natlink module." % self)
-            raise EngineError("Failed to import the Natlink module.")
+            raise EngineError("Requested engine 'natlink' is not available: Natlink is not installed.")
         self.natlink = natlink
 
         self._grammar_count = 0

@@ -25,6 +25,7 @@ Main SR engine back-end interface
 """
 
 import logging
+import os
 import traceback
 from .base import EngineBase, EngineError, MimicFailure
 
@@ -62,7 +63,11 @@ def get_engine(name=None, **kwargs):
         #  been loaded, return it.
         return _default_engine
 
-    if not name or name == "natlink":
+    # Check if we're on Windows. If name is None and we're not on Windows,
+    # then we don't evaluate Windows-only engines like natlink.
+    windows = os.name == 'nt'
+
+    if (windows and not name) or name == "natlink":
         # Attempt to retrieve the natlink back-end.
         try:
             from .backend_natlink import is_engine_available
@@ -74,13 +79,12 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing natlink engine:"
                        " %s" % (e,))
-            log.exception(message)
-            traceback.print_exc()
             print(message)
             if name:
                 raise EngineError(message)
 
-    if not name or name in ["sapi5shared", "sapi5inproc", "sapi5"]:
+    sapi5_names = ["sapi5shared", "sapi5inproc", "sapi5"]
+    if (windows and not name) or name in sapi5_names:
         # Attempt to retrieve the sapi5 back-end.
         try:
             from .backend_sapi5 import is_engine_available
@@ -92,8 +96,6 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing sapi5 engine:"
                        " %s" % (e,))
-            log.exception(message)
-            traceback.print_exc()
             print(message)
             if name:
                 raise EngineError(message)
@@ -111,8 +113,6 @@ def get_engine(name=None, **kwargs):
             message = ("Exception while initializing sphinx engine:"
                        " %s" % (e,))
             log.exception(message)
-            traceback.print_exc()
-            print(message)
             if name:
                 raise EngineError(message)
 
@@ -128,8 +128,6 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing kaldi engine:"
                        " %s" % (e,))
-            log.exception(message)
-            traceback.print_exc()
             print(message)
             if name:
                 raise EngineError(message)
@@ -149,8 +147,6 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing text-input engine:"
                        " %s" % (e,))
-            log.exception(message)
-            traceback.print_exc()
             print(message)
             if name:
                 raise EngineError(message)
@@ -158,7 +154,14 @@ def get_engine(name=None, **kwargs):
     if not name:
         raise EngineError("No usable engines found.")
     else:
-        raise EngineError("Requested engine %r not available." % (name,))
+        valid_names = ["natlink", "kaldi", "sphinx", "sapi5shared"
+                       "sapi5inproc", "sapi5"]
+        if name not in valid_names:
+            raise EngineError("Requested engine %r is not a valid engine "
+                              "name." % (name,))
+        else:
+            raise EngineError("Requested engine %r not available."
+                              % (name,))
 
 
 # ---------------------------------------------------------------------------

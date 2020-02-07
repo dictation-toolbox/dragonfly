@@ -22,31 +22,33 @@
 Kaldi engine classes
 """
 
-import collections, os, subprocess, threading, time
+import collections, os, subprocess, sys, threading, time
 
-from six import integer_types, string_types, print_
-from six.moves import zip
 from packaging.version import Version
+from six import integer_types, string_types, print_, reraise
+from six.moves import zip
+import kaldi_active_grammar
+from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
 
 from ..base                     import (EngineBase, EngineError, MimicFailure,
-                                        DelegateTimerManager, DelegateTimerManagerInterface, DictationContainerBase)
+                                        DelegateTimerManager,
+                                        DelegateTimerManagerInterface,
+                                        DictationContainerBase)
+from .audio                     import MicAudio, VADAudio, AudioStore, WavAudio
 from .recobs                    import KaldiRecObsManager
 from .testing                   import debug_timer
-from ...grammar.state           import State
-from ...windows                 import Window
+from dragonfly.grammar.state    import State
+from dragonfly.windows          import Window
 
+# Import the Kaldi compiler class. Suppress metaclass TypeErrors raised
+# during documentation builds caused by mocking KAG.
 try:
-    import kaldi_active_grammar
-    from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
     from .compiler                  import KaldiCompiler
-    from .audio                     import MicAudio, VADAudio, AudioStore, WavAudio
-    ENGINE_AVAILABLE = True
-except ImportError:
-    # Import a few things here optionally for readability (the engine won't
-    # start without them) and so that autodoc can import this module without
-    # them.
-    ENGINE_AVAILABLE = False
-
+except TypeError:
+    if os.environ.get("SPHINX_BUILD_RUNNING"):
+        KaldiCompiler = None
+    else:
+        reraise(*sys.exc_info())
 
 #===========================================================================
 
@@ -67,9 +69,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
 
-        if not ENGINE_AVAILABLE:
-            self._log.error("%s: Failed to import Kaldi engine dependencies. Are they installed?" % self)
+        try:
+            import kaldi_active_grammar, pyaudio, webrtcvad
+        except ImportError as e:
+            self._log.error("%s: Failed to import Kaldi engine "
+                            "dependencies: %s", self, e)
             raise EngineError("Failed to import Kaldi engine dependencies.")
+
         # Compatible release version specification
         # https://stackoverflow.com/questions/11887762/how-do-i-compare-version-numbers-in-python/21065570
         with open(os.path.join(os.path.dirname(__file__), 'kag_version.txt')) as file:

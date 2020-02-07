@@ -40,6 +40,8 @@ The WSR / SAPI 5 back-end has two engine classes:
 """
 
 import logging
+import platform
+
 _log = logging.getLogger("engine.sapi5")
 
 
@@ -62,19 +64,25 @@ def is_engine_available(name, **kwargs):
     if _engine:
         return True
 
+    platform_name = platform.system()
+    if platform_name != 'Windows':
+        _log.warning("%s is not supported by the SAPI5 engine backend",
+                     platform_name)
+        return False
+
     # Attempt to import win32 package required for COM.
     try:
         from win32com.client import Dispatch
     except ImportError as e:
-        _log.info("Failed to import from win32com package: %s. Is it "
-                   "installed?" % e)
+        _log.warning("Failed to import from win32com package: %s. Is it "
+                     "installed?", e)
         return False
 
     try:
         from pywintypes import com_error
     except ImportError as e:
-        _log.info("Failed to import from the pywintypes package: %s. Is it "
-                   "installed?" % e)
+        _log.warning("Failed to import from the pywintypes package: %s. Is "
+                     "it installed?", e)
         return False
 
     # Attempt to connect to SAPI using the correct dispatch name.
@@ -88,10 +96,10 @@ def is_engine_available(name, **kwargs):
     try:
         Dispatch(dispatch_name)
     except com_error as e:
-        _log.exception("COM error during dispatch: %s" % e)
+        _log.exception("COM error during dispatch: %s", e)
         return False
     except Exception as e:
-        _log.exception("Exception during Sapi5.isNatSpeakRunning(): %s" % e)
+        _log.exception("Exception during Sapi5 COM dispatch): %s", e)
         return False
     return True
 

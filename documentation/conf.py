@@ -44,7 +44,9 @@ mock_modules = {
     "win32clipboard", "win32com", "win32com.client", "numpy",
     "win32com.client.gencache", "win32com.gen_py",  "win32com.shell",
     "win32con", "win32event", "win32file", "win32gui", "winsound",
-    "winxpgui", "psutil", "applescript",
+    "winxpgui", "psutil", "applescript", "jsgf", "jsgf.ext",
+    "sphinxwrapper", "pocketsphinx", "pyaudio", "kaldi_active_grammar",
+    "webrtcvad"
 }
 
 for module_name in mock_modules:
