@@ -152,3 +152,66 @@ Earliest bound data is used during execution::
     >>> ab_bound.execute()
     executing 'a' {'bar': 'later', 'foo': 2}
     executing 'b' {'bar': 3}
+
+
+Function action test suite
+============================================================================
+
+The :class:`Function` action wraps a callable, optionally with some
+default keyword argument values.  On execution, the execution data
+(commonly containing the recognition extras) are combined with the
+default argument values (if present) to form the arguments with which
+the callable will be called.
+
+
+Using the Function action
+----------------------------------------------------------------------------
+
+Simple usage::
+    >>> from dragonfly import Function
+    >>> def func(count):
+    ...     print("count: %d" % count)
+    ...
+    >>> action = Function(func)
+    >>> action.execute({"count": 2})
+    count: 2
+    True
+    >>> # Additional keyword arguments are ignored:
+    >>> action.execute({"count": 2, "flavor": "vanilla"})
+    count: 2
+    True
+
+Usage with default arguments::
+
+    >>> def func(count, flavor):
+    ...     print("count: %d" % count)
+    ...     print("flavor: %s" % flavor)
+    ...
+    >>> # The Function object can be given default argument values:
+    >>> action = Function(func, flavor="spearmint")
+    >>> action.execute({"count": 2})
+    count: 2
+    flavor: spearmint
+    True
+    >>> # Arguments given at the execution-time to override default values:
+    >>> action.execute({"count": 2, "flavor": "vanilla"})
+    count: 2
+    flavor: vanilla
+    True
+
+Usage with the ``remap_data`` argument::
+
+    >>> def func(x, y, z):
+    ...     print("x: %d" % x)
+    ...     print("y: %d" % y)
+    ...     print("z: %d" % z)
+    ...
+    >>> # The Function object can optionally be given a second dictionary
+    >>> # argument to use extras with different names. It should be
+    >>> # compatible with the 'defaults' parameter:
+    >>> action = Function(func, dict(n="x", m="y"), z=4)
+    >>> action.execute({"n": 2, "m": 3})
+    x: 2
+    y: 3
+    z: 4
+    True
