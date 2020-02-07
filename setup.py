@@ -131,7 +131,7 @@ setup(
           "kaldi": [
                     "kaldi-active-grammar ~= %s" % read("dragonfly", "engines", "backend_kaldi", "kag_version.txt").strip(),
                     "sounddevice == 0.3.*",
-                    "webrtcvad == 2.0.*",
+                    "webrtcvad-wheels == 2.0.*",
                    ],
       },
 
