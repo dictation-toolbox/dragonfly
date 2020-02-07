@@ -40,11 +40,24 @@ def is_engine_available(**kwargs):
     global _engine
     if _engine:
         return True
-    
+
     if struct.calcsize("P") == 4:  # 32-bit
-        _log.error("The python environment is 32-bit. Kaldi requires a 64-bit python environment")
+        _log.warning("The python environment is 32-bit. Kaldi requires a "
+                     "64-bit python environment")
         return False
-        
+
+    # Attempt to import the engine class from the module.
+    try:
+        from .engine import KaldiEngine
+        return True
+    except ImportError as e:
+        _log.warning("Failed to import from Kaldi engine module: %s", e)
+        return False
+    except Exception as e:
+        _log.exception("Exception during import of Kaldi engine module: %s",
+                       e)
+        return False
+
     return True
 
 

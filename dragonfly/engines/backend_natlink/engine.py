@@ -31,8 +31,6 @@ Detecting sleep mode
 
 import os.path
 import sys
-import platform
-import struct
 import pywintypes
 from datetime import datetime
 from locale import getpreferredencoding

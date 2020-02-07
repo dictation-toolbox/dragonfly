@@ -42,16 +42,16 @@ def is_engine_available():
     if _engine:
         return True
 
-    # Check the value of ENGINE_AVAILABLE. This will be False if a
-    # dependency or sub-dependency isn't available.
+    # Attempt to import the engine class from the module.
     try:
-        from .engine import ENGINE_AVAILABLE
-        return ENGINE_AVAILABLE
+        from .engine import SphinxEngine
+        return True
     except ImportError as e:
-        _log.info("Failed to import from Sphinx engine module: %s", e)
+        _log.warning("Failed to import from Sphinx engine module: %s", e)
         return False
     except Exception as e:
-        _log.info("Exception during import of Sphinx engine module: %s", e)
+        _log.exception("Exception during import of Sphinx engine module: "
+                       "%s", e)
         return False
 
     return True
