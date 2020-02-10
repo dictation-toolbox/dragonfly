@@ -33,7 +33,6 @@ Window class for macOS
 
 import locale
 import logging
-import psutil
 
 from six import binary_type, string_types, integer_types
 import applescript
@@ -57,46 +56,28 @@ class DarwinWindow(BaseWindow):
     @classmethod
     def get_foreground(cls):
         script = '''
-        global frontApp, frontAppName
+        global theId
         tell application "System Events"
-            set frontApp to first application process whose frontmost is true
-            set frontAppName to name of frontApp
-            tell process frontAppName
-                set mainWindow to missing value
-                repeat with win in windows
-                    if attribute "AXMain" of win is true then
-                        set mainWindow to win
-                        exit repeat
-                    end if
-                end repeat
-            end tell
+            set theId to id of first application process whose frontmost is true
         end tell
-        return frontAppName
+        return theId
         '''
-
-        # window_id isn't really a unique id, instead it's just the app name
-        # -- but still useful for automating through applescript
         window_id = applescript.AppleScript(script).run()
         if isinstance(window_id, binary_type):
             window_id = window_id.decode(locale.getpreferredencoding())
 
-        return cls.get_window(id=window_id)
+        return cls.get_window(id=str(window_id))
 
     @classmethod
     def get_all_windows(cls):
         script = '''
         global appIds
         tell application "System Events"
-            set appIds to {}
-            repeat with theProcess in (application processes)
-                if not background only of theProcess then
-                    set appIds to appIds & name of theProcess
-                end if
-            end repeat
+            set appIds to id of every application process whose background only is false
         end tell
         return appIds
         '''
-        return [cls.get_window(app_id) for app_id in
+        return [cls.get_window(str(app_id)) for app_id in
                 applescript.AppleScript(script).run()]
 
     #-----------------------------------------------------------------------
@@ -127,7 +108,7 @@ class DarwinWindow(BaseWindow):
         :returns: window properties
         """
         script = '''
-        tell application "System Events" to tell application process "%s"
+        tell application "System Events" to tell application process id "%s"
             try
                 get properties of window 1
             on error errmess
@@ -178,21 +159,30 @@ class DarwinWindow(BaseWindow):
         return self.get_properties().get('pcls', '')
 
     def _get_window_module(self):
-        return self._id  # The window ID is the app name on macOS.
+        if not (self._id and isinstance(self._id, string_types)):
+            return ''
+
+        script = '''
+        global module
+        tell application "System Events" to tell application process id %s
+            set module to name
+        end tell
+        return module
+        ''' % (self._id)
+        return applescript.AppleScript(script).run()
 
     def _get_window_pid(self):
         if not (self._id and isinstance(self._id, string_types)):
-            # Can't match against numerical / empty / null app bundle ID.
             return -1
 
-        for process in psutil.process_iter(attrs=['pid', 'exe']):
-            exe = process.info['exe']
-            if exe and exe.endswith(self._id):
-                # Return the ID of the first matching process.
-                return process.info['pid']
-
-        # No match.
-        return -1
+        script = '''
+        global pid
+        tell application "System Events" to tell application process id %s
+            set pid to unix id
+        end tell
+        return pid
+        ''' % (self._id)
+        return applescript.AppleScript(script).run()
 
     @property
     def is_minimized(self):
@@ -218,7 +208,7 @@ class DarwinWindow(BaseWindow):
         assert isinstance(rectangle, Rectangle)
         script = '''
         tell application "System Events"
-            set firstWindow to first window of application process "%s"
+            set firstWindow to first window of application process id "%s"
             set position of firstWindow to {%d, %d}
             set size of firstWindow to {%d, %d}
         end tell
@@ -235,7 +225,7 @@ class DarwinWindow(BaseWindow):
         script = u'''
         tell application "System Events"
             perform action "%s" of (first button whose subrole is "%s") of ¬
-            first window of process "%s"
+            first window of application process id "%s"
         end tell
         ''' % (action, button_subrole, self._id)
         try:
@@ -276,7 +266,7 @@ class DarwinWindow(BaseWindow):
 
     def set_foreground(self):
         script = '''
-        tell application "%s"
+        tell application "System Events" to tell application process id "%s"
             activate window 1
         end tell
         ''' % self._id
