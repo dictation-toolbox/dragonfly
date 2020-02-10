@@ -93,6 +93,10 @@ class ActionBase(object):
         except ActionError as e:
             self._log_exec.error("Execution failed: %s", e)
             return False
+        except Exception as e:
+            self._log_exec.exception("Execution of %s failed due to "
+                                     "exception: %s", self, e)
+            return False
         return True
 
     def _execute(self, data=None):
@@ -201,12 +205,27 @@ class ActionSeries(ActionBase):
     def __init__(self, *actions):
         ActionBase.__init__(self)
         self._actions = list(actions)
-        self._str = ", ".join(str(a) for a in actions)
+        self._set_str()
+
+    def _set_str(self):
+        # Use a flat list of the series actions for a more readable
+        # string representation.
+        self._str = ", ".join(str(a) for a in self.flat_action_list())
+
+    def flat_action_list(self):
+        # Get a flattened list of the series actions.
+        result = []
+        for action in self._actions:
+            if isinstance(action, ActionSeries):
+                result.extend(action.flat_action_list())
+            else:
+                result.append(action)
+        return result
 
     def append(self, other):
         assert isinstance(other, ActionBase)
         self._actions.append(other)
-        self._str = ", ".join(str(a) for a in self._actions)
+        self._set_str()
 
     def __iadd__(self, other):
         self.append(other)
@@ -215,10 +234,17 @@ class ActionSeries(ActionBase):
     #-----------------------------------------------------------------------
     # Execution methods.
 
-    def execute(self, data=None):
-        for action in self._actions:
-            action.execute(data)
+    def _execute(self, data=None):
+        # Use a flat list of the series actions for more sensible sequence
+        # termination and logging if an error occurs during execution.
+        for action in self.flat_action_list():
+            if action.execute(data) is False:
+                return False
+        return True
 
+    def execute(self, data=None):
+        # Override execute() to discard the return value.
+        ActionBase.execute(self, data)
 
 #---------------------------------------------------------------------------
 
