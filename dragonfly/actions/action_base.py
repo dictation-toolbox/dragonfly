@@ -242,6 +242,10 @@ class ActionSeries(ActionBase):
                 return False
         return True
 
+    def execute(self, data=None):
+        # Override execute() to discard the return value.
+        ActionBase.execute(self, data)
+
 #---------------------------------------------------------------------------
 
 class ActionRepetition(ActionBase):
