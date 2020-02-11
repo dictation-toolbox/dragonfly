@@ -202,6 +202,9 @@ class ActionSeries(ActionBase):
     #-----------------------------------------------------------------------
     # Initialization methods.
 
+    #: Whether to stop executing if an action in the series fails.
+    stop_on_failures = True
+
     def __init__(self, *actions):
         ActionBase.__init__(self)
         self._actions = list(actions)
@@ -238,7 +241,7 @@ class ActionSeries(ActionBase):
         # Use a flat list of the series actions for more sensible sequence
         # termination and logging if an error occurs during execution.
         for action in self.flat_action_list():
-            if action.execute(data) is False:
+            if action.execute(data) is False and self.stop_on_failures:
                 return False
         return True
 
