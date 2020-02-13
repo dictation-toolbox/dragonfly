@@ -34,7 +34,7 @@ Window class for macOS
 import locale
 import logging
 
-from six import binary_type, string_types, integer_types
+from six import binary_type
 import applescript
 
 from .base_window import BaseWindow
@@ -66,7 +66,7 @@ class DarwinWindow(BaseWindow):
         if isinstance(window_id, binary_type):
             window_id = window_id.decode(locale.getpreferredencoding())
 
-        return cls.get_window(id=str(window_id))
+        return cls.get_window(id=int(window_id))
 
     @classmethod
     def get_all_windows(cls):
@@ -77,7 +77,7 @@ class DarwinWindow(BaseWindow):
         end tell
         return appIds
         '''
-        return [cls.get_window(str(app_id)) for app_id in
+        return [cls.get_window(int(app_id)) for app_id in
                 applescript.AppleScript(script).run()]
 
     #-----------------------------------------------------------------------
@@ -85,17 +85,7 @@ class DarwinWindow(BaseWindow):
 
     def __init__(self, id):
         BaseWindow.__init__(self, id)
-        self._names.add(id)
-
-    #-----------------------------------------------------------------------
-    # Methods that control attribute access.
-
-    def _set_id(self, id):
-        if not isinstance(id, (string_types, integer_types)):
-            raise TypeError("Window id/handle must be an int or string,"
-                            " but received {0!r}".format(id))
-        self._id = id
-        self._windows_by_id[id] = self
+        self._names.add(str(id))
 
     #-----------------------------------------------------------------------
     # Methods and properties for window attributes.
@@ -159,9 +149,6 @@ class DarwinWindow(BaseWindow):
         return self.get_properties().get('pcls', '')
 
     def _get_window_module(self):
-        if not (self._id and isinstance(self._id, string_types)):
-            return ''
-
         script = '''
         global module
         tell application "System Events" to tell application process id %s
@@ -172,9 +159,6 @@ class DarwinWindow(BaseWindow):
         return applescript.AppleScript(script).run()
 
     def _get_window_pid(self):
-        if not (self._id and isinstance(self._id, string_types)):
-            return -1
-
         script = '''
         global pid
         tell application "System Events" to tell application process id %s
