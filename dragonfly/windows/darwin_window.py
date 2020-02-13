@@ -251,7 +251,7 @@ class DarwinWindow(BaseWindow):
     def set_foreground(self):
         script = '''
         tell application "System Events" to tell application process id "%s"
-            activate window 1
+            set frontmost to true
         end tell
         ''' % self._id
         applescript.AppleScript(script).run()
