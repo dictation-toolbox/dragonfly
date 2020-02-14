@@ -142,19 +142,22 @@ class DarwinWindow(BaseWindow):
         """
         Method to get an attribute of a macOS window.
 
+        **Note**: this method doesn't distinguish between multiple instances
+        of the same application.
+
         :param attribute: attribute name
         :type attribute: string
         :returns: attribute value
         """
         script = '''
-         tell application "%s"
+        tell application "%s"
             try
                 get %s of window 1
             on error errmess
                 log errmess
             end try
         end tell
-        ''' % (self._id, attribute)
+        ''' % (self.executable, attribute)
         return applescript.AppleScript(script).run()
 
     def _get_window_text(self):
