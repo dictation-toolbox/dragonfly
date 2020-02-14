@@ -33,6 +33,7 @@ Window class for macOS
 
 import locale
 import logging
+import os
 
 from six import binary_type
 import applescript
@@ -67,6 +68,18 @@ class DarwinWindow(BaseWindow):
             window_id = window_id.decode(locale.getpreferredencoding())
 
         return cls.get_window(id=int(window_id))
+
+    @classmethod
+    def get_matching_windows(cls, executable=None, title=None):
+        # Convert absolute executable paths to basenames on macOS. This is
+        # necessary because DarwinWindow executable names are not absolute
+        # and will therefore never match.
+        if executable is not None and os.path.isabs(executable):
+            executable = os.path.basename(executable)
+
+        return super(DarwinWindow, cls).get_matching_windows(
+            executable, title
+        )
 
     @classmethod
     def get_all_windows(cls):
