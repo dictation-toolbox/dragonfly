@@ -49,6 +49,11 @@ computer the following command successfully starts Notepad::
 
    BringApp("notepad").execute()
 
+Applications on MacOS are started and switched to using the application
+name::
+
+   BringApp("System Preferences").execute()
+
 
 Class reference
 ----------------------------------------------------------------------------
@@ -57,6 +62,7 @@ Class reference
 
 import os.path
 from subprocess           import Popen
+import sys
 import time
 
 from six import string_types
@@ -121,32 +127,61 @@ class StartApp(ActionBase):
 
         return os.path.expanduser(os.path.expandvars(path))
 
-    def _execute(self, data=None):
-        self._log.debug("Starting app: %r", self._args)
+    def _start_app_process(self):
         try:
-            process = Popen(self._args, cwd=self._cwd)
+            return Popen(self._args, cwd=self._cwd)
         except Exception as e:
             raise ActionError("Failed to start app %s: %s" % (self._str, e))
 
-        if self._focus_after_start:
-            timeout = 1.0
-            exe = self._args[0]
-            action = WaitWindow(executable=exe, timeout=timeout)
-            if action.execute():
-                # Bring the window to the foreground.
-                Window.get_foreground().set_foreground()
-            else:
-                target = process.pid
-                start = time.time()
-                while time.time() - start < timeout:
-                    found = False
-                    for window in Window.get_matching_windows(exe):
-                        if window.pid == target:
-                            window.set_foreground()
-                            found = True
-                            break
-                    if found:
+    def _focus_window_after_starting(self, pid):
+        timeout = 1.0
+        exe = self._args[0]
+
+        # Wait for the window to appear for N seconds.
+        action = WaitWindow(executable=exe, timeout=timeout)
+        if action.execute():
+            # Bring the window to the foreground.
+            Window.get_foreground().set_foreground()
+
+        # The application window wasn't focused, so try to focus it.
+        else:
+            target = pid
+            start = time.time()
+            while time.time() - start < timeout:
+                found = False
+                for window in Window.get_matching_windows(exe):
+                    if target is None or window.pid == target:
+                        window.set_foreground()
+                        found = True
                         break
+                if found:
+                    break
+
+    def _darwin_start_app(self):
+        # Try to use the macOS 'open' command-line program to start a new
+        # instance of the specified application. Return False if this is
+        # either not applicable or doesn't work.
+        try_using_open = (
+            sys.platform == "darwin" and len(self._args) == 1 and
+            not os.path.isabs(self._args[0])
+        )
+        if try_using_open:
+            process = Popen(['open', '-n', '-a', self._args[0]])
+            return process.wait() == 0
+        return False
+
+    def _execute(self, data=None):
+        self._log.debug("Starting app: %r", self._args)
+        if self._darwin_start_app():
+            pid = None
+        else:
+            # This either isn't macOS or the 'open' program didn't work, so
+            # start the application as normal and get the process ID.
+            pid = self._start_app_process().pid
+
+        # If specified, focus the application after starting it.
+        if self._focus_after_start:
+            self._focus_window_after_starting(pid)
 
 
 #---------------------------------------------------------------------------
