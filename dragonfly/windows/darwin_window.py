@@ -56,10 +56,11 @@ class DarwinWindow(BaseWindow):
 
     @classmethod
     def get_foreground(cls):
-        script = '''
+        script = u'''
         global theId
         tell application "System Events"
-            set theId to id of first application process whose frontmost is true
+            set theId to id of first application process whose ¬
+            frontmost is true
         end tell
         return theId
         '''
@@ -83,10 +84,11 @@ class DarwinWindow(BaseWindow):
 
     @classmethod
     def get_all_windows(cls):
-        script = '''
+        script = u'''
         global appIds
         tell application "System Events"
-            set appIds to id of every application process whose background only is false
+            set appIds to id of every application process whose ¬
+            background only is false
         end tell
         return appIds
         '''
