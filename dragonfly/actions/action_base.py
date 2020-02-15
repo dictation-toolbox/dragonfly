@@ -70,6 +70,12 @@ class ActionBase(object):
     def __iadd__(self, other):
         return ActionSeries(self, other)
 
+    def __or__(self, other):
+        return UnsafeActionSeries(self, other)
+
+    def __ior__(self, other):
+        return UnsafeActionSeries(self, other)
+
     def __mul__(self, factor):
         return ActionRepetition(self, factor)
 
@@ -219,7 +225,7 @@ class ActionSeries(ActionBase):
         # Get a flattened list of the series actions.
         result = []
         for action in self._actions:
-            if isinstance(action, ActionSeries):
+            if isinstance(action, ActionSeries) and action.stop_on_failures:
                 result.extend(action.flat_action_list())
             else:
                 result.append(action)
@@ -231,6 +237,10 @@ class ActionSeries(ActionBase):
         self._set_str()
 
     def __iadd__(self, other):
+        self.append(other)
+        return self
+
+    def __ior__(self, other):
         self.append(other)
         return self
 
@@ -248,6 +258,15 @@ class ActionSeries(ActionBase):
     def execute(self, data=None):
         # Override execute() to discard the return value.
         ActionBase.execute(self, data)
+
+
+class UnsafeActionSeries(ActionSeries):
+    stop_on_failures = False
+
+    def execute(self, data=None):
+        for action in self._actions:
+            action.execute(data)
+
 
 #---------------------------------------------------------------------------
 
