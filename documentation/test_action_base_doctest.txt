@@ -93,7 +93,7 @@ Series execution will continue if 'stop_on_failures' is False::
     executing 'b'
 
 
-Or if using the '|' or '|=' operators::
+Or if using the '|' or '\|\=' operators::
 
     >>> (a | bad_function | b).execute()
     executing 'a'
