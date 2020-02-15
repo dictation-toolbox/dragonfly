@@ -16,7 +16,7 @@ Test tool
 
 The following PrintAction is used in this test suite::
 
-    >>> from dragonfly import ActionBase, Repeat
+    >>> from dragonfly import ActionBase, Repeat, Function
     >>> class PrintAction(ActionBase):
     ...     def __init__(self, name):
     ...         ActionBase.__init__(self)
@@ -68,6 +68,40 @@ Concatenation of multiple actions::
     executing 'a'
     executing 'b'
     executing 'a'
+    executing 'a'
+    executing 'b'
+    executing 'a'
+
+
+Concatenating failing actions
+----------------------------------------------------------------------------
+
+Series execution normally stops if an action in the series fails::
+
+    >>> bad_function = Function(lambda: 1/0)
+    >>> # This will produce log messages about a ZeroDivisionError.
+    >>> failing_series = (a + bad_function + b)
+    >>> failing_series.execute()
+    executing 'a'
+
+
+Series execution will continue if 'stop_on_failures' is False::
+
+    >>> failing_series.stop_on_failures = False
+    >>> failing_series.execute()
+    executing 'a'
+    executing 'b'
+
+
+Or if using the '|' or '|=' operators::
+
+    >>> (a | bad_function | b).execute()
+    executing 'a'
+    executing 'b'
+    >>> unsafe_action = a | b
+    >>> unsafe_action |= bad_function
+    >>> unsafe_action |= a
+    >>> unsafe_action.execute()
     executing 'a'
     executing 'b'
     executing 'a'
