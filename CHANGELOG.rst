@@ -19,6 +19,8 @@ Added
 * Add optional recursive mode to CommandModuleDirectory class.
 * Add new load and load-directory CLI commands as alternatives to module
   loader scripts.
+* Add new on_end() and on_post_recognition() recognition observers
+  with optional parameters (thanks `@daanzu`_).
 * Add Window.set_focus() method for focusing windows without raising them
   (only supported on X11).
 * Add 'focus_only' argument to BringApp and FocusWindow actions to support
@@ -26,21 +28,37 @@ Added
 
 Changed
 ~~~~~~~
+* Add context manager to ListBase class for optimized list updates.
 * Add missing CommandModule properties and methods to CommandModuleDirectory
   class.
+* Change ActionBase class to catch all exceptions raised during execution,
+  not just ActionErrors (thanks `@daanzu`_).
+* Change ActionSeries class to stop execution if errors occur. The
+  ActionSeries.stop_on_failures attribute, UnsafeActionSeries class and
+  the '|' and '\|\=' operators can be used to have the previous behaviour.
 * Change Kaldi retain support to allow retaining only specifically chosen
   recognitions (thanks `@daanzu`_).
+* Change on_recognition() recognition observer to allow optional rule and
+  node parameters on functions (thanks `@daanzu`_).
 * Change setup.py test command to support running the test suites with
   different pytest options (thanks `@daanzu`_).
+* Change the StartApp action to use the macOS 'open' program if applicable.
+* Clean up and enhance log messages and dependency checks done in the
+  is_engine_available() and get_engine() functions (thanks `@LexiconCode`_).
+* Use application IDs instead of application names to differentiate between
+  different application processes on macOS (thanks `@dmakarov`_).
 
 Fixed
 ~~~~~
+* Fix Dragonfly's CLI so glob patterns are expanded where necessary (i.e. if
+  using cmd.exe on Windows).
 * Fix Kaldi version number checking (thanks `@daanzu`_).
 * Fix Python 2/3 bool incompatibility with dictation containers
   (thanks `@daanzu`_).
 * Fix bug with CommandModuleDirectory 'excludes' constructor parameter.
 * Fix bug with the command-line interface where the 'command' argument
   wasn't required.
+* Fix Function action deprecation warning in Python 3.
 
 
 0.20.0_ - 2020-01-03
@@ -786,6 +804,7 @@ This release is the first in the Git version control system.
 .. _@calmofthestorm: https://github.com/calmofthestorm
 .. _@comodoro: https://github.com/comodoro
 .. _@daanzu: https://github.com/daanzu
+.. _@dmakarov: https://github.com/dmakarov
 .. _@dusty-phillips: https://github.com/dusty-phillips
 .. _@lexxish: https://github.com/lexxish
 .. _@mrob95: https://github.com/mrob95
