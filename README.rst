@@ -12,7 +12,8 @@ is a fork of the original
 
 It currently supports the following speech recognition engines:
 
--  *Dragon NaturallySpeaking* (DNS), a product of *Nuance*
+-  *Dragon NaturallySpeaking* (DNS), a product of *Nuance*. All DNS versions
+   up to 15 (the latest) should be supported.
 -  *Windows Speech Recognition* (WSR), included with Microsoft Windows
    Vista, Windows 7+, and freely available for Windows XP
 -  *Kaldi* (under development)

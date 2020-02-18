@@ -76,6 +76,10 @@ Dragonfly uses Natlink to communicate with DNS.  The latest versions of
 Natlink are available from `SourceForge
 <https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`__.
 
+Dragonfly and Natlink support DNS versions up to 15 (latest). The DNS
+*Individual* editions are recommended, although other editions like *Home*
+will also work.
+
 Once Natlink is up and running, Dragonfly command-modules can be 
 treated as any other Natlink macro files.  Natlink automatically 
 loads macro files from a predefined directory.  Common locations 
