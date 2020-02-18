@@ -140,3 +140,21 @@ Basic usage::
     u'greetings'
     >>> test_ref.recognize("hello")
     RecognitionFailure
+
+
+Empty element class
+============================================================================
+
+Usage::
+
+    >>> empty = Empty()
+    >>> test_empty = ElementTester(empty)
+    >>> test_empty.recognize("hello")
+    RecognitionFailure
+    >>> empty_seq = Sequence([Literal("hello"), Empty(),
+    ...                       Literal("goodbye")])
+    >>> test_empty = ElementTester(empty_seq)
+    >>> test_empty.recognize("hello goodbye")
+    [u'hello', True, u'goodbye']
+    >>> test_empty.recognize("hello empty goodbye")
+    RecognitionFailure
