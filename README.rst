@@ -33,6 +33,33 @@ There are also bridged Gitter and Matrix channels:
 |Join Gitter chat|
 |Join Matrix chat|
 
+Usage example
+-------------
+
+A very simple example of Dragonfly usage is to create a static voice
+command with a callback that will be called when the command is spoken.
+This is done as follows:
+
+.. code-block:: python
+
+    from dragonfly import Grammar, CompoundRule
+
+    # Voice command rule combining spoken form and recognition processing.
+    class ExampleRule(CompoundRule):
+        spec = "do something computer"                  # Spoken form of command.
+        def _process_recognition(self, node, extras):   # Callback when command is spoken.
+            print("Voice command spoken.")
+
+    # Create a grammar which contains and loads the command rule.
+    grammar = Grammar("example grammar")                # Create a grammar to contain the command rule.
+    grammar.add_rule(ExampleRule())                     # Add the command rule to the grammar.
+    grammar.load()                                      # Load the grammar.
+
+The example above is very basic and doesn't show any of Dragonfly's
+exciting features, such as dynamic speech elements. To learn more about
+these, please take a look at `Dragonfly's online
+docs <http://dragonfly2.readthedocs.org/en/latest/>`__.
+
 Installation
 ------------
 
@@ -120,33 +147,6 @@ The related resources page of Dragonfly's documentation has a section on
 `command
 modules <http://dragonfly2.readthedocs.org/en/latest/related_resources.html#command-modules>`__
 which lists various sources.
-
-Usage example
--------------
-
-A very simple example of Dragonfly usage is to create a static voice
-command with a callback that will be called when the command is spoken.
-This is done as follows:
-
-.. code-block:: python
-
-    from dragonfly import Grammar, CompoundRule
-
-    # Voice command rule combining spoken form and recognition processing.
-    class ExampleRule(CompoundRule):
-        spec = "do something computer"                  # Spoken form of command.
-        def _process_recognition(self, node, extras):   # Callback when command is spoken.
-            print("Voice command spoken.")
-
-    # Create a grammar which contains and loads the command rule.
-    grammar = Grammar("example grammar")                # Create a grammar to contain the command rule.
-    grammar.add_rule(ExampleRule())                     # Add the command rule to the grammar.
-    grammar.load()                                      # Load the grammar.
-
-The example above is very basic and doesn't show any of Dragonfly's
-exciting features, such as dynamic speech elements. To learn more about
-these, please take a look at `Dragonfly's online
-docs <http://dragonfly2.readthedocs.org/en/latest/>`__.
 
 Rationale behind Dragonfly
 --------------------------

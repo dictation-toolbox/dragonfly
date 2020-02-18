@@ -25,31 +25,6 @@ Dragonfly's mailing list/discussion group is available at
 <https://groups.google.com/forum/#!forum/dragonflyspeech>`_.
 
 
-Documentation
-----------------------------------------------------------------------------
-
-Besides this page, the following documentation is also available:
-
-.. toctree::
-    :titlesonly:
-    :maxdepth: 2
-
-    introduction
-    object_model
-    engines
-    actions
-    language
-    miscellaneous
-    project
-    tests
-    changelog
-
-Direct links within this documentation to help you get started:
-
- - :ref:`features_and_target_audience`
- - :ref:`installation`
-
-
 Usage example
 ----------------------------------------------------------------------------
 
@@ -96,6 +71,30 @@ available for use with DNS are compared to Dragonfly as follows:
    whereas Dragonfly is a platform on which macro-writers can 
    easily build new commands. 
 
+
+Documentation
+----------------------------------------------------------------------------
+
+Besides this page, the following documentation is also available:
+
+.. toctree::
+    :titlesonly:
+    :maxdepth: 2
+
+    introduction
+    object_model
+    engines
+    actions
+    language
+    miscellaneous
+    project
+    tests
+    changelog
+
+Direct links within this documentation to help you get started:
+
+ - :ref:`features_and_target_audience`
+ - :ref:`installation`
 
 Indices and tables
 ----------------------------------------------------------------------------
