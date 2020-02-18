@@ -55,6 +55,10 @@ This is done as follows:
     grammar.add_rule(ExampleRule())                     # Add the command rule to the grammar.
     grammar.load()                                      # Load the grammar.
 
+Say *do something computer* and ``Voice command spoken.`` will be printed in
+the Natlink messages window. If you're not using Dragon, then it will be
+printed into the console window.
+
 The example above is very basic and doesn't show any of Dragonfly's
 exciting features, such as dynamic speech elements. To learn more about
 these, please take a look at `Dragonfly's online
