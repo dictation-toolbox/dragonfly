@@ -350,6 +350,10 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         # FIXME: not impossible enough (lower probability?)
         fst.add_arc(src_state, dst_state, self.impossible_word, weight=0)
 
+    # @trace_compile
+    def _compile_empty(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
+        pass
+
     #-----------------------------------------------------------------------
     # Utility methods.
 
