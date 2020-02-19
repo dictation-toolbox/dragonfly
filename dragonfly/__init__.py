@@ -36,7 +36,8 @@ from .grammar.rule_mapping       import MappingRule
 from .grammar.elements  import (ElementBase, Sequence, Alternative,
                                 Optional, Repetition, Literal,
                                 ListRef, DictListRef, Dictation, Modifier,
-                                RuleRef, RuleWrap, Empty, Compound, Choice)
+                                RuleRef, RuleWrap, Compound, Choice,
+                                Empty, Impossible)
 
 from .grammar.context   import Context, AppContext, FuncContext
 from .grammar.list      import ListBase, List, DictList

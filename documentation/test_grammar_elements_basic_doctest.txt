@@ -158,3 +158,23 @@ Usage::
     [u'hello', True, u'goodbye']
     >>> test_empty.recognize("hello empty goodbye")
     RecognitionFailure
+
+
+Impossible element class
+============================================================================
+
+Usage::
+
+    >>> impossible = Impossible()
+    >>> test_impossible = ElementTester(impossible)
+    >>> test_impossible.recognize("hello")
+    RecognitionFailure
+    >>> test_impossible.recognize("")
+    RecognitionFailure
+    >>> impossible_seq = Sequence([Literal("hello"), Impossible(),
+    ...                       Literal("goodbye")])
+    >>> test_impossible = ElementTester(impossible_seq)
+    >>> test_impossible.recognize("hello goodbye")
+    RecognitionFailure
+    >>> test_impossible.recognize("hello empty goodbye")
+    RecognitionFailure
