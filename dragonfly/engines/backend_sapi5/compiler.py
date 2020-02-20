@@ -221,3 +221,7 @@ class Sapi5Compiler(CompilerBase):
     def _compile_impossible(self, element, src_state, dst_state, grammar, grammar_handle):
         rule_handle = grammar_handle.Rules.FindRule("_FakeRule")
         src_state.AddRuleTransition(dst_state, rule_handle)
+
+    @trace_compile
+    def _compile_empty(self, element, src_state, dst_state, grammar, grammar_handle):
+        src_state.AddWordTransition(dst_state, '')

@@ -177,6 +177,10 @@ class TextInputEngine(EngineBase):
             raise TypeError("%r is not a string or other iterable object"
                             % words)
 
+        # Fail on empty input.
+        if not words:
+            raise MimicFailure("Invalid mimic input %r" % words)
+
         # Notify observers that a recognition has begun.
         self._recognition_observer_manager.notify_begin()
 

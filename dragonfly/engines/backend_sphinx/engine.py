@@ -1018,6 +1018,10 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if isinstance(words, (list, tuple)):
             words = " ".join(words)
 
+        # Fail on empty input.
+        if not words:
+            raise MimicFailure("Invalid mimic input %r" % words)
+
         if self.recognition_paused and words == self.config.WAKE_PHRASE:
             self.resume_recognition()
             return
