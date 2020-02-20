@@ -1074,7 +1074,17 @@ class Impossible(ElementBase):
     def decode(self, state):
         state.decode_attempt(self)
 
+        # Impossible elements always fail to decode.
         state.decode_failure(self)
+        return
+
+        # Turn this method into a generator by using 'yield'. This works
+        # even though the statement is unreachable.
+        # pylint: disable=unreachable
+        yield state
+
+    def value(self, node):
+        return self
 
 
 #---------------------------------------------------------------------------
