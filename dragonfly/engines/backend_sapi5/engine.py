@@ -225,6 +225,10 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         else:
             phrase = " ".join(words)
 
+        # Fail on empty input.
+        if not phrase:
+            raise MimicFailure("Invalid mimic input %r" % phrase)
+
         # Register a recognition observer for checking the success of this
         # mimic.
         observer = MimicObserver()

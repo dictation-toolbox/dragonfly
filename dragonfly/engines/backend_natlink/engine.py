@@ -240,6 +240,8 @@ class NatlinkEngine(EngineBase):
                 if isinstance(word, text_type):
                     word = word.encode(encoding)
                 prepared_words.append(word)
+            if len(prepared_words) == 0:
+                raise TypeError("empty list or string")
         except Exception as e:
             raise MimicFailure("Invalid mimic input %r: %s."
                                % (words, e))
