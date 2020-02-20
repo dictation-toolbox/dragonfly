@@ -175,8 +175,13 @@ class EngineBase(object):
                                   " engine %s." % self)
 
     def set_exclusiveness(self, grammar, exclusive):
+        """ Set the exclusiveness of a grammar. """
         raise NotImplementedError("Virtual method not implemented for"
                                   " engine %s." % self)
+
+    def set_exclusive(self, grammar, exclusive):
+        """ Alias of :meth:`set_exclusiveness`. """
+        self.set_exclusiveness(grammar, exclusive)
 
     def _get_grammar_wrapper(self, grammar):
         wrapper_key = id(grammar)

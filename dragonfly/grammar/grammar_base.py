@@ -151,10 +151,12 @@ class Grammar(object):
                            "recognitions or not.")
 
     def set_exclusiveness(self, exclusive):
-        """
-        Set the exclusiveness of this grammar.
-        """
+        """ Set the exclusiveness of this grammar. """
         self._engine.set_exclusiveness(self, exclusive)
+
+    def set_exclusive(self, exclusive):
+        """ Alias of :meth:`set_exclusiveness`. """
+        self.set_exclusiveness(exclusive)
 
     def _set_engine(self, engine):
         if self._loaded:
