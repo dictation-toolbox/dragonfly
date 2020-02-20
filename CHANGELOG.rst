@@ -11,6 +11,17 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Fixed
+~~~~~
+* Add set_exclusive() alias methods to Grammar & EngineBase classes to make
+  some older grammars work again.
+* Fix a few issues related to the Impossible and Empty elements
+  (thanks `@caspark`_ and `@daanzu`_).
+* Make all engine mimic() methods fail properly when given empty input.
+
 0.21.0_ - 2020-02-15
 --------------------
 
@@ -803,6 +814,7 @@ This release is the first in the Git version control system.
 .. _@Versatilus: https://github.com/Versatilus
 .. _@alexboche: https://github.com/alexboche
 .. _@calmofthestorm: https://github.com/calmofthestorm
+.. _@caspark: https://github.com/caspark
 .. _@comodoro: https://github.com/comodoro
 .. _@daanzu: https://github.com/daanzu
 .. _@dmakarov: https://github.com/dmakarov

@@ -1,5 +1,6 @@
 Alex Boche <akboche@gmail.com>
 Alex Roper <alex@aroper.net>
+Caspar Krieger <git@asparck.com>
 Christo Butcher <t4ngo@twizzy.biz>
 Christopher Schnick <c.schnick@monospark.org>
 Dane Finlay <Danesprite@posteo.net>
