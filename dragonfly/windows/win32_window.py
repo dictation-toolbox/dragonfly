@@ -32,8 +32,9 @@ Window class for Windows
 
 from ctypes          import windll, pointer, c_wchar, c_ulong
 
-import win32gui
+import win32api
 import win32con
+import win32gui
 
 from .base_window    import BaseWindow
 from .rectangle      import Rectangle
@@ -234,7 +235,10 @@ class Win32Window(BaseWindow):
             # Press a key so Windows allows us to use SetForegroundWindow()
             # (received last input event). See Microsoft's documentation on
             # SetForegroundWindow() for why this works.
-            Key("control:down,control:up").execute()
+            # Only do this if neither the left or right control keys are
+            # held down.
+            if win32api.GetKeyState(win32con.VK_CONTROL) == 0:
+                Key("control:down,control:up").execute()
 
             # Set the foreground window.
             self._set_foreground()
