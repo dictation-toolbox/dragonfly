@@ -20,6 +20,8 @@ Fixed
   some older grammars work again.
 * Fix a few issues related to the Impossible and Empty elements
   (thanks `@caspark`_ and `@daanzu`_).
+* Fix Win32 modifier bug where the control key could be released if held
+  down when Window.set_foreground() is called.
 * Make all engine mimic() methods fail properly when given empty input.
 
 0.21.0_ - 2020-02-15
