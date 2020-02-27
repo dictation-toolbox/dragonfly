@@ -169,9 +169,12 @@ class DarwinWindow(BaseWindow):
     def _get_window_module(self):
         script = '''
         global module
-        tell application "System Events" to tell application process id %s
-            set module to name
-        end tell
+        set module to ""
+        try
+            tell application "System Events" to tell application process id %s
+                set module to name
+            end tell
+        end try
         return module
         ''' % (self._id)
         return applescript.AppleScript(script).run()
@@ -179,9 +182,12 @@ class DarwinWindow(BaseWindow):
     def _get_window_pid(self):
         script = '''
         global pid
-        tell application "System Events" to tell application process id %s
-            set pid to unix id
-        end tell
+        set pid to -1
+        try
+            tell application "System Events" to tell application process id %s
+                set pid to unix id
+            end tell
+        end try
         return pid
         ''' % (self._id)
         return applescript.AppleScript(script).run()
