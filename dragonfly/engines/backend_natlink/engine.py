@@ -34,8 +34,7 @@ import sys
 import pywintypes
 from datetime import datetime
 from locale import getpreferredencoding
-from six import text_type, binary_type, string_types
-
+from six import text_type, binary_type, string_types, PY2
 from ..base        import EngineBase, EngineError, MimicFailure
 from ...error import GrammarError
 from .dictation    import NatlinkDictationContainer
@@ -235,11 +234,15 @@ class NatlinkEngine(EngineBase):
 
         try:
             prepared_words = []
-            encoding = getpreferredencoding()
-            for word in words:
-                if isinstance(word, text_type):
-                    word = word.encode(encoding)
-                prepared_words.append(word)
+            if PY2:
+                encoding = getpreferredencoding()
+                for word in words:
+                    if isinstance(word, text_type):
+                        word = word.encode(encoding)
+                    prepared_words.append(word)
+            else:
+                for word in words:
+                    prepared_words.append(word)
             if len(prepared_words) == 0:
                 raise TypeError("empty list or string")
         except Exception as e:

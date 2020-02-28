@@ -41,7 +41,7 @@ try:
 except ImportError:
     natlink = None
 
-from six import text_type, binary_type, string_types
+from six import text_type, binary_type, string_types, PY2
 
 import dragonfly.engines
 
@@ -69,7 +69,10 @@ class FlagContainer(object):
         return u"%s(%s)" % (self.__class__.__name__, self.flags_string())
 
     def __repr__(self):
-        return self.__unicode__().encode(getpreferredencoding())
+        if PY2:
+            return self.__unicode__().encode(getpreferredencoding())
+        else:
+            return self.__unicode__()
 
     def __getattr__(self, name):
         if name not in self.flag_names:
@@ -191,7 +194,10 @@ class Word(object):
         return u"%s(%s)" % (self.__class__.__name__, ", ".join(info))
 
     def __repr__(self):
-        return self.__unicode__().encode(getpreferredencoding())
+        if PY2:
+            return self.__unicode__().encode(getpreferredencoding())
+        else:
+            return self.__unicode__()
 
 
 #===========================================================================
@@ -444,7 +450,10 @@ class WordParserFactory(object):
     def detect_parser_class(self):
         engine = dragonfly.engines.get_engine()
         word = self.words_with_info.get(engine.language, ".\\dot")
-        info = natlink.getWordInfo(word.encode("windows-1252"))
+        if PY2:
+            info = natlink.getWordInfo(word.encode("windows-1252"))
+        else:
+            info = natlink.getWordInfo(word)
         if info == None:
             parser_class = WordParserDns11
         else:
