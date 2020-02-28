@@ -47,10 +47,11 @@ class MicAudio(object):
     BLOCK_SIZE_SAMPLES = int(SAMPLE_RATE / float(BLOCKS_PER_SECOND))  # Block size in number of samples
     BLOCK_DURATION_MS = int(1000 * BLOCK_SIZE_SAMPLES // SAMPLE_RATE)  # Block duration in milliseconds
 
-    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None):
+    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None, self_threaded=None):
         self.callback = callback if callback is not None else lambda in_data: self.buffer_queue.put(in_data, block=False)
         self.flush_queue = flush_queue
         self.input_device_index = int(input_device_index) if input_device_index is not None else None
+        self.self_threaded = bool(self_threaded)
 
         self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.BLOCK_DURATION_MS))
         self.stream = None
@@ -61,6 +62,7 @@ class MicAudio(object):
         callback = self.callback
         def proxy_callback(in_data, frame_count, time_info, status):
             callback(in_data)
+
         self.stream = sounddevice.RawInputStream(
             samplerate=self.SAMPLE_RATE,
             channels=self.CHANNELS,
@@ -68,20 +70,23 @@ class MicAudio(object):
             blocksize=self.BLOCK_SIZE_SAMPLES,
             # latency=80,
             device=self.input_device_index,
-            # callback=proxy_callback,
+            callback=proxy_callback if not self.self_threaded else None,
         )
-        self.thread = threading.Thread(target=self._reader_thread, args=(callback,))
-        self.thread.daemon = True
-        self.thread.start()
+
+        if self.self_threaded:
+            self.thread = threading.Thread(target=self._reader_thread, args=(callback,))
+            self.thread.daemon = True
+            self.thread.start()
+
         if start:
             self.start()
+
         device_info = sounddevice.query_devices(self.stream.device)
         hostapi_info = sounddevice.query_hostapis(device_info['hostapi'])
         _log.info("streaming audio from '%s' using %s: %i sample_rate, %i block_duration_ms, %i latency_ms",
             device_info['name'], hostapi_info['name'], self.stream.samplerate, self.BLOCK_DURATION_MS, int(self.stream.latency*1000))
 
     def _reader_thread(self, callback):
-        # while self.stream and self.stream.active and not self.stream.closed:
         while self.stream and not self.stream.closed:
             read_available = self.stream.read_available
             if read_available >= self.stream.blocksize:
@@ -95,17 +100,19 @@ class MicAudio(object):
 
     def destroy(self):
         self.stream.close()
-        self.stream = None
 
     def reconnect(self):
         self.stream.close()
+        if self.thread:
+            self.thread.join()
+            self.thread = None
         self._connect(start=True)
 
     def start(self):
         self.stream.start()
 
     def stop(self):
-        self.stream.close()
+        self.stream.stop()
 
     def read(self, nowait=False):
         """Return a block of audio data. If nowait==False, waits for a block if necessary; else, returns False immediately if no block is available."""
@@ -140,7 +147,7 @@ class MicAudio(object):
     def get_wav_length_s(self, data):
         assert isinstance(data, binary_type)
         length_bytes = len(data)
-        assert self.FORMAT == pyaudio.paInt16
+        assert self.FORMAT == 'int16'
         length_samples = length_bytes / self.SAMPLE_WIDTH
         return (float(length_samples) / self.SAMPLE_RATE)
 
@@ -149,7 +156,7 @@ class MicAudio(object):
         wf = wave.open(filename, 'wb')
         wf.setnchannels(self.CHANNELS)
         # wf.setsampwidth(self.pa.get_sample_size(FORMAT))
-        assert self.FORMAT == pyaudio.paInt16
+        assert self.FORMAT == 'int16'
         wf.setsampwidth(self.SAMPLE_WIDTH)
         wf.setframerate(self.SAMPLE_RATE)
         wf.writeframes(data)
