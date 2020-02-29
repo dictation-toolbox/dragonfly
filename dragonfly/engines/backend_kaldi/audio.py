@@ -61,7 +61,7 @@ class MicAudio(object):
     def _connect(self, start=None):
         callback = self.callback
         def proxy_callback(in_data, frame_count, time_info, status):
-            callback(in_data)
+            callback(bytes(in_data))  # Must copy data from temporary C buffer!
 
         self.stream = sounddevice.RawInputStream(
             samplerate=self.SAMPLE_RATE,
@@ -94,7 +94,7 @@ class MicAudio(object):
                 # print('_reader_thread', read_available, len(in_data), overflowed, self.stream.blocksize)
                 if overflowed:
                     _log.warning("audio stream overflow")
-                callback(in_data)
+                callback(bytes(in_data))  # Must copy data from temporary C buffer!
             else:
                 time.sleep(0.001)
 
