@@ -67,11 +67,8 @@ Grammar class
 ----------------------------------------------------------------------------
 
 .. autoclass:: dragonfly.grammar.grammar_base.Grammar
-   :members: name, engine, rules, lists,
-             load, unload, loaded,
-             enable, disable, enabled,
-             process_begin, _process_begin,
-             enter_context, exit_context
+   :members:
+   :private-members: _process_begin
 
 
 ConnectionGrammar class
