@@ -108,6 +108,8 @@ Action class reference
 .. automodule:: dragonfly.actions.action_mouse
    :members:
 
+.. _RefFunctionAction:
+
 .. automodule:: dragonfly.actions.action_function
    :members:
 
