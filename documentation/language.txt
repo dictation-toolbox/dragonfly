@@ -24,7 +24,8 @@ Supported languages for Dragon NaturallySpeaking 15 are `listed here <https://nu
 and the supported languages for Windows Speech are listed on
 `its Wikipedia page <https://en.wikipedia.org/wiki/Windows_Speech_Recognition#Overview_and_features>`_.
 
-The Pocket Sphinx engine documentation has a `section on language support <https://dragonfly2.readthedocs.io/en/latest/sphinx_engine.html?highlight=language#spoken-language-support>`_.
+The CMU Pocket Sphinx engine documentation page has a section on
+:ref:`spoken language support <RefSphinxSpokenLanguageSupport>`.
 
 Language classes reference
 ----------------------------------------------------------------------------
