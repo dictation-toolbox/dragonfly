@@ -196,4 +196,6 @@ element types from string specifications:
    successfully decoded during the recognition process.
 
 See the :ref:`RefElementCompoundDocTests` for
-:class:`~dragonfly.grammar.elements_compound.Compound` usage examples.
+:class:`~dragonfly.grammar.elements_compound.Compound` usage examples and
+see the :ref:`RefElementClasses` section for class references and further
+documentation on each element class.
