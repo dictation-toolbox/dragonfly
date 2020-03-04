@@ -68,6 +68,7 @@ dependencies, then you may need to upgrade pip with the following command:
 
     pip install --upgrade pip
 
+.. _RefDNSInstall:
 
 Installation for Dragon NaturallySpeaking
 ----------------------------------------------------------------------------
@@ -95,6 +96,7 @@ turn the microphone off and on again after placing a new
 command-modules in the Natlink directory, because otherwise 
 Natlink does not immediately see the new file.
 
+.. _RefWSRInstall:
 
 Installation for Windows Speech Recognition
 ----------------------------------------------------------------------------
