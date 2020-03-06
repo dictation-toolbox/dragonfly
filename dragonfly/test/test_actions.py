@@ -35,7 +35,7 @@ class TestNonAsciiText(unittest.TestCase):
         """ Test handling of non-ASCII characters in Text action. """
 
         action = Text(u"touché")
-        self.assertEqual(str(action), "Text(%r)" % (u"touché",))
+        self.assertEqual(str(action), "%r" % (u"touché",))
 
 
 class TestNonAsciiPaste(unittest.TestCase):

@@ -343,3 +343,6 @@ class Mouse(DynStrActionBase):
         window = Window.get_foreground()
         for event in events:
             event.execute(window)
+
+    def __str__(self):
+        return '<{}>'.format(self._spec)
