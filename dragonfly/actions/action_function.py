@@ -122,8 +122,7 @@ class Function(ActionBase):
             argspec = inspect.getfullargspec(self._function)
 
         args, varkw = argspec[0], argspec[2]
-        if varkw:  self._filter_keywords = False
-        else:      self._filter_keywords = True
+        self._filter_keywords = not varkw
         self._valid_keywords = set(args)
 
     def _execute(self, data=None):
@@ -148,3 +147,11 @@ class Function(ActionBase):
             self._log.exception("Exception from function %s:",
                                 self._function.__name__)
             raise ActionError("%s: %s" % (self, e))
+
+    def __str__(self):
+        if (self._str == '<lambda>'):
+            try:
+                return '{}()'.format(inspect.getsource(self._function).strip())
+            except OSError:
+                pass
+        return '{}()'.format(self._str)

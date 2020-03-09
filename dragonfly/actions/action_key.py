@@ -512,3 +512,6 @@ class Key(BaseKeyboardAction):
         else:
             self._keyboard.send_keyboard_events(events)
         return True
+
+    def __str__(self):
+        return '[{}]'.format(self._spec)

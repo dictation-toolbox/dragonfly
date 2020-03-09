@@ -24,6 +24,7 @@ ActionBase base class
 
 """
 
+from functools import reduce
 from locale import getpreferredencoding
 import logging
 
@@ -259,6 +260,9 @@ class ActionSeries(ActionBase):
         # Override execute() to discard the return value.
         ActionBase.execute(self, data)
 
+    def __str__(self):
+        return reduce((lambda x, y: "{}+{}".format(x, y)), self._actions)
+
 
 class UnsafeActionSeries(ActionSeries):
     stop_on_failures = False
@@ -299,6 +303,9 @@ class ActionRepetition(ActionBase):
         for _ in range(repeat):
             if self._action.execute(data) is False:
                 raise ActionError(str(self))
+
+    def __str__(self):
+        return '{{{}}}{}'.format(self._action, self._factor)
 
 
 #---------------------------------------------------------------------------
@@ -379,3 +386,6 @@ class Repeat(object):
                                   " (%s)" % (self._extra, e))
             count += additional
         return count
+
+    def __str__(self):
+        return '{}'.format(self._extra if self._extra else self._count)

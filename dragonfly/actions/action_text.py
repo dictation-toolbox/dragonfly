@@ -162,7 +162,7 @@ class Text(BaseKeyboardAction):
         "\n": typeables["enter"],
         "\t": typeables["tab"],
     }
-    
+
     def __init__(self, spec=None, static=False, pause=None,
                  autofmt=False, use_hardware=False):
         # Use the default pause time if pause in None.
@@ -267,3 +267,6 @@ class Text(BaseKeyboardAction):
         else:
             self._keyboard.send_keyboard_events(keyboard_events)
         return True
+
+    def __str__(self):
+        return u"{!r}".format(self._spec)
