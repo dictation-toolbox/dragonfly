@@ -30,6 +30,7 @@ from __future__ import print_function
 
 import locale
 import logging
+import os
 from subprocess import Popen, PIPE
 import sys
 
@@ -92,7 +93,15 @@ class X11Window(BaseWindow):
         full_readable_command = ' '.join(full_command)
         cls._log.debug(full_readable_command)
         try:
-            p = Popen(full_command, stdout=PIPE, stderr=PIPE)
+            kwargs = dict(stdout=PIPE, stderr=PIPE)
+
+            # Fork the process with setsid() if on a POSIX system such as
+            # Linux.
+            if os.name == 'posix':
+                kwargs.update(dict(preexec_fn=os.setsid))
+
+            # Execute the child process.
+            p = Popen(full_command, **kwargs)
             stdout, stderr = p.communicate()
 
             # Decode output if it is binary.
