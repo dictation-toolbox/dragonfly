@@ -18,6 +18,7 @@
 # This keyboard implementation is based on Aenea's x11_xdotool.py file.
 
 import logging
+import os
 import subprocess
 
 from ._x11_base import BaseX11Keyboard, KEY_TRANSLATION
@@ -73,10 +74,17 @@ class XdotoolKeyboard(BaseX11Keyboard):
         readable_command = ' '.join(command)
         cls._log.debug(readable_command)
         try:
-            return_code = subprocess.call(command)
-            if return_code > 0:
+            # Fork the process with setsid() if on a POSIX system such as
+            # Linux.
+            kwargs = {}
+            if os.name == 'posix':
+                kwargs.update(dict(preexec_fn=os.setsid))
+
+            # Execute the xdotool child process.
+            p = subprocess.Popen(command, **kwargs)
+            if p.wait() > 0:
                 raise RuntimeError("xdotool command exited with non-zero "
-                                   "return code %d" % return_code)
+                                   "return code %d" % p.returncode)
         except Exception as e:
             cls._log.exception("Failed to execute xdotool command '%s': "
                                "%s", readable_command, e)
