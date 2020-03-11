@@ -70,7 +70,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         DelegateTimerManagerInterface.__init__(self)
 
         try:
-            import kaldi_active_grammar, pyaudio, webrtcvad
+            import kaldi_active_grammar, sounddevice, webrtcvad
         except ImportError as e:
             self._log.error("%s: Failed to import Kaldi engine "
                             "dependencies: %s", self, e)
