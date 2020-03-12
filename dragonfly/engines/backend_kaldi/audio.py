@@ -23,12 +23,12 @@ Audio input/output classes for Kaldi backend
 """
 
 from __future__ import division, print_function
-import collections, contextlib, datetime, itertools, logging, os, time, wave
+import collections, contextlib, datetime, itertools, logging, os, time, threading, wave
 from io import open
 
-from six import binary_type, text_type, print_
+from six import PY2, binary_type, text_type, print_
 from six.moves import queue, range
-import pyaudio
+import sounddevice
 import webrtcvad
 
 from ..base import EngineError
@@ -39,62 +39,84 @@ _log = logging.getLogger("engine")
 class MicAudio(object):
     """Streams raw audio from microphone. Data is received in a separate thread, and stored in a buffer, to be read from."""
 
-    FORMAT = pyaudio.paInt16
+    FORMAT = 'int16'
     SAMPLE_WIDTH = 2
     SAMPLE_RATE = 16000
     CHANNELS = 1
-    BLOCKS_PER_SECOND = 50
+    BLOCKS_PER_SECOND = 100
     BLOCK_SIZE_SAMPLES = int(SAMPLE_RATE / float(BLOCKS_PER_SECOND))  # Block size in number of samples
     BLOCK_DURATION_MS = int(1000 * BLOCK_SIZE_SAMPLES // SAMPLE_RATE)  # Block duration in milliseconds
 
-    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None):
+    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None, self_threaded=None):
         self.callback = callback if callback is not None else lambda in_data: self.buffer_queue.put(in_data, block=False)
         self.flush_queue = flush_queue
         self.input_device_index = int(input_device_index) if input_device_index is not None else None
+        self.self_threaded = bool(self_threaded)
 
         self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.BLOCK_DURATION_MS))
-        self.pa = pyaudio.PyAudio()
+        self.stream = None
+        self.thread = None
         self._connect(start=start)
 
     def _connect(self, start=None):
         callback = self.callback
         def proxy_callback(in_data, frame_count, time_info, status):
-            callback(in_data)
-            return (None, pyaudio.paContinue)
-        self.stream = self.pa.open(
-            format=self.FORMAT,
+            callback(bytes(in_data))  # Must copy data from temporary C buffer!
+
+        self.stream = sounddevice.RawInputStream(
+            samplerate=self.SAMPLE_RATE,
             channels=self.CHANNELS,
-            rate=self.SAMPLE_RATE,
-            input=True,
-            frames_per_buffer=self.BLOCK_SIZE_SAMPLES,
-            stream_callback=proxy_callback,
-            input_device_index=self.input_device_index,
-            start=bool(start),
+            dtype=self.FORMAT,
+            blocksize=self.BLOCK_SIZE_SAMPLES,
+            # latency=80,
+            device=self.input_device_index,
+            callback=proxy_callback if not self.self_threaded else None,
         )
-        self.active = True
-        info = self.pa.get_default_input_device_info() if self.input_device_index is None else self.pa.get_device_info_by_index(self.input_device_index)
-        _log.info("streaming audio from '%s': %i sample_rate, %i block_duration_ms", info['name'], self.SAMPLE_RATE, self.BLOCK_DURATION_MS)
+
+        if self.self_threaded:
+            self.thread = threading.Thread(target=self._reader_thread, args=(callback,))
+            self.thread.daemon = True
+            self.thread.start()
+
+        if start:
+            self.start()
+
+        device_info = sounddevice.query_devices(self.stream.device)
+        hostapi_info = sounddevice.query_hostapis(device_info['hostapi'])
+        _log.info("streaming audio from '%s' using %s: %i sample_rate, %i block_duration_ms, %i latency_ms",
+            device_info['name'], hostapi_info['name'], self.stream.samplerate, self.BLOCK_DURATION_MS, int(self.stream.latency*1000))
+
+    def _reader_thread(self, callback):
+        while self.stream and not self.stream.closed:
+            read_available = self.stream.read_available
+            if read_available >= self.stream.blocksize:
+                in_data, overflowed = self.stream.read(self.stream.blocksize)
+                # print('_reader_thread', read_available, len(in_data), overflowed, self.stream.blocksize)
+                if overflowed:
+                    _log.warning("audio stream overflow")
+                callback(bytes(in_data))  # Must copy data from temporary C buffer!
+            else:
+                time.sleep(0.001)
 
     def destroy(self):
-        self.stream.stop_stream()
         self.stream.close()
-        self.pa.terminate()
-        self.active = False
 
     def reconnect(self):
-        self.stream.stop_stream()
         self.stream.close()
+        if self.thread:
+            self.thread.join()
+            self.thread = None
         self._connect(start=True)
 
     def start(self):
-        self.stream.start_stream()
+        self.stream.start()
 
     def stop(self):
-        self.stream.stop_stream()
+        self.stream.stop()
 
     def read(self, nowait=False):
         """Return a block of audio data. If nowait==False, waits for a block if necessary; else, returns False immediately if no block is available."""
-        if self.active or (self.flush_queue and not self.buffer_queue.empty()):
+        if self.stream or (self.flush_queue and not self.buffer_queue.empty()):
             if nowait:
                 try:
                     return self.buffer_queue.get_nowait()  # Return good block if available
@@ -125,7 +147,7 @@ class MicAudio(object):
     def get_wav_length_s(self, data):
         assert isinstance(data, binary_type)
         length_bytes = len(data)
-        assert self.FORMAT == pyaudio.paInt16
+        assert self.FORMAT == 'int16'
         length_samples = length_bytes / self.SAMPLE_WIDTH
         return (float(length_samples) / self.SAMPLE_RATE)
 
@@ -134,7 +156,7 @@ class MicAudio(object):
         wf = wave.open(filename, 'wb')
         wf.setnchannels(self.CHANNELS)
         # wf.setsampwidth(self.pa.get_sample_size(FORMAT))
-        assert self.FORMAT == pyaudio.paInt16
+        assert self.FORMAT == 'int16'
         wf.setsampwidth(self.SAMPLE_WIDTH)
         wf.setframerate(self.SAMPLE_RATE)
         wf.writeframes(data)
@@ -142,29 +164,29 @@ class MicAudio(object):
 
     @staticmethod
     def print_list():
-        pa = pyaudio.PyAudio()
-
         print_("")
         print_("LISTING ALL INPUT DEVICES SUPPORTED BY PORTAUDIO")
         print_("(any device numbers not shown are for output only)")
         print_("")
+        devices = sounddevice.query_devices()
+        print_(devices)
 
-        for i in range(0, pa.get_device_count()):
-            info = pa.get_device_info_by_index(i)
+        # for i in range(0, pa.get_device_count()):
+        #     info = pa.get_device_info_by_index(i)
 
-            if info['maxInputChannels'] > 0:  # microphone? or just speakers
-                print_("DEVICE #%d" % info['index'])
-                print_("    %s" % info['name'])
-                print_("    input channels = %d, output channels = %d, defaultSampleRate = %d" %
-                    (info['maxInputChannels'], info['maxOutputChannels'], info['defaultSampleRate']))
-                # print_(info)
-                try:
-                  supports16k = pa.is_format_supported(16000,  # sample rate
-                      input_device = info['index'],
-                      input_channels = info['maxInputChannels'],
-                      input_format = pyaudio.paInt16)
-                except ValueError:
-                  print_("    NOTE: 16k sampling not supported, configure pulseaudio to use this device")
+        #     if info['maxInputChannels'] > 0:  # microphone? or just speakers
+        #         print_("DEVICE #%d" % info['index'])
+        #         print_("    %s" % info['name'])
+        #         print_("    input channels = %d, output channels = %d, defaultSampleRate = %d" %
+        #             (info['maxInputChannels'], info['maxOutputChannels'], info['defaultSampleRate']))
+        #         # print_(info)
+        #         try:
+        #           supports16k = pa.is_format_supported(16000,  # sample rate
+        #               input_device = info['index'],
+        #               input_channels = info['maxInputChannels'],
+        #               input_format = pyaudio.paInt16)
+        #         except ValueError:
+        #           print_("    NOTE: 16k sampling not supported, configure pulseaudio to use this device")
 
         print_("")
 
@@ -214,7 +236,7 @@ class VADAudio(MicAudio):
                 # Bad/empty block
                 num_empty_blocks += 1
                 if (num_empty_blocks >= audio_reconnect_threshold_blocks) and (time.time() - last_good_block_time >= audio_reconnect_threshold_time):
-                    _log.warning("%s: no good block received recently, so reconnecting audio")
+                    _log.warning("%s: no good block received recently, so reconnecting audio", self)
                     self.reconnect()
                     num_empty_blocks = 0
                     last_good_block_time = time.time()
@@ -295,7 +317,7 @@ class AudioStore(object):
         self.deque = collections.deque(maxlen=maxlen) if maxlen else None
         self.blocks = []
 
-    current_audio_data = property(lambda self: b''.join(self.blocks))
+    current_audio_data = property(lambda self: b''.join(bytes(self.blocks)) if PY2 else b''.join(self.blocks))
     current_audio_length_ms = property(lambda self: len(self.blocks) * self.audio_obj.BLOCK_DURATION_MS)
 
     def add_block(self, block):
