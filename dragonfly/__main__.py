@@ -6,6 +6,8 @@ import re
 import sys
 import time
 
+import six
+
 from dragonfly import get_engine, MimicFailure, EngineError
 from dragonfly.loader import CommandModule, CommandModuleDirectory
 
@@ -71,7 +73,13 @@ def _on_begin():
 
 
 def _on_recognition(words):
-    print("Recognized: %s" % " ".join(words))
+    message = u"Recognized: %s" % u" ".join(words)
+
+    # This only seems to be an issue with Python 2.7 on Windows.
+    if six.PY2:
+        encoding = sys.stdout.encoding or "ascii"
+        message = message.encode(encoding, errors='replace')
+    print(message)
 
 
 def _on_failure():
