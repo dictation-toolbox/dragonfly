@@ -187,7 +187,7 @@ class BoundAction(ActionBase):
         ActionBase.__init__(self)
         self._action = action
         self._data = data
-        self._str = "%s, %s" % (action, data)
+        self._str = "%r, %r" % (action, data)
 
     #-----------------------------------------------------------------------
     # Execution methods.

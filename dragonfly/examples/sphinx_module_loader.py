@@ -13,9 +13,11 @@ the CMU Pocket Sphinx engine. It scans the directory it's in and loads any
 # TODO Have a simple GUI for pausing, resuming, cancelling and stopping
 # recognition, etc
 
-import os.path
 import logging
+import os.path
+import sys
 
+import six
 
 from dragonfly import get_engine
 from dragonfly.loader import CommandModuleDirectory
@@ -73,7 +75,13 @@ def main():
         print("Speech start detected.")
 
     def on_recognition(words):
-        print("Recognized: %s" % " ".join(words))
+        message = u"Recognized: %s" % u" ".join(words)
+
+        # This only seems to be an issue with Python 2.7 on Windows.
+        if six.PY2:
+            encoding = sys.stdout.encoding or "ascii"
+            message = message.encode(encoding, errors='replace')
+        print(message)
 
     def on_failure():
         print("Sorry, what was that?")
