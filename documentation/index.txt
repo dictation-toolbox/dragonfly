@@ -1,13 +1,28 @@
 Dragonfly
 ============================================================================
 
-Dragonfly is a speech recognition framework. It is a Python 
-package which offers a high-level object model and allows its 
-users to easily write scripts, macros, and programs which use 
-speech recognition. This is a fork of the original
+Dragonfly is a speech recognition framework for Python that makes it
+convenient to create custom commands to use with speech recognition
+software. It was written to make it very easy for Python macros, scripts,
+and applications to interface with speech recognition engines. Its design
+allows speech commands and grammar objects to be treated as first-class
+Python objects.
+
+Dragonfly can be used for general programming by voice. It is flexible
+enough to allow programming in any language, not just Python. It can also be
+used for speech-enabling applications, automating computer activities
+and dictating prose.
+
+Dragonfly contains its own powerful framework for defining and executing
+actions. It includes actions for text input and key-stroke simulation. This
+framework is cross-platform, working on Windows, macOS and Linux (X11 only).
+See the :ref:`actions sub-package documentation <RefActions>` for more
+information, including code examples.
+
+This project is a fork of the original
 `t4ngo/dragonfly <https://github.com/t4ngo/dragonfly>`__ project.
 
-It currently supports the following speech recognition engines:
+Dragonfly currently supports the following speech recognition engines:
 
  - :ref:`Dragon NaturallySpeaking <RefDNSInstall>` (DNS), a product of
    *Nuance*. All DNS versions up to 15 (the latest) should be supported.

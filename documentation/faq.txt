@@ -16,13 +16,17 @@ General Questions
 What is Dragonfly?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dragonfly is a speech recognition framework that makes it convenient to
-create custom commands to use with speech recognition software.
+Dragonfly is a speech recognition framework for Python that makes it
+convenient to create custom commands to use with speech recognition
+software. It was written to make it very easy for Python macros, scripts,
+and applications to interface with speech recognition engines. Its design
+allows speech commands and grammar objects to be treated as first-class
+Python objects.
 
-Dragonfly was written to make it very easy for Python macros, scripts,
-and applications to interface with speech recognition engines. Its
-design allows speech commands and grammar objects to be treated as
-first-class Python objects.
+Dragonfly can be used for general programming by voice. It is flexible
+enough to allow programming in any language, not just Python. It can also be
+used for speech-enabling applications, automating computer activities
+and dictating prose.
 
 
 Which speech recognition software and operating systems are supported?

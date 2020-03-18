@@ -4,13 +4,29 @@ Dragonfly
 |Build Status|
 |Docs Status|
 
-Dragonfly is a speech recognition framework. It is a Python package
-which offers a high-level object model and allows its users to easily
-write scripts, macros, and programs which use speech recognition. This
-is a fork of the original
+Dragonfly is a speech recognition framework for Python that makes it
+convenient to create custom commands to use with speech recognition
+software. It was written to make it very easy for Python macros, scripts,
+and applications to interface with speech recognition engines. Its design
+allows speech commands and grammar objects to be treated as first-class
+Python objects.
+
+Dragonfly can be used for general programming by voice. It is flexible
+enough to allow programming in any language, not just Python. It can also be
+used for speech-enabling applications, automating computer activities
+and dictating prose.
+
+Dragonfly contains its own powerful framework for defining and executing
+actions. It includes actions for text input and key-stroke simulation. This
+framework is cross-platform, working on Windows, macOS and Linux (X11 only).
+See the `actions sub-package documentation
+<file:///home/dane/repos/dragonfly/documentation/build/html/actions.html>`__
+for more information, including code examples.
+
+This project is a fork of the original
 `t4ngo/dragonfly <https://github.com/t4ngo/dragonfly>`__ project.
 
-It currently supports the following speech recognition engines:
+Dragonfly currently supports the following speech recognition engines:
 
 -  *Dragon NaturallySpeaking* (DNS), a product of *Nuance*. All DNS versions
    up to 15 (the latest) should be supported.
@@ -23,10 +39,12 @@ Dragonfly's documentation is available online at `Read the
 Docs <http://dragonfly2.readthedocs.org/en/latest/>`__. The changes in
 each release are listed in the project's `changelog
 <https://github.com/dictation-toolbox/dragonfly/blob/master/CHANGELOG.rst>`__.
-Dragonfly's FAQ is available at
-`Stackoverflow <http://stackoverflow.com/questions/tagged/python-dragonfly>`__.
-Dragonfly's mailing list/discussion group is available at `Google
-Groups <https://groups.google.com/forum/#!forum/dragonflyspeech>`__.
+Dragonfly's FAQ is available in the documentation `here
+<https://dragonfly2.readthedocs.io/en/latest/faq.html>`__.
+There are also a number of Dragonfly-related questions on `Stackoverflow
+<http://stackoverflow.com/questions/tagged/python-dragonfly>`_, although
+many of them are related to issues resolved in the latest version of
+Dragonfly.
 
 There are also bridged Gitter and Matrix channels:
 
@@ -112,37 +130,6 @@ dependencies, then you may need to upgrade pip with the following command:
 
     pip install --upgrade pip
 
-Features
---------
-
-Dragonfly was written to make it very easy for Python macros, scripts,
-and applications to interface with speech recognition engines. Its
-design allows speech commands and grammar objects to be treated as
-first-class Python objects. This allows easy and intuitive definition of
-complex command grammars and greatly simplifies processing recognition
-results.
-
-| *Language object model*
-| The core of Dragonfly is based on a flexible object model for handling
-  speech elements and command grammars. This makes it easy to define
-  complex language constructs, but also greatly simplifies retrieving
-  the semantic values associated with a speech recognition.
-
-|
-| *Support for multiple speech recognition engines*
-| Dragonfly's modular nature lets it use different speech recognition
-  engines at the back end, while still providing a single front end
-  interface to its users. This means that a program that uses Dragonfly
-  can be run on any of the supported back end engines without any
-  modification. Currently Dragonfly supports Dragon NaturallySpeaking,
-  Windows Speech Recognition (included with Windows Vista & above),
-  Kaldi (cross-platform), and CMU Pocket Sphinx (cross-platform).
-
-|
-| *Built-in action framework*
-| Dragonfly contains its own powerful framework for defining and
-  executing actions. It includes actions for text input and key-stroke
-  simulation.
 
 Existing command modules
 ------------------------
@@ -151,26 +138,6 @@ The related resources page of Dragonfly's documentation has a section on
 `command
 modules <http://dragonfly2.readthedocs.org/en/latest/related_resources.html#command-modules>`__
 which lists various sources.
-
-Rationale behind Dragonfly
---------------------------
-
-Dragonfly offers a powerful and unified interface to developers who want
-to use speech recognition in their software. It is used for both
-speech-enabling applications and for automating computer activities.
-
-In the field of scripting and automation, there are other alternatives
-available that add speech-commands to increase efficiency. Dragonfly
-differs from them in that it is a powerful development platform. The
-open source alternatives currently available for use with DNS are
-compared to Dragonfly as follows:
-
--  Vocola uses its own easy-to-use scripting language, whereas Dragonfly
-   uses Python and gives the macro-writer all the power available.
-
--  Unimacro offers a set of macros for common activities, whereas
-   Dragonfly is a platform on which macro-writers can easily build new
-   commands.
 
 .. |Build Status| image:: https://travis-ci.org/dictation-toolbox/dragonfly.svg?branch=master
    :target: https://travis-ci.org/dictation-toolbox/dragonfly
