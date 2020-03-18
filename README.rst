@@ -58,7 +58,7 @@ A very simple example of Dragonfly usage is to create a static voice
 command with a callback that will be called when the command is spoken.
 This is done as follows:
 
-.. code-block:: python
+..  code-block:: python
 
     from dragonfly import Grammar, CompoundRule
 
@@ -73,14 +73,58 @@ This is done as follows:
     grammar.add_rule(ExampleRule())                     # Add the command rule to the grammar.
     grammar.load()                                      # Load the grammar.
 
-Say *do something computer* and ``Voice command spoken.`` will be printed in
-the Natlink messages window. If you're not using Dragon, then it will be
-printed into the console window.
+To use this example, save it in a command module in your module loader
+directory or Natlink user directory, load it and then say *do something
+computer*. If the speech recognition engine recognized the command, then
+``Voice command spoken.`` will be printed in the Natlink messages window.
+If you're not using Dragon, then it will be printed into the console window.
 
-The example above is very basic and doesn't show any of Dragonfly's
-exciting features, such as dynamic speech elements. To learn more about
-these, please take a look at `Dragonfly's online
-docs <http://dragonfly2.readthedocs.org/en/latest/>`__.
+
+MappingRule usage example
+----------------------------------------------------------------------------
+
+A more common use of Dragonfly is the ``MappingRule`` class, which allows
+defining multiple voice commands. The following example is a simple grammar
+to be used when Notepad is the foreground window:
+
+..  code-block:: python
+
+    from dragonfly import (Grammar, AppContext, MappingRule, Dictation,
+                           Key, Text)
+
+    # Voice command rule combining spoken forms and action execution.
+    class NotepadRule(MappingRule):
+        # Define the commands and the actions they execute.
+        mapping = {
+            "save [file]":            Key("c-s"),
+            "save [file] as":         Key("a-f, a/20"),
+            "save [file] as <text>":  Key("a-f, a/20") + Text("%(text)s"),
+            "find <text>":            Key("c-f/20") + Text("%(text)s\n"),
+        }
+
+        # Define the extras list of Dragonfly elements which are available
+        # to be used in mapping specs and actions.
+        extras = [
+            Dictation("text")
+        ]
+
+
+    # Create the grammar and the context under which it'll be active.
+    context = AppContext(executable="notepad")
+    grammar = Grammar("Notepad example", context=context)
+
+    # Add the command rule to the grammar and load it.
+    grammar.add_rule(NotepadRule())
+    grammar.load()
+
+To use this example, save it in a command module in your module loader
+directory or Natlink user directory, load it, open a Notepad window and then
+say one of mapping commands. For example, saying *save* or *save file* will
+cause the control and S keys to be pressed.
+
+The example aboves don't show any of Dragonfly's exciting features, such as
+dynamic speech elements. To learn more about these, please take a look at
+`Dragonfly's online docs <http://dragonfly2.readthedocs.org/en/latest/>`__.
 
 Installation
 ------------
