@@ -43,6 +43,10 @@ classes:
    this element allows a rule to include (i.e. reference) another rule
  - :class:`ListRef` --
    reference to a :class:`dragonfly.grammar.list.List` object
+ - :class:`Impossible` --
+   a special element that cannot be recognized
+ - :class:`Empty` --
+   a special element that is always recognized
 
 The following *element* classes are built up out of the fundamental
 classes listed above:
@@ -52,12 +56,23 @@ classes listed above:
    and includes facilities for formatting the spoken words with correct
    spacing and capitalization
  - :class:`Modifier` --
-   modifies the output of another element by applying a function to it following recognition
+   modifies the output of another element by applying a function to it
+   following recognition
  - :class:`DictListRef` --
    reference to a :class:`dragonfly.DictList` object; this element is
    similar to the :class:`dragonfly.ListRef` element, except that it returns
    the value associated with the spoken words instead of the spoken words
-   themselves.
+   themselves
+ - :class:`RuleWrap` --
+   an element class used to wrap a Dragonfly element into a new private
+   rule to be referenced by the same element or other :class:`RuleRef`
+   elements
+
+See the following documentation sections for additional information and
+usage examples:
+
+ * :ref:`Elements (Object model section) <RefObjectModelElements>`
+ * :ref:`RefElementBasicDocTests`
 
 """
 
@@ -92,6 +107,9 @@ class ElementBase(object):
              - *name* (*str*, default: *None*) --
                the name of this element; can be used when interpreting
                complex recognition for retrieving elements by name.
+             - *default* (*object*, default: *None*) --
+               the default value used if this element is optional and wasn't
+               spoken
 
         """
         if not name:
@@ -255,6 +273,9 @@ class Sequence(ElementBase):
            the child elements of this element
          - *name* (*str*, default: *None*) --
            the name of this element
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
 
         For a recognition to match, all child elements must match
         the recognition in the order that they were given in the
@@ -359,6 +380,9 @@ class Optional(ElementBase):
            the child element of this element
          - *name* (*str*, default: *None*) --
            the name of this element
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
 
         Recognitions always match this element.  If the child element
         does match the recognition, then that result is used.
@@ -452,6 +476,9 @@ class Alternative(ElementBase):
            the child elements of this element
          - *name* (*str*, default: *None*) --
            the name of this element
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
 
         For a recognition to match, at least one of the child elements
         must match the recognition.  The first matching child is
@@ -549,6 +576,9 @@ class Repetition(Sequence):
            exactly *min* times (i.e. *max = min + 1*)
          - *name* (*str*, default: *None*) --
            the name of this element
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
          - *optimize* (*bool*, default: *True*) --
            whether the engine's compiler should compile the element
            optimally
@@ -684,6 +714,22 @@ class Repetition(Sequence):
 #---------------------------------------------------------------------------
 
 class Literal(ElementBase):
+    """
+        Element class representing one or more literal words which must be
+        said exactly by the speaker as given.
+
+        Constructor arguments:
+         - *text* (*str*) --
+           the words to be said by the speaker
+         - *name* (*str*, default: *None*) --
+           the name of this element
+         - *value* (*object*, default: *the recognized words*) --
+           value returned when this element is successfully decoded
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
+
+    """
 
     def __init__(self, text, name=None, value=None, default=None):
         ElementBase.__init__(self, name, default=default)
@@ -750,6 +796,19 @@ class Literal(ElementBase):
 #---------------------------------------------------------------------------
 
 class RuleRef(ElementBase):
+    """
+        Element class representing a reference to another Dragonfly rule.
+
+        Constructor arguments:
+         - *rule* (*Rule*) --
+           the Dragonfly rule to reference
+         - *name* (*str*, default: *None*) --
+           the name of this element
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
+
+    """
 
     def __init__(self, rule, name=None, default=None):
         ElementBase.__init__(self, name, default=default)
@@ -805,6 +864,21 @@ class RuleRef(ElementBase):
 #---------------------------------------------------------------------------
 
 class ListRef(ElementBase):
+    """
+        Element class representing a reference to a Dragonfly List.
+
+        Constructor arguments:
+         - *name* (*str*, default: *None*) --
+           the name of this element
+         - *list* (*ListBase*) --
+           the Dragonfly List to reference
+         - *key* (*object*, default: *None*) --
+           key to differentiate between list references at runtime
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
+
+    """
 
     # pylint: disable=redefined-builtin
     def __init__(self, name, list, key=None, default=None):
@@ -878,6 +952,21 @@ class ListRef(ElementBase):
 #---------------------------------------------------------------------------
 
 class DictListRef(ListRef):
+    """
+        Element class representing a reference to a Dragonfly DictList.
+
+        Constructor arguments:
+         - *name* (*str*, default: *None*) --
+           the name of this element
+         - *dict* (*DictList*) --
+           the Dragonfly DictList to reference
+         - *key* (*object*, default: *None*) --
+           key to differentiate between list references at runtime
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
+
+    """
 
     # pylint: disable=redefined-builtin
     def __init__(self, name, dict, key=None, default=None):
@@ -896,6 +985,19 @@ class DictListRef(ListRef):
 #---------------------------------------------------------------------------
 
 class Empty(ElementBase):
+    """
+        Element class representing something that is always recognized.
+
+        Constructor arguments:
+         - *name* (*str*, default: *None*) --
+           the name of this element
+         - *value* (*object*, default: *True*) --
+           value returned when this element is successfully decoded (always)
+
+        Empty elements are equivalent to children of :class:`Optional`
+        elements.
+
+    """
 
     def __init__(self, name=None, value=True, default=None):
         self._value = value
@@ -934,8 +1036,11 @@ class Dictation(ElementBase):
         Element class representing free dictation.
 
         Constructor arguments:
-            - *name* (*str*, default: *None*) --
-              the name of this element
+         - *name* (*str*, default: *None*) --
+           the name of this element
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
 
         Returns a string-like :class:`DictationContainerBase` object
         containing the recognised words.
@@ -1013,7 +1118,8 @@ class Dictation(ElementBase):
         return
 
     def value(self, node):
-        return node.engine.DictationContainer(node.words(), self._string_methods)
+        return node.engine.DictationContainer(node.words(),
+                                              self._string_methods)
 
 #---------------------------------------------------------------------------
 
@@ -1058,6 +1164,17 @@ class Modifier(Alternative):
 #---------------------------------------------------------------------------
 
 class Impossible(ElementBase):
+    """
+        Element class representing speech that cannot be recognized.
+
+        Constructor arguments:
+         - *name* (*str*, default: *None*) --
+           the name of this element
+
+        Using an :class:`Impossible` element in a Dragonfly rule makes it
+        impossible to recognize via speech or mimicry.
+
+    """
 
     def __init__(self, name=None):
         ElementBase.__init__(self, name)
@@ -1090,6 +1207,40 @@ class Impossible(ElementBase):
 #---------------------------------------------------------------------------
 
 class RuleWrap(RuleRef):
+    """
+        Element class to wrap a Dragonfly element into a new private rule
+        to be referenced by this element or others.
+
+        :class:`RuleWrap` is a sub-class of :class:`RuleRef`, so
+        :class:`RuleWrap` elements can be used in the same way as
+        :class:`RuleRef` elements.
+
+        Constructor arguments:
+         - *name* (*str*, default: *None*) --
+           the name of this element
+         - *element* (*Element*) --
+           the Dragonfly element to be wrapped
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
+
+        Examples:
+
+        .. code:: python
+
+           # For saying and processing a Choice element two times.
+           letter = RuleWrap("letter1", Choice("", {
+               "alpha": "a",
+               "bravo": "b",
+               "charlie": "c"
+           }))
+           letter_extras = [
+               letter,
+               RuleRef(letter.rule, "letter2"),
+               RuleRef(letter.rule, "letter3")
+           ]
+
+    """
 
     _next_id = 0
 
