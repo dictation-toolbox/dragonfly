@@ -3,6 +3,13 @@ Dragonfly
 
 |Build Status|
 |Docs Status|
+|Join Gitter chat|
+|Join Matrix chat|
+
+.. contents:: Contents
+
+Introduction
+----------------------------------------------------------------------------
 
 Dragonfly is a speech recognition framework for Python that makes it
 convenient to create custom commands to use with speech recognition
@@ -35,6 +42,9 @@ Dragonfly currently supports the following speech recognition engines:
 -  *Kaldi* (under development)
 -  *CMU Pocket Sphinx* (with caveats)
 
+Documentation and FAQ
+----------------------------------------------------------------------------
+
 Dragonfly's documentation is available online at `Read the
 Docs <http://dragonfly2.readthedocs.org/en/latest/>`__. The changes in
 each release are listed in the project's `changelog
@@ -46,13 +56,8 @@ There are also a number of Dragonfly-related questions on `Stackoverflow
 many of them are related to issues resolved in the latest version of
 Dragonfly.
 
-There are also bridged Gitter and Matrix channels:
-
-|Join Gitter chat|
-|Join Matrix chat|
-
-Usage example
--------------
+CompoundRule Usage example
+----------------------------------------------------------------------------
 
 A very simple example of Dragonfly usage is to create a static voice
 command with a callback that will be called when the command is spoken.
@@ -78,7 +83,6 @@ directory or Natlink user directory, load it and then say *do something
 computer*. If the speech recognition engine recognized the command, then
 ``Voice command spoken.`` will be printed in the Natlink messages window.
 If you're not using Dragon, then it will be printed into the console window.
-
 
 MappingRule usage example
 ----------------------------------------------------------------------------
@@ -127,7 +131,7 @@ dynamic speech elements. To learn more about these, please take a look at
 `Dragonfly's online docs <http://dragonfly2.readthedocs.org/en/latest/>`__.
 
 Installation
-------------
+----------------------------------------------------------------------------
 
 Dragonfly is a Python package. It can be installed as *dragonfly2* using
 pip:
@@ -159,8 +163,9 @@ distribution name, you'll need to remove the old version using:
 
 Dragonfly can also be installed by cloning this repository or
 downloading it from `the releases
-page <https://github.com/dictation-toolbox/dragonfly/releases>`__ and running
-the following (or similar) command in the project's root directory:
+page <https://github.com/dictation-toolbox/dragonfly/releases>`__ and
+running the following (or similar) command in the project's root
+directory:
 
 .. code:: shell
 
@@ -177,9 +182,8 @@ dependencies, then you may need to upgrade pip with the following command:
 
     pip install --upgrade pip
 
-
 Existing command modules
-------------------------
+----------------------------------------------------------------------------
 
 The related resources page of Dragonfly's documentation has a section on
 `command
