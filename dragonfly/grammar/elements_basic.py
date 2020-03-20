@@ -971,8 +971,8 @@ class DictListRef(ListRef):
     # pylint: disable=redefined-builtin
     def __init__(self, name, dict, key=None, default=None):
         if not isinstance(dict, DictList):
-            raise TypeError("Dict object of %s object must be a"
-                            " Dragonfly DictList." % self)
+            raise TypeError("Dict object of %s object must be a Dragonfly "
+                            "DictList." % self.__class__.__name__)
         ListRef.__init__(self, name, dict, key, default=default)
 
     #-----------------------------------------------------------------------
