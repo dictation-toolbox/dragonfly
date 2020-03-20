@@ -1038,6 +1038,10 @@ class Dictation(ElementBase):
         Constructor arguments:
          - *name* (*str*, default: *None*) --
            the name of this element
+         - *format* (*bool*, default: *True*) --
+           whether the value returned should be a
+           :class:`DictationContainerBase` object. If *False*, then the
+           returned value is a list of the recognized words
          - *default* (*object*, default: *None*) --
            the default value used if this element is optional and wasn't
            spoken
@@ -1118,8 +1122,11 @@ class Dictation(ElementBase):
         return
 
     def value(self, node):
-        return node.engine.DictationContainer(node.words(),
-                                              self._string_methods)
+        if self._format_words:
+            return node.engine.DictationContainer(node.words(),
+                                                  self._string_methods)
+        else:
+            return node.words()
 
 #---------------------------------------------------------------------------
 
