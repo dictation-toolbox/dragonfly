@@ -86,6 +86,9 @@ The following applications integrate Dragonfly for speech recognition:
  * `Speechcoder <https://github.com/bradteston/Speechcoder>`_
    --- A plug-in for Notepad++ to facilitate writing code
 
+
+.. _RefCommandModulesList:
+
 Command modules
 ============================================================================
 
@@ -103,6 +106,9 @@ Dragonfly:
 
  * `Dictation Toolbox' Dragonfly Scripts
    <https://github.com/dictation-toolbox/dragonfly-scripts>`_
+
+ * `Christo Butcher's command modules
+   <https://github.com/t4ngo/dragonfly-modules>`_
 
  * `Simian Hacker's Code-by-Voice
    <https://github.com/simianhacker/code-by-voice>`_

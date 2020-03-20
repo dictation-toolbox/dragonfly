@@ -41,9 +41,12 @@ upload releases to PyPI.org, but everything can still be imported using
 replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
 altogether.
 
-If you are installing this on X11/Linux, you will also need to install the
+If you are installing this on Linux, you will also need to install the
 `xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program for the
-``Key`` and ``Text`` actions to work.
+``Key`` and ``Text`` actions to work. Please note that Dragonfly is only
+fully functional in an X11 session. Input action classes, application
+contexts and the ``Window`` class will **not** be functional under Wayland.
+It is recommended that Wayland users switch to X11.
 
 If you have dragonfly installed under the original *dragonfly*
 distribution name, you'll need to remove the old version using:
@@ -68,6 +71,7 @@ dependencies, then you may need to upgrade pip with the following command:
 
     pip install --upgrade pip
 
+.. _RefDNSInstall:
 
 Installation for Dragon NaturallySpeaking
 ----------------------------------------------------------------------------
@@ -75,6 +79,10 @@ Installation for Dragon NaturallySpeaking
 Dragonfly uses Natlink to communicate with DNS.  The latest versions of
 Natlink are available from `SourceForge
 <https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`__.
+
+Dragonfly and Natlink support DNS versions up to 15 (latest). The DNS
+*Individual* editions are recommended, although other editions like *Home*
+will also work.
 
 Once Natlink is up and running, Dragonfly command-modules can be 
 treated as any other Natlink macro files.  Natlink automatically 
@@ -91,6 +99,7 @@ turn the microphone off and on again after placing a new
 command-modules in the Natlink directory, because otherwise 
 Natlink does not immediately see the new file.
 
+.. _RefWSRInstall:
 
 Installation for Windows Speech Recognition
 ----------------------------------------------------------------------------

@@ -153,15 +153,21 @@ The most common elements are:
  * :class:`~dragonfly.grammar.elements_basic.Literal`
    -- one or more literal words
  * :class:`~dragonfly.grammar.elements_basic.Sequence`
-   -- a series of other elements.
+   -- a series of other elements
  * :class:`~dragonfly.grammar.elements_basic.Alternative`
    -- a choice of other elements, only one of which can be said
    within a single recognition
  * :class:`~dragonfly.grammar.elements_basic.Optional`
    -- an element container which makes its single child element
    optional
+ * :class:`~dragonfly.grammar.elements_basic.Repetition`
+   -- an element class representing a repetition of one child element
  * :class:`~dragonfly.grammar.elements_basic.RuleRef`
    -- a reference to another rule
+ * :class:`~dragonfly.grammar.elements_basic.RuleWrap`
+   -- an element class used to wrap a Dragonfly element into a new private
+   rule to be referenced by the same element or other
+   :class:`~dragonfly.grammar.elements_basic.RuleRef` elements
  * :class:`~dragonfly.grammar.elements_basic.ListRef`
    -- a reference to a Dragonfly :class:`~dragonfly.grammar.list.List`
  * :class:`~dragonfly.grammar.elements_basic.DictListRef`
@@ -169,19 +175,36 @@ The most common elements are:
  * :class:`~dragonfly.grammar.elements_basic.Dictation`
    -- a free-form dictation element which allows the speaker to say
    one or more natural language words
+ * :class:`~dragonfly.grammar.elements_basic.Modifier`
+   -- a special element that allows direct modification of the output of
+   another element at recognition time
+ * :class:`~dragonfly.grammar.elements_basic.Impossible`
+   -- a special element that cannot be recognized
+ * :class:`~dragonfly.grammar.elements_basic.Empty`
+   -- a special element that is always recognized, similar to children of
+   :class:`~dragonfly.grammar.elements_basic.Optional` elements
 
 
 See the :ref:`RefElementBasicDocTests` for element usage examples.
 
 The above mentioned element types are at the heart of 
 Dragonfly's object model.  But of course using them all the time 
-to specify every grammar would be quite tedious.  There is 
-therefore also a special element which constructs these basic 
-element types from a string specification:
+to specify every grammar would be quite tedious.  There are
+therefore also special elements which construct these basic
+element types from string specifications:
 
  * :class:`~dragonfly.grammar.elements_compound.Compound`
-   -- a special element which parses a string 
+   -- a special element which parses a string
    spec to create a hierarchy of basic elements.
 
+ * :class:`~dragonfly.grammar.elements_compound.Choice`
+   -- a special element taking a :code:`choice` dictionary argument,
+   interpreting keys as
+   :class:`~dragonfly.grammar.elements_compound.Compound` string
+   specifications and values for what to return when compound specs are
+   successfully decoded during the recognition process.
+
 See the :ref:`RefElementCompoundDocTests` for
-:class:`~dragonfly.grammar.elements_compound.Compound` usage examples.
+:class:`~dragonfly.grammar.elements_compound.Compound` usage examples and
+see the :ref:`RefElementClasses` section for class references and further
+documentation on each element class.

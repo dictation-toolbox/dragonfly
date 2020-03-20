@@ -37,7 +37,10 @@ simplifies processing recognition results.
 *Built-in action framework*
    Dragonfly contains its own powerful framework for defining 
    and executing actions.  It includes actions for text input 
-   and key-stroke simulation.
+   and key-stroke simulation. This framework is cross-platform,
+   working on Windows, macOS and Linux (X11 only). See the
+   :ref:`actions sub-package documentation <RefActions>` for more
+   information, including code examples.
 
 
 Target audience

@@ -324,6 +324,8 @@ I hope to eventually have words and phoneme strings dynamically added to the
 current dictionary and language model using the Pocket Sphinx `ps_add_word`_
 function (from Python of course).
 
+.. _RefSphinxSpokenLanguageSupport:
+
 Spoken Language Support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
