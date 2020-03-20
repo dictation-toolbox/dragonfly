@@ -11,6 +11,35 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Changed
+~~~~~~~
+* Add __str__ method to essential action classes for visualization (thanks
+  `@dmakarov`_).
+* Change the Dictation element's value to be a list of recognized words
+  instead of a DictationContainer object if the 'format' constructor
+  argument is False. Previously, the 'format' argument did nothing.
+* Make various improvements to Dragonfly's documentation.
+* Make various improvements to the Kaldi engine's audio code (thanks
+  `@daanzu`_).
+
+Fixed
+~~~~~
+* Add code to verify that natlink is on the Python path before initializing
+  the engine (thanks `@LexiconCode`_).
+* Fix Python 2.7 console output encoding errors in on_recognition()
+  callbacks in CLI and module loaders.
+* Fix a minor bug in DictListRef's constructor.
+* Fix bugs where X11 Keyboard and Window class sub-processes can exit early.
+* Fix encoding bug with the string representation of BoundAction.
+* Fix some Python 3.x bugs with the Natlink engine and its tests (thanks
+  `@mrob95`_).
+* Make DarwinWindow get_window_module/pid methods error safe (thanks
+  `@dmakarov`_).
+
+
 0.21.1_ - 2020-02-24
 --------------------
 
