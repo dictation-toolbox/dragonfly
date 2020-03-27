@@ -99,8 +99,8 @@ def is_engine_available(**kwargs):
         if natlink.isNatSpeakRunning():
             return True
         else:
-            _log.warning("Natlink is available but NaturallySpeaking is not"
-                         " running.")
+            _log.warning("Requested engine 'natlink' is not available: "
+                         "Dragon NaturallySpeaking is not running")
             return False
     except Exception as e:
         _log.exception("Exception during natlink.isNatSpeakRunning(): "
