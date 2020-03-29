@@ -49,6 +49,17 @@ class Win32Monitor(BaseMonitor):
         monitor_info = win32api.GetMonitorInfo(self._handle)
         return monitor_info["Flags"] == 1
 
+    @property
+    def name(self):
+        """
+        The device name of this monitor.
+
+        :rtype: str
+        :returns: monitor name
+        """
+        monitor_info = win32api.GetMonitorInfo(self._handle)
+        return monitor_info["Device"]
+
     @classmethod
     def get_all_monitors(cls):
         # Get an updated list of monitors.
