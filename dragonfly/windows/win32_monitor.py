@@ -38,6 +38,17 @@ class Win32Monitor(BaseMonitor):
     #-----------------------------------------------------------------------
     # Class methods to create new Monitor objects.
 
+    @property
+    def is_primary(self):
+        """
+        Whether this is the primary display monitor.
+
+        :rtype: bool
+        :returns: true or false
+        """
+        monitor_info = win32api.GetMonitorInfo(self._handle)
+        return monitor_info["Flags"] == 1
+
     @classmethod
     def get_all_monitors(cls):
         # Get an updated list of monitors.
@@ -54,6 +65,11 @@ class Win32Monitor(BaseMonitor):
             rectangle = Rectangle(top_left_x, top_left_y, dx, dy)
 
             # Get a new or updated monitor object and add it to the list.
-            monitors.append(cls.get_monitor(handle, rectangle))
+            # Ensure that the primary monitor is first on the list.
+            monitor = cls.get_monitor(handle, rectangle)
+            if monitor.is_primary:
+                monitors.insert(0, monitor)
+            else:
+                monitors.append(monitor)
 
         return monitors
