@@ -298,23 +298,25 @@ class AppContext(Context):
         if isinstance(title, string_types):
             title = title.lower()
 
-        if self._executable and isinstance(executable, string_types):
+        if self._executable:
             found = False
-            for match in self._executable:
-                if executable.find(match) != -1:
-                    found = True
-                    break
+            if isinstance(executable, string_types):
+                for match in self._executable:
+                    if executable.find(match) != -1:
+                        found = True
+                        break
             if self._exclude == found:
                 self._log_match.debug("%s: No match, executable doesn't "
                                       "match.", self)
                 return False
 
-        if self._title and isinstance(title, string_types):
+        if self._title:
             found = False
-            for match in self._title:
-                if title.find(match) != -1:
-                    found = True
-                    break
+            if isinstance(title, string_types):
+                for match in self._title:
+                    if title.find(match) != -1:
+                        found = True
+                        break
             if self._exclude == found:
                 self._log_match.debug("%s: No match, title doesn't match.",
                                       self)
