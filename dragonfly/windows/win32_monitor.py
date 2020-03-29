@@ -47,7 +47,7 @@ class Win32Monitor(BaseMonitor):
         :returns: true or false
         """
         monitor_info = win32api.GetMonitorInfo(self._handle)
-        return monitor_info["Flags"] == 1
+        return monitor_info["Flags"] & 1 == 1
 
     @property
     def name(self):
