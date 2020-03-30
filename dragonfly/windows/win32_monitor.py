@@ -38,28 +38,6 @@ class Win32Monitor(BaseMonitor):
     #-----------------------------------------------------------------------
     # Class methods to create new Monitor objects.
 
-    @property
-    def is_primary(self):
-        """
-        Whether this is the primary display monitor.
-
-        :rtype: bool
-        :returns: true or false
-        """
-        monitor_info = win32api.GetMonitorInfo(self._handle)
-        return monitor_info["Flags"] & 1 == 1
-
-    @property
-    def name(self):
-        """
-        The device name of this monitor.
-
-        :rtype: str
-        :returns: monitor name
-        """
-        monitor_info = win32api.GetMonitorInfo(self._handle)
-        return monitor_info["Device"]
-
     @classmethod
     def get_all_monitors(cls):
         # Get an updated list of monitors.
@@ -84,3 +62,28 @@ class Win32Monitor(BaseMonitor):
                 monitors.append(monitor)
 
         return monitors
+
+    #-----------------------------------------------------------------------
+    # Methods that control attribute access.
+
+    @property
+    def is_primary(self):
+        """
+        Whether this is the primary display monitor.
+
+        :rtype: bool
+        :returns: true or false
+        """
+        monitor_info = win32api.GetMonitorInfo(self._handle)
+        return monitor_info["Flags"] & 1 == 1
+
+    @property
+    def name(self):
+        """
+        The device name of this monitor.
+
+        :rtype: str
+        :returns: monitor name
+        """
+        monitor_info = win32api.GetMonitorInfo(self._handle)
+        return monitor_info["Device"]

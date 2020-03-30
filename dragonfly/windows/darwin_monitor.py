@@ -63,3 +63,16 @@ class DarwinMonitor(BaseMonitor):
             monitors.append(cls.get_monitor(handle, rectangle))
 
         return monitors
+
+    #-----------------------------------------------------------------------
+    # Methods that control attribute access.
+
+    @property
+    def name(self):
+        """ The name of this monitor. """
+        handle = self.handle
+        for screen in NSScreen.screens():
+            if screen.deviceDescription()['NSScreenNumber'] == handle:
+                return screen.localizedName()
+
+        return u"macOS monitor"

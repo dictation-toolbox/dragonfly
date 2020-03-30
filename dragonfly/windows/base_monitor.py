@@ -106,6 +106,27 @@ class BaseMonitor(object):
                          fset=_set_rectangle,
                          doc="Protected access to rectangle attribute.")
 
+    @property
+    def is_primary(self):
+        """
+        Whether this is the primary display monitor.
+
+        :rtype: bool
+        :returns: true or false
+        """
+        rect = self.rectangle
+        return rect.x == 0 and rect.y == 0
+
+    @property
+    def name(self):
+        """
+        The name of this monitor.
+
+        :rtype: str
+        :returns: monitor name
+        """
+        raise NotImplementedError()
+
 
 class FakeMonitor(BaseMonitor):
     """
@@ -115,3 +136,13 @@ class FakeMonitor(BaseMonitor):
     @classmethod
     def get_all_monitors(cls):
         return []
+
+    @property
+    def name(self):
+        """
+        The name of this monitor.
+
+        :rtype: str
+        :returns: monitor name
+        """
+        return self.__class__.__name__
