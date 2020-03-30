@@ -123,7 +123,9 @@ class X11Monitor(BaseMonitor):
             # Get a new or updated monitor object and add it to the list.
             monitor = cls.get_monitor(name, rectangle)
             monitor.is_primary = primary
-            if primary:
+
+            # Ensure that the origin monitor is the first in the list.
+            if origin_x == 0 and origin_y == 0:
                 monitors.insert(0, monitor)
             else:
                 monitors.append(monitor)
