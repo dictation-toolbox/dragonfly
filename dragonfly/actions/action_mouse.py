@@ -215,8 +215,8 @@ class Mouse(DynStrActionBase):
     def _process_screen_position(self, spec, events):
         if not spec.startswith("[") or not spec.endswith("]"):
             return False
-        h_origin, h_value, v_origin, v_value = self._parse_position_pair(spec[1:-1])
-        event = MoveScreenEvent(h_origin, h_value, v_origin, v_value)
+        _, h_value, _, v_value = self._parse_position_pair(spec[1:-1])
+        event = MoveScreenEvent(True, h_value, True, v_value)
         events.append(event)
         return True
 
