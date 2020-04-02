@@ -44,14 +44,16 @@ window (``(0.5, 0.5)``) and then clicks the left mouse button once
     action = Mouse("(0.5, 0.5), left")
     action.execute()
 
-The line below moves the mouse cursor to 100 pixels left of the desktop's
-right edge and 250 pixels down from its top edge (``[-100, 250]``), and
-then double clicks the right mouse button (``right:2``)::
+The line below moves the mouse cursor to 100 pixels left of the primary
+monitor's left edge (if possible) and 250 pixels down from its top edge
+(``[-100, 250]``), and then double clicks the right mouse button
+(``right:2``)::
 
     # Square brackets ("[...]") give desktop-relative locations.
     # Integer locations ("1", "100", etc.) denote numbers of pixels.
-    # Negative numbers ("-100") are counted from the right-edge or the
-    #  bottom-edge of the desktop or window.
+    # Negative numbers ("-100") are counted from the left-edge of the
+    #  primary monitor. They are used to access monitors above or to the
+    #  left of the primary monitor.
     Mouse("[-100, 250], right:2").execute()
 
 The following command drags the mouse from the top right corner of the
@@ -78,9 +80,10 @@ following possible formats:
 
 Mouse movement actions:
 
- - location is absolute on the entire desktop:
+ - move the cursor relative to the top-left corner of the desktop monitor
+   containing coordinates ``[0, 0]`` (i.e. the primary monitor):
    ``[`` *number* ``,`` *number* ``]``
- - location is relative to the foreground window:
+ - move the cursor relative to the foreground window:
    ``(`` *number* ``,`` *number* ``)``
  - move the cursor relative to its current position:
    ``<`` *pixels* ``,`` *pixels* ``>``
@@ -215,8 +218,8 @@ class Mouse(DynStrActionBase):
     def _process_screen_position(self, spec, events):
         if not spec.startswith("[") or not spec.endswith("]"):
             return False
-        h_origin, h_value, v_origin, v_value = self._parse_position_pair(spec[1:-1])
-        event = MoveScreenEvent(h_origin, h_value, v_origin, v_value)
+        _, h_value, _, v_value = self._parse_position_pair(spec[1:-1])
+        event = MoveScreenEvent(True, h_value, True, v_value)
         events.append(event)
         return True
 

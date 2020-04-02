@@ -44,6 +44,7 @@ class X11Monitor(BaseMonitor):
     def __init__(self, name, rectangle):
         assert isinstance(name, string_types)
         self._name = name
+        self._primary = False
 
         # Get a numeric value from the name that we can use as a handle.
         handle = hash(name)
@@ -121,7 +122,10 @@ class X11Monitor(BaseMonitor):
 
             # Get a new or updated monitor object and add it to the list.
             monitor = cls.get_monitor(name, rectangle)
-            if primary:
+            monitor.is_primary = primary
+
+            # Ensure that the origin monitor is the first in the list.
+            if origin_x == 0 and origin_y == 0:
                 monitors.insert(0, monitor)
             else:
                 monitors.append(monitor)
@@ -131,6 +135,13 @@ class X11Monitor(BaseMonitor):
 
     #-----------------------------------------------------------------------
     # Methods that control attribute access.
+
+    def _set_primary(self, value):
+        self._primary = bool(value)
+
+    is_primary = property(fget=lambda self: self._primary,
+                          fset=_set_primary, doc="Whether this is the "
+                          "primary display monitor.")
 
     def _set_name(self, name):
         assert isinstance(name, string_types)
