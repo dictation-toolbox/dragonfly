@@ -293,15 +293,18 @@ class AppContext(Context):
     def matches(self, executable, title, handle):
         # pylint: disable=too-many-branches
         # Suppress warnings about too many if-else branches.
-        executable = executable.lower()
-        title = title.lower()
+        if isinstance(executable, string_types):
+            executable = executable.lower()
+        if isinstance(title, string_types):
+            title = title.lower()
 
         if self._executable:
             found = False
-            for match in self._executable:
-                if executable.find(match) != -1:
-                    found = True
-                    break
+            if isinstance(executable, string_types):
+                for match in self._executable:
+                    if executable.find(match) != -1:
+                        found = True
+                        break
             if self._exclude == found:
                 self._log_match.debug("%s: No match, executable doesn't "
                                       "match.", self)
@@ -309,10 +312,11 @@ class AppContext(Context):
 
         if self._title:
             found = False
-            for match in self._title:
-                if title.find(match) != -1:
-                    found = True
-                    break
+            if isinstance(title, string_types):
+                for match in self._title:
+                    if title.find(match) != -1:
+                        found = True
+                        break
             if self._exclude == found:
                 self._log_match.debug("%s: No match, title doesn't match.",
                                       self)
