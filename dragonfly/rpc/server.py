@@ -229,7 +229,6 @@ class RPCServer(object):
 
         self.security_token = security_token
         self._thread = None
-        self._timer = None
         self._dispatcher = Dispatcher(self)
 
         # Add the built-in RPC methods defined in methods.py.
@@ -321,26 +320,10 @@ class RPCServer(object):
             except Exception as e:
                 self._log.exception("Exception caught on RPC server thread:"
                                     " %s" % e)
-                # Stop the engine timer for processing requests if it is
-                # running.
-                if self._timer:
-                    self._timer.stop()
-                    self._timer = None
 
         self._thread = threading.Thread(target=run)
         self._thread.setDaemon(True)
         self._thread.start()
-
-        # If the current engine is natlink, then add a timer to ensure that
-        # requests sent to the server are processed.
-        engine = get_engine()
-        if engine.name == "natlink":
-            def natlink_timer():
-                # Let the server's thread run for a bit.
-                if self._thread:
-                    self._thread.join(0.0025)
-
-            self._timer = engine.create_timer(natlink_timer, 0.025)
 
         # Wait a few milliseconds to allow the server to start properly.
         time.sleep(0.1)
@@ -356,11 +339,6 @@ class RPCServer(object):
         # Return if the server isn't currently running.
         if not self._thread:
             return
-
-        # Stop the engine timer for processing requests.
-        if self._timer:
-            self._timer.stop()
-            self._timer = None
 
         # werkzeug is normally stopped through a request to the server.
         self.send_request("shutdown_rpc_server", [])
