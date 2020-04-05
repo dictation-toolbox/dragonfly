@@ -37,7 +37,9 @@ recognition users/developers:
  * `Dragonfly Speech Google Group
    <https://groups.google.com/forum/#!forum/dragonflyspeech>`_
 
- * `Dragonfly FAQ at Stackoverflow
+ * :ref:`Dragonfly's FAQ <RefFAQ>`
+
+ * `Dragonfly-related Stackoverflow Questions
    <http://stackoverflow.com/questions/tagged/python-dragonfly>`_
 
  * `Hands-Free Coding Blog

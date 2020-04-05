@@ -253,7 +253,7 @@ if you need Python threads to work *before* any Dragonfly grammar is loaded.
 The method only needs to be called once.
 
 If threads still aren't working properly for you, please see the
-:ref:<RefFAQUnansweredQuestions> section.
+:ref:`RefFAQUnansweredQuestions` section.
 
 
 How do I use an "extra" in a Dragonfly spec multiple times?
