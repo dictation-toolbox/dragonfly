@@ -133,7 +133,6 @@ import threading
 from six import string_types, binary_type
 
 from .action_base import ActionBase
-from ..engines import get_engine
 
 # --------------------------------------------------------------------------
 
@@ -277,26 +276,4 @@ class RunCommand(ActionBase):
         thread = threading.Thread(target=call)
         thread.setDaemon(True)
         thread.start()
-
-        # Start a timer if using natlink to allow asynchronous execution
-        # to work.
-        try:
-            import natlink
-            if not natlink.isNatSpeakRunning():
-                return True
-        except ImportError:
-            return True
-        engine = get_engine()
-        if engine.name == "natlink":
-            def natlink_timer():
-                # Let the thread run for a bit.
-                if thread.is_alive():
-                    thread.join(0.002)
-                else:
-                    timer.stop()
-            try:
-                timer = engine.create_timer(natlink_timer, 0.02)
-            except natlink.NatError:
-                # Ignore errors if natConnect() hasn't been called.
-                pass
         return True
