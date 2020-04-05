@@ -174,6 +174,20 @@ def get_current_engine():
 
         :rtype: EngineBase | None
         :returns: engine object or None
+
+        Usage example:
+
+        .. code-block:: python
+
+           # Print the name of the current engine if one has been
+           # initialized.
+           from dragonfly import get_current_engine
+           engine = get_current_engine()
+           if engine:
+               print("Engine name: %r" % engine.name)
+           else:
+               print("No engine has been initialized.")
+
     """
     global _default_engine
     return _default_engine

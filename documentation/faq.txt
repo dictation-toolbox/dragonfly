@@ -329,6 +329,23 @@ command-based speech recognition. This is because of the built-in commands
 and dictation output. Dragonfly defaults to the *in-process* SAPI5 engine
 because it doesn't have these defaults.
 
+Is there an easy way to check which speech recognition engine is in use?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes. The current engine can be checked using the
+:py:meth:`dragonfly.engines.get_current_engine` function. The following code
+prints the name of the current engine if one has been initialized:
+
+.. code-block:: python
+
+   from dragonfly import get_current_engine
+   engine = get_current_engine()
+   if engine:
+       print("Engine name: %r" % engine.name)
+   else:
+       print("No engine has been initialized.")
+
+
 .. _RefFAQUnansweredQuestions:
 
 Unanswered Questions
