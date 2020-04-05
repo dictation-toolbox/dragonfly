@@ -313,6 +313,7 @@ class EngineBase(object):
                       0x0c09: ("en", "AustralianEnglish"),
                       0xf00a: ("es", "CastilianSpanish"),
                       0xf809: ("en", "CAEnglish"),
+                      0x0004: ("zh", "Chinese"),
                       0x0413: ("nl", "Dutch"),
                       0x0009: ("en", "English"),
                       0x040c: ("fr", "French"),
