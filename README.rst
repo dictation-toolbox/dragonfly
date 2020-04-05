@@ -27,7 +27,7 @@ Dragonfly contains its own powerful framework for defining and executing
 actions. It includes actions for text input and key-stroke simulation. This
 framework is cross-platform, working on Windows, macOS and Linux (X11 only).
 See the `actions sub-package documentation
-<file:///home/dane/repos/dragonfly/documentation/build/html/actions.html>`__
+<https://dragonfly2.readthedocs.io/en/latest/actions.html>`__
 for more information, including code examples.
 
 This project is a fork of the original
