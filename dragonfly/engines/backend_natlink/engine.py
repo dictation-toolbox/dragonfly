@@ -40,7 +40,6 @@ from threading import Thread, Event
 from six import text_type, binary_type, string_types, PY2
 
 from ..base        import EngineBase, EngineError, MimicFailure
-from ...error import GrammarError
 from .dictation    import NatlinkDictationContainer
 from .recobs       import NatlinkRecObsManager
 from .timer        import NatlinkTimerManager
@@ -340,41 +339,8 @@ class NatlinkEngine(EngineBase):
         app = win32com.client.Dispatch("Dragon.DgnEngineControl")
         language = app.SpeakerLanguage("")
 
-        # Lookup the language tags.
-        tags = self._language_tags.get(language)
-        if tags:
-            return tags[0]
-
-        # The _language_tags dictionary didn't contain the language, so
-        # get the best match by using the primary language identifier.
-        # This allows us to match unlisted language variants.
-        primary_id = language & 0x00ff
-        for lang_id, (tag, _) in self._language_tags.items():
-            if primary_id == lang_id & 0x00ff:  # Match found.
-                return tag
-
-        # Speaker language wasn't found.
-        self._log.error("Unknown speaker language: 0x%04x" % language)
-        raise GrammarError("Unknown speaker language: 0x%04x" % language)
-
-    _language_tags = {
-                      0x0c09: ("en", "AustralianEnglish"),
-                      0xf00a: ("es", "CastilianSpanish"),
-                      0x0413: ("nl", "Dutch"),
-                      0x0009: ("en", "English"),
-                      0x040c: ("fr", "French"),
-                      0x0407: ("de", "German"),
-                      0xf009: ("en", "IndianEnglish"),
-                      0x0410: ("it", "Italian"),
-                      0x0411: ("jp", "Japanese"),
-                      0xf40a: ("es", "LatinAmericanSpanish"),
-                      0x0416: ("pt", "Portuguese"),
-                      0xf409: ("en", "SingaporeanEnglish"),
-                      0x040a: ("es", "Spanish"),
-                      0x0809: ("en", "UKEnglish"),
-                      0x0409: ("en", "USEnglish"),
-                      0xf809: ("en", "CAEnglish"),
-                     }
+        # Lookup and return the language tag.
+        return self._get_language_tag(language)
 
     def set_retain_directory(self, retain_dir):
         """

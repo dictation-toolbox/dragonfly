@@ -285,7 +285,19 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         self._speaker.Speak(text)
 
     def _get_language(self):
-        return "en"
+        if not self._recognizer:
+            return "en"
+
+        # Get Windows language identifiers for supported languages from the
+        # recognizer's current status information.
+        languages = self._recognizer.Status.SupportedLanguages
+
+        # Lookup and return the language tag for the first supported
+        # language ID.
+        if languages:
+            return self._get_language_tag(languages[0])
+        else:
+            return "en"
 
     def process_grammars_context(self, window=None):
         """
