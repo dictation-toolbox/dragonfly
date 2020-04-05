@@ -24,8 +24,10 @@ This project is a fork of the original
 
 Dragonfly currently supports the following speech recognition engines:
 
- - :ref:`Dragon NaturallySpeaking <RefDNSInstall>` (DNS), a product of
-   *Nuance*. All DNS versions up to 15 (the latest) should be supported.
+ - :ref:`Dragon <RefDNSInstall>`, a product of *Nuance*. All versions up to
+   15 (the latest) are supported. *Home*, *Professional Individual* and
+   previous similar editions of *Dragon* are supported. Other editions may
+   work too
  - :ref:`Windows Speech Recognition <RefWSRInstall>` (WSR), included with
    Microsoft Windows Vista, Windows 7+, and freely available for Windows XP
  - :ref:`Kaldi <RefKaldiEngine>` (under development)
