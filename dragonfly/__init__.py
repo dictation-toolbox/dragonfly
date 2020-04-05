@@ -25,7 +25,8 @@ from .config            import Config, Section, Item
 from .error             import DragonflyError, GrammarError
 
 # --------------------------------------------------------------------------
-from .engines           import get_engine, EngineError, MimicFailure
+from .engines           import (get_engine, EngineError, MimicFailure,
+                                get_current_engine)
 
 # --------------------------------------------------------------------------
 from .grammar.grammar_base       import Grammar

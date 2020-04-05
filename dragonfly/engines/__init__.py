@@ -50,6 +50,7 @@ def get_engine(name=None, **kwargs):
         :param \\**kwargs: optional keyword arguments passed through to the
             engine for engine-specific configuration.
         :rtype: EngineBase
+        :returns: engine object
         :raises: EngineError
     """
     global _default_engine, _engines_by_name
@@ -162,6 +163,34 @@ def get_engine(name=None, **kwargs):
         else:
             raise EngineError("Requested engine %r not available."
                               % (name,))
+
+
+def get_current_engine():
+    """
+        Get the currently initialized SR engine object.
+
+        If an SR engine has not been initialized yet, ``None`` will be
+        returned instead.
+
+        :rtype: EngineBase | None
+        :returns: engine object or None
+
+        Usage example:
+
+        .. code-block:: python
+
+           # Print the name of the current engine if one has been
+           # initialized.
+           from dragonfly import get_current_engine
+           engine = get_current_engine()
+           if engine:
+               print("Engine name: %r" % engine.name)
+           else:
+               print("No engine has been initialized.")
+
+    """
+    global _default_engine
+    return _default_engine
 
 
 # ---------------------------------------------------------------------------
