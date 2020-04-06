@@ -11,6 +11,32 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Changed
+~~~~~~~
+* Add get_current_engine() function that doesn't initialize an engine.
+* Add is_primary and name properties to all Monitor classes.
+* Change SAPI5 engine backend to use the recognizer language selected in the
+  options window instead of "en".
+* Reword confusing Natlink warning message shown when Dragon isn't running.
+* Update and fix various parts of the documentation.
+
+Fixed
+~~~~~
+* Add automatic fix for the NatlinkEngine class that allows threads to work
+  properly after the first grammar is loaded.
+* Change Dragonfly monitor lists to always have the primary monitor with
+  coordinates (0, 0) first on the list.
+* Fix Mouse action bug with negative absolute screen coordinates that made
+  monitors tricky to access sometimes.
+* Fix bug where X11Window.executable may return None in certain
+  circumstances.
+* Support AppContext edge cases where window executables or titles aren't
+  valid (thanks `@shervinemami`_).
+
+
 0.22.0_ - 2020-03-20
 --------------------
 
@@ -854,6 +880,7 @@ This release is the first in the Git version control system.
 .. _@dusty-phillips: https://github.com/dusty-phillips
 .. _@lexxish: https://github.com/lexxish
 .. _@mrob95: https://github.com/mrob95
+.. _@shervinemami: https://github.com/shervinemami
 .. _@tylercal: https://github.com/tylercal
 .. _@wolfmanstout: https://github.com/wolfmanstout
 
