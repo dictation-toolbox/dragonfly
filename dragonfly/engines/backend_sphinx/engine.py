@@ -24,7 +24,6 @@ Engine class for CMU Pocket Sphinx
 
 import contextlib
 import locale
-import logging
 import os
 import wave
 
@@ -71,9 +70,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
     def __init__(self):
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
-
-        # Set up the engine logger
-        logging.basicConfig()
 
         try:
             import sphinxwrapper, jsgf, pyaudio
