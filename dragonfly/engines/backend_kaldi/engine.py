@@ -22,7 +22,7 @@
 Kaldi engine classes
 """
 
-import collections, os, subprocess, sys, threading, time
+import collections, logging, os, subprocess, sys, threading, time
 
 from packaging.version import Version
 from six import integer_types, string_types, print_, reraise
@@ -85,6 +85,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self._log.error("%s: Incompatible kaldi_active_grammar version %s! Expected ~= %s!" % (self, kag_version, required_kag_version))
             self._log.error("See https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
             raise EngineError("Incompatible kaldi_active_grammar version")
+
+        # Hack to avoid bug processing keyboard actions on Windows
+        if os.name == 'nt':
+            action_exec_logger = logging.getLogger('action.exec')
+            if action_exec_logger.getEffectiveLevel() > logging.DEBUG:
+                self._log.warning("%s: Enabling logging of actions execution to avoid bug processing keyboard actions on Windows", self)
+                action_exec_logger.setLevel(logging.DEBUG)
 
         if not (isinstance(retain_dir, string_types) or (retain_dir is None)):
             self._log.error("Invalid retain_dir: %r" % retain_dir)
