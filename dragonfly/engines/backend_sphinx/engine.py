@@ -769,7 +769,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         return result
 
     @classmethod
-    def _generate_words_rules(cls, words, mimicking):
+    def _generate_words_rules(cls, words, mimicking, all_dictation):
         # Convert words to Unicode, treat all uppercase words as dictation
         # words and other words as grammar words.
         # Minor note: this won't work for languages without capitalisation.
@@ -777,7 +777,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         for word in words.split():
             if isinstance(word, binary_type):
                 word = word.decode(locale.getpreferredencoding())
-            if word.isupper() and mimicking:
+            if all_dictation or word.isupper() and mimicking:
                 # Convert dictation words to lowercase for consistent
                 # output.
                 result.append((word.lower(), 1000000))
@@ -806,6 +806,10 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         hypotheses = {}
         wrappers = self._grammar_wrappers.copy().values()
 
+        # Save the LM hypothesis separately because it will almost always be favoured
+        # over grammar hypotheses.
+        lm_hypothesis = speech
+
         # Count exclusive grammars.
         exclusive_count = 0
         for wrapper in wrappers:
@@ -822,7 +826,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # No grammar has been loaded.
         if not wrappers:
-            # TODO What should we do here? Output formatted Dictation like DNS?
             return processing_occurred, speech
 
         # Batch process audio buffers for each active grammar. Store each
@@ -847,18 +850,28 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Get the best hypothesis.
         speech = self._get_best_hypothesis(list(hypotheses.values()))
-        if not speech:
+        if not speech and not lm_hypothesis:
             return processing_occurred, speech
 
-        # Process speech using the first matching grammar.
-        words_rules = self._generate_words_rules(speech, mimicking)
-        for wrapper in wrappers:
-            if hypotheses[wrapper.search_name] != speech:
-                continue
+        if speech:
+            # Process speech using the first matching grammar.
+            words_rules = self._generate_words_rules(speech, mimicking, False)
+            for wrapper in wrappers:
+                if hypotheses[wrapper.search_name] != speech:
+                    continue
 
-            processing_occurred = wrapper.process_words(words_rules)
-            if processing_occurred:
-                break
+                processing_occurred = wrapper.process_words(words_rules)
+                if processing_occurred:
+                    break
+
+        if not processing_occurred:
+            # Process grammars using the LM hypothesis as dictation words.
+            dictation_words = self._generate_words_rules(lm_hypothesis, mimicking,
+                                                         True)
+            for wrapper in wrappers:
+                processing_occurred = wrapper.process_words(dictation_words)
+                if processing_occurred:
+                    break
 
         # Return whether processing occurred and the final speech hypothesis for
         # post processing.
