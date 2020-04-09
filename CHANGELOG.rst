@@ -11,6 +11,15 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Fixed
+~~~~~
+* Add temporary mitigation for Windows keyboard action processing bug
+  specific to the Kaldi engine (thanks `@daanzu`_).
+
+
 0.23.0_ - 2020-04-06
 --------------------
 
