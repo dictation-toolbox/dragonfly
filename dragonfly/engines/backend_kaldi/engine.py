@@ -22,7 +22,7 @@
 Kaldi engine classes
 """
 
-import collections, os, subprocess, sys, threading, time
+import collections, logging, os, subprocess, sys, threading, time
 
 from packaging.version import Version
 from six import integer_types, string_types, print_, reraise
@@ -85,6 +85,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self._log.error("%s: Incompatible kaldi_active_grammar version %s! Expected ~= %s!" % (self, kag_version, required_kag_version))
             self._log.error("See https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
             raise EngineError("Incompatible kaldi_active_grammar version")
+
+        # Hack to avoid bug processing keyboard actions on Windows
+        if os.name == 'nt':
+            action_exec_logger = logging.getLogger('action.exec')
+            if action_exec_logger.getEffectiveLevel() > logging.DEBUG:
+                self._log.warning("%s: Enabling logging of actions execution to avoid bug processing keyboard actions on Windows", self)
+                action_exec_logger.setLevel(logging.DEBUG)
 
         if not (isinstance(retain_dir, string_types) or (retain_dir is None)):
             self._log.error("Invalid retain_dir: %r" % retain_dir)
@@ -317,7 +324,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                         self.audio_store.add_block(block)
                     output, likelihood = self._decoder.get_output()
                     self._log.log(5, "Partial phrase: likelihood %f, %r [in_complex=%s]", likelihood, output, in_complex)
-                    kaldi_rule, words, words_are_dictation, in_dictation = self._compiler.parse_partial_output(output)
+                    kaldi_rule, words, words_are_dictation_mask, in_dictation = self._compiler.parse_partial_output(output)
                     in_complex = bool(in_dictation or (kaldi_rule and kaldi_rule.is_complex))
 
                 else:
@@ -453,10 +460,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     results.sort(key=lambda result: 100 if result[0].has_dictation else 0)
 
                 kaldi_rule, words = results[0]
-                words_are_dictation = [True] * len(words)  # FIXME: hack, but seems to work fine? only a problem for ambiguous rules containing dictation, which should be handled above
+                words_are_dictation_mask = [True] * len(words)  # FIXME: hack, but seems to work fine? only a problem for ambiguous rules containing dictation, which should be handled above
 
         elif self._compiler.parsing_framework == 'token':
-            kaldi_rule, words, words_are_dictation = self._compiler.parse_output(output,
+            kaldi_rule, words, words_are_dictation_mask = self._compiler.parse_output(output,
                 dictation_info_func=lambda: (self.audio_store.current_audio_data, self._decoder.get_word_align(output)))
             if kaldi_rule is None:
                 if words != []:
@@ -477,7 +484,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         words = tuple(words)
         grammar_wrapper = self._get_grammar_wrapper(kaldi_rule.parent_grammar)
         with debug_timer(self._log.debug, "dragonfly parse time"):
-            grammar_wrapper.recognition_callback(words, kaldi_rule.parent_rule, words_are_dictation)
+            grammar_wrapper.recognition_callback(words, kaldi_rule.parent_rule, words_are_dictation_mask)
 
         parsed_output = ' '.join(words)
         return kaldi_rule, parsed_output
@@ -498,12 +505,12 @@ class GrammarWrapper(object):
     def phrase_start_callback(self, fg_window):
         self.grammar.process_begin(fg_window.executable, fg_window.title, fg_window.handle)
 
-    def recognition_callback(self, words, rule, words_are_dictation):
+    def recognition_callback(self, words, rule, words_are_dictation_mask):
         try:
             # Prepare the words and rule names for the element parsers
-            rule_names = (rule.name,) + (('dgndictation',) if any(words_are_dictation) else ())
+            rule_names = (rule.name,) + (('dgndictation',) if any(words_are_dictation_mask) else ())
             words_rules = tuple((word, 0 if not is_dictation else 1)
-                for (word, is_dictation) in zip(words, words_are_dictation))
+                for (word, is_dictation) in zip(words, words_are_dictation_mask))
 
             # Attempt to parse the recognition
             func = getattr(self.grammar, "process_recognition", None)
