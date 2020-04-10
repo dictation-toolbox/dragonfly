@@ -151,7 +151,8 @@ class Function(ActionBase):
     def __str__(self):
         if (self._str == '<lambda>'):
             try:
-                return '{}()'.format(inspect.getsource(self._function).strip())
+                return '{!r}()'.format(inspect.getsource(self._function)
+                                       .strip())
             except OSError:
                 pass
-        return '{}()'.format(self._str)
+        return '{!r}()'.format(self._str)

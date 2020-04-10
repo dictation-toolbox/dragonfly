@@ -19,12 +19,16 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-
 import unittest
+
+from six import PY2
+
 from dragonfly.actions.action_base import Repeat
-from dragonfly.actions.action_text import Text
-from dragonfly.actions.action_paste import Paste
+from dragonfly.actions.action_function import Function
+from dragonfly.actions.action_key import Key
 from dragonfly.actions.action_mimic import Mimic
+from dragonfly.actions.action_paste import Paste
+from dragonfly.actions.action_text import Text
 
 
 #===========================================================================
@@ -36,6 +40,35 @@ class TestNonAsciiText(unittest.TestCase):
 
         action = Text(u"touché")
         self.assertEqual(str(action), "%r" % (u"touché",))
+
+
+class TestNonAsciiKey(unittest.TestCase):
+
+    def test_non_ascii_key(self):
+        """ Test handling of non-ASCII characters in Key action. """
+
+        action = Key(u"é")
+        self.assertEqual(str(action), "[%r]" % (u"é",))
+
+
+class TestNonAsciiActionSeries(unittest.TestCase):
+
+    def test_non_ascii_key(self):
+        """ Test handling of non-ASCII characters in ActionSeries actions.
+        """
+
+        action = Key(u"é") + Text(u"á")
+        self.assertEqual(str(action), "[%r]+%r" % (u"é", u"á"))
+
+
+class TestNonAsciiFunction(unittest.TestCase):
+
+    def test_non_ascii_function(self):
+        """ Test handling of non-ASCII characters in Function action. """
+
+        action = Function(lambda: u"é")
+        expected = u"\\xe9" if PY2 else u"é"
+        self.assertIn(expected, str(action))
 
 
 class TestNonAsciiPaste(unittest.TestCase):
@@ -54,6 +87,7 @@ class TestNonAsciiMimic(unittest.TestCase):
 
         action = Mimic("touché")
         self.assertEqual(str(action), "Mimic(%r)" % ("touché",))
+
 
 class TestRepeat(unittest.TestCase):
 
