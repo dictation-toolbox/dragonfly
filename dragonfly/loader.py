@@ -27,6 +27,8 @@ Command module loading classes
 import os.path
 import logging
 
+import six
+
 # --------------------------------------------------------------------------
 # Command module class; wraps a single command-module.
 
@@ -57,8 +59,10 @@ class CommandModule(object):
         # Attempt to execute the module; handle any exceptions.
         try:
             # pylint: disable=exec-used
-            exec(compile(open(self._path).read(), self._path, 'exec'),
-                 namespace)
+            # Read from the file in binary mode to avoid decoding issues.
+            with open(self._path, "rb") as f:
+                contents = f.read()
+            exec(compile(contents, self._path, 'exec'), namespace)
         except Exception as e:
             self._log.exception("%s: Error loading module: %s", self, e)
             self._loaded = False
