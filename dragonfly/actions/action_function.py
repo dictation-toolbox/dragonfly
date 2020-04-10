@@ -153,6 +153,6 @@ class Function(ActionBase):
             try:
                 return '{!r}()'.format(inspect.getsource(self._function)
                                        .strip())
-            except OSError:
+            except (OSError, IOError):
                 pass
         return '{!r}()'.format(self._str)
