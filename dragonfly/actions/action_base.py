@@ -272,6 +272,9 @@ class UnsafeActionSeries(ActionSeries):
         for action in self._actions:
             action.execute(data)
 
+    def __str__(self):
+        return reduce((lambda x, y: "{}|{}".format(x, y)), self._actions)
+
 
 #---------------------------------------------------------------------------
 

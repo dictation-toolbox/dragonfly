@@ -60,6 +60,9 @@ class TestNonAsciiActionSeries(unittest.TestCase):
         action = Key(u"é") + Text(u"á")
         self.assertEqual(str(action), "[%r]+%r" % (u"é", u"á"))
 
+        action = Key(u"é") | Text(u"á")
+        self.assertEqual(str(action), "[%r]|%r" % (u"é", u"á"))
+
 
 class TestNonAsciiFunction(unittest.TestCase):
 
