@@ -11,6 +11,17 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Fixed
+~~~~~
+* Add missing __str__ visualization method for UnsafeActionSeries.
+* Add missing catch for IOErrors in the Function.__str__() method.
+* Fix __str__ visualization methods that break Unicode support.
+* Fix some bugs with how Dragonfly command modules are loaded.
+
+
 0.23.1_ - 2020-04-09
 --------------------
 
