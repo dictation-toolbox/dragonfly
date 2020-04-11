@@ -28,7 +28,7 @@ from functools import reduce
 from locale import getpreferredencoding
 import logging
 
-from six import PY2, integer_types
+from six import PY2, integer_types, text_type
 
 
 #---------------------------------------------------------------------------
@@ -220,7 +220,8 @@ class ActionSeries(ActionBase):
     def _set_str(self):
         # Use a flat list of the series actions for a more readable
         # string representation.
-        self._str = ", ".join(str(a) for a in self.flat_action_list())
+        self._str = u", ".join(text_type(a)
+                               for a in self.flat_action_list())
 
     def flat_action_list(self):
         # Get a flattened list of the series actions.
@@ -270,6 +271,9 @@ class UnsafeActionSeries(ActionSeries):
     def execute(self, data=None):
         for action in self._actions:
             action.execute(data)
+
+    def __str__(self):
+        return reduce((lambda x, y: "{}|{}".format(x, y)), self._actions)
 
 
 #---------------------------------------------------------------------------

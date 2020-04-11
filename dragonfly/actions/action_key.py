@@ -514,4 +514,4 @@ class Key(BaseKeyboardAction):
         return True
 
     def __str__(self):
-        return '[{}]'.format(self._spec)
+        return '[{!r}]'.format(self._spec)
