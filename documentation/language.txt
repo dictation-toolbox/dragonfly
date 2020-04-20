@@ -1,35 +1,137 @@
 
-Language Support & Sub-package
+Spoken Language Support
 ============================================================================
 
-Dragonfly supports multiple spoken languages for its :class:`Integer`,
-:class:`IntegerRef` and :class:`Digits` classes. Each supported language has
-a sub-package under :attr:`dragonfly.language`. The current engine language
-will be automatically loaded by checking :attr:`engine.language`, an
-`ISO 639-1 code <https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>`_
-(e.g. "en").
+This section documents Dragonfly's support for spoken languages.
+
+
+Languages with speech recognition engine support
+----------------------------------------------------------------------------
+
+Speech recognition engines supported by Dragonfly have a set spoken
+language. This language can be checked via the :attr:`engine.language`
+property, which returns  an `ISO 639-1 code`_ (e.g. "en")::
+
+  from dragonfly import get_engine
+  engine = get_engine()
+
+  # Print the engine language.
+  print("Engine language: {}".format(engine.language))
+
+Each speech recognition engine supported by Dragonfly supports many
+languages. These are listed below with citations.
+
+It is worth noting that Dragonfly's use of ISO 639-1 language codes means
+that no distinction is made between variants of languages. For example,
+U.S. English and U.K. English will both yield :code:`"en"` and be treated as
+the same language, even though there are some differences.
+
+
+Languages supported by Dragon
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following languages are supported by *Dragon Professional Individual*
+version 15 [#f1]_:
+
+* English (multiple variants)
+* Dutch
+* French
+* German
+* Italian
+* Spanish
+
+Please check the linked Nuance knowledgebase page for the languages
+supported by other versions and editions of Dragon.
+
+
+Languages supported by Windows Speech Recognition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following languages are supported by Windows Speech Recognition (WSR) as
+of 2016 [#f2]_:
+
+* English (U.S.) (*)
+* English (U.K.)
+* Chinese (Simplified) (*)
+* Chinese (Traditional)
+* French (France)
+* German (Germany)
+* Japanese
+* Spanish (Spain)
+
+\* Successfully tested.
+
+Microsoft does not appear to be documenting the languages available for WSR
+any more, which is why the provided citation for this section is an
+archive.org link. Currently, the best way to find out if your language is
+supported is to look for available speech models in the Windows language
+settings: **Settings** > **Time & Language** > **Language**.
+
+
+Languages supported by CMU Pocket Sphinx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The CMU Pocket Sphinx engine documentation page has a section on
+:ref:`spoken language support <RefSphinxSpokenLanguageSupport>`. There are
+CMU Pocket Sphinx models and dictionaries available from Source Forge for
+the following languages [#f3]_:
+
+* English (U.S.) (*)
+* English (Indian)
+* Catalan
+* Chinese (Mandarin) (*)
+* Dutch
+* French
+* German
+* Greek
+* Hindi
+* Italian
+* Kazakh
+* Portuguese
+* Russian (*)
+* Spanish
+
+\* Successfully tested.
+
+English (U.S.) is the default language used by the CMU Pocket Sphinx engine.
+
+
+Languages with built-in grammar support
+----------------------------------------------------------------------------
+
+Dragonfly's :class:`Integer` :class:`IntegerRef` and :class:`Digits` classes
+have support for multiple spoken languages. Each supported language has a
+sub-package under :attr:`dragonfly.language`. The current engine language
+will be used to load the language-specific content classes in these
+sub-packages.
+
+This functionality is **optional**. Languages other than those listed below
+can still be used if the speech recognition supports them.
 
 The following languages are supported:
 
 * Arabic - "ar"
 * Dutch - "nl"
-* English (all variants) - "en"
+* English - "en"
 * German - "de"
 * Indonesian - "id"
 * Malaysian - "ms"
 
 English has additional time, date and character related classes.
 
-Supported languages for Dragon NaturallySpeaking 15 are `listed here <https://nuance.custhelp.com/app/answers/detail/a_id/6280/kw/Dragon%20NaturallySpeaking%20languages%20supported/related/1>`_
-and the supported languages for Windows Speech are listed on
-`its Wikipedia page <https://en.wikipedia.org/wiki/Windows_Speech_Recognition#Overview_and_features>`_.
-
-The CMU Pocket Sphinx engine documentation page has a section on
-:ref:`spoken language support <RefSphinxSpokenLanguageSupport>`.
 
 Language classes reference
-----------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: dragonfly.language.en.short_number
    :members:
 
+
+.. rubric:: References
+
+.. [#f1] https://nuance.custhelp.com/app/answers/detail/a_id/6280/kw/Dragon%20NaturallySpeaking%20languages%20supported/related/1
+.. [#f2] https://web.archive.org/web/20160501101405/http://www.microsoft.com:80/enable/products/windowsvista/speech.aspx
+.. [#f3] https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/
+
+.. Other links.
+.. _ISO 639-1 code: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
