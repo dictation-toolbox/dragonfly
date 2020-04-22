@@ -96,9 +96,9 @@ class LogTestCase(unittest.TestCase):
         logger.error("test_filtering - error")
         expected = ["grammar (WARNING): test_filtering - warning",
                     "grammar (ERROR): test_filtering - error"]
-        self.assertEqual(self._output.lines, expected)
+        self.assertEqual(self._error.lines, expected)
 
-        self._output.clear()
+        self._error.clear()
         logger = logging.getLogger("grammar.begin")
         logger.debug("test_filtering - debug")
         logger.info("test_filtering - info")
@@ -107,9 +107,9 @@ class LogTestCase(unittest.TestCase):
         expected = ["grammar.begin (INFO): test_filtering - info",
                     "grammar.begin (WARNING): test_filtering - warning",
                     "grammar.begin (ERROR): test_filtering - error"]
-        self.assertEqual(self._output.lines, expected)
+        self.assertEqual(self._error.lines, expected)
 
-        self._output.clear()
+        self._error.clear()
         logger = logging.getLogger("grammar.load")
         logger.debug("test_filtering - debug")
         logger.info("test_filtering - info")
@@ -117,7 +117,7 @@ class LogTestCase(unittest.TestCase):
         logger.error("test_filtering - error")
         expected = ["grammar.load (WARNING): test_filtering - warning",
                     "grammar.load (ERROR): test_filtering - error"]
-        self.assertEqual(self._output.lines, expected)
+        self.assertEqual(self._error.lines, expected)
 
     def _new_lines(self):
         filename = None
