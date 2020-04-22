@@ -149,12 +149,12 @@ class DispatchingHandler(logging.Handler):
 
 # --------------------------------------------------------------------------
 
-def _setup_stdout_handler():
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setLevel(logging.DEBUG)
+def _setup_stderr_handler():
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(name)s (%(levelname)s): %(message)s")
-    stdout_handler.setFormatter(formatter)
-    return stdout_handler
+    stderr_handler.setFormatter(formatter)
+    return stderr_handler
 
 _file_handler = None
 
@@ -175,27 +175,30 @@ def _setup_file_handler():
 
 # --------------------------------------------------------------------------
 
-_stdout_handler = None
+_stderr_handler = None
 _dispatching_handlers = {}
-_stdout_filters = {}
+_stderr_filters = {}
 _file_filters = {}
 
 
-def setup_log(use_stdout=True, use_file=True):
+def setup_log(use_stderr=True, use_file=True, use_stdout=False):
     """
     Setup Dragonfly's logging infrastructure with sane defaults.
 
-    :param use_stdout: whether to output log messages to stdout
+    :param use_stderr: whether to output log messages to stderr
       (default: True).
     :param use_file: whether to output log messages to the
       *~/.dragonfly.log* log file (default: True).
-    :type use_stdout: bool
+    :param use_stdout: this parameter does nothing andhas been left in for
+      backwards-compatibility (default: False).
+    :type use_stderr: bool
     :type use_file: bool
+    :type use_stdout: bool
 
     """
     global _dispatching_handlers
-    global _stdout_handler, _file_handler
-    global _stdout_filters, _file_filters
+    global _stderr_handler, _file_handler
+    global _stderr_filters, _file_filters
 
     # Remove any previously created dispatching handlers.
     for name, handler in _dispatching_handlers.items():
@@ -203,27 +206,27 @@ def setup_log(use_stdout=True, use_file=True):
         logger.removeHandler(handler)
 
     # Setup default handlers.
-    if use_stdout:
-        _stdout_handler = _setup_stdout_handler()
+    if use_stderr:
+        _stderr_handler = _setup_stderr_handler()
     if use_file:
         _file_handler = _setup_file_handler()
 
     # Create and register default filters.
     for name, levels in default_levels.items():
-        stdout_level, file_level = levels
+        stderr_level, file_level = levels
         handler = DispatchingHandler()
         _dispatching_handlers[name] = handler
-        if use_stdout:
-            stdout_filter = NameLevelFilter(name, stdout_level)
-            handler.add_handler_filter_pair(_stdout_handler, stdout_filter)
-            _stdout_filters[name] = stdout_filter
+        if use_stderr:
+            stderr_filter = NameLevelFilter(name, stderr_level)
+            handler.add_handler_filter_pair(_stderr_handler, stderr_filter)
+            _stderr_filters[name] = stderr_filter
         if use_file:
             file_filter = NameLevelFilter(name, file_level)
             handler.add_handler_filter_pair(_file_handler, file_filter)
             _file_filters[name] = file_filter
         logger = logging.getLogger(name)
         logger.addHandler(handler)
-        logger.setLevel(min(stdout_level, file_level))
+        logger.setLevel(min(stderr_level, file_level))
         logger.propagate = False
 
 
