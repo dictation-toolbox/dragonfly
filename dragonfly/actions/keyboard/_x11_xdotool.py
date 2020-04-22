@@ -60,9 +60,9 @@ class XdotoolKeyboard(BaseX11Keyboard):
 
             # Add arguments for pressing keys.
             if down:
-                arguments += ['keydown', key]
+                arguments += ['keydown', '--delay', '0', key]
             else:
-                arguments += ['keyup', key]
+                arguments += ['keyup', '--delay', '0', key]
 
             # Instruct xdotool to sleep after the keyboard event if
             # necessary.
