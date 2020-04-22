@@ -96,13 +96,28 @@ the following languages [#f3]_:
 English (U.S.) is the default language used by the CMU Pocket Sphinx engine.
 
 
+Languages supported by Kaldi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following languages are supported by the :ref:`RefKaldiEngine`:
+
+* English (U.S.)
+
+It is possible for Kaldi to support other languages in the future. This
+requires finding decent models for other languages and making minor
+modifications to enable their use by the `Kaldi Active Grammar`_ library.
+
+You can request to have your language supported by opening a `new issue`_ or
+by contacting `David Zurow (@daanzu)`_ directly.
+
+
 Languages with built-in grammar support
 ----------------------------------------------------------------------------
 
-Dragonfly's :class:`Integer` :class:`IntegerRef` and :class:`Digits` classes
-have support for multiple spoken languages. Each supported language has a
-sub-package under :attr:`dragonfly.language`. The current engine language
-will be used to load the language-specific content classes in these
+Dragonfly's :class:`Integer`, :class:`IntegerRef` and :class:`Digits`
+classes have support for multiple spoken languages. Each supported language
+has a sub-package under :attr:`dragonfly.language`. The current engine
+language will be used to load the language-specific content classes in these
 sub-packages.
 
 This functionality is **optional**. Languages other than those listed below
@@ -134,4 +149,7 @@ Language classes reference
 .. [#f3] https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/
 
 .. Other links.
+.. _David Zurow (daanzu): https://github.com/daanzu
 .. _ISO 639-1 code: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+.. _Kaldi Active Grammar: https://github.com/daanzu/kaldi-active-grammar
+.. _new issue: https://github.com/dictation-toolbox/dragonfly/issues/new
