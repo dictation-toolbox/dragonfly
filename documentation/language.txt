@@ -149,7 +149,7 @@ Language classes reference
 .. [#f3] https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/
 
 .. Other links.
-.. _David Zurow (daanzu): https://github.com/daanzu
+.. _David Zurow (@daanzu): https://github.com/daanzu
 .. _ISO 639-1 code: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 .. _Kaldi Active Grammar: https://github.com/daanzu/kaldi-active-grammar
 .. _new issue: https://github.com/dictation-toolbox/dragonfly/issues/new
