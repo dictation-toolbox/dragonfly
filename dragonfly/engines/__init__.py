@@ -58,10 +58,18 @@ def get_engine(name=None, **kwargs):
 
     if name and name in _engines_by_name:
         # If the requested engine has already been loaded, return it.
+        if kwargs is not None and len(kwargs) > 0:
+            message = ("Error: Passing get_engine arguments to an engine that has already been created, hence these arguments are ignored.")
+            print(message)
+            raise EngineError(message)
         return _engines_by_name[name]
     elif not name and _default_engine:
         # If no specific engine is requested and an engine has already
         #  been loaded, return it.
+        if kwargs is not None and len(kwargs) > 0:
+            message = ("Error: Passing get_engine arguments to an engine that has already been created, hence these arguments are ignored.")
+            print(message)
+            raise EngineError(message)
         return _default_engine
 
     # Check if we're on Windows. If name is None and we're not on Windows,
