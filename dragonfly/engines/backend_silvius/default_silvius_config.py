@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 """
-VoxhubEngine engine configuration module.
+SilviusEngine engine configuration module.
 """
 
 # Speech-recognition server (Default: localhost)

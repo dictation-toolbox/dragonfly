@@ -1,6 +1,7 @@
-﻿#
+#
 # This file is part of Dragonfly.
 # (c) Copyright 2007, 2008 by Christo Butcher
+# (c) Copyright 2018 by David Williams-King
 # Licensed under the LGPL.
 #
 #   Dragonfly is free software: you can redistribute it and/or modify it 
@@ -18,26 +19,35 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+
 """
-Recognition observer class for the Voxhub engine
+SR back-end package for Kaldi-based Silvius system
 ============================================================================
-
 """
 
-from ..base import RecObsManagerBase
+import logging
+_log = logging.getLogger("engine.silvius")
 
 
-class VoxhubRecObsManager(RecObsManagerBase):
-    """
-    This class's methods are called by the engine directly, rather than
-    through a grammar.
-    """
-    def __init__(self, engine):
-        RecObsManagerBase.__init__(self, engine)
+# Module level singleton instance of this engine implementation.
+_engine = None
 
-    # The following methods must be implemented by RecObsManagers.
-    def _activate(self):
-        pass
 
-    def _deactivate(self):
-        pass
+def is_engine_available():
+    """ Check whether the Silvius engine is available. """
+    global _engine
+    if _engine:
+        return True
+
+    # Silvius engine should always be available if there is a network
+    # connection.
+    return True
+
+
+def get_engine():
+    """ Retrieve the Silvius back-end engine object. """
+    global _engine
+    if not _engine:
+        from .engine import SilviusEngine
+        _engine = SilviusEngine()
+    return _engine

@@ -2,24 +2,24 @@ import pyaudio
 import audioop
 import threading
 
-class VoxhubMicrophoneManager:
+class SilviusMicrophoneManager:
     # Note: this will get created once per process.
     pyaudio_instance = None
 
     @staticmethod
     def get_pa():
-        if not VoxhubMicrophoneManager.pyaudio_instance:
+        if not SilviusMicrophoneManager.pyaudio_instance:
             # prints a lot of junk, but no avoiding it
-            VoxhubMicrophoneManager.pyaudio_instance = pyaudio.PyAudio()
-        return VoxhubMicrophoneManager.pyaudio_instance
+            SilviusMicrophoneManager.pyaudio_instance = pyaudio.PyAudio()
+        return SilviusMicrophoneManager.pyaudio_instance
 
     @staticmethod
     def dump_list():
-        pa = VoxhubMicrophoneManager.get_pa()
+        pa = SilviusMicrophoneManager.get_pa()
 
         print("")
         print("LISTING OF ALL INPUT DEVICES SUPPORTED BY PORTAUDIO.")
-        print("Device can be configured by adding <DEVICE_NUMBER> under device in voxhub_config.py")
+        print("Device can be configured by adding <DEVICE_NUMBER> under device in silvius_config.py")
         print("(any device numbers not shown are for output only)")
         print("")
 
@@ -35,7 +35,7 @@ class VoxhubMicrophoneManager:
 
     @staticmethod
     def lookup_microphone_helper(name):
-        pa = VoxhubMicrophoneManager.get_pa()
+        pa = SilviusMicrophoneManager.get_pa()
 
         for i in range(0, pa.get_device_count()):
             info = pa.get_device_info_by_index(i)
@@ -56,13 +56,13 @@ class VoxhubMicrophoneManager:
         if(isinstance(name, list)):
             for value in name:
                 print("Trying microphone '" + value + "'...")
-                m = VoxhubMicrophoneManager.lookup_microphone_helper(value)
+                m = SilviusMicrophoneManager.lookup_microphone_helper(value)
                 if(m != -1):
                     print("    found!")
                     return m
             print("WARNING: no specified microphones found, trying default")
         else:
-            m = VoxhubMicrophoneManager.lookup_microphone_helper(name)
+            m = SilviusMicrophoneManager.lookup_microphone_helper(name)
             if(m != -1): return m
             print("WARNING: specified microphone '" + name + "' not found, trying default")
 
@@ -70,7 +70,7 @@ class VoxhubMicrophoneManager:
 
     @staticmethod
     def open(mic_index, byte_rate, chunk):
-        pa = VoxhubMicrophoneManager.get_pa()
+        pa = SilviusMicrophoneManager.get_pa()
         stream = None
         original_byte_rate = byte_rate
 
@@ -88,7 +88,7 @@ class VoxhubMicrophoneManager:
                     input_device_index = mic_index,
                     frames_per_buffer  = chunk)
                 print("Creating microphone with", byte_rate, stream)
-                return VoxhubMicrophone(original_byte_rate, byte_rate, stream, chunk)
+                return SilviusMicrophone(original_byte_rate, byte_rate, stream, chunk)
             except IOError as e:
                 if e.errno == -9997 or e.errno == 'Invalid sample rate':
                     new_sample_rate = int(pa.get_device_info_by_index(mic_index)['defaultSampleRate'])
@@ -99,7 +99,7 @@ class VoxhubMicrophoneManager:
                 print("\nCould not open microphone. Please try a different device.")
                 return None
 
-class VoxhubMicrophone:
+class SilviusMicrophone:
     def __init__(self, original_byte_rate, byte_rate, stream, chunk):
         self.original_byte_rate = original_byte_rate
         self.byte_rate = byte_rate
@@ -124,7 +124,7 @@ class VoxhubMicrophone:
                     if rms < self.audio_gate:
                         data = '\00' * len(data)
                 if self.byte_rate != self.original_byte_rate:
-                    (data, last_state) = audioop.ratecv(data, 2, 1, sample_rate, self.byterate, last_state)
+                    (data, last_state) = audioop.ratecv(data, 2, 1, sample_rate, self.byte_rate, last_state)
 
                 running = data_callback(data)
 

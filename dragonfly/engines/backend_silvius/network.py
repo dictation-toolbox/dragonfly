@@ -21,16 +21,16 @@ reconnect_mode = True
 fatal_error = False
 
 
-class VoxhubAudioProcess:
+class SilviusAudioProcess:
     # This is meant to be invoked from a separate process. It loops forever.
     @staticmethod
     def connect_to_server(queue=None):
-        uri = VoxhubAudioProcess.create_connection_uri()
+        uri = SilviusAudioProcess.create_connection_uri()
 
         while True:
             print("Connecting to", uri, file=sys.stderr)
             ws = MyClient(uri, byte_rate=MISC_CONFIG["byte_rate"],
-                mic=VoxhubMicrophoneManager.lookup_microphone(MISC_CONFIG["device"]),
+                mic=SilviusMicrophoneManager.lookup_microphone(MISC_CONFIG["device"]),
                 show_hypotheses=MISC_CONFIG["hypotheses"],
                 save_adaptation_state_filename=MISC_CONFIG.get("save_adaptation_state", None),
                 send_adaptation_state_filename=MISC_CONFIG.get("send_adaptation_state", None),
@@ -64,7 +64,7 @@ class MyClient(WebSocketClient):
         self.send(data, binary=True)
 
     def opened(self):
-        mic = VoxhubMicrophoneManager.open(self.mic, self.byte_rate, self.chunk)
+        mic = SilviusMicrophoneManager.open(self.mic, self.byte_rate, self.chunk)
         if not mic:
             global fatal_error
             fatal_error = True

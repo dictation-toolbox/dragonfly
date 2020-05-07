@@ -2,7 +2,7 @@
 Command-module loader for Voxhub/Silvius.
 
 This script can be used to look for Dragonfly command-modules for use with
-the Voxhub engine. It scans the directory it's in and loads any ``_*.py``
+the Silvius engine. It scans the directory it's in and loads any ``_*.py``
 it finds.
 """
 
@@ -54,10 +54,10 @@ def main():
         # when this module is run from PythonWin.  In this case we
         # simply use the current working directory.
         path = os.getcwd()
-        __file__ = os.path.join(path, "voxhub_module_loader.py")
+        __file__ = os.path.join(path, "silvius_module_loader.py")
 
     # Initialize the engine and connect.
-    engine = get_engine("voxhub")
+    engine = get_engine("silvius")
     # engine.list_available_microphones()
     # engine.dump_grammar()
     engine.connect(process_speech=False)  # load grammars before listening.

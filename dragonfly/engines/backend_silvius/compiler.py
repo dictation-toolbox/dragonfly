@@ -19,7 +19,7 @@
 #
 
 """
-    This file implements the compiler class for Voxhub.
+    This file implements the compiler class for Silvius.
     Currently, it is only used to dump a representation of the grammar.
 """
 
@@ -31,7 +31,7 @@ from ..base import CompilerBase, CompilerError
 
 #===========================================================================
 
-class VoxhubCompiler(CompilerBase):
+class SilviusCompiler(CompilerBase):
 
     #-----------------------------------------------------------------------
     # Methods for compiling grammars.

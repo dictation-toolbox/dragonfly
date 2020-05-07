@@ -132,7 +132,7 @@ setup(
                     "sounddevice == 0.3.*",
                     "webrtcvad-wheels == 2.0.*",
                    ],
-          "voxhub": [
+          "silvius": [
                     "pyaudio",
                     "ws4py"
                     ]

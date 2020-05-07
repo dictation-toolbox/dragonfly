@@ -20,7 +20,7 @@
 #
 
 """
-VoxhubEngine class
+SilviusEngine class
 ============================================================================
 
 """
@@ -30,32 +30,32 @@ import re
 
 from multiprocessing import Process, Queue
 
-from dragonfly.engines.backend_voxhub import is_engine_available
+from dragonfly.engines.backend_silvius import is_engine_available
 from dragonfly.grammar.state import State
 from dragonfly.windows import Window
 
 from ..base import (EngineBase, EngineError, MimicFailure,
                     DictationContainerBase)
-from .compiler import VoxhubCompiler
+from .compiler import SilviusCompiler
 from .config import *
-from .microphone import VoxhubMicrophoneManager
-from .network import VoxhubAudioProcess
-from .recobs import VoxhubRecObsManager
+from .microphone import SilviusMicrophoneManager
+from .network import SilviusAudioProcess
+from .recobs import SilviusRecObsManager
 
 
-class VoxhubEngine(EngineBase):
-    """Speech recognition engine back-end for Kaldi-based Voxhub.io."""
+class SilviusEngine(EngineBase):
+    """Speech recognition engine back-end for Kaldi-based Silvius system."""
 
-    _log = logging.getLogger("engine.voxhub")
-    _name = ".voxhub"
+    _log = logging.getLogger("engine.silvius")
+    _name = "silvius"
     _timer_manager = None
     DictationContainer = DictationContainerBase
 
     def __init__(self):
         self._connected = False
-        # Shared queue between processes for voxhub server and dragonfly
+        # Shared queue between processes for silvius server and dragonfly
         self._queue = None
-        # Background process for the voxhub server
+        # Background process for the silvius server
         self._process = None
         # For enabling/disabling processing of transcript
         self._pause_transcript_processing = False
@@ -65,22 +65,22 @@ class VoxhubEngine(EngineBase):
         EngineBase.__init__(self)
 
         # Recognition observer
-        self._recognition_observer_manager = VoxhubRecObsManager(self)
+        self._recognition_observer_manager = SilviusRecObsManager(self)
 
     def __str__(self):
         return "%s()" % self.__class__.__name__
 
     def connect(self, process_speech=True):
-        """ Connect to back-end Voxhub server. """
+        """ Connect to back-end Silvius server. """
         self._queue = Queue()
-        self._process = Process(target=VoxhubAudioProcess.connect_to_server, args=(self._queue,))
+        self._process = Process(target=SilviusAudioProcess.connect_to_server, args=(self._queue,))
         self._process.start()
         self._connected = True
         if process_speech:
             self.process_speech()
 
     def disconnect(self):
-        """ Disconnect from back-end Voxhub server. """
+        """ Disconnect from back-end Silvius server. """
         if self._process:
             self._process.terminate()
             print("Connection closed")
@@ -106,7 +106,7 @@ class VoxhubEngine(EngineBase):
         if not_present:
             # Raise an error with the attributes that weren't set.
             not_present.sort()
-            raise EngineError("Invalid engine configuration. Please check backend_voxhub/config.py. The following "
+            raise EngineError("Invalid engine configuration. Please check backend_silvius/config.py. The following "
                               "attributes were not present: %s"
                               % ", ".join(not_present))
 
@@ -150,7 +150,7 @@ class VoxhubEngine(EngineBase):
         if not (is_engine_available() and wrapper):
             return
 
-        self.compiler = VoxhubCompiler()
+        self.compiler = SilviusCompiler()
         self.compiler.compile_grammar(wrapper)  # extract grammar
 
     def dump_grammar(self):
@@ -160,7 +160,7 @@ class VoxhubEngine(EngineBase):
         if not (is_engine_available() and wrapper):
             return
 
-        self.compiler = VoxhubCompiler()
+        self.compiler = SilviusCompiler()
         self.compiler.dump_grammar(wrapper)
 
     def unload_grammar(self, grammar):
@@ -324,4 +324,4 @@ class VoxhubEngine(EngineBase):
                     print("Waking up...")
 
     def list_available_microphones(self):
-        VoxhubMicrophoneManager.dump_list()
+        SilviusMicrophoneManager.dump_list()

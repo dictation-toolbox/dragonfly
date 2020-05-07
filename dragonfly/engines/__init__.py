@@ -133,17 +133,17 @@ def get_engine(name=None, **kwargs):
             if name:
                 raise EngineError(message)
 
-    if not name or name == "voxhub":
-        # Attempt to retrieve the Kaldi-based Voxhub.io back-end.
+    if not name or name == "silvius":
+        # Attempt to retrieve the Kaldi-based Silvius back-end.
         try:
-            from .backend_voxhub import is_engine_available
-            from .backend_voxhub import get_engine as get_specific_engine
+            from .backend_silvius import is_engine_available
+            from .backend_silvius import get_engine as get_specific_engine
             if is_engine_available():
                 _default_engine = get_specific_engine()
-                _engines_by_name["voxhub"] = _default_engine
+                _engines_by_name["silvius"] = _default_engine
                 return _default_engine
         except Exception as e:
-            message = ("Exception while initializing voxhub engine:"
+            message = ("Exception while initializing silvius engine:"
                        " %s" % (e,))
             log.exception(message)
             traceback.print_exc()
@@ -174,7 +174,7 @@ def get_engine(name=None, **kwargs):
         raise EngineError("No usable engines found.")
     else:
         valid_names = ["natlink", "kaldi", "sphinx", "sapi5shared"
-                       "sapi5inproc", "sapi5"]
+                       "sapi5inproc", "sapi5", "silvius"]
         if name not in valid_names:
             raise EngineError("Requested engine %r is not a valid engine "
                               "name." % (name,))
