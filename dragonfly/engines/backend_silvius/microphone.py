@@ -124,7 +124,7 @@ class SilviusMicrophone:
                     if rms < self.audio_gate:
                         data = '\00' * len(data)
                 if self.byte_rate != self.original_byte_rate:
-                    (data, last_state) = audioop.ratecv(data, 2, 1, sample_rate, self.byte_rate, last_state)
+                    (data, last_state) = audioop.ratecv(data, 2, 1, self.original_byte_rate, self.byte_rate, last_state)
 
                 running = data_callback(data)
 
