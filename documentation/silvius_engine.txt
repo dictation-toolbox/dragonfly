@@ -1,0 +1,56 @@
+.. _RefSilviusEngine:
+
+Silvius Dragonfly engine
+============================================================================
+
+Silvius is a speech recognition engine back-end based on the `Kaldi ASR`_
+toolkit. Silvius is a server/client system. This back-end is a Silvius
+client that sends recorded audio and other information to a machine running
+the Silvius server, which processes the audio and returns the recognized
+words.
+
+See the following for more information on Silvius:
+
+* `voxhub.io`_
+* `dwks/silvius-backend`_ (server repository)
+* `dwks/silvius`_ (client + grammar repository)
+
+
+Setup
+----------------------------------------------------------------------------
+
+There are two package dependencies for using the Silvius engine:
+
+- `ws4py <https://pypi.org/project/ws4py/>`_
+- `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_
+
+Install these dependencies by running the following commands::
+
+  pip install ws4py==0.3.2
+  pip install pyaudio
+
+**Note for Linux:** Before proceeding, you'll need ``xdotool``.
+Under ``apt``-based distributions, you can get them by running::
+
+  sudo apt install xdotool
+
+Now that the dependencies are installed, you will want to use a module
+loader script to load your grammar files into the Silvius engine. Copy the
+`dragonfly/examples/silvius_module_loader.py`_ file into the folder with
+your grammar modules and run it using::
+
+  python silvius_module_loader.py
+
+
+Engine API
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_silvius.engine.SilviusEngine
+   :members:
+
+.. Links
+.. _dwks/silvius-backend: https://github.com/dwks/silvius-backend
+.. _dwks/silvius: https://github.com/dwks/silvius
+.. _Kaldi ASR: https://kaldi-asr.org/
+.. _voxhub.io: http://voxhub.io
+.. _dragonfly/examples/silvius_module_loader.py: https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/silvius_module_loader.py

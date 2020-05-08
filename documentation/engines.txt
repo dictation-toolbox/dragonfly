@@ -14,6 +14,7 @@ There are separate pages on the Kaldi and CMU Pocket Sphinx engines:
 
     kaldi_engine
     sphinx_engine
+    silvius_engine
 
 EngineBase class
 ----------------------------------------------------------------------------
@@ -49,6 +50,9 @@ Engine backends
    :members:
 
 .. automodule:: dragonfly.engines.backend_sphinx
+   :members:
+
+.. automodule:: dragonfly.engines.backend_silvius
    :members:
 
 .. automodule:: dragonfly.engines.backend_text
