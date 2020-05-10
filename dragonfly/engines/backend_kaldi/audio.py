@@ -303,9 +303,11 @@ class AudioStore(object):
     - *save_dir* (*str*, default *None*): if set, the directory to save the `retain.tsv` file and optionally wav files.
     - *save_metadata* (*bool*, default *None*): whether to automatically save the recognition metadata.
     - *save_audio* (*bool*, default *None*): whether to automatically save the recognition audio data (in addition to just the recognition metadata).
+    - *retain_approval_func* (*Callable*, default *None*): if set, will be called with the `AudioStoreEntry` object about to be saved,
+        and should return `bool` whether to actually save. Example: `retain_approval_func=lambda entry: bool(entry.grammar_name != 'noisegrammar')`
     """
 
-    def __init__(self, audio_obj, maxlen=None, save_dir=None, save_audio=None, save_metadata=None, auto_save_predicate_func=None):
+    def __init__(self, audio_obj, maxlen=None, save_dir=None, save_audio=None, save_metadata=None, retain_approval_func=None):
         self.audio_obj = audio_obj
         self.maxlen = maxlen
         self.save_dir = save_dir
@@ -313,7 +315,7 @@ class AudioStore(object):
         self.save_metadata = save_metadata
         if self.save_dir:
             _log.info("retaining recognition audio and/or metadata to '%s'", self.save_dir)
-        self.auto_save_predicate_func = auto_save_predicate_func
+        self.retain_approval_func = retain_approval_func
         self.deque = collections.deque(maxlen=maxlen) if maxlen else None
         self.blocks = []
 
@@ -330,8 +332,6 @@ class AudioStore(object):
             if len(self.deque) == self.deque.maxlen:
                 self.save(-1)  # Save oldest, which is about to be evicted
             self.deque.appendleft(entry)
-        # if self.auto_save_predicate_func and self.auto_save_predicate_func(*entry):
-        #     self.save(0)
         self.blocks = []
 
     def cancel(self):
@@ -348,7 +348,9 @@ class AudioStore(object):
             return
 
         entry = self.deque[index]
-        if not self.save_audio and not self.save_metadata and not entry.force_save:
+        if (not self.save_audio) and (not self.save_metadata) and (not entry.force_save):
+            return
+        if self.retain_approval_func and not self.retain_approval_func(entry):
             return
         if self.save_audio or entry.force_save:
             filename = os.path.join(self.save_dir, "retain_%s.wav" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f"))
