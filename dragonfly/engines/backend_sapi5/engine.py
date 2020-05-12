@@ -35,6 +35,12 @@ from datetime import datetime
 from ctypes import Structure, c_long, c_int, c_uint, pointer
 from six import string_types, integer_types
 
+try:
+    from inspect import getfullargspec as getargspec
+except ImportError:
+    # Fallback on the deprecated function.
+    from inspect import getargspec
+
 import pythoncom
 import win32con
 from win32com.client           import Dispatch, getevents, constants
@@ -502,6 +508,17 @@ class GrammarWrapper(object):
         self.grammar.process_begin(window.executable, window.title,
                                    window.handle)
 
+    def _process_grammar_callback(self, func, **kwargs):
+        if not func:
+            return
+
+        argspec = getargspec(func)
+        arg_names, kwargs_names = argspec[0], argspec[2]
+        if not kwargs_names:
+            kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
+
+        return func(**kwargs)
+
     def recognition_callback(self, StreamNumber, StreamPosition, RecognitionType, Result):
         try:
             newResult = Dispatch(Result)
@@ -613,7 +630,8 @@ class GrammarWrapper(object):
             func = getattr(self.grammar, "process_recognition", None)
             words = tuple([r[0] for r in results])
             if func:
-                if not func(words):
+                if not self._process_grammar_callback(func, words=words,
+                                                      results=newResult):
                     return
 
             s = State(results, rule_set, self.engine)
@@ -646,16 +664,12 @@ class GrammarWrapper(object):
                                   [r[0] for r in results]))
 
     def recognition_other_callback(self, StreamNumber, StreamPosition):
+        # Note that SAPI 5.3 doesn't offer access to the actual
+        #  recognition contents during a
+        #  OnRecognitionForOtherContext event.
         func = getattr(self.grammar, "process_recognition_other", None)
-        if func:
-            # Note that SAPI 5.3 doesn't offer access to the actual
-            #  recognition contents during a
-            #  OnRecognitionForOtherContext event.
-            func(words=False)
-        return
+        self._process_grammar_callback(func, words=False, results=None)
 
     def recognition_failure_callback(self, StreamNumber, StreamPosition, Result):
         func = getattr(self.grammar, "process_recognition_failure", None)
-        if func:
-            func()
-        return
+        self._process_grammar_callback(func, results=Dispatch(Result))
