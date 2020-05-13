@@ -6,22 +6,22 @@ from jsgf import Literal, filter_expansion
 
 import dragonfly.grammar.state as state_
 
+from ..base import GrammarWrapperBase
 
-class GrammarWrapper(object):
+
+class GrammarWrapper(GrammarWrapperBase):
     """
     GrammarWrapper class for CMU Pocket Sphinx engine
     """
 
     _log = logging.getLogger("engine")
 
-    def __init__(self, grammar, engine, observer_manager, search_name):
+    def __init__(self, grammar, engine, recobs_manager, search_name):
         """
         :type grammar: Grammar
         :type engine: SphinxEngine
         """
-        self.grammar = grammar
-        self.engine = engine
-        self._observer_manager = observer_manager
+        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.set_search = True
         self._search_name = search_name
         self.exclusive = False
@@ -158,7 +158,7 @@ class GrammarWrapper(object):
                     root = s.build_parse_tree()
 
                     # Notify observers using the manager *before* processing.
-                    self._observer_manager.notify_recognition(
+                    self.recobs_manager.notify_recognition(
                         tuple([word for word, _ in words]),
                         r,
                         root
@@ -168,7 +168,7 @@ class GrammarWrapper(object):
                     if not self.engine.training_session_active:
                         try:
                             r.process_recognition(root)
-                            self._observer_manager.notify_post_recognition(
+                            self.recobs_manager.notify_post_recognition(
                                 tuple([word for word, _ in words]),
                                 r,
                                 root

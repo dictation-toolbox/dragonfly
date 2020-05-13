@@ -39,11 +39,12 @@ from threading import Thread, Event
 
 from six import text_type, binary_type, string_types, PY2
 
-from ..base        import EngineBase, EngineError, MimicFailure
+from ..base        import (EngineBase, EngineError, MimicFailure,
+                           GrammarWrapperBase)
+from .compiler     import NatlinkCompiler
 from .dictation    import NatlinkDictationContainer
 from .recobs       import NatlinkRecObsManager
 from .timer        import NatlinkTimerManager
-from .compiler     import NatlinkCompiler
 import dragonfly.grammar.state as state_
 
 
@@ -386,13 +387,11 @@ class NatlinkEngine(EngineBase):
 #---------------------------------------------------------------------------
 
 
-class GrammarWrapper(object):
+class GrammarWrapper(GrammarWrapperBase):
 
-    def __init__(self, grammar, grammar_object, engine, observer_manager):
-        self.grammar = grammar
+    def __init__(self, grammar, grammar_object, engine, recobs_manager):
+        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.grammar_object = grammar_object
-        self.engine = engine
-        self.observer_manager = observer_manager
 
     def begin_callback(self, module_info):
         executable, title, handle = tuple(map_word(word)
@@ -443,13 +442,13 @@ class GrammarWrapper(object):
 
                     # Notify observers using the manager *before*
                     # processing.
-                    self.observer_manager.notify_recognition(words, r, root)
+                    self.recobs_manager.notify_recognition(words, r, root)
 
                     r.process_recognition(root)
 
                     # Notify observers using the manager *after*
                     # processing.
-                    self.observer_manager.notify_post_recognition(words, r, root)
+                    self.recobs_manager.notify_post_recognition(words, r, root)
                     return
 
         NatlinkEngine._log.warning("Grammar %s: failed to decode"

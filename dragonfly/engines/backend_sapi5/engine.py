@@ -35,12 +35,6 @@ from datetime import datetime
 from ctypes import Structure, c_long, c_int, c_uint, pointer
 from six import string_types, integer_types
 
-try:
-    from inspect import getfullargspec as getargspec
-except ImportError:
-    # Fallback on the deprecated function.
-    from inspect import getargspec
-
 import pythoncom
 import win32con
 from win32com.client           import Dispatch, getevents, constants
@@ -50,7 +44,9 @@ from ctypes.wintypes import DWORD, HANDLE, HWND, LONG
 
 from ..base                    import (EngineBase, EngineError,
                                        MimicFailure, DelegateTimerManager,
-                                       DelegateTimerManagerInterface, DictationContainerBase)
+                                       DelegateTimerManagerInterface,
+                                       DictationContainerBase,
+                                       GrammarWrapperBase)
 from .compiler                 import Sapi5Compiler
 from .recobs                   import Sapi5RecObsManager
 from ...grammar.state          import State
@@ -482,14 +478,12 @@ def collection_iter(collection):
 
 #---------------------------------------------------------------------------
 
-class GrammarWrapper(object):
+class GrammarWrapper(GrammarWrapperBase):
 
     def __init__(self, grammar, handle, context, engine, recobs_manager):
-        self.grammar = grammar
+        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.handle = handle
-        self.engine = engine
         self.context = context
-        self.recobs_manager = recobs_manager
         self.state_before_exclusive = handle.State
 
         # Register callback functions which will handle recognizer events.
@@ -507,17 +501,6 @@ class GrammarWrapper(object):
         window = Window.get_foreground()
         self.grammar.process_begin(window.executable, window.title,
                                    window.handle)
-
-    def _process_grammar_callback(self, func, **kwargs):
-        if not func:
-            return
-
-        argspec = getargspec(func)
-        arg_names, kwargs_names = argspec[0], argspec[2]
-        if not kwargs_names:
-            kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
-
-        return func(**kwargs)
 
     def recognition_callback(self, StreamNumber, StreamPosition, RecognitionType, Result):
         try:

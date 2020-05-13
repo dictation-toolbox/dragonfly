@@ -33,7 +33,8 @@ from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
 from ..base                     import (EngineBase, EngineError, MimicFailure,
                                         DelegateTimerManager,
                                         DelegateTimerManagerInterface,
-                                        DictationContainerBase)
+                                        DictationContainerBase,
+                                        GrammarWrapperBase)
 from .audio                     import MicAudio, VADAudio, AudioStore, WavAudio
 from .recobs                    import KaldiRecObsManager
 from .testing                   import debug_timer
@@ -194,7 +195,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self.connect()
 
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
-        wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self)
+        wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self,
+                                 self._recognition_observer_manager)
         for kaldi_rule in kaldi_rule_by_rule_dict.values():
             kaldi_rule.load(lazy=self._compiler.lazy_compilation)
 
@@ -492,12 +494,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
 #===========================================================================
 
-class GrammarWrapper(object):
+class GrammarWrapper(GrammarWrapperBase):
 
-    def __init__(self, grammar, kaldi_rule_by_rule_dict, engine):
-        self.grammar = grammar
+    def __init__(self, grammar, kaldi_rule_by_rule_dict, engine,
+                 recobs_manager):
+        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.kaldi_rule_by_rule_dict = kaldi_rule_by_rule_dict
-        self.engine = engine
 
         self.active = True
         self.exclusive = False
@@ -523,10 +525,10 @@ class GrammarWrapper(object):
             for result in rule.decode(state):
                 if state.finished():
                     root = state.build_parse_tree()
-                    self.engine._recognition_observer_manager.notify_recognition(words, rule, root)
+                    self.recobs_manager.notify_recognition(words, rule, root)
                     with debug_timer(self.engine._log.debug, "rule execution time"):
                         rule.process_recognition(root)
-                    self.engine._recognition_observer_manager.notify_post_recognition(words, rule, root)
+                    self.recobs_manager.notify_post_recognition(words, rule, root)
                     return
 
         except Exception as e:

@@ -30,7 +30,7 @@ from dragonfly import Window
 
 from .recobs import TextRecobsManager
 from ..base import (EngineBase, MimicFailure, ThreadedTimerManager,
-                    DictationContainerBase)
+                    DictationContainerBase, GrammarWrapperBase)
 
 
 def _map_word(word):
@@ -256,14 +256,12 @@ class TextInputEngine(EngineBase):
         self._language = value
 
 
-class GrammarWrapper(object):
+class GrammarWrapper(GrammarWrapperBase):
 
     _log = logging.getLogger("engine")
 
-    def __init__(self, grammar, engine, observer_manager):
-        self.grammar = grammar
-        self.engine = engine
-        self._observer_manager = observer_manager
+    def __init__(self, grammar, engine, recobs_manager):
+        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.exclusive = False
 
     def process_begin(self, executable, title, handle):
@@ -310,7 +308,7 @@ class GrammarWrapper(object):
                         root = s.build_parse_tree()
 
                         # Notify observers using the manager *before* processing.
-                        self._observer_manager.notify_recognition(
+                        self.recobs_manager.notify_recognition(
                             tuple([word for word, _ in words]),
                             r,
                             root
@@ -318,7 +316,7 @@ class GrammarWrapper(object):
 
                         r.process_recognition(root)
 
-                        self._observer_manager.notify_post_recognition(
+                        self.recobs_manager.notify_post_recognition(
                             tuple([word for word, _ in words]),
                             r,
                             root
