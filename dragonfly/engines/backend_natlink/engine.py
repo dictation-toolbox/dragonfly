@@ -404,15 +404,14 @@ class GrammarWrapper(GrammarWrapperBase):
 
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
-            if func:
-                words = tuple(map_word(w)
-                              for w in results.getWords(0))
-                func(words)
+            self._process_grammar_callback(
+                func, words=tuple(map_word(w) for w in results.getWords(0)),
+                results=results
+            )
             return
         elif words == "reject":
             func = getattr(self.grammar, "process_recognition_failure", None)
-            if func:
-                func()
+            self._process_grammar_callback(func, results=results)
             return
 
         # If the words argument was not "other" or "reject", then
@@ -425,7 +424,9 @@ class GrammarWrapper(GrammarWrapperBase):
         # Call the grammar's general process_recognition method, if present.
         func = getattr(self.grammar, "process_recognition", None)
         if func:
-            if not func(words):
+            if not self._process_grammar_callback(func, words=words,
+                                                  results=results):
+                # Return early if the method didn't return True or equiv.
                 return
 
         # Iterates through this grammar's rules, attempting
