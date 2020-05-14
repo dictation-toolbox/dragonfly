@@ -443,13 +443,16 @@ class GrammarWrapper(GrammarWrapperBase):
 
                     # Notify observers using the manager *before*
                     # processing.
-                    self.recobs_manager.notify_recognition(words, r, root)
+                    notify_args = (words, r, root, results)
+                    self.recobs_manager.notify_recognition(*notify_args)
 
                     r.process_recognition(root)
 
                     # Notify observers using the manager *after*
                     # processing.
-                    self.recobs_manager.notify_post_recognition(words, r, root)
+                    self.recobs_manager.notify_post_recognition(
+                        *notify_args
+                    )
                     return
 
         NatlinkEngine._log.warning("Grammar %s: failed to decode"
