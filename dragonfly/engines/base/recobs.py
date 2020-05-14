@@ -24,22 +24,15 @@ Recognition observer base class
 
 """
 
-import inspect
 import logging
 
-import six
+try:
+    from inspect import getfullargspec as getargspec
+except ImportError:
+    # Fallback on the deprecated function.
+    from inspect import getargspec
 
 #---------------------------------------------------------------------------
-
-
-def _get_function_parameters(function):
-    # Py2/3 compatible function for getting the 'args' and 'varkw' values
-    # for a function object (avoids deprecation warnings in Py3).
-    if six.PY2:
-        argspec = inspect.getargspec(function)
-    else:
-        argspec = inspect.getfullargspec(function)
-    return argspec[0], argspec[2]
 
 
 class RecObsManagerBase(object):
@@ -80,69 +73,49 @@ class RecObsManagerBase(object):
             if not self._observers:
                 self._deactivate()
 
-    def notify_begin(self):
+    def _process_observer_callbacks(self, cb_name, required_names,
+                                    **kwargs):
         for observer in self._observers:
+            func = getattr(observer, cb_name, None)
+            if not func:
+                continue
+
+            # If the callback function takes keyword arguments, only send
+            # those that it accepts. Always pass required names.
+            func_kwargs = kwargs
+            if func_kwargs:
+                argspec = getargspec(func)
+                arg_names, kwargs_names = argspec[0], argspec[2]
+                if not kwargs_names:
+                    func_kwargs = {k: v for (k, v) in func_kwargs.items()
+                                   if k in arg_names or k in required_names}
+
+            # Call the callback function, catching and logging exceptions.
             try:
-                if hasattr(observer, "on_begin"):
-                    observer.on_begin()
+                func(**func_kwargs)
             except Exception as e:
-                self._log.exception("Exception during on_begin()"
+                self._log.exception("Exception during %s()"
                                     " method of recognition observer %s: %s"
-                                    % (observer, e))
+                                    % (cb_name, observer, e))
+
+    def notify_begin(self):
+        self._process_observer_callbacks("on_begin", [])
 
     def notify_recognition(self, words, rule, node):
-        for observer in self._observers:
-            try:
-                if hasattr(observer, "on_recognition"):
-                    arg_names, kwargs_name = _get_function_parameters(
-                        observer.on_recognition
-                    )
-                    kwargs = dict(rule=rule, node=node)
-                    if not kwargs_name:
-                        kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
-                    observer.on_recognition(words, **kwargs)
-            except Exception as e:
-                self._log.exception("Exception during on_recognition()"
-                                    " method of recognition observer %s: %s"
-                                    % (observer, e))
+        self._process_observer_callbacks("on_recognition", ["words"],
+                                         words=words, rule=rule, node=node)
         self.notify_end()
 
     def notify_failure(self):
-        for observer in self._observers:
-            try:
-                if hasattr(observer, "on_failure"):
-                    observer.on_failure()
-            except Exception as e:
-                self._log.exception("Exception during on_failure()"
-                                    " method of recognition observer %s: %s"
-                                    % (observer, e))
+        self._process_observer_callbacks("on_failure", [])
         self.notify_end()
 
     def notify_end(self):
-        for observer in self._observers:
-            try:
-                if hasattr(observer, "on_end"):
-                    observer.on_end()
-            except Exception as e:
-                self._log.exception("Exception during on_end()"
-                                    " method of recognition observer %s: %s"
-                                    % (observer, e))
+        self._process_observer_callbacks("on_end", [])
 
     def notify_post_recognition(self, words, rule, node):
-        for observer in self._observers:
-            try:
-                if hasattr(observer, "on_post_recognition"):
-                    arg_names, kwargs_name = _get_function_parameters(
-                        observer.on_post_recognition
-                    )
-                    kwargs = dict(rule=rule, node=node)
-                    if not kwargs_name:
-                        kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
-                    observer.on_post_recognition(words, **kwargs)
-            except Exception as e:
-                self._log.exception("Exception during on_post_recognition()"
-                                    " method of recognition observer %s: %s"
-                                    % (observer, e))
+        self._process_observer_callbacks("on_post_recognition", ["words"],
+                                         words=words, rule=rule, node=node)
 
     def _activate(self):
         raise NotImplementedError(str(self))

@@ -24,11 +24,13 @@ Recognition state change callbacks
 
 """
 
-import inspect
-
-import six
-
 from .recobs import RecognitionObserver
+
+try:
+    from inspect import getfullargspec as getargspec
+except ImportError:
+    # Fallback on the deprecated function.
+    from inspect import getargspec
 
 
 class CallbackRecognitionObserver(RecognitionObserver):
@@ -57,47 +59,44 @@ class CallbackRecognitionObserver(RecognitionObserver):
         self._event = event
         self.register()
 
+    def _process_recognition_event(self, cb_name, required_names, **kwargs):
+        if not (self._event == cb_name and callable(self._function)):
+            return
+
+        # If the callback function takes keyword arguments, only send those
+        # that it accepts. Always pass required names.
+        func_kwargs = kwargs
+        if func_kwargs:
+            argspec = getargspec(self._function)
+            arg_names, kwargs_names = argspec[0], argspec[2]
+            if not kwargs_names:
+                func_kwargs = {k: v for (k, v) in func_kwargs.items()
+                               if k in arg_names or k in required_names}
+
+        # Call the callback function.
+        self._function(**func_kwargs)
+
     def on_begin(self):
         """"""
-        if self._event == "on_begin" and callable(self._function):
-            self._function()
-
-    def _get_function_parameter_names(self):
-        # Py2/3 compatible method for getting the 'args' and 'varkw' values
-        # for a function object (avoids deprecation warnings in Py3).
-        if six.PY2:
-            argspec = inspect.getargspec(self._function)
-        else:
-            argspec = inspect.getfullargspec(self._function)
-        return argspec[0], argspec[2]
+        self._process_recognition_event("on_begin", [])
 
     def on_recognition(self, words, rule, node):
         """"""
-        if self._event == "on_recognition" and callable(self._function):
-            arg_names, kwargs_name = self._get_function_parameter_names()
-            kwargs = dict(rule=rule, node=node)
-            if not kwargs_name:
-                kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
-            self._function(words, **kwargs)
+        self._process_recognition_event("on_recognition", ["words"],
+                                        words=words, rule=rule, node=node)
 
     def on_failure(self):
         """"""
-        if self._event == "on_failure" and callable(self._function):
-            self._function()
+        self._process_recognition_event("on_failure", [])
 
     def on_end(self):
         """"""
-        if self._event == "on_end" and callable(self._function):
-            self._function()
+        self._process_recognition_event("on_end", [])
 
     def on_post_recognition(self, words, rule, node):
         """"""
-        if self._event == "on_post_recognition" and callable(self._function):
-            arg_names, kwargs_name = self._get_function_parameter_names()
-            kwargs = dict(rule=rule, node=node)
-            if not kwargs_name:
-                kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
-            self._function(words, **kwargs)
+        self._process_recognition_event("on_post_recognition", ["words"],
+                                        words=words, rule=rule, node=node)
 
 
 def register_beginning_callback(function):
