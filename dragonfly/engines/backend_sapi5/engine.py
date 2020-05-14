@@ -628,9 +628,12 @@ class GrammarWrapper(GrammarWrapperBase):
                         # Notify recognition observers, then process the
                         # rule.
                         root = s.build_parse_tree()
-                        self.recobs_manager.notify_recognition(words, r, root)
+                        notify_args = (words, r, root, newResult)
+                        self.recobs_manager.notify_recognition(*notify_args)
                         r.process_recognition(root)
-                        self.recobs_manager.notify_post_recognition(words, r, root)
+                        self.recobs_manager.notify_post_recognition(
+                            *notify_args
+                        )
                         return
 
         except Exception as e:

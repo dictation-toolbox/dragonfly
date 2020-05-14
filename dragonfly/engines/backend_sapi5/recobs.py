@@ -71,5 +71,5 @@ class Sapi5RecObsGrammar(Grammar):
         raise RuntimeError("Recognition observer received an unexpected"
                            " recognition: %s" % (words,))
 
-    def process_recognition_failure(self):
-        self._manager.notify_failure()
+    def process_recognition_failure(self, results):
+        self._manager.notify_failure(results)
