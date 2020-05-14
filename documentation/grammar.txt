@@ -64,6 +64,7 @@ the following methods of grammar classes to notify them of the results:
 The last three methods are not defined for the base Grammar class. They
 are only called if they are defined for derived classes.
 
+
 Example Grammar using recognition callbacks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -90,6 +91,9 @@ Example Grammar using recognition callbacks
             print("process_recognition_failure()")
             print(results)
 
+
+.. _RefGrammarCallbackResultsTypes:
+
 Recognition callbacks with results objects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -112,6 +116,7 @@ Text input ("text")       ``None``
 .. [*] SAPI 5 does not yield results objects for other grammars, so
        ``process_recognition_other()`` callbacks will return ``None``
        instead.
+
 
 Grammar class
 ----------------------------------------------------------------------------

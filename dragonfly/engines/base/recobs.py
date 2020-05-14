@@ -101,21 +101,23 @@ class RecObsManagerBase(object):
     def notify_begin(self):
         self._process_observer_callbacks("on_begin", [])
 
-    def notify_recognition(self, words, rule, node):
+    def notify_recognition(self, words, rule, node, results):
         self._process_observer_callbacks("on_recognition", ["words"],
-                                         words=words, rule=rule, node=node)
-        self.notify_end()
+                                         words=words, rule=rule, node=node,
+                                         results=results)
+        self.notify_end(results)
 
-    def notify_failure(self):
-        self._process_observer_callbacks("on_failure", [])
-        self.notify_end()
+    def notify_failure(self, results):
+        self._process_observer_callbacks("on_failure", [], results=results)
+        self.notify_end(results)
 
-    def notify_end(self):
-        self._process_observer_callbacks("on_end", [])
+    def notify_end(self, results):
+        self._process_observer_callbacks("on_end", [], results=results)
 
-    def notify_post_recognition(self, words, rule, node):
+    def notify_post_recognition(self, words, rule, node, results):
         self._process_observer_callbacks("on_post_recognition", ["words"],
-                                         words=words, rule=rule, node=node)
+                                         words=words, rule=rule, node=node,
+                                         results=results)
 
     def _activate(self):
         raise NotImplementedError(str(self))

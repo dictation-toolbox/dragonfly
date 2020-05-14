@@ -80,23 +80,25 @@ class CallbackRecognitionObserver(RecognitionObserver):
         """"""
         self._process_recognition_event("on_begin", [])
 
-    def on_recognition(self, words, rule, node):
+    def on_recognition(self, words, rule, node, results):
         """"""
         self._process_recognition_event("on_recognition", ["words"],
-                                        words=words, rule=rule, node=node)
+                                        words=words, rule=rule, node=node,
+                                        results=results)
 
-    def on_failure(self):
+    def on_failure(self, results):
         """"""
-        self._process_recognition_event("on_failure", [])
+        self._process_recognition_event("on_failure", [], results=results)
 
-    def on_end(self):
+    def on_end(self, results):
         """"""
-        self._process_recognition_event("on_end", [])
+        self._process_recognition_event("on_end", [], results=results)
 
-    def on_post_recognition(self, words, rule, node):
+    def on_post_recognition(self, words, rule, node, results):
         """"""
         self._process_recognition_event("on_post_recognition", ["words"],
-                                        words=words, rule=rule, node=node)
+                                        words=words, rule=rule, node=node,
+                                        results=results)
 
 
 def register_beginning_callback(function):
