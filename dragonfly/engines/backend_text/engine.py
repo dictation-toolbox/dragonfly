@@ -226,7 +226,7 @@ class TextInputEngine(EngineBase):
 
         # If no processing occurred, then the mimic failed.
         if not processing_occurred:
-            self._recognition_observer_manager.notify_failure()
+            self._recognition_observer_manager.notify_failure(None)
             raise MimicFailure("No matching rule found for words %r."
                                % (words,))
 
@@ -275,29 +275,38 @@ class GrammarWrapper(GrammarWrapperBase):
 
         self._log.debug("Grammar %s: received recognition %r."
                         % (self.grammar.name, words))
+
+        # TODO Make special grammar callbacks work properly.
+        # These special methods are never called for this engine.
+        results_obj = None
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
-            if func:
-                func(words)
+            self._process_grammar_callback(func, words=words,
+                                           results=results_obj)
             return
         elif words == "reject":
-            func = getattr(self.grammar, "process_recognition_failure", None)
-            if func:
-                func()
+            func = getattr(self.grammar, "process_recognition_failure",
+                           None)
+            self._process_grammar_callback(func, results=results_obj)
             return
 
         # If the words argument was not "other" or "reject", then it is a
         # sequence of (word, rule_id) 2-tuples.
+        words_rules = tuple(words)
+        words = tuple(word for word, _ in words)
+
         # Call the grammar's general process_recognition method, if present.
         func = getattr(self.grammar, "process_recognition", None)
         if func:
-            if not func(words):
+            if not self._process_grammar_callback(func, words=words,
+                                                  results=results_obj):
+                # Return early if the method didn't return True or equiv.
                 return
 
         # Iterate through this grammar's rules, attempting to decode each.
         # If successful, call that rule's method for processing the
         # recognition and return.
-        s = state_.State(words, self.grammar.rule_names, self.engine)
+        s = state_.State(words_rules, self.grammar.rule_names, self.engine)
         for r in self.grammar.rules:
             if not (r.active and r.exported):
                 continue
@@ -307,19 +316,17 @@ class GrammarWrapper(GrammarWrapperBase):
                     try:
                         root = s.build_parse_tree()
 
-                        # Notify observers using the manager *before* processing.
+                        # Notify observers using the manager *before*
+                        # processing.
+                        notify_args = (words, r, root, results_obj)
                         self.recobs_manager.notify_recognition(
-                            tuple([word for word, _ in words]),
-                            r,
-                            root
+                            *notify_args
                         )
 
                         r.process_recognition(root)
 
                         self.recobs_manager.notify_post_recognition(
-                            tuple([word for word, _ in words]),
-                            r,
-                            root
+                            *notify_args
                         )
                     except Exception as e:
                         self._log.exception("Failed to process rule "

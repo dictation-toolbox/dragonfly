@@ -670,8 +670,9 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         )
 
         # Notify observers of failure.
+        results_obj = None  # TODO Use PS results object once implemented
         if not processing_occurred:
-            self._recognition_observer_manager.notify_failure()
+            self._recognition_observer_manager.notify_failure(results_obj)
 
         # Write the training data files if necessary.
         data_dir = self.config.TRAINING_DATA_DIR
@@ -737,11 +738,12 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                 speech = speech.rstrip()  # remove trailing whitespace.
 
         # Notify observers if a keyphrase was matched.
+        results_obj = None  # TODO Use PS results object once implemented
         result = speech if speech in self._keyphrase_functions else ""
         words = tuple(result.split())
         if words:
             self._recognition_observer_manager.notify_recognition(
-                words, None, None
+                words, None, None, results_obj
             )
 
         # Call the registered function if there was a match and the function
@@ -759,7 +761,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Notify observers after calling the keyphrase function.
         if words:
             self._recognition_observer_manager.notify_post_recognition(
-                words, None, None
+                words, None, None, results_obj
             )
 
         return result
@@ -1195,9 +1197,12 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Notify observers about recognition resume.
         keyphrase = self.config.WAKE_PHRASE
         words = tuple(keyphrase.strip().split())
+        results_obj = None  # TODO Use PS results object once implemented
         if words and notify:
-            self._recognition_observer_manager.notify_recognition(words, None, None)
-            self._recognition_observer_manager.notify_post_recognition(words, None, None)
+            manager = self._recognition_observer_manager
+            arguments = (words, None, None, results_obj)
+            manager.notify_recognition(*arguments)
+            manager.notify_post_recognition(*arguments)
 
         # Restore the callbacks to normal
         def hypothesis(hyp):
