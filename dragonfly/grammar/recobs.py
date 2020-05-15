@@ -73,7 +73,7 @@ class RecognitionObserver(object):
         detected.
         """
 
-    def on_recognition(self, words, rule, node):
+    def on_recognition(self, words, rule, node, results):
         """
         Method called when speech successfully decoded to a grammar rule or
         to dictation.
@@ -87,22 +87,30 @@ class RecognitionObserver(object):
         :type rule: Rule
         :param node: *optional* parse tree node
         :type node: Node
+        :param results: *optional* engine recognition results object
+        :type results: :ref:`engine-specific type<RefGrammarCallbackResultsTypes>`
         """
 
-    def on_failure(self):
+    def on_failure(self, results):
         """
         Method called when speech failed to decode to a grammar rule or to
         dictation.
+
+        :param results: *optional* engine recognition results object
+        :type results: :ref:`engine-specific type<RefGrammarCallbackResultsTypes>`
         """
 
-    def on_end(self):
+    def on_end(self, results):
         """
         Method called when speech ends, either with a successful
         recognition (after ``on_recognition``) or in failure (after
         ``on_failure``).
+
+        :param results: *optional* engine recognition results object
+        :type results: :ref:`engine-specific type<RefGrammarCallbackResultsTypes>`
         """
 
-    def on_post_recognition(self, words, rule, node):
+    def on_post_recognition(self, words, rule, node, results):
         """
         Method called when speech successfully decoded to a grammar rule or
         to dictation.
@@ -116,6 +124,8 @@ class RecognitionObserver(object):
         :type rule: Rule
         :param node: *optional* parse tree node
         :type node: Node
+        :param results: *optional* engine recognition results object
+        :type results: :ref:`engine-specific type<RefGrammarCallbackResultsTypes>`
         """
 
 

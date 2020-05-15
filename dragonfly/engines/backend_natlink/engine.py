@@ -39,11 +39,12 @@ from threading import Thread, Event
 
 from six import text_type, binary_type, string_types, PY2
 
-from ..base        import EngineBase, EngineError, MimicFailure
+from ..base        import (EngineBase, EngineError, MimicFailure,
+                           GrammarWrapperBase)
+from .compiler     import NatlinkCompiler
 from .dictation    import NatlinkDictationContainer
 from .recobs       import NatlinkRecObsManager
 from .timer        import NatlinkTimerManager
-from .compiler     import NatlinkCompiler
 import dragonfly.grammar.state as state_
 
 
@@ -386,13 +387,11 @@ class NatlinkEngine(EngineBase):
 #---------------------------------------------------------------------------
 
 
-class GrammarWrapper(object):
+class GrammarWrapper(GrammarWrapperBase):
 
-    def __init__(self, grammar, grammar_object, engine, observer_manager):
-        self.grammar = grammar
+    def __init__(self, grammar, grammar_object, engine, recobs_manager):
+        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.grammar_object = grammar_object
-        self.engine = engine
-        self.observer_manager = observer_manager
 
     def begin_callback(self, module_info):
         executable, title, handle = tuple(map_word(word)
@@ -405,15 +404,14 @@ class GrammarWrapper(object):
 
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
-            if func:
-                words = tuple(map_word(w)
-                              for w in results.getWords(0))
-                func(words)
+            self._process_grammar_callback(
+                func, words=tuple(map_word(w) for w in results.getWords(0)),
+                results=results
+            )
             return
         elif words == "reject":
             func = getattr(self.grammar, "process_recognition_failure", None)
-            if func:
-                func()
+            self._process_grammar_callback(func, results=results)
             return
 
         # If the words argument was not "other" or "reject", then
@@ -426,7 +424,9 @@ class GrammarWrapper(object):
         # Call the grammar's general process_recognition method, if present.
         func = getattr(self.grammar, "process_recognition", None)
         if func:
-            if not func(words):
+            if not self._process_grammar_callback(func, words=words,
+                                                  results=results):
+                # Return early if the method didn't return True or equiv.
                 return
 
         # Iterates through this grammar's rules, attempting
@@ -443,13 +443,16 @@ class GrammarWrapper(object):
 
                     # Notify observers using the manager *before*
                     # processing.
-                    self.observer_manager.notify_recognition(words, r, root)
+                    notify_args = (words, r, root, results)
+                    self.recobs_manager.notify_recognition(*notify_args)
 
                     r.process_recognition(root)
 
                     # Notify observers using the manager *after*
                     # processing.
-                    self.observer_manager.notify_post_recognition(words, r, root)
+                    self.recobs_manager.notify_post_recognition(
+                        *notify_args
+                    )
                     return
 
         NatlinkEngine._log.warning("Grammar %s: failed to decode"

@@ -49,18 +49,19 @@ class NatlinkRecObsManager(RecObsManagerBase):
         super(NatlinkRecObsManager, self).notify_begin()
         self._complete_flag = False
 
-    def notify_recognition(self, words, rule, root):
+    def notify_recognition(self, words, rule, root, results):
         if self._complete_flag:
             return
 
-        super(NatlinkRecObsManager, self).notify_recognition(words, rule, root)
+        super(NatlinkRecObsManager, self).notify_recognition(words, rule,
+                                                             root, results)
 
-    def notify_post_recognition(self, words, rule, root):
+    def notify_post_recognition(self, words, rule, root, results):
         if self._complete_flag:
             return
 
         super(NatlinkRecObsManager, self).notify_post_recognition(
-            words, rule, root
+            words, rule, root, results
         )
         self._complete_flag = True
 
@@ -97,9 +98,9 @@ class NatlinkRecObsGrammar(Grammar):
         raise RuntimeError("Recognition observer received an unexpected"
                            " recognition: %s" % (words,))
 
-    def process_recognition_other(self, words):
-        self._manager.notify_recognition(words, None, None)
-        self._manager.notify_post_recognition(words, None, None)
+    def process_recognition_other(self, words, results):
+        self._manager.notify_recognition(words, None, None, results)
+        self._manager.notify_post_recognition(words, None, None, results)
 
-    def process_recognition_failure(self):
-        self._manager.notify_failure()
+    def process_recognition_failure(self, results):
+        self._manager.notify_failure(results)

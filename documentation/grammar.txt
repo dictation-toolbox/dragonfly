@@ -53,7 +53,9 @@ the following methods of grammar classes to notify them of the results:
    allowing derived classes to easily implement custom functionality without
    losing the context matching implemented in ``Grammar.process_begin()``.
  - ``Grammar.process_recognition()``: Called when recognition has completed
-   successfully and results are meant for this grammar.
+   successfully and results are meant for this grammar. If defined, this
+   method should return whether to continue rule processing afterwards
+   (``True`` or ``False``).
  - ``Grammar.process_recognition_other()``: Called when recognition has
    completed successfully, but the results are not meant for this grammar.
  - ``Grammar.process_recognition_failure()``: Called when recognition was
@@ -61,6 +63,59 @@ the following methods of grammar classes to notify them of the results:
 
 The last three methods are not defined for the base Grammar class. They
 are only called if they are defined for derived classes.
+
+
+Example Grammar using recognition callbacks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..  code-block:: python
+
+    from dragonfly import Grammar
+
+    class CallbackGrammar(Grammar):
+
+        def process_recognition(self, words, results):
+            print("process_recognition()")
+            print(words)
+            print(results)
+
+            # Grammar rule processing should continue after this method.
+            return True
+
+        def process_recognition_other(self, words, results):
+            print("process_recognition_other()")
+            print(words)
+            print(results)
+
+        def process_recognition_failure(self, results):
+            print("process_recognition_failure()")
+            print(results)
+
+
+.. _RefGrammarCallbackResultsTypes:
+
+Recognition callbacks with results objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The last three methods mentioned above can define an optional ``results``
+parameter, the value of which differs between each SR engine back-end:
+
+=======================   ===========================================
+SR engine back-end        Type of ``results`` objects
+=======================   ===========================================
+Dragon/Natlink            ``ResObj`` [*]_
+Kaldi                     ``None``
+CMU Pocket Sphinx         ``None``
+WSR/SAPI 5                ``ISpeechRecoResultDispatch`` [*]_ [*]_
+Text input ("text")       ``None``
+=======================   ===========================================
+
+.. [*] See the `natlink.txt`_ file for info on ``ResObj``.
+.. [*] See the SAPI 5 documentation on `ISpeechRecoResultDispatch`_
+       for how to use it.
+.. [*] SAPI 5 does not yield results objects for other grammars, so
+       ``process_recognition_other()`` callbacks will return ``None``
+       instead.
 
 
 Grammar class
@@ -76,3 +131,8 @@ ConnectionGrammar class
 
 .. autoclass:: dragonfly.grammar.grammar_connection.ConnectionGrammar
    :members: application, connection_up, connection_down
+
+
+.. Links.
+.. _natlink.txt: https://github.com/dictation-toolbox/natlink/blob/master/NatlinkSource/natlink.txt
+.. _ISpeechRecoResultDispatch: https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms722106(v=vs.85)

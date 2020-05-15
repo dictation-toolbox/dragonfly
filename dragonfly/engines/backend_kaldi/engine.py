@@ -33,7 +33,8 @@ from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
 from ..base                     import (EngineBase, EngineError, MimicFailure,
                                         DelegateTimerManager,
                                         DelegateTimerManagerInterface,
-                                        DictationContainerBase)
+                                        DictationContainerBase,
+                                        GrammarWrapperBase)
 from .audio                     import MicAudio, VADAudio, AudioStore, WavAudio
 from .recobs                    import KaldiRecObsManager
 from .testing                   import debug_timer
@@ -194,7 +195,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self.connect()
 
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
-        wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self)
+        wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self,
+                                 self._recognition_observer_manager)
         for kaldi_rule in kaldi_rule_by_rule_dict.values():
             kaldi_rule.load(lazy=self._compiler.lazy_compilation)
 
@@ -452,7 +454,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     if not mimic:
                         # We should never receive an unparsable recognition from kaldi, only from mimic
                         self._log.error("unable to parse recognition: %r" % output)
-                    self._recognition_observer_manager.notify_failure()
+
+                    # FIXME
+                    results_obj = None
+                    self._recognition_observer_manager.notify_failure(results_obj)
                     return None, ''
                 if len(results) > 1:
                     self._log.warning("ambiguity in recognition: %r" % output)
@@ -469,7 +474,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 if words != []:
                     # We should never receive an unparsable recognition from kaldi, unless it's empty (from noise)
                     self._log.error("unable to parse recognition: %r" % output)
-                self._recognition_observer_manager.notify_failure()
+
+                # FIXME
+                results_obj = None
+                self._recognition_observer_manager.notify_failure(results_obj)
                 return None, ''
 
             if self._log.isEnabledFor(12):
@@ -492,12 +500,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
 #===========================================================================
 
-class GrammarWrapper(object):
+class GrammarWrapper(GrammarWrapperBase):
 
-    def __init__(self, grammar, kaldi_rule_by_rule_dict, engine):
-        self.grammar = grammar
+    def __init__(self, grammar, kaldi_rule_by_rule_dict, engine,
+                 recobs_manager):
+        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.kaldi_rule_by_rule_dict = kaldi_rule_by_rule_dict
-        self.engine = engine
 
         self.active = True
         self.exclusive = False
@@ -512,10 +520,15 @@ class GrammarWrapper(object):
             words_rules = tuple((word, 0 if not is_dictation else 1)
                 for (word, is_dictation) in zip(words, words_are_dictation_mask))
 
+            # FIXME
+            results_obj = None
+
             # Attempt to parse the recognition
             func = getattr(self.grammar, "process_recognition", None)
             if func:
-                if not func(words):
+                if not self._process_grammar_callback(func, words=words,
+                                                      results=results_obj):
+                    # Return early if the method didn't return True or equiv.
                     return
 
             state = State(words_rules, rule_names, self.engine)
@@ -523,10 +536,11 @@ class GrammarWrapper(object):
             for result in rule.decode(state):
                 if state.finished():
                     root = state.build_parse_tree()
-                    self.engine._recognition_observer_manager.notify_recognition(words, rule, root)
+                    notify_args = (words, rule, root, results_obj)
+                    self.recobs_manager.notify_recognition(*notify_args)
                     with debug_timer(self.engine._log.debug, "rule execution time"):
                         rule.process_recognition(root)
-                    self.engine._recognition_observer_manager.notify_post_recognition(words, rule, root)
+                    self.recobs_manager.notify_post_recognition(*notify_args)
                     return
 
         except Exception as e:

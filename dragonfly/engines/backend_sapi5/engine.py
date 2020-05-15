@@ -44,7 +44,9 @@ from ctypes.wintypes import DWORD, HANDLE, HWND, LONG
 
 from ..base                    import (EngineBase, EngineError,
                                        MimicFailure, DelegateTimerManager,
-                                       DelegateTimerManagerInterface, DictationContainerBase)
+                                       DelegateTimerManagerInterface,
+                                       DictationContainerBase,
+                                       GrammarWrapperBase)
 from .compiler                 import Sapi5Compiler
 from .recobs                   import Sapi5RecObsManager
 from ...grammar.state          import State
@@ -476,14 +478,12 @@ def collection_iter(collection):
 
 #---------------------------------------------------------------------------
 
-class GrammarWrapper(object):
+class GrammarWrapper(GrammarWrapperBase):
 
     def __init__(self, grammar, handle, context, engine, recobs_manager):
-        self.grammar = grammar
+        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.handle = handle
-        self.engine = engine
         self.context = context
-        self.recobs_manager = recobs_manager
         self.state_before_exclusive = handle.State
 
         # Register callback functions which will handle recognizer events.
@@ -613,7 +613,8 @@ class GrammarWrapper(object):
             func = getattr(self.grammar, "process_recognition", None)
             words = tuple([r[0] for r in results])
             if func:
-                if not func(words):
+                if not self._process_grammar_callback(func, words=words,
+                                                      results=newResult):
                     return
 
             s = State(results, rule_set, self.engine)
@@ -627,9 +628,12 @@ class GrammarWrapper(object):
                         # Notify recognition observers, then process the
                         # rule.
                         root = s.build_parse_tree()
-                        self.recobs_manager.notify_recognition(words, r, root)
+                        notify_args = (words, r, root, newResult)
+                        self.recobs_manager.notify_recognition(*notify_args)
                         r.process_recognition(root)
-                        self.recobs_manager.notify_post_recognition(words, r, root)
+                        self.recobs_manager.notify_post_recognition(
+                            *notify_args
+                        )
                         return
 
         except Exception as e:
@@ -646,16 +650,12 @@ class GrammarWrapper(object):
                                   [r[0] for r in results]))
 
     def recognition_other_callback(self, StreamNumber, StreamPosition):
+        # Note that SAPI 5.3 doesn't offer access to the actual
+        #  recognition contents during a
+        #  OnRecognitionForOtherContext event.
         func = getattr(self.grammar, "process_recognition_other", None)
-        if func:
-            # Note that SAPI 5.3 doesn't offer access to the actual
-            #  recognition contents during a
-            #  OnRecognitionForOtherContext event.
-            func(words=False)
-        return
+        self._process_grammar_callback(func, words=False, results=None)
 
     def recognition_failure_callback(self, StreamNumber, StreamPosition, Result):
         func = getattr(self.grammar, "process_recognition_failure", None)
-        if func:
-            func()
-        return
+        self._process_grammar_callback(func, results=Dispatch(Result))

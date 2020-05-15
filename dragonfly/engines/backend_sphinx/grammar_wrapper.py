@@ -6,22 +6,22 @@ from jsgf import Literal, filter_expansion
 
 import dragonfly.grammar.state as state_
 
+from ..base import GrammarWrapperBase
 
-class GrammarWrapper(object):
+
+class GrammarWrapper(GrammarWrapperBase):
     """
     GrammarWrapper class for CMU Pocket Sphinx engine
     """
 
     _log = logging.getLogger("engine")
 
-    def __init__(self, grammar, engine, observer_manager, search_name):
+    def __init__(self, grammar, engine, recobs_manager, search_name):
         """
         :type grammar: Grammar
         :type engine: SphinxEngine
         """
-        self.grammar = grammar
-        self.engine = engine
-        self._observer_manager = observer_manager
+        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.set_search = True
         self._search_name = search_name
         self.exclusive = False
@@ -125,29 +125,38 @@ class GrammarWrapper(object):
 
         self._log.debug("Grammar %s: received recognition %r."
                         % (self.grammar.name, words))
+        results_obj = None  # TODO Use PS results object once implemented
+
+        # TODO Make special grammar callbacks work properly.
+        # These special methods are never called for this engine.
         if words == "other":
             func = getattr(self.grammar, "process_recognition_other", None)
-            if func:
-                func(words)
+            self._process_grammar_callback(func, words=words,
+                                           results=results_obj)
             return
         elif words == "reject":
-            func = getattr(self.grammar, "process_recognition_failure", None)
-            if func:
-                func()
+            func = getattr(self.grammar, "process_recognition_failure",
+                           None)
+            self._process_grammar_callback(func, results=results_obj)
             return
 
         # If the words argument was not "other" or "reject", then it is a
         # sequence of (word, rule_id) 2-tuples.
+        words_rules = tuple(words)
+        words = tuple(word for word, _ in words)
+
         # Call the grammar's general process_recognition method, if present.
         func = getattr(self.grammar, "process_recognition", None)
         if func:
-            if not func(words):
+            if not self._process_grammar_callback(func, words=words,
+                                                  results=results_obj):
+                # Return early if the method didn't return True or equiv.
                 return
 
         # Iterate through this grammar's rules, attempting to decode each.
         # If successful, call that rule's method for processing the
         # recognition and return.
-        s = state_.State(words, self.grammar.rule_names, self.engine)
+        s = state_.State(words_rules, self.grammar.rule_names, self.engine)
         for r in self.grammar.rules:
             if not (r.active and r.exported):
                 continue
@@ -157,21 +166,19 @@ class GrammarWrapper(object):
                     # Build the parse tree used to process this rule.
                     root = s.build_parse_tree()
 
-                    # Notify observers using the manager *before* processing.
-                    self._observer_manager.notify_recognition(
-                        tuple([word for word, _ in words]),
-                        r,
-                        root
+                    # Notify observers using the manager *before*
+                    # processing.
+                    notify_args = (words, r, root, results_obj)
+                    self.recobs_manager.notify_recognition(
+                        *notify_args
                     )
 
                     # Process the rule if not in training mode.
                     if not self.engine.training_session_active:
                         try:
                             r.process_recognition(root)
-                            self._observer_manager.notify_post_recognition(
-                                tuple([word for word, _ in words]),
-                                r,
-                                root
+                            self.recobs_manager.notify_post_recognition(
+                                *notify_args
                             )
                         except Exception as e:
                             self._log.exception("Failed to process rule "
