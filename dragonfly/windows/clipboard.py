@@ -32,6 +32,7 @@ import locale
 
 from six import text_type, integer_types
 
+import pywintypes
 import win32clipboard
 import win32con
 
@@ -67,6 +68,8 @@ class Clipboard(BaseClipboard):
             content = win32clipboard.GetClipboardData(cls.format_unicode)
             if not content:
                 content = win32clipboard.GetClipboardData(cls.format_text)
+        except (TypeError, pywintypes.error):
+            content = u""
         finally:
             win32clipboard.CloseClipboard()
         return content
