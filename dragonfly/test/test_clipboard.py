@@ -21,7 +21,7 @@
 
 import unittest
 
-from dragonfly.util import Clipboard
+from dragonfly import Clipboard
 
 
 class TestClipboard(unittest.TestCase):
