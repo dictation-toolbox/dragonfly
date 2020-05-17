@@ -66,7 +66,10 @@ if sys.platform.startswith("win"):
 
 # --------------------------------------------------------------------------
 
-from .util              import Clipboard
+if sys.platform.startswith("win"):
+    from .windows.clipboard import Clipboard
+else:
+    from .util              import Clipboard
 
 # --------------------------------------------------------------------------
 
