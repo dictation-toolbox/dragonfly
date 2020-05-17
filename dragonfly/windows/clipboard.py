@@ -28,6 +28,8 @@ This file implements an interface to the Windows system clipboard.
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
+import locale
+
 from six import text_type, integer_types
 
 import win32clipboard
@@ -106,6 +108,12 @@ class Clipboard(BaseClipboard):
         # Handle special case of text content.
         if not text is None:
             self._contents[self.format_unicode] = text_type(text)
+
+        # Use a binary string for CF_TEXT content.
+        cf_text_content = self._contents.get(self.format_text)
+        if isinstance(cf_text_content, text_type):
+            enc = locale.getpreferredencoding()
+            self._contents[self.format_text] = cf_text_content.encode(enc)
 
     def __repr__(self):
         arguments = []
