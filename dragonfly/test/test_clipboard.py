@@ -21,13 +21,24 @@
 
 import unittest
 
-from dragonfly.util import Clipboard
+from dragonfly import Clipboard
 
 
 class TestClipboard(unittest.TestCase):
     """
     Tests for the multi-platform Clipboard class.
     """
+
+    @classmethod
+    def setUpClass(cls):
+        # Save the current contents of the clipboard.
+        cls.clipboard = Clipboard(from_system=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        # Restore the clipboard contents to what it was before the tests.
+        cls.clipboard.copy_to_system()
+
     def setUp(self):
         # Clear the clipboard before each test.
         Clipboard.clear_clipboard()

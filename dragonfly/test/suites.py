@@ -19,6 +19,8 @@
 #
 
 import logging
+import os
+import sys
 
 import pytest
 
@@ -49,6 +51,18 @@ common_names = [
     "documentation/test_grammar_list_doctest.txt",
     "documentation/test_recobs_doctest.txt",
 ]
+
+# Run clipboard tests if on a desktop system.
+desktop = (
+    # Windows
+    os.name == "nt" or
+    # X11
+    os.environ.get("XDG_SESSION_TYPE") == "x11" or
+    # macOS
+    sys.platform == "darwin"
+)
+if desktop:
+    common_names.insert(2, "test_clipboard")
 
 # Define spoken language test files. All of them work with the natlink and
 # text engines. The English tests should work with sapi5 and sphinx by
