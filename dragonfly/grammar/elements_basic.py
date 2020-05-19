@@ -718,6 +718,10 @@ class Literal(ElementBase):
         Element class representing one or more literal words which must be
         said exactly by the speaker as given.
 
+        Quoted words can be used to potentially improve accuracy. This
+        currently only has an effect if using the Natlink SR engine
+        back-end.
+
         Constructor arguments:
          - *text* (*str*) --
            the words to be said by the speaker
@@ -728,17 +732,70 @@ class Literal(ElementBase):
          - *default* (*object*, default: *None*) --
            the default value used if this element is optional and wasn't
            spoken
+         - *quote_start_str* (*str*, default: \") --
+           the string used for specifying the start of quoted words.
+         - *quote_end_str* (*str*, default: \") --
+           the string used for specifying the end of quoted words.
+         - *strip_quote_strs* (*bool*, default: *True*) --
+           whether the start and end quote strings should be stripped from
+           this element's word lists.
 
     """
 
-    def __init__(self, text, name=None, value=None, default=None):
+    def __init__(self, text, name=None, value=None, default=None,
+                 quote_start_str='"', quote_end_str='"',
+                 strip_quote_strs=True):
         ElementBase.__init__(self, name, default=default)
         self._value = value
 
         if not isinstance(text, string_types):
             raise TypeError("Text of %s object must be a"
                             " string." % self)
-        self._words = text.split()
+
+        # Construct the words and extended words lists. The latter includes
+        # quoted words as single items.
+        words = []
+        words_ext = []
+        current_quoted_sequence = []
+        for word in text.split():
+            # Begin quoted words.
+            if word.startswith(quote_start_str):
+                current_quoted_sequence.append(word)
+
+            # End quoted words.
+            elif current_quoted_sequence and word.endswith(quote_end_str):
+                current_quoted_sequence.append(word)
+                quoted_words = " ".join(current_quoted_sequence)
+
+                # Strip quote start and end strings if specified.
+                if strip_quote_strs:
+                    quoted_words = quoted_words[len(quote_start_str):
+                                                len(quote_end_str) * -1]
+
+                # Add the words to both lists.
+                words.extend(quoted_words.split())
+                words_ext.append(quoted_words)
+
+                # Clear current sequence list.
+                del current_quoted_sequence[:]
+
+            # Continuing quoted words.
+            elif current_quoted_sequence:
+                current_quoted_sequence.append(word)
+
+            # Unquoted words.
+            else:
+                words.append(word)
+                words_ext.append(word)
+
+        # Handle unfinished quoted words sequence by treating it as normal.
+        if current_quoted_sequence:
+            words.extend(current_quoted_sequence)
+            words_ext.extend(current_quoted_sequence)
+
+        # Set both lists.
+        self._words = words
+        self._words_ext = words_ext
 
     #-----------------------------------------------------------------------
     # Methods for runtime introspection.
@@ -746,7 +803,16 @@ class Literal(ElementBase):
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self.words)
 
-    words = property(lambda self: self._words)
+    words = property(
+        lambda self: self._words,
+        doc="The words to be said by the speaker."
+    )
+
+    words_ext = property(
+        lambda self: self._words_ext,
+        doc="The words to be said by the speaker, with any quoted words as "
+        "single items. This is extends the :py:attr:`~words` property."
+    )
 
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
@@ -765,7 +831,8 @@ class Literal(ElementBase):
 
         # Iterate through this element's words.
         # If all match, success.  Else, failure.
-        for i in range(len(self._words)):
+        words = self._words_ext
+        for i in range(len(words)):
             word = state.word(i)
 
             # If word isn't None, make it lowercase.
@@ -773,12 +840,12 @@ class Literal(ElementBase):
                 word = word.lower()
 
             # If the words are not the same, then this is a decode failure.
-            if word != self._words[i].lower():
+            if word != words[i].lower():
                 state.decode_failure(self)
                 return
 
         # All words matched, success.
-        state.next(len(self._words))
+        state.next(len(words))
         state.decode_success(self)
         yield state
         state.decode_retry(self)

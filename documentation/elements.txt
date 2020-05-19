@@ -34,7 +34,8 @@ Repetition class
 Literal class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_basic.Literal
-   :members: dependencies, gstring, decode, value, children
+   :members: dependencies, gstring, decode, value, children, words,
+             words_ext
 
 RuleRef class
 ----------------------------------------------------------------------------
