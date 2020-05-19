@@ -74,6 +74,10 @@ class State(object):
         else:
             return None
 
+    @property
+    def engine(self):
+        return self._engine
+
     def rule(self, delta=0):
         i = self._index + delta
         if 0 <= i < len(self._results):

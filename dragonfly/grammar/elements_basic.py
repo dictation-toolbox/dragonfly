@@ -831,7 +831,10 @@ class Literal(ElementBase):
 
         # Iterate through this element's words.
         # If all match, success.  Else, failure.
-        words = self._words_ext
+        if state.engine.quoted_words_support:
+            words = self._words_ext
+        else:
+            words = self._words
         for i in range(len(words)):
             word = state.word(i)
 
