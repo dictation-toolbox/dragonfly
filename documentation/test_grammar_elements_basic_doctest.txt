@@ -37,6 +37,55 @@ Usage::
     >>> test_literal.recognize("goodbye")
     RecognitionFailure
 
+Quoted words usage::
+
+    >>> # Quoted words are not joined in the 'words' property.
+    >>> # Also, double quotes are not present.
+    >>> literal = Literal('this is a "quoted string" example')
+    >>> literal.words
+    ['this', 'is', 'a', 'quoted', 'string', 'example']
+    >>> # The 'words_ext' property shows quoted words as single items.
+    >>> # Double quotes are also not present.
+    >>> literal.words_ext
+    ['this', 'is', 'a', 'quoted string', 'example']
+    >>> # Rules with quoted words can be recognized.
+    >>> test_literal = ElementTester(literal)
+    >>> test_literal.recognize('this is a quoted string example')
+    u'this is a quoted string example'
+
+Incomplete quotes::
+
+    >>> # Incomplete quotes are left in.
+    >>> literal = Literal('"quote')
+    >>> literal.words
+    ['"quote']
+    >>> literal.words_ext
+    ['"quote']
+    >>> literal = Literal('a "quoted string" example plus "quote')
+    >>> literal.words
+    ['a', 'quoted', 'string', 'example', 'plus', '"quote']
+    >>> literal.words_ext
+    ['a', 'quoted string', 'example', 'plus', '"quote']
+
+Non-default quote constructor arguments::
+
+    >>> literal = Literal(u'this is a «quoted string» example',
+    ...                   quote_start_str=u'«', quote_end_str=u'»')
+    >>> literal.words
+    ['this', 'is', 'a', 'quoted', 'string', 'example']
+    >>> literal.words_ext
+    ['this', 'is', 'a', 'quoted string', 'example']
+    >>> test_literal = ElementTester(literal)
+    >>> test_literal.recognize('this is a quoted string example')
+    u'this is a quoted string example'
+
+    >>> # Quotes are left in if specified.
+    >>> literal = Literal('"quoted string"', strip_quote_strs=False)
+    >>> literal.words
+    ['"quoted', 'string"']
+    >>> literal.words_ext
+    ['"quoted string"']
+
 
 Optional element class
 ============================================================================
