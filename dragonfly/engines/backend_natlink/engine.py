@@ -344,7 +344,7 @@ class NatlinkEngine(EngineBase):
         return self._get_language_tag(language)
 
     def _has_quoted_words_support(self):
-        return False
+        return True
 
     def set_retain_directory(self, retain_dir):
         """
