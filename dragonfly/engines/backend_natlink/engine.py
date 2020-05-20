@@ -343,6 +343,9 @@ class NatlinkEngine(EngineBase):
         # Lookup and return the language tag.
         return self._get_language_tag(language)
 
+    def _has_quoted_words_support(self):
+        return True
+
     def set_retain_directory(self, retain_dir):
         """
         Set the directory where audio data is saved.

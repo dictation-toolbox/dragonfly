@@ -1077,6 +1077,9 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
     def _get_language(self):
         return self.config.LANGUAGE
 
+    def _has_quoted_words_support(self):
+        return False
+
     # ----------------------------------------------------------------------
     # Training-related methods
 

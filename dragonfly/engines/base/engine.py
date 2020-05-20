@@ -331,3 +331,15 @@ class EngineBase(object):
 
     def _get_language(self):
         raise NotImplementedError("Engine %s not implemented." % self)
+
+    @property
+    def quoted_words_support(self):
+        """
+        Whether this engine can compile and recognize quoted words.
+
+        :rtype: bool
+        """
+        return self._has_quoted_words_support()
+
+    def _has_quoted_words_support(self):
+        raise NotImplementedError("Engine %s not implemented." % self)

@@ -97,7 +97,10 @@ class NatlinkCompiler(CompilerBase):
         compiler.end_optional()
 
     def _compile_literal(self, element, compiler):
-        words = element.words
+        # Use the element's words extension property to enable use of
+        # quoted words. DNS will receive quoted words as single strings.
+        # This can help with accuracy in some cases.
+        words = element.words_ext
         if len(words) == 1:
             compiler.add_word(words[0])
         elif len(words) > 1:

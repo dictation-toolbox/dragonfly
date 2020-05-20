@@ -301,6 +301,9 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         else:
             return "en"
 
+    def _has_quoted_words_support(self):
+        return False
+
     def process_grammars_context(self, window=None):
         """
             Enable/disable grammars & rules based on their current contexts.

@@ -255,6 +255,9 @@ class TextInputEngine(EngineBase):
 
         self._language = value
 
+    def _has_quoted_words_support(self):
+        return False
+
 
 class GrammarWrapper(GrammarWrapperBase):
 
