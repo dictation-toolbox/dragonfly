@@ -11,6 +11,36 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add optional 'results' arguments to recognition and grammar callbacks that
+  expose internal engine results objects for Natlink and SAPI 5 SR engines.
+* Add support for quoted words in rules, which can potentially fix certain
+  recognition issues with Dragon.
+
+Changed
+~~~~~~~
+* Change the setup_log() function to output log messages to stderr.
+* Make Dictation-only rules work with the Sphinx engine again.
+* Make keyboard input faster on X11 by passing '--delay 0' as an argument to
+  Xdotool.
+* Update, fix and improve various parts of the documentation.
+* Use the old Win32 Clipboard class on Windows instead of the cross-platform
+  class.
+
+Fixed
+~~~~~
+* Fix sdist package installs by including missing files like version.txt
+  (thanks `@thatch`_).
+* Fix the Win32 Clipboard class handling of empty clipboard errors and the
+  CF_TEXT format.
+* Raise an error if args were passed to get_engine() but silently ignored
+  (thanks `@shervinemami`_).
+
+
 0.23.2_ - 2020-04-11
 --------------------
 
@@ -904,6 +934,7 @@ This release is the first in the Git version control system.
 .. _@lexxish: https://github.com/lexxish
 .. _@mrob95: https://github.com/mrob95
 .. _@shervinemami: https://github.com/shervinemami
+.. _@thatch: https://github.com/thatch
 .. _@tylercal: https://github.com/tylercal
 .. _@wolfmanstout: https://github.com/wolfmanstout
 
