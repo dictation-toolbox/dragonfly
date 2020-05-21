@@ -49,10 +49,25 @@ class FoodGroupRule(CompoundRule):
               "today":                                  0,
              }
     food   = {
-              "(a Granny Smith | an) apple":  "fruit",
-              "an orange":                    "fruit",
-              "a hamburger":                  "meat",
-              "a [juicy] steak":              "meat",
+              # Note: quoted words are sometimes required for Dragon to
+              # recognize commands.
+
+              # Quoted food words.
+              # Uncomment these mappings if Dragon isn't recognizing the
+              # 'food' extra.
+              # "an orange":                      "fruit",
+              # '("a Granny Smith" | an) apple':  "fruit",
+              # '"a hamburger"':                  "meat",
+              # '"a steak"':                      "meat",
+              # '"a juicy steak"':                "meat",
+
+              # Unquoted food words.
+              # Comment these mappings if using the quoted words.
+              "an orange":                      "fruit",
+              "(a Granny Smith | an) apple":    "fruit",
+              "an orange":                      "fruit",
+              "a hamburger":                    "meat",
+              "a [juicy] steak":                "meat",
              }
     extras = [
               Choice("time", time),
