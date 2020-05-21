@@ -13,6 +13,7 @@ Jason Smythe <jason@smythemail.za.net>
 LexiconCode <thequietplace@protonmail.com>
 Mike Roberts <42875462+mrob95@users.noreply.github.com>
 Shervin Emami <shervin.emami@gmail.com>
+Tim Hatch <tim@timhatch.com>
 Tyler Elliott <tylercal@gmail.com>
 Vojta Drabek <vojta.drabek@gmail.com>
 lexxish <meandro7@gmail.com>
