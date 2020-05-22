@@ -266,18 +266,15 @@ Dictation
 
 Mixing free-form dictation with grammar rules is difficult to reproduce with
 the CMU Sphinx engines. It is either dictation or grammar rules, not both.
-Speaking [parts of] grammar rules that include :class:`Dictation` elements
-is not supported for this reason.
+For this reason, the CMU Pocket Sphinx SR engine supports speaking free-form
+dictation, but only on its own. Parts of rules that have required
+combinations with :class:`Dictation` and other basic Dragonfly elements such
+as :class:`Literal`, :class:`RuleRef` and :class:`ListRef` will not be
+recognised properly using this SR engine via speaking.
 
-This engine's previous :class:`Dictation` element support using utterance
-breaks has been removed for the moment because it didn't really work very
-well. Support will be added in again at some point in the future. It will
-involve using the default decoder search.
-
-Please note that grammar rules can still use :class:`Dictation` elements,
-you just can't match them by speaking. You can use :meth:`engine.mimic` to
-match :class:`Dictation` elements by using all uppercase words.
-For example:
+You can use the :meth:`engine.mimic` method, the :class:`Mimic` action or
+the :class:`Playback` action to match :class:`Dictation` elements by using
+all uppercase words. For example:
 
 
 ..  code:: Python
@@ -302,6 +299,11 @@ For example:
     grammar.load()
 
     engine.mimic("hello WORLD")
+
+.. note::
+
+   This engine's previous :class:`Dictation` element support using utterance
+   breaks has been removed because it didn't really work very well.
 
 
 Unknown words
