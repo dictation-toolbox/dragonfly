@@ -3,7 +3,8 @@ Monitor classes
 ============================================================================
 
 The monitor classes are how Dragonfly gets information on the available
-monitors (a.k.a. screens, displays) for the current platform.
+monitors (a.k.a. screens, displays) for the current platform. Currently the
+Windows, macOS and X11 (Linux) platforms are supported.
 
 .. automodule:: dragonfly.windows.base_monitor
    :members:
@@ -12,6 +13,9 @@ monitors (a.k.a. screens, displays) for the current platform.
    :members:
 
 .. automodule:: dragonfly.windows.x11_monitor
+   :members:
+
+.. automodule:: dragonfly.windows.darwin_monitor
    :members:
 
 .. automodule:: dragonfly.windows.monitor
