@@ -3,8 +3,8 @@ Window classes
 ============================================================================
 
 Dragonfly's Window classes are interfaces to the window control and
-placement APIs for the current platform. Currently the Windows and X11
-(Linux) platforms are supported.
+placement APIs for the current platform. Currently the Windows, macOS and
+X11 (Linux) platforms are supported.
 
 The :class:`FakeWindow` class will be used on unsupported platforms.
 
