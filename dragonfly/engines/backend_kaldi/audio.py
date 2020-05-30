@@ -56,6 +56,7 @@ class MicAudio(object):
         self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.BLOCK_DURATION_MS))
         self.stream = None
         self.thread = None
+        self.device_info = None
         self._connect(start=start)
 
     def _connect(self, start=None):
@@ -85,6 +86,7 @@ class MicAudio(object):
         hostapi_info = sounddevice.query_hostapis(device_info['hostapi'])
         _log.info("streaming audio from '%s' using %s: %i sample_rate, %i block_duration_ms, %i latency_ms",
             device_info['name'], hostapi_info['name'], self.stream.samplerate, self.BLOCK_DURATION_MS, int(self.stream.latency*1000))
+        self.device_info = device_info
 
     def _reader_thread(self, callback):
         while self.stream and not self.stream.closed:
@@ -102,11 +104,15 @@ class MicAudio(object):
         self.stream.close()
 
     def reconnect(self):
+        # FIXME: flapping
+        old_device_info = self.device_info
         self.stream.close()
         if self.thread:
             self.thread.join()
             self.thread = None
         self._connect(start=True)
+        if self.device_info != old_device_info:
+            raise EngineError("Audio reconnect could not reconnect to the same device")
 
     def start(self):
         self.stream.start()
