@@ -29,6 +29,7 @@ Detecting sleep mode
 
 """
 
+import os
 import os.path
 import pywintypes
 import sys
@@ -158,11 +159,12 @@ class NatlinkEngine(EngineBase):
         for grammar in self.grammars:
             grammar.unload()
 
-        # Close the the waitForSpeech() dialog box if it is active.
+        # Close the the waitForSpeech() dialog box if it is active for this
+        # process.
         from dragonfly import Window
         target_title = "Natlink / Python Subsystem"
         for window in Window.get_matching_windows(title=target_title):
-            if window.is_visible:
+            if window.is_visible and window.pid == os.getpid():
                 try:
                     window.close()
                 except pywintypes.error:
