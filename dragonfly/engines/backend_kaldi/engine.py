@@ -22,7 +22,7 @@
 Kaldi engine classes
 """
 
-import collections, logging, os, subprocess, sys, threading, time
+import collections, logging, math, os, subprocess, sys, threading, time
 
 from packaging.version import Version
 from six import integer_types, string_types, print_, reraise
@@ -329,26 +329,28 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     self._decoder.decode(block, False, kaldi_rules_activity)
                     if self.audio_store:
                         self.audio_store.add_block(block)
-                    output, likelihood = self._decoder.get_output()
-                    self._log.log(5, "Partial phrase: likelihood %f, %r [in_complex=%s]", likelihood, output, in_complex)
+                    output, info = self._decoder.get_output()
+                    self._log.log(5, "Partial phrase: %r [in_complex=%s]", output, in_complex)
                     kaldi_rule, words, words_are_dictation_mask, in_dictation = self._compiler.parse_partial_output(output)
                     in_complex = bool(in_dictation or (kaldi_rule and kaldi_rule.is_complex))
 
                 else:
                     # End of phrase
                     self._decoder.decode(b'', True)
-                    output, likelihood = self._decoder.get_output()
+                    output, info = self._decoder.get_output()
                     if not self._ignore_current_phrase:
                         # output = self._compiler.untranslate_output(output)
                         kaldi_rule, parsed_output = self._parse_recognition(output)
-                        self._log.log(15, "End of phrase: likelihood %f, rule %s, %r" % (likelihood, kaldi_rule, parsed_output))
+                        self._log.log(15, "End of phrase: EER=%.2f conf=%.2f, rule %s, %r",
+                            info.get('expected_error_rate', math.nan), info.get('confidence', math.nan),
+                            kaldi_rule, parsed_output)
                         if self._saving_adaptation_state and parsed_output != '':  # Don't save adaptation state for empty recognitions
                             self._decoder.save_adaptation_state()
                         if self.audio_store:
                             if kaldi_rule and parsed_output != '':  # Don't store audio/metadata for empty recognitions
                                 self.audio_store.finalize(parsed_output,
                                     kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name,
-                                    likelihood=likelihood, has_dictation=kaldi_rule.has_dictation)
+                                    likelihood=info.get('expected_error_rate', math.nan), has_dictation=kaldi_rule.has_dictation)
                             else:
                                 self.audio_store.cancel()
 

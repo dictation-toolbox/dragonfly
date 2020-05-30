@@ -219,7 +219,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     #-----------------------------------------------------------------------
     # Methods for compiling elements.
 
-    _eps_like_nonterms = frozenset(('#nonterm:dictation', '#nonterm:dictation_cloud'))
+    _eps_like_nonterms = frozenset()  # Dictation is non-empty now ('#nonterm:dictation', '#nonterm:dictation_cloud')
 
     def compile_element(self, element, *args, **kwargs):
         """Compile element in FST (from src_state to dst_state) and return result."""
@@ -254,7 +254,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
                 # NOTE: to avoid creating an un-decodable epsilon loop, we must not allow an all-epsilon child here (compile_graph_agf should check this)
                 self.compile_element(children[0], s1, s2, grammar, kaldi_rule, fst)
                 if not fst.has_eps_path(s1, s2, self._eps_like_nonterms):
-                    fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # back arc
+                    fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # Back arc, uses eps_disambig ('#0')
                     fst.add_arc(s2, dst_state, None)
                     return
 
