@@ -98,7 +98,7 @@ setup(
                         "enum34;python_version<'3.4'",
                         "regex",
                         "decorator",
-                        "lark-parser",
+                        "lark-parser == 0.8.*",
 
                         # Windows-only dependencies.
                         "comtypes;platform_system=='Windows'",
