@@ -44,6 +44,51 @@ from dragonfly.parsing.parse import spec_parser, CompoundTransformer, ParseError
 # The Compound class.
 
 class Compound(Alternative):
+    """
+        Element which parses a string spec to create a hierarchy of basic
+        elements.
+
+        Constructor arguments:
+         - *spec* (*str*) -- compound specification
+         - *extras* (sequence) -- extras elements referenced from the
+           compound spec
+         - *actions* (*dict*) -- this argument is currently unused
+         - *name* (*str*) -- the name of this element
+         - *value* (*object*, default: *None*) --
+           value to be returned when this element is successfully decoded
+           If *None*, then the value(s) of child nodes are used instead
+         - *value_func* (*callable*, default: *None*) --
+           function to be called for the node value when this element is
+           successfully decoded. If *None*, then the value(s) of child nodes
+           are used. This argument takes precedence over the *value*
+           argument if it is present
+         - *elements* (sequence) -- same as the extras argument
+         - *default* (default: *None*) -- the default value of this element
+
+        Example:
+
+        .. code:: python
+
+           # Define a command to type the sum of two spoken integers between
+           # 1 and 50 using a Compound element.
+           mapping = {
+               "type <XAndY>": Text("%(XAndY)d"),
+           }
+           extras = [
+               Compound(
+                   # Pass the compound spec and element name.
+                   spec="<x> and <y>",
+                   name="XAndY",
+
+                   # Pass the internal IntegerRef extras.
+                   extras=[IntegerRef("x", 1, 50), IntegerRef("y", 1, 50)],
+
+                   # Pass a value function that adds the two spoken integers
+                   # together.
+                   value_func=lambda node, extras: extras["x"] + extras["y"])
+           ]
+
+    """
 
     _log = logging.getLogger("compound.parse")
     _parser = spec_parser
