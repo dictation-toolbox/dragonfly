@@ -333,6 +333,30 @@ See the :ref:`Function action's documentation <RefFunctionAction>`
 for more information and code examples.
 
 
+Is there a way to recognize negative integers with Dragonfly?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes. The simplest way of recognizing negative integers is to use
+:class:`IntegerRef` and :class:`Modifier` elements together in a command
+with an appropriate prefix word such as "negative" or "minus":
+
+.. code-block:: python
+
+   from dragonfly import IntegerRef, Modifier, Text
+
+   # Define a MappingRule command for typing a negative integer.
+   mapping = {
+       "(minus|negative) <n>": Text("%(n)d"),
+   }
+
+   # The special Modifier element lets us modify the value of an element.
+   # Here we use it to specify the "n" extra as a negated integer between 1
+   # and 50.
+   extras = [
+       Modifier(IntegerRef("n", 1, 50), lambda n: n*-1)
+   ]
+
+
 Why aren't Dragonfly's input actions working on my Linux system?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
