@@ -52,6 +52,16 @@ DictListRef class
 .. autoclass:: dragonfly.grammar.elements_basic.DictListRef
    :members: dependencies, gstring, decode, value, children
 
+Impossible class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Impossible
+   :members: dependencies, gstring, decode, value, children
+
+Empty class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.Empty
+   :members: dependencies, gstring, decode, value, children
+
 Dictation class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_basic.Dictation
@@ -60,6 +70,12 @@ Dictation class
 Modifier class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_basic.Modifier
+   :members: dependencies, gstring, decode, value, children
+
+RuleWrap class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.RuleWrap
+   :members: dependencies, gstring, decode, value, children
 
 Compound class
 ----------------------------------------------------------------------------
