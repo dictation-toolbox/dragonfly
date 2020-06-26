@@ -59,7 +59,7 @@ Otherwise...
 There are three package dependencies for using the Kaldi engine:
 
 - `kaldi-active-grammar <https://github.com/daanzu/kaldi-active-grammar>`_
-- `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_
+- `sounddevice <https://python-sounddevice.readthedocs.io>`_
 - `webrtcvad <https://github.com/wiseman/py-webrtcvad>`_
 
 **Note for Windows:** Before proceeding, if you don't have the Microsoft
@@ -67,8 +67,8 @@ Python compiler package installed (assume you don't), you should first
 install a binary wheel for ``webrtcvad`` with ``pip install
 https://github.com/daanzu/kaldi-active-grammar/releases/download/v0.4.0/webrtcvad-2.0.10-cp27-cp27m-win_amd64.whl``
 
-**Note for Linux:** Before proceeding, you'll need ``portaudio`` headers
-in order to install/compile the ``pyaudio`` package. Under ``apt``-based
+**Note for Linux:** You may need the ``portaudio`` headers in order to
+install/compile the ``sounddevice`` package. Under ``apt``-based
 distributions, you can get them by running ``sudo apt install
 portaudio19-dev``
 
