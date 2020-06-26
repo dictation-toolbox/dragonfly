@@ -62,7 +62,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        input_device_index=None, retain_dir=None, retain_audio=None, retain_metadata=None, retain_approval_func=None,
+        input_device_index=None, audio_self_threaded=True,
+        retain_dir=None, retain_audio=None, retain_metadata=None, retain_approval_func=None,
         vad_aggressiveness=3, vad_padding_start_ms=150, vad_padding_end_ms=150, vad_complex_padding_end_ms=500,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         alternative_dictation=None, cloud_dictation_lang='en-US',
@@ -105,6 +106,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             model_dir = model_dir,
             tmp_dir = tmp_dir,
             input_device_index = input_device_index,
+            audio_self_threaded = bool(audio_self_threaded),
             retain_dir = retain_dir,
             retain_audio = bool(retain_audio) if retain_audio is not None else bool(retain_dir),
             retain_metadata = bool(retain_metadata) if retain_metadata is not None else bool(retain_dir),
@@ -155,7 +157,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file, save_adaptation_state=False)
         self._compiler.decoder = self._decoder
 
-        self._audio = VADAudio(aggressiveness=self._options['vad_aggressiveness'], start=False, input_device_index=self._options['input_device_index'])
+        self._audio = VADAudio(
+            aggressiveness=self._options['vad_aggressiveness'],
+            start=False,
+            input_device_index=self._options['input_device_index'],
+            self_threaded=self._options['audio_self_threaded'],
+            )
         self._audio_iter = self._audio.vad_collector(nowait=True,
             start_window_ms=self._options['vad_padding_start_ms'],
             end_window_ms=self._options['vad_padding_end_ms'],
