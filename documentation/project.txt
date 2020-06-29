@@ -6,6 +6,7 @@ Contents:
 
 .. toctree::
 
+    code_of_conduct
     code_style
     contributing
     commit_messages
