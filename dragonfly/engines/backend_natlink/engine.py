@@ -64,6 +64,7 @@ def map_word(word, encoding=getpreferredencoding(do_setlocale=False)):
     elif isinstance(word, binary_type):
         text_word = word.decode(encoding)
     if text_word:
+        # Strip suffix that is present on some words (e.g. "I" is "I\pronoun").
         backslash_index = text_word.find("\\")
         if backslash_index != -1:
             text_word = text_word[:backslash_index]
