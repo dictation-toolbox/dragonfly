@@ -366,9 +366,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                         kaldi_rule, parsed_output = recognition.kaldi_rule, recognition.parsed_output
                         self._log.log(15, "End of phrase: eer=%.2f conf=%.2f%s, rule %s, %r",
                             expected_error_rate, confidence, (" [BAD]" if not is_acceptable_recognition else ""), kaldi_rule, parsed_output)
-                        if self._alternative_dictation_model and False:
-                            alt_output, alt_info = self._alternative_dictation_model.decode_utterance(self.audio_store.current_audio_data)
-                            self._log.log(15, "Alternative dictation: eer=%.2f, %r" % (alt_info.get('expected_error_rate', nan), alt_output))
                         if self._saving_adaptation_state and is_acceptable_recognition:  # Don't save adaptation state for bad recognitions
                             self._decoder.save_adaptation_state()
                         if self.audio_store:
