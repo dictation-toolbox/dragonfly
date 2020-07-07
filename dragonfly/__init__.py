@@ -32,6 +32,7 @@ from .engines           import (get_engine, EngineError, MimicFailure,
 from .grammar.grammar_base       import Grammar
 from .grammar.grammar_connection import ConnectionGrammar
 from .grammar.rule_base          import Rule
+from .grammar.rule_basic         import BasicRule
 from .grammar.rule_compound      import CompoundRule
 from .grammar.rule_mapping       import MappingRule
 from .grammar.elements  import (ElementBase, Sequence, Alternative,
