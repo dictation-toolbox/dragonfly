@@ -66,3 +66,9 @@ Clipboard class
 
 .. autoclass:: dragonfly.windows.clipboard.Clipboard
    :members:
+
+
+Clipboard context manager function
+----------------------------------------------------------------------------
+
+.. autofunction:: dragonfly.windows.clipboard.win32_clipboard_ctx
