@@ -247,20 +247,19 @@ def _engine_options_string(string):
 
 
 def _valid_file_or_pattern(string):
-    # Expand glob patterns for non-existing paths.
+    # Expand glob patterns.
     file_type = argparse.FileType("r")
-    if not os.path.exists(string):
+    if "?" in string or "*" in string:
         files = glob.glob(string)
         if not files:
-            # This should raise Errno 2: no such file or directory.
-            file_type(string)
+            msg = "pattern %r did not match any file" % string
+            raise argparse.ArgumentTypeError(msg)
 
         # Return the matching files.
         return [file_type(f) for f in files]
 
     # Return a single file if the path exists.
-    else:
-        return [file_type(string)]
+    return [file_type(string)]
 
 
 def _valid_directory_path(string):
