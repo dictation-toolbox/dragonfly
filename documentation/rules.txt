@@ -6,6 +6,8 @@ Rules
 This section describes the following classes:
 
  * :class:`dragonfly.grammar.rule_base.Rule` -- the base rule class
+ * :class:`dragonfly.grammar.rule_basic.BasicRule` -- a rule class for
+   defining voice commands using elements directly.
  * :class:`dragonfly.grammar.rule_compound.CompoundRule` -- a rule class
    of which the root element is a
    :class:`dragonfly.grammar.element_compound.Compound` element.
@@ -14,6 +16,9 @@ This section describes the following classes:
 
 
 .. automodule:: dragonfly.grammar.rule_base
+   :members:
+
+.. automodule:: dragonfly.grammar.rule_basic
    :members:
 
 .. automodule:: dragonfly.grammar.rule_compound
