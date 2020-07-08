@@ -28,7 +28,9 @@ This file implements an interface to the Windows system clipboard.
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
+import contextlib
 import locale
+import time
 
 from six import text_type, integer_types
 
@@ -39,6 +41,47 @@ import win32con
 from ..util import BaseClipboard
 
 #===========================================================================
+
+
+@contextlib.contextmanager
+def win32_clipboard_ctx():
+    """
+    Python context manager for safely opening the Windows clipboard by
+    polling for access for up to 500 ms.
+
+    The polling is necessary because the clipboard is a shared resource
+    which may be in use by another process.
+
+    Use with a Python 'with' block::
+
+       with win32_clipboard_ctx():
+           # Do clipboard operation(s).
+           win32clipboard.EmptyClipboard()
+
+    """
+    timeout = time.time() + 0.5
+    success = False
+    while time.time() < timeout:
+        # Attempt to open the clipboard, catching Windows errors.
+        try:
+            win32clipboard.OpenClipboard()
+            success = True
+            break
+        except pywintypes.error:
+            # Failure. Try again in 10 ms.
+            time.sleep(0.01)
+
+    # Try opening the clipboard one more time if it still isn't open.
+    # If this fails, then an error will be raised this time.
+    if not success:
+        win32clipboard.OpenClipboard()
+
+    # The clipboard is open now, so yield and close the clipboard
+    # afterwards.
+    try:
+        yield
+    finally:
+        win32clipboard.CloseClipboard()
 
 
 class Clipboard(BaseClipboard):
@@ -63,34 +106,28 @@ class Clipboard(BaseClipboard):
 
     @classmethod
     def get_system_text(cls):
-        win32clipboard.OpenClipboard()
-        try:
-            content = win32clipboard.GetClipboardData(cls.format_unicode)
-            if not content:
-                content = win32clipboard.GetClipboardData(cls.format_text)
-        except (TypeError, pywintypes.error):
-            content = u""
-        finally:
-            win32clipboard.CloseClipboard()
+        with win32_clipboard_ctx():
+            try:
+                content = win32clipboard.GetClipboardData(
+                    cls.format_unicode)
+                if not content:
+                    content = win32clipboard.GetClipboardData(
+                        cls.format_text)
+            except (TypeError, pywintypes.error):
+                content = u""
         return content
 
     @classmethod
     def set_system_text(cls, content):
         content = text_type(content)
-        win32clipboard.OpenClipboard()
-        try:
+        with win32_clipboard_ctx():
             win32clipboard.EmptyClipboard()
             win32clipboard.SetClipboardData(cls.format_unicode, content)
-        finally:
-            win32clipboard.CloseClipboard()
 
     @classmethod
     def clear_clipboard(cls):
-        win32clipboard.OpenClipboard()
-        try:
+        with win32_clipboard_ctx():
             win32clipboard.EmptyClipboard()
-        finally:
-            win32clipboard.CloseClipboard()
 
     #-----------------------------------------------------------------------
 
@@ -151,8 +188,7 @@ class Clipboard(BaseClipboard):
                retrieved.
 
         """
-        win32clipboard.OpenClipboard()
-        try:
+        with win32_clipboard_ctx():
             # Determine which formats to retrieve.
             if not formats:
                 format = 0
@@ -182,9 +218,6 @@ class Clipboard(BaseClipboard):
             if clear:
                 win32clipboard.EmptyClipboard()
 
-        finally:
-            win32clipboard.CloseClipboard()
-
     def copy_to_system(self, clear=True):
         """
             Copy the contents of this instance into the Windows system
@@ -196,8 +229,7 @@ class Clipboard(BaseClipboard):
                contents are transferred.
 
         """
-        win32clipboard.OpenClipboard()
-        try:
+        with win32_clipboard_ctx():
             # Clear the system clipboard, if requested.
             if clear:
                 win32clipboard.EmptyClipboard()
@@ -205,9 +237,6 @@ class Clipboard(BaseClipboard):
             # Transfer content to Windows system clipboard.
             for format, content in self._contents.items():
                 win32clipboard.SetClipboardData(format, content)
-
-        finally:
-            win32clipboard.CloseClipboard()
 
     def has_format(self, format):
         """
