@@ -51,19 +51,27 @@ Example usage
 
 The BasicRule class can be used to define a voice-command as follows::
 
-    class ExampleRule(BasicRule):
+   from dragonfly import (BasicRule, Repetition, Alternative, Literal, Text,
+                          Grammar)
 
-        element = Repetition(
-            Alternative((
-                Compound("test one", value=Text("1")),
-                Compound("test two", value=Text("2")),
-                Compound("test three", value=Text("3")),
-            )),
-            1, 5
-        )
+   class ExampleRule(BasicRule):
+       # Define a rule element that accepts 1 to 5 (exclusive) repetitions
+       # of either 'test one', 'test two' or 'test three'. These commands
+       # type their respective numbers in succession using the Text action.
+       element = Repetition(
+           Alternative((
+               Literal("test one", value=Text("1")),
+               Literal("test two", value=Text("2")),
+               Literal("test three", value=Text("3")),
+           )),
+           1, 5
+       )
 
-    rule = ExampleRule()
-    grammar.add_rule(rule)
+   # Create a grammar with the example rule and load it.
+   rule = ExampleRule()
+   grammar = Grammar("BasicRule Example")
+   grammar.add_rule(rule)
+   grammar.load()
 
 
 Class reference

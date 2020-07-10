@@ -357,6 +357,49 @@ with an appropriate prefix word such as "negative" or "minus":
    ]
 
 
+Is there a way to construct Dragonfly grammars manually with elements?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes. The :class:`dragonfly.grammar.rule_basic.BasicRule` is the rule class
+to use for constructing Dragonfly rules and grammars manually with elements
+instead of with compound specs and extras.
+
+The following is an example of how to use :class:`BasicRule` and common
+Dragonfly element and action classes together:
+
+.. code-block:: python
+
+   from dragonfly import (BasicRule, Repetition, Alternative, Literal, Text,
+                          Grammar)
+
+   class ExampleRule(BasicRule):
+       # Define a rule element that accepts 1 to 5 (exclusive) repetitions
+       # of either 'test one', 'test two' or 'test three'. These commands
+       # type their respective numbers in succession using the Text action.
+       element = Repetition(
+           Alternative((
+               Literal("test one", value=Text("1")),
+               Literal("test two", value=Text("2")),
+               Literal("test three", value=Text("3")),
+           )),
+           1, 5
+       )
+
+   # Create a grammar with the example rule and load it.
+   rule = ExampleRule()
+   grammar = Grammar("BasicRule Example")
+   grammar.add_rule(rule)
+   grammar.load()
+
+
+Please note that extras in action specification strings (e.g. *n* in
+:code:`Key("left:%(n)d")`) will **not** work for the :class:`BasicRule`
+class. For this functionality, you should use :class:`CompoundRule` or
+:class:`MappingRule` instead. You can also override the
+:meth:`_process_recognition` method and use the :code:`node` object to
+retrieve the desired extra / element and its value.
+
+
 Why aren't Dragonfly's input actions working on my Linux system?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
