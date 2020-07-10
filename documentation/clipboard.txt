@@ -11,6 +11,11 @@ this toolkit.  Each instance of this class is a container with a structure
 similar to the Windows system clipboard, mapping content formats to
 content data.
 
+The :class:`dragonfly.util.clipboard.Clipboard` can be used on other
+platforms, such as macOS or Linux. Its API is compatible with the Windows
+clipboard class **except** for the :meth:`has_format`, :meth:`get_format`
+and :meth:`set_format` methods, as the class doesn't support multiple
+formats.
 
 Usage examples
 ----------------------------------------------------------------------------
@@ -61,14 +66,21 @@ achieved as follows: ::
    Clipboard(unicode=u'asdf', text, oemtext, locale)
 
 
-Clipboard class
+Windows Clipboard class
 ----------------------------------------------------------------------------
 
 .. autoclass:: dragonfly.windows.clipboard.Clipboard
    :members:
 
 
-Clipboard context manager function
+Cross-platform Clipboard class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.util.clipboard.Clipboard
+   :members:
+
+
+Windows Clipboard context manager function
 ----------------------------------------------------------------------------
 
 .. autofunction:: dragonfly.windows.clipboard.win32_clipboard_ctx

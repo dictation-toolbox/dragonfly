@@ -54,11 +54,20 @@ class BaseClipboard(object):
 
 class Clipboard(BaseClipboard):
     """
-    This class provides multi-platform clipboard support through pyperclip.
+    Cross-platform class for interacting with the system clipboard via the
+    `pyperclip <https://pyperclip.readthedocs.io/en/latest/>`__ Python
+    package.
 
-    The only currently supported Windows clipboard format is Unicode text.
-    The Clipboard class in dragonfly.windows.clipboard can be used instead
-    if required.
+    This is Dragonfly's default clipboard class on platforms other than
+    Windows.
+
+    .. note::
+
+       This class does work on Windows, however the Windows
+       :class:`dragonfly.windows.clipboard.Clipboard` class should be used
+       instead because this class only currently supports the Unicode text
+       clipboard format.
+
     """
 
     # ----------------------------------------------------------------------

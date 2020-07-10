@@ -87,6 +87,9 @@ def win32_clipboard_ctx():
 class Clipboard(BaseClipboard):
     """
     Class for interacting with the Windows system clipboard.
+
+    This is Dragonfly's default clipboard class on Windows.
+
     """
 
     #-----------------------------------------------------------------------
