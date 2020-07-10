@@ -237,7 +237,7 @@ class Win32Window(BaseWindow):
             # SetForegroundWindow() for why this works.
             # Only do this if neither the left or right control keys are
             # held down.
-            if win32api.GetKeyState(win32con.VK_CONTROL) == 0:
+            if win32api.GetKeyState(win32con.VK_CONTROL) >= 0:
                 Key("control:down,control:up").execute()
 
             # Set the foreground window.
