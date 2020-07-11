@@ -58,17 +58,10 @@ def map_word(word, encoding=getpreferredencoding(do_setlocale=False)):
     This wrapper ensures text output from the engine is Unicode. It assumes the
     encoding of byte streams is the current locale's preferred encoding by default.
     """
-    text_word = None
     if isinstance(word, text_type):
-        text_word = word
+        return word
     elif isinstance(word, binary_type):
-        text_word = word.decode(encoding)
-    if text_word:
-        # Strip suffix that is present on some words (e.g. "I" is "I\pronoun").
-        backslash_index = text_word.find("\\")
-        if backslash_index != -1:
-            text_word = text_word[:backslash_index]
-        return text_word
+        return word.decode(encoding)
     return word
 
 
