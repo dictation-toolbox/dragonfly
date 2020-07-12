@@ -117,7 +117,8 @@ class NatlinkEngine(EngineBase):
             import natlink
         except ImportError:
             self._log.error("%s: failed to import natlink module." % self)
-            raise EngineError("Requested engine 'natlink' is not available: Natlink is not installed.")
+            raise EngineError("Requested engine 'natlink' is not "
+                              "available: Natlink is not installed.")
         self.natlink = natlink
 
         self._grammar_count = 0
@@ -415,7 +416,8 @@ class GrammarWrapper(GrammarWrapperBase):
             )
             return
         elif words == "reject":
-            func = getattr(self.grammar, "process_recognition_failure", None)
+            func = getattr(self.grammar, "process_recognition_failure",
+                           None)
             self._process_grammar_callback(func, results=results)
             return
 
@@ -437,7 +439,8 @@ class GrammarWrapper(GrammarWrapperBase):
         # Iterates through this grammar's rules, attempting
         #  to decode each.  If successful, call that rule's
         #  method for processing the recognition and return.
-        s = state_.State(words_rules, self.grammar._rule_names, self.engine)
+        s = state_.State(words_rules, self.grammar._rule_names,
+                         self.engine)
         for r in self.grammar._rules:
             if not (r.active and r.exported): continue
             s.initialize_decoding()
@@ -485,9 +488,9 @@ class GrammarWrapper(GrammarWrapperBase):
                     with open(wav_path, "wb") as f:
                         f.write(audio)
 
-                    # Write metadata
+                    # Write metadata, assuming 11025Hz 16bit mono audio
                     text = ' '.join(words)
-                    audio_length = float(len(audio) / 2) / 11025  # assumes 11025Hz 16bit mono
+                    audio_length = float(len(audio) / 2) / 11025
                     tsv_path = os.path.join(retain_dir, "retain.tsv")
                     with open(tsv_path, "a") as tsv_file:
                         tsv_file.write('\t'.join([

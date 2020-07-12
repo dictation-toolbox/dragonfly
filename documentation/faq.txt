@@ -108,7 +108,7 @@ How can I use older Dragonfly scripts with Dragonfly2?
 Older dragonfly scripts are mostly written with Python 2.x in mind. Python
 version 2.7 has reached the end of its life as of January 2020 (see
 `Python 2.7 EOL`_). For complicated reasons, Dragonfly's Python 3.x support
-has come a bit later than most other actively projects. You will need to
+has come a bit later than most other active projects. You will need to
 convert older Python 2.x code, to use it with Python 3.x. There are a few
 ways to convert older code:
 

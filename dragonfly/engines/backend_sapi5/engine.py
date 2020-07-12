@@ -308,11 +308,11 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         """
             Enable/disable grammars & rules based on their current contexts.
 
-            This must be done preemptively because WSR doesn't allow doing it
-            upon/after the utterance start has been detected. The engine
-            should call this automatically whenever the foreground application
-            (or its title) changes. But the user may want to call this
-            manually to update when custom contexts.
+            This must be done preemptively because WSR doesn't allow doing
+            it upon/after the utterance start has been detected. The engine
+            should call this automatically whenever the foreground
+            application (or its title) changes. But the user may want to
+            call this manually to update when custom contexts.
 
             The *window* parameter is optional window information, which can
             be passed in as an optimization if it has already been gathered.
@@ -331,8 +331,8 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         """
             Recognize speech in a loop.
 
-            This will also call any scheduled timer functions and ensure that
-            the correct window context is used.
+            This will also call any scheduled timer functions and ensure
+            that the correct window context is used.
 
         """
 
@@ -505,7 +505,8 @@ class GrammarWrapper(GrammarWrapperBase):
         self.grammar.process_begin(window.executable, window.title,
                                    window.handle)
 
-    def recognition_callback(self, StreamNumber, StreamPosition, RecognitionType, Result):
+    def recognition_callback(self, StreamNumber, StreamPosition,
+                             RecognitionType, Result):
         try:
             newResult = Dispatch(Result)
             phrase_info = newResult.PhraseInfo
@@ -659,6 +660,7 @@ class GrammarWrapper(GrammarWrapperBase):
         func = getattr(self.grammar, "process_recognition_other", None)
         self._process_grammar_callback(func, words=False, results=None)
 
-    def recognition_failure_callback(self, StreamNumber, StreamPosition, Result):
+    def recognition_failure_callback(self, StreamNumber, StreamPosition,
+                                     Result):
         func = getattr(self.grammar, "process_recognition_failure", None)
         self._process_grammar_callback(func, results=Dispatch(Result))

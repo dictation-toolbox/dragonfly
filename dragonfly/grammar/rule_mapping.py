@@ -67,8 +67,8 @@ The MappingRule class can be used to define a voice-command as follows::
                     "n": 1,
                    }
 
-        rule = ExampleRule()
-        grammar.add_rule(rule)
+    rule = ExampleRule()
+    grammar.add_rule(rule)
 
 
 Class reference
