@@ -46,6 +46,7 @@ from .compiler     import NatlinkCompiler
 from .dictation    import NatlinkDictationContainer
 from .recobs       import NatlinkRecObsManager
 from .timer        import NatlinkTimerManager
+import dragonfly.grammar.elements as elements_
 import dragonfly.grammar.state as state_
 
 
@@ -399,43 +400,34 @@ class GrammarWrapper(GrammarWrapperBase):
         GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.grammar_object = grammar_object
 
+        # Build a set of grammar words used in case DNS doesn't report a
+        #  difference between command and dictation words.
+        grammar_words = set()
+        for rule in grammar.rules:
+            for element in grammar._get_element_list(rule):
+                if isinstance(element, elements_.Literal):
+                    for word in element.words:
+                        grammar_words.add(word)
+
+        self.grammar_words = grammar_words
+
+    @property
+    def list_words(self):
+        # Return a set containing any current list words.
+        list_words = set()
+        for list_ in self.grammar.lists:
+            for string in list_.get_list_items():
+                for word in string.split():
+                    list_words.add(word)
+
+        return list_words
+
     def begin_callback(self, module_info):
         executable, title, handle = tuple(map_word(word)
                                           for word in module_info)
         self.grammar.process_begin(executable, title, handle)
 
-    def results_callback(self, words, results):
-        NatlinkEngine._log.debug("Grammar %s: received recognition %r."
-                                 % (self.grammar._name, words))
-
-        if words == "other":
-            func = getattr(self.grammar, "process_recognition_other", None)
-            self._process_grammar_callback(
-                func, words=tuple(map_word(w) for w in results.getWords(0)),
-                results=results
-            )
-            return
-        elif words == "reject":
-            func = getattr(self.grammar, "process_recognition_failure",
-                           None)
-            self._process_grammar_callback(func, results=results)
-            return
-
-        # If the words argument was not "other" or "reject", then
-        #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
-        #  into a tuple of unicode objects.
-
-        words_rules = tuple((map_word(w), r) for w, r in words)
-        words = tuple(w for w, r in words_rules)
-
-        # Call the grammar's general process_recognition method, if present.
-        func = getattr(self.grammar, "process_recognition", None)
-        if func:
-            if not self._process_grammar_callback(func, words=words,
-                                                  results=results):
-                # Return early if the method didn't return True or equiv.
-                return
-
+    def _process_results(self, words, words_rules, results):
         # Iterates through this grammar's rules, attempting
         #  to decode each.  If successful, call that rule's
         #  method for processing the recognition and return.
@@ -461,8 +453,61 @@ class GrammarWrapper(GrammarWrapperBase):
                     self.recobs_manager.notify_post_recognition(
                         *notify_args
                     )
-                    return
+                    return True
 
+        return False
+
+    def results_callback(self, words, results):
+        NatlinkEngine._log.debug("Grammar %s: received recognition %r."
+                                 % (self.grammar._name, words))
+
+        if words == "other":
+            func = getattr(self.grammar, "process_recognition_other", None)
+            self._process_grammar_callback(
+                func, words=tuple(map_word(w) for w in results.getWords(0)),
+                results=results
+            )
+            return
+        elif words == "reject":
+            func = getattr(self.grammar, "process_recognition_failure",
+                           None)
+            self._process_grammar_callback(func, results=results)
+            return
+
+        # If the words argument was not "other" or "reject", then
+        #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
+        #  into a tuple of unicode objects.
+        words_rules = tuple((map_word(w), r) for w, r in words)
+        words = tuple(w for w, r in words_rules)
+
+        # Call the grammar's general process_recognition method, if present.
+        func = getattr(self.grammar, "process_recognition", None)
+        if func:
+            if not self._process_grammar_callback(func, words=words,
+                                                  results=results):
+                # Return early if the method didn't return True or equiv.
+                return
+
+        # Attempt to decode each grammar rule and process the recognition if
+        #  successful.
+        if self._process_results(words, words_rules, results):
+            return
+
+        # Try again after setting non-grammar words to dictation words.
+        #  Note: 1000000 is the rule ID for dictation words.
+        #  r < 1000000 is used to not override any words DNS reported as
+        #  dictation words.
+        all_grammar_words = self.grammar_words | self.list_words
+        words_rules2 = tuple(
+            (w, 1000000) if r < 1000000 and w not in all_grammar_words
+            else (w, r)
+            for w, r in words_rules
+        )
+        if (words_rules != words_rules2 and
+                self._process_results(words, words_rules2, results)):
+            return
+
+        # Failed to decode recognition.
         NatlinkEngine._log.warning("Grammar %s: failed to decode"
                                    " recognition %r."
                                    % (self.grammar._name, words))
