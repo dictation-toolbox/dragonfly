@@ -341,6 +341,7 @@ class WordParserDns11(WordParserBase):
         "ellipsis":         WordFlags("no_space_before", "not_after_period"),
         "comma":            WordFlags("no_space_before"),
         "hyphen":           WordFlags("no_space_before", "no_space_after"),
+        "dash":             WordFlags("no_space_before", "no_space_after"),
         "at-sign":          WordFlags("no_space_before", "no_space_after"),
         "colon":            WordFlags("no_space_before"),
         "semicolon":        WordFlags("no_space_before"),
