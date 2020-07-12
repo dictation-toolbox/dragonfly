@@ -89,7 +89,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if not ((kag_version >= required_kag_version) and (kag_version.release[0:2] == required_kag_version.release[0:2])):
             self._log.error("%s: Incompatible kaldi_active_grammar version %s! Expected ~= %s!" % (self, kag_version, required_kag_version))
             self._log.error("See https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
-            raise EngineError("Incompatible kaldi_active_grammar version")
+            if not os.environ.get('DRAGONFLY_DEVELOP'):
+                raise EngineError("Incompatible kaldi_active_grammar version")
 
         # Hack to avoid bug processing keyboard actions on Windows
         if os.name == 'nt':
