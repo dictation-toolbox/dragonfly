@@ -258,6 +258,48 @@ If threads still aren't working properly for you, please see the
 :ref:`RefFAQUnansweredQuestions` section.
 
 
+How do I fix "failed to decode recognition" errors?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+"Failed to decode recognition" is the error message displayed when Dragonfly
+is unable to match what was said to a grammar rule. This can occur when
+saying command words to match a dictation part of a rule.
+
+One way around this to add a top-level grammar rule for dictating other
+words in your rules:
+
+.. code-block:: python
+
+   from dragonfly import Dictation, Text
+
+   mapping = {
+       "reserved (word|words) <text>": Text("%(text)s")
+   }
+
+   extras = [
+       Dictation("text")
+   ]
+
+
+Another way around the problem is to have an "extra" for reserved words:
+
+.. code-block:: python
+
+   from dragonfly import Choice, Text
+
+   mapping = {
+       "type <reserved>": Text("%(reserved)s")
+   }
+
+   extras = [
+       Choice("reserved", {
+           "alpha": "alpha",
+           "bravo": "bravo",
+           "charlie": "charlie",
+       })
+   ]
+
+
 How do I use an "extra" in a Dragonfly spec multiple times?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
