@@ -46,6 +46,7 @@ from .compiler     import NatlinkCompiler
 from .dictation    import NatlinkDictationContainer
 from .recobs       import NatlinkRecObsManager
 from .timer        import NatlinkTimerManager
+import dragonfly.grammar.elements as elements_
 import dragonfly.grammar.state as state_
 
 
@@ -290,6 +291,8 @@ class NatlinkEngine(EngineBase):
         grammar_object.emptyList(n)
         [f(n, word) for word in lst.get_list_items()]
 
+        # Clear grammar wrapper word sets so they get recalculated.
+        wrapper.rule_words_map.clear()
 
     #-----------------------------------------------------------------------
     # Miscellaneous methods.
@@ -398,11 +401,83 @@ class GrammarWrapper(GrammarWrapperBase):
     def __init__(self, grammar, grammar_object, engine, recobs_manager):
         GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.grammar_object = grammar_object
+        self.rule_words_map = {}
+
+    def get_rule_words(self, rule):
+        # Return a set containing any words used in this rule or in any
+        #  referenced rules or lists. Store the set for each rule as an
+        #  optimization.
+        if rule.name in self.rule_words_map:
+            return self.rule_words_map[rule.name]
+
+        words = set()
+        for element in self.grammar._get_element_list(rule):
+            if isinstance(element, elements_.Literal):
+                # Only get the required first word.
+                literal_words = element.words_ext
+                if literal_words:
+                    words.add(literal_words[0])
+            elif isinstance(element, elements_.RuleRef):
+                words.update(self.get_rule_words(element.rule))
+            elif isinstance(element, elements_.ListRef):
+                for string in element.list_.get_list_items():
+                    # Only get the required first word.
+                    list_item_words = string.split()
+                    if list_item_words:
+                        words.add(list_item_words[0])
+
+        self.rule_words_map[rule.name] = words
+        return words
 
     def begin_callback(self, module_info):
         executable, title, handle = tuple(map_word(word)
                                           for word in module_info)
         self.grammar.process_begin(executable, title, handle)
+
+    def _process_rules(self, words, words_rules, results,
+                       manual_rule_ids):
+        # Iterates through this grammar's rules, attempting
+        #  to decode each.  If successful, call that rule's
+        #  method for processing the recognition and return.
+        s = state_.State(words_rules, self.grammar._rule_names,
+                         self.engine)
+        for r in self.grammar._rules:
+            if not (r.active and r.exported): continue
+
+            # Set dictation words manually if DNS didn't report a difference
+            #  between command and dictation words. A word is set as
+            #  dictation if it isn't a reported DNS dictation word and isn't
+            #  a word in the current top-level rule or any referenced rules.
+            if manual_rule_ids:
+                rule_words = self.get_rule_words(r)
+                words_rules2 = tuple(
+                    (w, 1000000) if r < 1000000 and w not in rule_words
+                    else (w, r)
+                    for w, r in words_rules
+                )
+                s = state_.State(words_rules2, self.grammar._rule_names,
+                                 self.engine)
+            s.initialize_decoding()
+            for result in r.decode(s):
+                if s.finished():
+                    self._retain_audio(words, results, r.name)
+                    root = s.build_parse_tree()
+
+                    # Notify observers using the manager *before*
+                    # processing.
+                    notify_args = (words, r, root, results)
+                    self.recobs_manager.notify_recognition(*notify_args)
+
+                    r.process_recognition(root)
+
+                    # Notify observers using the manager *after*
+                    # processing.
+                    self.recobs_manager.notify_post_recognition(
+                        *notify_args
+                    )
+                    return True
+
+        return False
 
     def results_callback(self, words, results):
         NatlinkEngine._log.debug("Grammar %s: received recognition %r."
@@ -424,7 +499,6 @@ class GrammarWrapper(GrammarWrapperBase):
         # If the words argument was not "other" or "reject", then
         #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
         #  into a tuple of unicode objects.
-
         words_rules = tuple((map_word(w), r) for w, r in words)
         words = tuple(w for w, r in words_rules)
 
@@ -436,33 +510,17 @@ class GrammarWrapper(GrammarWrapperBase):
                 # Return early if the method didn't return True or equiv.
                 return
 
-        # Iterates through this grammar's rules, attempting
-        #  to decode each.  If successful, call that rule's
-        #  method for processing the recognition and return.
-        s = state_.State(words_rules, self.grammar._rule_names,
-                         self.engine)
-        for r in self.grammar._rules:
-            if not (r.active and r.exported): continue
-            s.initialize_decoding()
-            for result in r.decode(s):
-                if s.finished():
-                    self._retain_audio(words, results, r.name)
-                    root = s.build_parse_tree()
+        # Attempt to decode each grammar rule and process the recognition if
+        #  successful.
+        if self._process_rules(words, words_rules, results, False):
+            return
 
-                    # Notify observers using the manager *before*
-                    # processing.
-                    notify_args = (words, r, root, results)
-                    self.recobs_manager.notify_recognition(*notify_args)
+        # Try again. This time try to set words as dictation words where
+        #  appropriate.
+        if self._process_rules(words, words_rules, results, True):
+            return
 
-                    r.process_recognition(root)
-
-                    # Notify observers using the manager *after*
-                    # processing.
-                    self.recobs_manager.notify_post_recognition(
-                        *notify_args
-                    )
-                    return
-
+        # Failed to decode recognition.
         NatlinkEngine._log.warning("Grammar %s: failed to decode"
                                    " recognition %r."
                                    % (self.grammar._name, words))
