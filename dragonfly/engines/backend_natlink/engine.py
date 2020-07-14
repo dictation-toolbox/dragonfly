@@ -291,6 +291,8 @@ class NatlinkEngine(EngineBase):
         grammar_object.emptyList(n)
         [f(n, word) for word in lst.get_list_items()]
 
+        # Clear grammar wrapper word sets so they get recalculated.
+        wrapper.rule_words_map.clear()
 
     #-----------------------------------------------------------------------
     # Miscellaneous methods.
@@ -399,35 +401,41 @@ class GrammarWrapper(GrammarWrapperBase):
     def __init__(self, grammar, grammar_object, engine, recobs_manager):
         GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.grammar_object = grammar_object
+        self.rule_words_map = {}
 
-        # Build a set of grammar words used in case DNS doesn't report a
-        #  difference between command and dictation words.
-        grammar_words = set()
-        for rule in grammar.rules:
-            for element in grammar._get_element_list(rule):
-                if isinstance(element, elements_.Literal):
-                    for word in element.words:
-                        grammar_words.add(word)
+    def get_rule_words(self, rule):
+        # Return a set containing any words used in this rule or in any
+        #  referenced rules or lists. Store the set for each rule as an
+        #  optimization.
+        if rule.name in self.rule_words_map:
+            return self.rule_words_map[rule.name]
 
-        self.grammar_words = grammar_words
+        words = set()
+        for element in self.grammar._get_element_list(rule):
+            if isinstance(element, elements_.Literal):
+                # Only get the required first word.
+                literal_words = element.words_ext
+                if literal_words:
+                    words.add(literal_words[0])
+            elif isinstance(element, elements_.RuleRef):
+                words.update(self.get_rule_words(element.rule))
+            elif isinstance(element, elements_.ListRef):
+                for string in element.list_.get_list_items():
+                    # Only get the required first word.
+                    list_item_words = string.split()
+                    if list_item_words:
+                        words.add(list_item_words[0])
 
-    @property
-    def list_words(self):
-        # Return a set containing any current list words.
-        list_words = set()
-        for list_ in self.grammar.lists:
-            for string in list_.get_list_items():
-                for word in string.split():
-                    list_words.add(word)
-
-        return list_words
+        self.rule_words_map[rule.name] = words
+        return words
 
     def begin_callback(self, module_info):
         executable, title, handle = tuple(map_word(word)
                                           for word in module_info)
         self.grammar.process_begin(executable, title, handle)
 
-    def _process_results(self, words, words_rules, results):
+    def _process_rules(self, words, words_rules, results,
+                       manual_rule_ids):
         # Iterates through this grammar's rules, attempting
         #  to decode each.  If successful, call that rule's
         #  method for processing the recognition and return.
@@ -435,6 +443,20 @@ class GrammarWrapper(GrammarWrapperBase):
                          self.engine)
         for r in self.grammar._rules:
             if not (r.active and r.exported): continue
+
+            # Set dictation words manually if DNS didn't report a difference
+            #  between command and dictation words. A word is set as
+            #  dictation if it isn't a reported DNS dictation word and isn't
+            #  a word in the current top-level rule or any referenced rules.
+            if manual_rule_ids:
+                rule_words = self.get_rule_words(r)
+                words_rules2 = tuple(
+                    (w, 1000000) if r < 1000000 and w not in rule_words
+                    else (w, r)
+                    for w, r in words_rules
+                )
+                s = state_.State(words_rules2, self.grammar._rule_names,
+                                 self.engine)
             s.initialize_decoding()
             for result in r.decode(s):
                 if s.finished():
@@ -490,21 +512,12 @@ class GrammarWrapper(GrammarWrapperBase):
 
         # Attempt to decode each grammar rule and process the recognition if
         #  successful.
-        if self._process_results(words, words_rules, results):
+        if self._process_rules(words, words_rules, results, False):
             return
 
-        # Try again after setting non-grammar words to dictation words.
-        #  Note: 1000000 is the rule ID for dictation words.
-        #  r < 1000000 is used to not override any words DNS reported as
-        #  dictation words.
-        all_grammar_words = self.grammar_words | self.list_words
-        words_rules2 = tuple(
-            (w, 1000000) if r < 1000000 and w not in all_grammar_words
-            else (w, r)
-            for w, r in words_rules
-        )
-        if (words_rules != words_rules2 and
-                self._process_results(words, words_rules2, results)):
+        # Try again. This time try to set words as dictation words where
+        #  appropriate.
+        if self._process_rules(words, words_rules, results, True):
             return
 
         # Failed to decode recognition.
