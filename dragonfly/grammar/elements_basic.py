@@ -180,10 +180,6 @@ class ElementBase(object):
             dependencies.extend(c.dependencies(memo))
         return dependencies
 
-    def compile(self, compiler):
-        raise NotImplementedError("Call to virtual method compile()"
-                                  " in base class ElementBase")
-
     def gstring(self):
         """
             Returns a formatted grammar string of the contents
@@ -985,9 +981,6 @@ class ListRef(ElementBase):
         memo.add(self._id)
         return [self._list]
 
-    def compile(self, compiler):
-        compiler.add_list(self._list.name)
-
     def gstring(self):
         return "{" + self._list.name + "}"
 
@@ -1075,9 +1068,6 @@ class Empty(ElementBase):
 
     #-----------------------------------------------------------------------
     # Methods for load-time setup.
-
-    def compile(self, compiler):
-        pass
 
     def gstring(self):
         return "<Empty()>"
