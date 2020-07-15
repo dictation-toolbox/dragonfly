@@ -274,6 +274,32 @@ class EngineBase(object):
     #: Alias of :meth:`do_recognition` left in for backwards-compatibility
     recognise_forever = do_recognition
 
+    def process_grammars_context(self, window=None):
+        """
+            Enable/disable grammars & rules based on their current contexts.
+
+            This must be done preemptively for some SR engine back-ends,
+            such as WSR, that don't apply context changes upon/after the
+            utterance start has been detected. The WSR engine should call
+            this automatically whenever the foreground application (or its
+            title) changes. The user may want to call this manually to
+            update when custom contexts.
+
+            The *window* parameter is optional window information, which can
+            be passed in as an optimization if it has already been gathered.
+
+        """
+
+        if window is None:
+            from dragonfly.windows.window import Window
+            window = Window.get_foreground()
+        for grammar in self.grammars:
+            # Prevent 'notify_begin()' from being called.
+            if grammar.name == "_recobs_grammar":
+                continue
+            grammar.process_begin(window.executable, window.title,
+                                  window.handle)
+
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
         raise NotImplementedError("Engine %s not implemented." % self)

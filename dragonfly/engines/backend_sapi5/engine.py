@@ -304,29 +304,6 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     def _has_quoted_words_support(self):
         return False
 
-    def process_grammars_context(self, window=None):
-        """
-            Enable/disable grammars & rules based on their current contexts.
-
-            This must be done preemptively because WSR doesn't allow doing
-            it upon/after the utterance start has been detected. The engine
-            should call this automatically whenever the foreground
-            application (or its title) changes. But the user may want to
-            call this manually to update when custom contexts.
-
-            The *window* parameter is optional window information, which can
-            be passed in as an optimization if it has already been gathered.
-
-        """
-
-        if window is None: window = Window.get_foreground()
-        for grammar in self.grammars:
-            # Prevent 'notify_begin()' from being called.
-            if grammar.name == "_recobs_grammar":
-                continue
-            grammar.process_begin(window.executable, window.title,
-                                  window.handle)
-
     def _do_recognition(self):
         """
             Recognize speech in a loop.
