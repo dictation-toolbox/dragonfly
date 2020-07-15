@@ -70,6 +70,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         expected_error_rate_threshold=None,
         alternative_dictation=None, cloud_dictation_lang='en-US',
+        decoder_init_config=None,
         ):
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
@@ -125,6 +126,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             expected_error_rate_threshold = expected_error_rate_threshold,
             alternative_dictation = alternative_dictation,
             cloud_dictation_lang = cloud_dictation_lang,
+            decoder_init_config = dict(decoder_init_config) if decoder_init_config else None,
         )
 
         self._compiler = None
@@ -159,7 +161,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         top_fst = self._compiler.compile_top_fst()
         dictation_fst_file = self._compiler.dictation_fst_filepath
         self._decoder = KaldiAgfNNet3Decoder(model_dir=self._compiler.model_dir, tmp_dir=self._compiler.tmp_dir,
-            top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file, save_adaptation_state=False)
+            top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file, save_adaptation_state=False,
+            config=self._options['decoder_init_config'],)
         self._compiler.decoder = self._decoder
 
         self._audio = VADAudio(
