@@ -123,7 +123,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             auto_add_to_user_lexicon = bool(auto_add_to_user_lexicon),
             lazy_compilation = bool(lazy_compilation),
             invalidate_cache = bool(invalidate_cache),
-            expected_error_rate_threshold = expected_error_rate_threshold,
+            expected_error_rate_threshold = float(expected_error_rate_threshold) if expected_error_rate_threshold is not None else None,
             alternative_dictation = alternative_dictation,
             cloud_dictation_lang = cloud_dictation_lang,
             decoder_init_config = dict(decoder_init_config) if decoder_init_config else None,
