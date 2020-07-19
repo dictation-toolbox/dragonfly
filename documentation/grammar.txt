@@ -104,13 +104,14 @@ parameter, the value of which differs between each SR engine back-end:
 SR engine back-end        Type of ``results`` objects
 =======================   ===========================================
 Dragon/Natlink            ``ResObj`` [*]_
-Kaldi                     ``None``
+Kaldi                     ``Recognition`` [*]_
 CMU Pocket Sphinx         ``None``
 WSR/SAPI 5                ``ISpeechRecoResultDispatch`` [*]_ [*]_
 Text input ("text")       ``None``
 =======================   ===========================================
 
 .. [*] See the `natlink.txt`_ file for info on ``ResObj``.
+.. [*] See :ref:`Kaldi documentation section <RefKaldiEngineResultsClass>`.
 .. [*] See the SAPI 5 documentation on `ISpeechRecoResultDispatch`_
        for how to use it.
 .. [*] SAPI 5 does not yield results objects for other grammars, so

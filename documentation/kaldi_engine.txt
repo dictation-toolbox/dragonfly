@@ -621,3 +621,12 @@ Engine API
    :members:
 .. autoclass:: dragonfly.engines.backend_kaldi.dictation.DefaultDictation
    :members:
+
+
+.. _RefKaldiEngineResultsClass:
+
+Kaldi Recognition Results Class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_kaldi.engine.Recognition
+   :members:

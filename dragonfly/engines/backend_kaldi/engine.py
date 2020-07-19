@@ -526,6 +526,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 #===========================================================================
 
 class Recognition(object):
+    """
+    Kaldi recognition results class.
+    """
 
     def __init__(self, engine, kaldi_rule, words, words_are_dictation_mask=None):
         assert isinstance(engine, KaldiEngine)
