@@ -174,7 +174,7 @@ the ``get_engine()`` function, which passes them to the
   cache (used both during execution and between executions but safe to
   delete).
 
-* ``input_device_index`` (``int``) -- Microphone PortAudio input device
+* ``input_device_index`` (``int|None``) -- Microphone PortAudio input device
   index: the default of ``None`` chooses the default input device. To see
   a list your available input devices and their corresponding indexes, call
   ``get_engine('kaldi').print_mic_list()``
@@ -196,6 +196,13 @@ the ``get_engine()`` function, which passes them to the
   all recognitions. If ``True``, then requires ``retain_dir`` to be set.
   If ``None``, then defaults to ``True`` if ``retain_dir`` is set to
   ``True``. See below for more information.
+
+* ``retain_approval_func`` (``Callable``) -- If retaining is enabled,
+  this is called upon each recognition, to determine whether or not to
+  retain it. It must accept as a parameter the ``AudioStoreEntry`` under
+  consideration, and return a ``bool`` (``True`` to retain). This is
+  useful for ignoring recognitions that tend to be noise, perhaps contain
+  sensitive content, etc.
 
 * ``vad_aggressiveness`` (``int``) -- Aggressiveness of the Voice Activity
   Detector: an integer between ``0`` and ``3``, where ``0`` is the least
@@ -231,6 +238,12 @@ the ``get_engine()`` function, which passes them to the
 
 * ``invalidate_cache`` (``bool``) -- Enables invalidating the engine's
   cache prior to initialization.
+
+* ``expected_error_rate_threshold`` (``float|None``) -- Threshold of
+  "confidence" in the recognition, as measured in estimated error rate
+  (between 0 and ~1 where 0 is perfect), above which the recognition is
+  ignored. Setting this may be helpful for ignoring "bad" recognitions,
+  possibly around ``0.1`` depending on personal preference.
 
 * ``alternative_dictation`` (``str|None``) -- Enables alternative
   dictation and chooses the provider. Possible values:
@@ -629,4 +642,11 @@ Kaldi Recognition Results Class
 ----------------------------------------------------------------------------
 
 .. autoclass:: dragonfly.engines.backend_kaldi.engine.Recognition
+   :members:
+
+
+Kaldi Audio
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_kaldi.audio.AudioStoreEntry
    :members:
