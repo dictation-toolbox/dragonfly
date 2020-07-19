@@ -244,6 +244,10 @@ class BaseWindow(object):
         """
         raise NotImplementedError()
 
+    def matches(self, context):
+        """ Whether the window matches the given context. """
+        return context.matches(self.executable, self.title, self.handle)
+
     #-----------------------------------------------------------------------
     # Methods related to window geometry.
 
