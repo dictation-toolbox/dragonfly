@@ -11,6 +11,35 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add BasicRule class for defining commands using elements directly.
+
+Changed
+~~~~~~~
+* Move SAPI 5 engine process_grammars_context() method into the EngineBase
+  class.
+* Update required version for lark-parser dependency latest version.
+
+Fixed
+~~~~~
+* Add missing WordParserDns11 entry for the special em dash word.
+* Add partial fix for dictation-related DNS recognition failures.
+* Change the Windows Clipboard class to poll for clipboard access like the
+  cross-platform class does.
+* Fix CLI error reporting and file pattern matching issues.
+* Fix bug causing Win32Window.set_foreground() to fail sometimes.
+* Fix bug in the NatlinkEngine.disconnect() method.
+
+Removed
+~~~~~~~
+* Remove old and unused compile() method from ElementBase (thanks
+  `@kb100`_).
+
+
 0.24.0_ - 2020-05-21
 --------------------
 
@@ -932,6 +961,7 @@ This release is the first in the Git version control system.
 .. _@daanzu: https://github.com/daanzu
 .. _@dmakarov: https://github.com/dmakarov
 .. _@dusty-phillips: https://github.com/dusty-phillips
+.. _@kb100: https://github.com/kb100
 .. _@lexxish: https://github.com/lexxish
 .. _@mrob95: https://github.com/mrob95
 .. _@shervinemami: https://github.com/shervinemami
