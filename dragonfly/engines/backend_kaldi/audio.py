@@ -405,7 +405,7 @@ class AudioStoreEntry(object):
         self.force_save = force_save
 
     def set(self, key, value):
-        """ Sets given key (as *str*) to value, returning the AudioStoreEntry for chaining; usable in `lambda`s. """
+        """ Sets given key (as *str*) to value, returning the AudioStoreEntry for chaining; usable in lambda functions. """
         setattr(self, key, value)
         return self
 

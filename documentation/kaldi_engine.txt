@@ -164,6 +164,18 @@ the ``get_engine()`` function, which passes them to the
     cloud_dictation_lang='en-US',
   )
 
+The engine can also be configured via the :ref:`command-line interface
+<RefCLI>`:
+
+.. code:: shell
+
+   # Initialize the Kaldi engine backend with custom arguments, then load
+   # command modules and recognize speech.
+   python -m dragonfly load _*.py --engine kaldi --engine-options " \
+       model_dir=kaldi_model_zamia \
+       vad_padding_end_ms=300"
+
+
 .. autofunction:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
 
 **Arguments (all optional):**
@@ -199,7 +211,8 @@ the ``get_engine()`` function, which passes them to the
 
 * ``retain_approval_func`` (``Callable``) -- If retaining is enabled,
   this is called upon each recognition, to determine whether or not to
-  retain it. It must accept as a parameter the ``AudioStoreEntry`` under
+  retain it. It must accept as a parameter the
+  :class:`dragonfly.engines.backend_kaldi.audio.AudioStoreEntry` under
   consideration, and return a ``bool`` (``True`` to retain). This is
   useful for ignoring recognitions that tend to be noise, perhaps contain
   sensitive content, etc.
