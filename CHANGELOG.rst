@@ -17,12 +17,15 @@ Unreleased_
 Added
 ~~~~~
 * Add BasicRule class for defining commands using elements directly.
+* Add Kaldi engine support for recognition confidence information, plus
+  various new engine arguments (thanks `@daanzu`_).
+* Add convenience method Window.matches(context) (thanks `@daanzu`_).
 
 Changed
 ~~~~~~~
 * Move SAPI 5 engine process_grammars_context() method into the EngineBase
   class.
-* Update required version for lark-parser dependency latest version.
+* Update required versions for lark-parser and KaldiAG version.
 
 Fixed
 ~~~~~
@@ -33,6 +36,7 @@ Fixed
 * Fix CLI error reporting and file pattern matching issues.
 * Fix bug causing Win32Window.set_foreground() to fail sometimes.
 * Fix bug in the NatlinkEngine.disconnect() method.
+* Fix some Kaldi engine bugs.
 
 Removed
 ~~~~~~~
