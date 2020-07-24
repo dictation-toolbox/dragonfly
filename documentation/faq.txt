@@ -154,7 +154,192 @@ useful to you:
 * `Latest Python documentation <https://docs.python.org>`__
 
 
-API and Troubleshooting Questions
+API Questions
+----------------------------------------------------------------------------
+
+How do I use an "extra" in a Dragonfly spec multiple times?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes it is desirable to use the same "extra" multiple times in a
+Dragonfly :code:`Compound`, :code:`CompoundRule` or :code:`MappingRule`
+specification (or "spec"). You **cannot** use the same reference name in the
+same spec. However, there is always an efficient solution available using
+multiple names. Solutions to two common problems are listed below using the
+generic compound spec :code:`"<X1> and <X2>"`.
+
+.. code-block:: python
+
+   from dragonfly import IntegerRef, Choice, RuleRef, RuleWrap
+
+   # For saying and processing two numbers, e.g. "one and ten".
+   int_extras = [
+       IntegerRef("X1", 1, 20),
+       IntegerRef("X2", 1, 20)
+   ]
+
+   # For saying and processing a Choice element two times,
+   # e.g. "alpha and bravo".
+   my_choice = Choice("", {
+       "alpha": "a",
+       "bravo": "b",
+       "charlie": "c"
+   })
+   # Use RuleWrap to wrap the Choice element into a private rule only
+   # pronounceable via references (i.e. with RuleRef elements).
+   # This is more efficient than using two identical Choice elements.
+   my_choice_rule = RuleWrap("", my_choice).rule
+   alpha_extras = [
+       RuleRef(my_choice_rule, "X1"),
+       RuleRef(my_choice_rule, "X2")
+   ]
+
+
+All of these example *extras* lists and their elements can be used with
+:code:`Compound` or :code:`Choice` elements or :code:`CompoundRule` or
+:code:`MappingRule` grammar rules.
+
+
+Is there a way to re-use a function with different "extra" names?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dragonfly's :class:`Function` action class is normally used to call a Python
+function when a spoken command is recognized. :class:`Function` actions pass
+recognized "extra" values via key word arguments, rather than positional
+arguments.
+
+Below are two methods to re-use a Python function without redefining
+it:
+
+.. code-block:: python
+
+   from dragonfly import Function
+
+   # Define a function to be used by two Function actions.
+   def add_and_print(x, y):
+       print("%d" % (x + y))
+
+   # --- Method one ---
+   # Use a lambda function.
+   Function(lambda x, z: add_and_print(x, z))
+
+   # --- Method two ---
+   # Use the optional 'remap_data' argument to pass the 'z' argument
+   # as 'y' internally.
+   Function(add_and_print, dict(z='y'))
+
+
+See the :ref:`Function action's documentation <RefFunctionAction>`
+for more information and code examples.
+
+
+Is there a way to recognize negative integers with Dragonfly?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes. The simplest way of recognizing negative integers is to use
+:class:`IntegerRef` and :class:`Modifier` elements together in a command
+with an appropriate prefix word such as "negative" or "minus":
+
+.. code-block:: python
+
+   from dragonfly import IntegerRef, Modifier, Text
+
+   # Define a MappingRule command for typing a negative integer.
+   mapping = {
+       "(minus|negative) <n>": Text("%(n)d"),
+   }
+
+   # The special Modifier element lets us modify the value of an element.
+   # Here we use it to specify the "n" extra as a negated integer between 1
+   # and 50.
+   extras = [
+       Modifier(IntegerRef("n", 1, 50), lambda n: n*-1)
+   ]
+
+
+Is there a way to construct Dragonfly grammars manually with elements?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes. The :class:`dragonfly.grammar.rule_basic.BasicRule` is the rule class
+to use for constructing Dragonfly rules and grammars manually with elements
+instead of with compound specs and extras.
+
+The following is an example of how to use :class:`BasicRule` and common
+Dragonfly element and action classes together:
+
+.. code-block:: python
+
+   from dragonfly import (BasicRule, Repetition, Alternative, Literal, Text,
+                          Grammar)
+
+   class ExampleRule(BasicRule):
+       # Define a rule element that accepts 1 to 5 (exclusive) repetitions
+       # of either 'test one', 'test two' or 'test three'. These commands
+       # type their respective numbers in succession using the Text action.
+       element = Repetition(
+           Alternative((
+               Literal("test one", value=Text("1")),
+               Literal("test two", value=Text("2")),
+               Literal("test three", value=Text("3")),
+           )),
+           1, 5
+       )
+
+   # Create a grammar with the example rule and load it.
+   rule = ExampleRule()
+   grammar = Grammar("BasicRule Example")
+   grammar.add_rule(rule)
+   grammar.load()
+
+
+Please note that extras in action specification strings (e.g. *n* in
+:code:`Key("left:%(n)d")`) will **not** work for the :class:`BasicRule`
+class. For this functionality, you should use :class:`CompoundRule` or
+:class:`MappingRule` instead. You can also override the
+:meth:`_process_recognition` method and use the :code:`node` object to
+retrieve the desired extra / element and its value.
+
+
+Does Dragonfly support using Windows Speech Recognition with the GUI?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes. To use WSR with the GUI, you need to initialize the SAPI5 shared
+process engine in the module loader script file:
+
+.. code-block:: python
+
+   from dragonfly import get_engine
+   get_engine("sapi5shared")
+
+If you are using Dragonfly's command-line interface, then you need to pass
+"sapi5shared" as the engine name::
+
+  python -m dragonfly load -e sapi5shared _\*.py
+
+There are significant issues with using WSR's shared recognizer for
+command-based speech recognition. This is because of the built-in commands
+and dictation output. Dragonfly defaults to the *in-process* SAPI5 engine
+because it doesn't have these defaults.
+
+
+Is there an easy way to check which speech recognition engine is in use?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes. The current engine can be checked using the
+:py:meth:`dragonfly.engines.get_current_engine` function. The following code
+prints the name of the current engine if one has been initialized:
+
+.. code-block:: python
+
+   from dragonfly import get_current_engine
+   engine = get_current_engine()
+   if engine:
+       print("Engine name: %r" % engine.name)
+   else:
+       print("No engine has been initialized.")
+
+
+
+Troubleshooting Questions
 ----------------------------------------------------------------------------
 
 Why are my command modules are not being loaded/detected?
@@ -300,148 +485,6 @@ Another way around the problem is to have an "extra" for reserved words:
    ]
 
 
-How do I use an "extra" in a Dragonfly spec multiple times?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Sometimes it is desirable to use the same "extra" multiple times in a
-Dragonfly :code:`Compound`, :code:`CompoundRule` or :code:`MappingRule`
-specification (or "spec"). You **cannot** use the same reference name in the
-same spec. However, there is always an efficient solution available using
-multiple names. Solutions to two common problems are listed below using the
-generic compound spec :code:`"<X1> and <X2>"`.
-
-.. code-block:: python
-
-   from dragonfly import IntegerRef, Choice, RuleRef, RuleWrap
-
-   # For saying and processing two numbers, e.g. "one and ten".
-   int_extras = [
-       IntegerRef("X1", 1, 20),
-       IntegerRef("X2", 1, 20)
-   ]
-
-   # For saying and processing a Choice element two times,
-   # e.g. "alpha and bravo".
-   my_choice = Choice("", {
-       "alpha": "a",
-       "bravo": "b",
-       "charlie": "c"
-   })
-   # Use RuleWrap to wrap the Choice element into a private rule only
-   # pronounceable via references (i.e. with RuleRef elements).
-   # This is more efficient than using two identical Choice elements.
-   my_choice_rule = RuleWrap("", my_choice).rule
-   alpha_extras = [
-       RuleRef(my_choice_rule, "X1"),
-       RuleRef(my_choice_rule, "X2")
-   ]
-
-
-All of these example *extras* lists and their elements can be used with
-:code:`Compound` or :code:`Choice` elements or :code:`CompoundRule` or
-:code:`MappingRule` grammar rules.
-
-
-Is there a way to re-use a function with different "extra" names?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Dragonfly's :class:`Function` action class is normally used to call a Python
-function when a spoken command is recognized. :class:`Function` actions pass
-recognized "extra" values via key word arguments, rather than positional
-arguments.
-
-Below are two methods to re-use a Python function without redefining
-it:
-
-.. code-block:: python
-
-   from dragonfly import Function
-
-   # Define a function to be used by two Function actions.
-   def add_and_print(x, y):
-       print("%d" % (x + y))
-
-   # --- Method one ---
-   # Use a lambda function.
-   Function(lambda x, z: add_and_print(x, z))
-
-   # --- Method two ---
-   # Use the optional 'remap_data' argument to pass the 'z' argument
-   # as 'y' internally.
-   Function(add_and_print, dict(z='y'))
-
-
-See the :ref:`Function action's documentation <RefFunctionAction>`
-for more information and code examples.
-
-
-Is there a way to recognize negative integers with Dragonfly?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Yes. The simplest way of recognizing negative integers is to use
-:class:`IntegerRef` and :class:`Modifier` elements together in a command
-with an appropriate prefix word such as "negative" or "minus":
-
-.. code-block:: python
-
-   from dragonfly import IntegerRef, Modifier, Text
-
-   # Define a MappingRule command for typing a negative integer.
-   mapping = {
-       "(minus|negative) <n>": Text("%(n)d"),
-   }
-
-   # The special Modifier element lets us modify the value of an element.
-   # Here we use it to specify the "n" extra as a negated integer between 1
-   # and 50.
-   extras = [
-       Modifier(IntegerRef("n", 1, 50), lambda n: n*-1)
-   ]
-
-
-Is there a way to construct Dragonfly grammars manually with elements?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Yes. The :class:`dragonfly.grammar.rule_basic.BasicRule` is the rule class
-to use for constructing Dragonfly rules and grammars manually with elements
-instead of with compound specs and extras.
-
-The following is an example of how to use :class:`BasicRule` and common
-Dragonfly element and action classes together:
-
-.. code-block:: python
-
-   from dragonfly import (BasicRule, Repetition, Alternative, Literal, Text,
-                          Grammar)
-
-   class ExampleRule(BasicRule):
-       # Define a rule element that accepts 1 to 5 (exclusive) repetitions
-       # of either 'test one', 'test two' or 'test three'. These commands
-       # type their respective numbers in succession using the Text action.
-       element = Repetition(
-           Alternative((
-               Literal("test one", value=Text("1")),
-               Literal("test two", value=Text("2")),
-               Literal("test three", value=Text("3")),
-           )),
-           1, 5
-       )
-
-   # Create a grammar with the example rule and load it.
-   rule = ExampleRule()
-   grammar = Grammar("BasicRule Example")
-   grammar.add_rule(rule)
-   grammar.load()
-
-
-Please note that extras in action specification strings (e.g. *n* in
-:code:`Key("left:%(n)d")`) will **not** work for the :class:`BasicRule`
-class. For this functionality, you should use :class:`CompoundRule` or
-:class:`MappingRule` instead. You can also override the
-:meth:`_process_recognition` method and use the :code:`node` object to
-retrieve the desired extra / element and its value.
-
-
 Why aren't Dragonfly's input actions working on my Linux system?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -460,43 +503,6 @@ get the following error if you are using `Wayland`_ or something else::
 
 If you see this message, then you will either need to `switch to X11`_ or
 use something like `ydotool`_ to have keyboard/mouse input work properly.
-
-Does Dragonfly support using Windows Speech Recognition with the GUI?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Yes. To use WSR with the GUI, you need to initialize the SAPI5 shared
-process engine in the module loader script file:
-
-.. code-block:: python
-
-   from dragonfly import get_engine
-   get_engine("sapi5shared")
-
-If you are using Dragonfly's command-line interface, then you need to pass
-"sapi5shared" as the engine name::
-
-  python -m dragonfly load -e sapi5shared _\*.py
-
-There are significant issues with using WSR's shared recognizer for
-command-based speech recognition. This is because of the built-in commands
-and dictation output. Dragonfly defaults to the *in-process* SAPI5 engine
-because it doesn't have these defaults.
-
-Is there an easy way to check which speech recognition engine is in use?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Yes. The current engine can be checked using the
-:py:meth:`dragonfly.engines.get_current_engine` function. The following code
-prints the name of the current engine if one has been initialized:
-
-.. code-block:: python
-
-   from dragonfly import get_current_engine
-   engine = get_current_engine()
-   if engine:
-       print("Engine name: %r" % engine.name)
-   else:
-       print("No engine has been initialized.")
 
 
 .. _RefFAQUnansweredQuestions:
