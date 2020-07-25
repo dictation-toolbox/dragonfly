@@ -338,7 +338,6 @@ prints the name of the current engine if one has been initialized:
        print("No engine has been initialized.")
 
 
-
 Troubleshooting Questions
 ----------------------------------------------------------------------------
 
@@ -485,6 +484,65 @@ Another way around the problem is to have an "extra" for reserved words:
    ]
 
 
+Why aren't Dragonfly actions working with Windows admin applications?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since Windows Vista, Windows has built-in security features to isolate
+processes with different integrity levels. This is done to prevent
+user-level processes from performing tasks that require administrative
+authorization via `User Account Control`_. To this end, Windows also
+prevents user-level processes from sending keystrokes, mouse events or
+otherwise controlling processes or windows running as the administrator.
+Since our Python code normally runs as the user, Windows prevents us from
+interacting with administrative windows.
+
+Windows has a way for accessibility software to run with special privileges.
+This involves building a signed executable with a special manifest
+``uiAccess="true"`` attribute set and installing it under either the
+*Program Files* or *Windows/System32* directories. For more on this, see
+Microsoft's `Security Considerations for Assistive Technologies`_
+documentation page.
+
+Unfortunately, this is not easily achievable with Python programs.
+Developing a secure UI Access solution for Dragonfly would be quite
+complicated and, given that it is a small project with only a few
+developers, present significant security risks. For these reasons, Dragonfly
+will **not** be implementing UI Automation support. The following are a few
+alternative solutions:
+
+ #. Use Dragon's UI Automation capability
+
+    Dragon runs a UI Automation service in the background and, clearly, uses
+    it to allow users to interact with administrative applications. This may
+    be good enough if you don't need to perform complex tasks.
+
+ #. Run Python as the administrator
+
+    Running the Python process that loads, recognizes and processes your
+    commands as the administrator should work around the limitations. **Be
+    careful if you do this**; Windows won't go as far to stop bugs in your
+    code from doing damage!
+
+ #. Use AutoHotkey's *Run with UI Access* feature
+
+    `AutoHotkey`_ (AHK) is an automation scripting language for Windows. One
+    of its many features allows running AHK code with UI Access. See the
+    relevant `AutoHotkey FAQ on UAC`_ for how to set this up and use it.
+
+    Using this, you can define hotkeys for interacting with administrative
+    windows. This can help if you are able to use a keyboard, even if only
+    for a short time. Unfortunately, Dragonfly's actions won't be able to
+    trigger these hotkeys since the AHK code will be running in elevated
+    mode. One way around this is to run a local web server in your AHK
+    script, perhaps using `AHKhttp`_ or something similar. Then you can send
+    HTTP requests to the server to run your AHK code.
+
+    If you do use the local web server approach mentioned, it is very
+    important to ensure that requests received by the server are properly
+    authorized so that only your Python code has (indirect) UI access
+    (see `Web API security`_).
+
+
 Why aren't Dragonfly's input actions working on my Linux system?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -524,8 +582,12 @@ touch:
   `Danesprite@posteo.net`_.
 
 
+.. Links.
 .. _2to3: https://docs.python.org/2/library/2to3.html
+.. _AHKhttp: https://github.com/zhamlin/AHKhttp
 .. _Aenea: https://github.com/dictation-toolbox/aenea
+.. _AutoHotkey FAQ on UAC: https://www.autohotkey.com/docs/FAQ.htm#uac
+.. _AutoHotkey: https://www.autohotkey.com/
 .. _Danesprite@posteo.net: mailto:Danesprite@posteo.net
 .. _Dragonfly issue #205: https://github.com/dictation-toolbox/dragonfly/issues/205
 .. _Dragonfly mailing list: https://groups.google.com/forum/#!forum/dragonflyspeech
@@ -534,7 +596,10 @@ touch:
 .. _Natlink Troubleshooting page: https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html
 .. _Python 2-3 code porting guide: https://docs.python.org/3/howto/pyporting.html
 .. _Python 2.7 EOL: https://www.python.org/dev/peps/pep-0373/
+.. _Security Considerations for Assistive Technologies: https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-securityoverview
+.. _User Account Control: https://en.wikipedia.org/wiki/User_Account_Control
 .. _Wayland: https://wayland.freedesktop.org/
+.. _Web API security: https://en.wikipedia.org/wiki/Web_API_security
 .. _dragonfly/examples: https://github.com/dictation-toolbox/dragonfly/tree/master/dragonfly/examples
 .. _fork: https://en.wikipedia.org/wiki/Fork_(software_development)
 .. _multiprocessing module: https://docs.python.org/3/library/multiprocessing.html
