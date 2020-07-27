@@ -630,13 +630,18 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         return result
 
     def _speech_start_callback(self, mimicking):
-        # Get context info. Dragonfly has a handy static method for this:
+        # Get context info.
         fg_window = Window.get_foreground()
+        window_info = {
+            "executable": fg_window.executable,
+            "title": fg_window.title,
+            "handle": fg_window.handle,
+        }
 
         # Call process_begin for all grammars so that any out of context
         # grammar will not be used.
         for wrapper in self._grammar_wrappers.copy().values():
-            wrapper.process_begin(fg_window)
+            wrapper.process_begin(**window_info)
 
         if not mimicking:
             # Trim excess audio buffers from the start of the list. Keep a maximum 1
