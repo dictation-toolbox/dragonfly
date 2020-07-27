@@ -453,8 +453,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def _compute_kaldi_rules_activity(self, phrase_start=True):
         if phrase_start:
             fg_window = Window.get_foreground()
+            window_info = {
+                "executable": fg_window.executable,
+                "title": fg_window.title,
+                "handle": fg_window.handle,
+            }
             for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
-                grammar_wrapper.phrase_start_callback(fg_window)
+                grammar_wrapper.phrase_start_callback(**window_info)
         self.prepare_for_recognition()
         self._active_kaldi_rules = set()
         self._kaldi_rules_activity = [False] * self._compiler.num_kaldi_rules
@@ -588,8 +593,8 @@ class GrammarWrapper(GrammarWrapperBase):
         self.active = True
         self.exclusive = False
 
-    def phrase_start_callback(self, fg_window):
-        self.grammar.process_begin(fg_window.executable, fg_window.title, fg_window.handle)
+    def phrase_start_callback(self, executable, title, handle):
+        self.grammar.process_begin(executable, title, handle)
 
     def recognition_callback(self, recognition):
         words = recognition.words

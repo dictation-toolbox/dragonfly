@@ -135,9 +135,8 @@ class GrammarWrapper(GrammarWrapperBase):
         """
         return self.grammar.enabled and any(self.grammar.active_rules)
 
-    def process_begin(self, fg_window):
-        self.grammar.process_begin(fg_window.executable, fg_window.title,
-                                   fg_window.handle)
+    def process_begin(self, executable, title, handle):
+        self.grammar.process_begin(executable, title, handle)
 
     def process_words(self, words):
         # Return early if the grammar is disabled or if there are no active
