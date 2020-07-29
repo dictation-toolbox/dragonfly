@@ -11,6 +11,15 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Fixed
+~~~~~
+* Fix Kaldi & Sphinx recognition delays on macOS by optimizing window
+  attribute checks in those engine back-ends.
+
+
 0.25.0_ - 2020-07-20
 --------------------
 
