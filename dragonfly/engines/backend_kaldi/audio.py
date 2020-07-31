@@ -49,13 +49,14 @@ class MicAudio(object):
 
     def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None, self_threaded=None):
         self.callback = callback if callback is not None else lambda in_data: self.buffer_queue.put(in_data, block=False)
-        self.flush_queue = flush_queue
+        self.flush_queue = bool(flush_queue)
         self.input_device_index = int(input_device_index) if input_device_index is not None else None
         self.self_threaded = bool(self_threaded)
 
         self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.BLOCK_DURATION_MS))
         self.stream = None
         self.thread = None
+        self.thread_cancelled = False
         self.device_info = None
         self._connect(start=start)
 
@@ -75,6 +76,7 @@ class MicAudio(object):
         )
 
         if self.self_threaded:
+            self.thread_cancelled = False
             self.thread = threading.Thread(target=self._reader_thread, args=(callback,))
             self.thread.daemon = True
             self.thread.start()
@@ -89,9 +91,8 @@ class MicAudio(object):
         self.device_info = device_info
 
     def _reader_thread(self, callback):
-        while self.stream and not self.stream.closed:
-            read_available = self.stream.read_available
-            if read_available >= self.stream.blocksize:
+        while not self.thread_cancelled and self.stream and not self.stream.closed:
+            if self.stream.active and self.stream.read_available >= self.stream.blocksize:
                 in_data, overflowed = self.stream.read(self.stream.blocksize)
                 # print('_reader_thread', read_available, len(in_data), overflowed, self.stream.blocksize)
                 if overflowed:
@@ -106,10 +107,11 @@ class MicAudio(object):
     def reconnect(self):
         # FIXME: flapping
         old_device_info = self.device_info
-        self.stream.close()
+        self.thread_cancelled = True
         if self.thread:
             self.thread.join()
             self.thread = None
+        self.stream.close()
         self._connect(start=True)
         if self.device_info != old_device_info:
             raise EngineError("Audio reconnect could not reconnect to the same device")
