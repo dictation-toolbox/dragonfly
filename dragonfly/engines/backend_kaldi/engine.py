@@ -64,7 +64,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, model_dir=None, tmp_dir=None,
-        input_device_index=None, audio_self_threaded=True,
+        input_device_index=None, audio_self_threaded=True, audio_reconnect_callback=None,
         retain_dir=None, retain_audio=None, retain_metadata=None, retain_approval_func=None,
         vad_aggressiveness=3, vad_padding_start_ms=150, vad_padding_end_ms=150, vad_complex_padding_end_ms=500,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
@@ -100,6 +100,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 self._log.warning("%s: Enabling logging of actions execution to avoid bug processing keyboard actions on Windows", self)
                 action_exec_logger.setLevel(logging.DEBUG)
 
+        if audio_reconnect_callback is not None and not callable(audio_reconnect_callback):
+            self._log.error("Invalid audio_reconnect_callback not callable: %r", audio_reconnect_callback)
+            audio_reconnect_callback = None
         if not (isinstance(retain_dir, string_types) or (retain_dir is None)):
             self._log.error("Invalid retain_dir: %r" % retain_dir)
             retain_dir = None
@@ -112,6 +115,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             tmp_dir = tmp_dir,
             input_device_index = input_device_index,
             audio_self_threaded = bool(audio_self_threaded),
+            audio_reconnect_callback = audio_reconnect_callback,
             retain_dir = retain_dir,
             retain_audio = bool(retain_audio) if retain_audio is not None else bool(retain_dir),
             retain_metadata = bool(retain_metadata) if retain_metadata is not None else bool(retain_dir),
@@ -147,7 +151,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._log.info("Loading Kaldi-Active-Grammar v%s in process %s." % (kaldi_active_grammar.__version__, os.getpid()))
         self._log.info("Kaldi options: %s" % self._options)
-        # subprocess.call(['vsjitdebugger', '-p', str(os.getpid())]); time.sleep(5)
+        # subprocess.call(['vsjitdebugger', '-p', str(os.getpid())]); time.sleep(1)
 
         self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
@@ -170,6 +174,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             start=False,
             input_device_index=self._options['input_device_index'],
             self_threaded=self._options['audio_self_threaded'],
+            reconnect_callback=self._options['audio_reconnect_callback'],
             )
         self._audio_iter = self._audio.vad_collector(nowait=True,
             start_window_ms=self._options['vad_padding_start_ms'],

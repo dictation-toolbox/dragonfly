@@ -47,11 +47,15 @@ class MicAudio(object):
     BLOCK_SIZE_SAMPLES = int(SAMPLE_RATE / float(BLOCKS_PER_SECOND))  # Block size in number of samples
     BLOCK_DURATION_MS = int(1000 * BLOCK_SIZE_SAMPLES // SAMPLE_RATE)  # Block duration in milliseconds
 
-    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None, self_threaded=None):
+    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None, self_threaded=None, reconnect_callback=None):
         self.callback = callback if callback is not None else lambda in_data: self.buffer_queue.put(in_data, block=False)
         self.flush_queue = bool(flush_queue)
         self.input_device_index = int(input_device_index) if input_device_index is not None else None
         self.self_threaded = bool(self_threaded)
+        if reconnect_callback is not None and not callable(reconnect_callback):
+            _log.error("Invalid reconnect_callback not callable: %r", reconnect_callback)
+            reconnect_callback = None
+        self.reconnect_callback = reconnect_callback
 
         self.buffer_queue = queue.Queue(maxsize=(buffer_s * 1000 // self.BLOCK_DURATION_MS))
         self.stream = None
@@ -113,6 +117,8 @@ class MicAudio(object):
             self.thread = None
         self.stream.close()
         self._connect(start=True)
+        if self.reconnect_callback is not None:
+            self.reconnect_callback(self)
         if self.device_info != old_device_info:
             raise EngineError("Audio reconnect could not reconnect to the same device")
 
