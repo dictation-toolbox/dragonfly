@@ -112,13 +112,16 @@ Dragonfly:
  * `Christo Butcher's command modules
    <https://github.com/t4ngo/dragonfly-modules>`_
 
+ * `WhIzz2000's command modules
+   <https://github.com/whIzz2000/natlink-py-scripts>`_
+
+ * `Hawkeye Parker's command modules
+   <https://github.com/haughki/MyDragonflyModules>`_
+
  * `Simian Hacker's Code-by-Voice
    <https://github.com/simianhacker/code-by-voice>`_
    --- Support files for Chris Cowan's "code by voice" setup using
    Dragon NaturallySpeaking and Dragonfly
-
- * `WhIzz2000's command modules
-   <https://github.com/whIzz2000/natlink-py-scripts>`_
 
  * `Designing Dragonfly grammars
    <http://handsfreecoding.org/?p=100>`_
@@ -130,8 +133,6 @@ Forks
 
 The following repositories contain forks of the Dragonfly source code,
 made by various people for them to improve it or experiment with it:
-
- * `Hawkeye Parker's repo <https://github.com/haughki/MyDragonfly>`_
 
  * `Tylercal's repo <https://github.com/tylercal/dragonfly-voice>`_
 
