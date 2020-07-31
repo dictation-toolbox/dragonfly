@@ -109,6 +109,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if retain_audio and not retain_dir:
             self._log.error("retain_audio=True requires retain_dir to be set; making retain_audio=False instead")
             retain_audio = False
+        if retain_approval_func is not None and not callable(retain_approval_func):
+            self._log.error("Invalid retain_approval_func not callable: %r", retain_approval_func)
+            retain_approval_func = None
 
         self._options = dict(
             model_dir = model_dir,
