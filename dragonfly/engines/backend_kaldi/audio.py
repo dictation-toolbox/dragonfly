@@ -47,10 +47,10 @@ class MicAudio(object):
     BLOCK_SIZE_SAMPLES = int(SAMPLE_RATE / float(BLOCKS_PER_SECOND))  # Block size in number of samples
     BLOCK_DURATION_MS = int(1000 * BLOCK_SIZE_SAMPLES // SAMPLE_RATE)  # Block duration in milliseconds
 
-    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device_index=None, self_threaded=None, reconnect_callback=None):
+    def __init__(self, callback=None, buffer_s=0, flush_queue=True, start=True, input_device=None, self_threaded=None, reconnect_callback=None):
         self.callback = callback if callback is not None else lambda in_data: self.buffer_queue.put(in_data, block=False)
         self.flush_queue = bool(flush_queue)
-        self.input_device_index = int(input_device_index) if input_device_index is not None else None
+        self.input_device = input_device
         self.self_threaded = bool(self_threaded)
         if reconnect_callback is not None and not callable(reconnect_callback):
             _log.error("Invalid reconnect_callback not callable: %r", reconnect_callback)
@@ -75,7 +75,7 @@ class MicAudio(object):
             dtype=self.FORMAT,
             blocksize=self.BLOCK_SIZE_SAMPLES,
             # latency=80,
-            device=self.input_device_index,
+            device=self.input_device,
             callback=proxy_callback if not self.self_threaded else None,
         )
 
