@@ -107,20 +107,15 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self._log.warning("%s: input_device_index is deprecated; please use audio_input_device", self)
             audio_input_device = int(input_device_index)
         if audio_input_device is not None and not isinstance(audio_input_device, (int, string_types)):
-            self._log.error("Invalid audio_input_device not int or string: %r", audio_input_device)
-            audio_input_device = None
+            raise TypeError("Invalid audio_input_device not int or string: %r" % (audio_input_device,))
         if audio_reconnect_callback is not None and not callable(audio_reconnect_callback):
-            self._log.error("Invalid audio_reconnect_callback not callable: %r", audio_reconnect_callback)
-            audio_reconnect_callback = None
-        if not (isinstance(retain_dir, string_types) or (retain_dir is None)):
-            self._log.error("Invalid retain_dir: %r" % retain_dir)
-            retain_dir = None
+            raise TypeError("Invalid audio_reconnect_callback not callable: %r" % (audio_reconnect_callback,))
+        if retain_dir is not None and not isinstance(retain_dir, string_types):
+            raise TypeError("Invalid retain_dir not string: %r" % (retain_dir,))
         if retain_audio and not retain_dir:
-            self._log.error("retain_audio=True requires retain_dir to be set; making retain_audio=False instead")
-            retain_audio = False
+            raise ValueError("retain_audio=True requires retain_dir to be set")
         if retain_approval_func is not None and not callable(retain_approval_func):
-            self._log.error("Invalid retain_approval_func not callable: %r", retain_approval_func)
-            retain_approval_func = None
+            raise TypeError("Invalid retain_approval_func not callable: %r" % (retain_approval_func,))
 
         self._options = dict(
             model_dir = model_dir,
