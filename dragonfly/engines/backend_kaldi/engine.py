@@ -63,7 +63,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     #-----------------------------------------------------------------------
 
-    def __init__(self, model_dir=None, tmp_dir=None,
+    def __init__(self, model_dir=None, tmp_dir=None, input_device_index=None,
         audio_input_device=None, audio_self_threaded=True, audio_reconnect_callback=None,
         retain_dir=None, retain_audio=None, retain_metadata=None, retain_approval_func=None,
         vad_aggressiveness=3, vad_padding_start_ms=150, vad_padding_end_ms=150, vad_complex_padding_end_ms=500,
@@ -100,6 +100,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 self._log.warning("%s: Enabling logging of actions execution to avoid bug processing keyboard actions on Windows", self)
                 action_exec_logger.setLevel(logging.DEBUG)
 
+        # Handle engine parameters
+        if input_device_index is not None:
+            if audio_input_device is not None:
+                raise ValueError("Cannot set both input_device_index and audio_input_device")
+            self._log.warning("%s: input_device_index is deprecated; please use audio_input_device", self)
+            audio_input_device = int(input_device_index)
         if audio_input_device is not None and not isinstance(audio_input_device, (int, string_types)):
             self._log.error("Invalid audio_input_device not int or string: %r", audio_input_device)
             audio_input_device = None
@@ -139,6 +145,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             decoder_init_config = dict(decoder_init_config) if decoder_init_config else None,
         )
 
+        # Setup
         self._compiler = None
         self._decoder = None
         self._audio = None
