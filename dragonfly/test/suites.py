@@ -38,6 +38,7 @@ common_names = [
     "test_accessibility",
     "test_actions",
     "test_contexts",
+    "test_basic_rule",
     "test_engine_nonexistent",
     "test_log",
     "test_parser",

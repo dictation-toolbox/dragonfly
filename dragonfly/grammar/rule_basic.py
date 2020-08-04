@@ -74,6 +74,19 @@ The BasicRule class can be used to define a voice-command as follows::
    grammar.load()
 
 
+The above :class:`BasicRule` example can be defined without sub-classing::
+
+   rule = BasicRule(
+       element=Repetition(
+           Alternative((
+               Literal("test one", value=Text("1")),
+               Literal("test two", value=Text("2")),
+               Literal("test three", value=Text("3")),
+           )),
+           1, 5)
+   )
+
+
 Class reference
 ............................................................................
 
@@ -99,14 +112,12 @@ class BasicRule(Rule):
 
     """
 
-    element = None
     context = None
     _default_exported = True
 
     def __init__(self, name=None, element=None, exported=None,
                  context=None):
         if name    is None: name    = self.__class__.__name__
-        if element is None: element = self.element
         if context is None: context = self.context
 
         # Complex handling of exported, because of clashing use of the
@@ -118,6 +129,13 @@ class BasicRule(Rule):
             exported = self.__class__.exported
         else:
             exported = self._default_exported
+
+        # Similar complex handling of element.
+        if element is not None:
+            pass
+        elif (hasattr(self.__class__, "element")
+              and not isinstance(self.__class__.element, property)):
+            element = self.__class__.element
 
         # Type checking of initialization values.
         assert isinstance(name, string_types)
