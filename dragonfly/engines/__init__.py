@@ -59,7 +59,9 @@ def get_engine(name=None, **kwargs):
     if name and name in _engines_by_name:
         # If the requested engine has already been loaded, return it.
         if kwargs is not None and len(kwargs) > 0:
-            message = ("Error: Passing get_engine arguments to an engine that has already been created, hence these arguments are ignored.")
+            message = ("Error: Passing get_engine arguments to an engine "
+                       "that has already been created, hence these "
+                       "arguments are ignored.")
             print(message)
             raise EngineError(message)
         return _engines_by_name[name]
@@ -67,7 +69,9 @@ def get_engine(name=None, **kwargs):
         # If no specific engine is requested and an engine has already
         #  been loaded, return it.
         if kwargs is not None and len(kwargs) > 0:
-            message = ("Error: Passing get_engine arguments to an engine that has already been created, hence these arguments are ignored.")
+            message = ("Error: Passing get_engine arguments to an engine "
+                       "that has already been created, hence these "
+                       "arguments are ignored.")
             print(message)
             raise EngineError(message)
         return _default_engine
@@ -82,9 +86,7 @@ def get_engine(name=None, **kwargs):
             from .backend_natlink import is_engine_available
             from .backend_natlink import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                _default_engine = get_specific_engine(**kwargs)
-                _engines_by_name["natlink"] = _default_engine
-                return _default_engine
+                return get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing natlink engine:"
                        " %s" % (e,))
@@ -99,9 +101,7 @@ def get_engine(name=None, **kwargs):
             from .backend_sapi5 import is_engine_available
             from .backend_sapi5 import get_engine as get_specific_engine
             if is_engine_available(name, **kwargs):
-                _default_engine = get_specific_engine(name, **kwargs)
-                _engines_by_name["sapi5"] = _default_engine
-                return _default_engine
+                return get_specific_engine(name, **kwargs)
         except Exception as e:
             message = ("Exception while initializing sapi5 engine:"
                        " %s" % (e,))
@@ -115,9 +115,7 @@ def get_engine(name=None, **kwargs):
             from .backend_sphinx import is_engine_available
             from .backend_sphinx import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                _default_engine = get_specific_engine(**kwargs)
-                _engines_by_name["sphinx"] = _default_engine
-                return _default_engine
+                return get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing sphinx engine:"
                        " %s" % (e,))
@@ -131,9 +129,7 @@ def get_engine(name=None, **kwargs):
             from .backend_kaldi import is_engine_available
             from .backend_kaldi import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                _default_engine = get_specific_engine(**kwargs)
-                _engines_by_name["kaldi"] = _default_engine
-                return _default_engine
+                return get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing kaldi engine:"
                        " %s" % (e,))
@@ -150,9 +146,7 @@ def get_engine(name=None, **kwargs):
             from .backend_text import is_engine_available
             from .backend_text import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                _default_engine = get_specific_engine(**kwargs)
-                _engines_by_name["text"] = _default_engine
-                return _default_engine
+                return get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing text-input engine:"
                        " %s" % (e,))
@@ -163,8 +157,8 @@ def get_engine(name=None, **kwargs):
     if not name:
         raise EngineError("No usable engines found.")
     else:
-        valid_names = ["natlink", "kaldi", "sphinx", "sapi5shared"
-                       "sapi5inproc", "sapi5"]
+        valid_names = ["natlink", "kaldi", "sphinx", "sapi5shared",
+                       "sapi5inproc", "sapi5", "text"]
         if name not in valid_names:
             raise EngineError("Requested engine %r is not a valid engine "
                               "name." % (name,))
@@ -212,6 +206,8 @@ def register_engine_init(engine):
 
     """
 
-    global _default_engine
+    global _default_engine, _engines_by_name
     if not _default_engine:
         _default_engine = engine
+    if engine and engine.name not in _engines_by_name:
+        _engines_by_name[engine.name] = engine
