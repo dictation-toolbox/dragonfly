@@ -149,10 +149,13 @@ the ``get_engine()`` function, which passes them to the
   engine = get_engine("kaldi",
     model_dir='kaldi_model',
     tmp_dir='kaldi_tmp',
-    input_device_index=None,
+    audio_input_device=None,
+    audio_self_threaded=True,
+    audio_reconnect_callback=None,
     retain_dir=None,
     retain_audio=None,
     retain_metadata=None,
+    retain_approval_func=None,
     vad_aggressiveness=3,
     vad_padding_start_ms=150,
     vad_padding_end_ms=150,
@@ -160,6 +163,7 @@ the ``get_engine()`` function, which passes them to the
     auto_add_to_user_lexicon=True,
     lazy_compilation=True,
     invalidate_cache=False,
+    expected_error_rate_threshold=None,
     alternative_dictation=None,
     cloud_dictation_lang='en-US',
   )
@@ -186,10 +190,16 @@ The engine can also be configured via the :ref:`command-line interface
   cache (used both during execution and between executions but safe to
   delete).
 
-* ``input_device_index`` (``int|None``) -- Microphone PortAudio input device
-  index: the default of ``None`` chooses the default input device. To see
-  a list your available input devices and their corresponding indexes, call
-  ``get_engine('kaldi').print_mic_list()``
+* ``audio_input_device`` (``int|str|None``) -- Microphone PortAudio input
+  device: the default of ``None`` chooses the default input device. To
+  see a list of available input devices and their corresponding indexes
+  an names, call ``get_engine('kaldi').print_mic_list()``. To select a
+  specific device, pass an ``int`` representing the index number of the
+  device, or pass a ``str`` representing (part of) the name of the
+  device. If a string is given, the device is selected which contains
+  all space-separated parts in the right order. Each device string
+  contains the name of the corresponding host API in the end. The string
+  comparison is case-insensitive. The string match must be unique.
 
 * ``retain_dir`` (``str|None``) -- Retains recognized audio and/or
   metadata in the given directory, saving audio to
