@@ -60,12 +60,13 @@ Class reference
 
 """
 
+import locale
 import os.path
 from subprocess           import Popen
 import sys
 import time
 
-from six import string_types
+import six
 
 from .action_base         import ActionBase, ActionError
 from .action_focuswindow  import FocusWindow
@@ -121,9 +122,14 @@ class StartApp(ActionBase):
 
     @classmethod
     def _interpret(cls, path):
-        if not isinstance(path, string_types):
+        if not isinstance(path, six.string_types):
             raise TypeError("expected string argument for path, but got "
                             "%s" % path)
+
+        # Encode text strings if this is Python 2.
+        if six.PY2 and isinstance(path, six.text_type):
+            encoding = locale.getpreferredencoding()
+            path = path.encode(encoding)
 
         return os.path.expanduser(os.path.expandvars(path))
 
