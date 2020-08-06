@@ -41,7 +41,7 @@ The class works in the same way as :class:`IntegerRef`, by adding the following 
 
 from ..base.integer_internal  import (MapIntBuilder, CollectionIntBuilder,
                                       MagnitudeIntBuilder, IntegerContentBase)
-from .number import int_0, int_1_9, int_10_19, int_20_90_10
+from .number import int_0, int_1_9, int_10_19, int_and_1_99, int_20_90_10, int_100s, int_1000000s
 
 # Twenty five
 int_20_99       = MagnitudeIntBuilder(
@@ -96,8 +96,17 @@ int_x100_x999       = MagnitudeIntBuilder(
                    remainders  = [int_x01_x99, int_x10_x99]
                   )
 
+# Very similar to the one from number.py, but without int_1_9 multipliers
+# as these are handled above.
+int_1000s       = MagnitudeIntBuilder(
+                   factor      = 1000,
+                   spec        = "[<multiplier>] thousand [<remainder>]",
+                   multipliers = [int_10_19, int_20_99, int_100s],
+                   remainders  = [int_and_1_99, int_100s]
+                  )
 #---------------------------------------------------------------------------
 
 class ShortIntegerContent(IntegerContentBase):
     builders = [int_0, int_1_9, int_10_19, int_20_99, int_10_99,
-                int_x01_x99, int_x10_x99, int_x000_x099, int_x100_x999]
+                int_x01_x99, int_x10_x99, int_x000_x099, int_x100_x999,
+                int_1000s, int_1000000s]
