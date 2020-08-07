@@ -63,7 +63,10 @@ Otherwise...
 **Note for Linux:** You may need the ``portaudio`` headers to be
 installed in order to be able to install/compile the ``sounddevice``
 Python package. Under ``apt``-based distributions, you can get them by
-running ``sudo apt install portaudio19-dev``
+running ``sudo apt install portaudio19-dev``. You may also need to make
+your user account a member of the ``audio`` group to be able to access
+your microphone. Do this by running ``usermod -a -G audio
+account_name_here``.
 
 Installing the correct versions of the Python dependencies can be most
 easily done by installing the ``kaldi`` sub-package of ``dragonfly2``
