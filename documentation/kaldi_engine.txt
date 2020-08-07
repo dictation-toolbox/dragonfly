@@ -51,29 +51,23 @@ Otherwise...
 **Requirements:**
 
 * Python 2.7 or 3.4+; *64-bit required!*
-* OS: *Linux or Windows*; macOS planned if there is interest
+* OS: Windows/Linux/MacOS all supported (see `Cross-platform`_)
 * Only supports Kaldi left-biphone models, specifically *nnet3 chain* models, with specific modifications
 * ~1GB+ disk space for model plus temporary storage and cache, depending on your grammar complexity
 * ~500MB+ RAM for model and grammars, depending on your model and grammar complexity
+* Python package dependencies (which should be installed automatically by following the instructions below):
+  * `kaldi-active-grammar <https://github.com/daanzu/kaldi-active-grammar>`_
+  * `sounddevice <https://python-sounddevice.readthedocs.io>`_
+  * `webrtcvad <https://github.com/wiseman/py-webrtcvad>`_
 
-There are three package dependencies for using the Kaldi engine:
+**Note for Linux:** You may need the ``portaudio`` headers to be
+installed in order to be able to install/compile the ``sounddevice``
+Python package. Under ``apt``-based distributions, you can get them by
+running ``sudo apt install portaudio19-dev``
 
-- `kaldi-active-grammar <https://github.com/daanzu/kaldi-active-grammar>`_
-- `sounddevice <https://python-sounddevice.readthedocs.io>`_
-- `webrtcvad <https://github.com/wiseman/py-webrtcvad>`_
-
-**Note for Windows:** Before proceeding, if you don't have the Microsoft
-Python compiler package installed (assume you don't), you should first
-install a binary wheel for ``webrtcvad`` with ``pip install
-https://github.com/daanzu/kaldi-active-grammar/releases/download/v0.4.0/webrtcvad-2.0.10-cp27-cp27m-win_amd64.whl``
-
-**Note for Linux:** You may need the ``portaudio`` headers in order to
-install/compile the ``sounddevice`` package. Under ``apt``-based
-distributions, you can get them by running ``sudo apt install
-portaudio19-dev``
-
-Installing the correct versions of these dependencies can be most easily
-done by installing the ``kaldi`` sub-package of ``dragonfly2`` using::
+Installing the correct versions of the Python dependencies can be most
+easily done by installing the ``kaldi`` sub-package of ``dragonfly2``
+using::
 
   pip install dragonfly2[kaldi]
 
