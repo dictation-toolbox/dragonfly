@@ -8,6 +8,8 @@ David Zurow <daanzu@gmail.com>
 Dmitri Makarov <dmakarov@alumni.stanford.edu>
 Dusty Phillips <86920+dusty-phillips@users.noreply.github.com>
 Eric Paulson <Paulson.Eric@Gmail.com>
+Hawkeye Parker <parker.hawkeye@gmail.com>
+James Murphy <james@intfxdx.com>
 James Stout <james.wolf.stout@gmail.com>
 Jason Smythe <jason@smythemail.za.net>
 LexiconCode <thequietplace@protonmail.com>
