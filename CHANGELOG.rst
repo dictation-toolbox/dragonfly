@@ -11,6 +11,30 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add useful audio-related initialization arguments to Kaldi engine back-end
+  (thanks `@daanzu`_).
+
+Changed
+~~~~~~~
+* Bump required Kaldi-Active-Grammar version to 1.7.0 fix bugs.
+* Change the get_engine() function to stop overriding the default (first)
+  engine if another engine is initialized.
+
+Fixed
+~~~~~
+* Add missing high numbers to short integer elements (thanks `@mrob95`_).
+* Fix Python 2.7 bug where StartApp action args may only use ASCII
+  characters.
+* Fix bug with BasicRule where it can only be used as a derived class.
+* Fix various Kaldi engine bugs and documentation issues (thanks
+  `@daanzu`_).
+
+
 0.25.1_ - 2020-07-29
 --------------------
 
