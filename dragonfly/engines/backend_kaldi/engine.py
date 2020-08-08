@@ -527,7 +527,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
             if self._log.isEnabledFor(12):
                 try:
-                    self._log.log(12, "Alignment (word,time,length): %s" % self._decoder.get_word_align(output))
+                    self._log.log(12, "Alignment (word,time,length): %s", self._decoder.get_word_align(output))
                 except KaldiError as e:
                     self._log.warning("Exception logging word alignment")
 
