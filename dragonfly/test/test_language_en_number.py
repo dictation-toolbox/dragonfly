@@ -162,7 +162,7 @@ class ShortIntegerTestCase(ElementTestCase):
     """ Verify line integer class working as expected """
     def _build_element(self):
         from dragonfly.language.en.short_number       import ShortIntegerContent
-        return Integer(content=ShortIntegerContent, min=0, max=10000)
+        return Integer(content=ShortIntegerContent, min=0, max=10000000)
     input_output = [
                     ("one",                           1),
                     ("ten",                           10),
@@ -186,4 +186,11 @@ class ShortIntegerTestCase(ElementTestCase):
                     ("one seven five three",          1753),
                     ("seventeen five three",          1753),
                     ("four thousand",                 4000),
+                    ("ten thousand",                  10000),
+                    ("ninety thousand",               90000),
+                    ("four hundred thousand",         400000),
+                    ("four hundred thousand and fifty", 400050),
+                    ("four hundred thousand three hundred and forty two", 400342),
+                    ("two hundred and thirty four thousand five hundred sixty seven", 234567),
+                    ("five million two hundred and thirty four thousand five hundred sixty seven", 5234567),
                    ]
