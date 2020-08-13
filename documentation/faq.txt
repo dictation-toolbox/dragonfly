@@ -484,6 +484,31 @@ Another way around the problem is to have an "extra" for reserved words:
    ]
 
 
+How can I increase the speech recognition accuracy?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Low recognition accuracy is usually caused by either bad-quality audio input
+or a speech model that isn't trained to your voice or use case. You might
+try the following:
+
+ * Re-positioning your microphone.
+ * Using a different microphone.
+ * Training words or phrases.
+ * Change the speech recognition engine settings (e.g. adjust Dragon's
+   accuracy/speed slider).
+ * Using a different engine back-end if possible, e.g. the Kaldi back-end is
+   typically more accurate than CMU Pocket Sphinx and WSR back-ends.
+
+Dragonfly also has programmatic methods for increasing recognition accuracy.
+They can be used to fine tune accuracy for specific commands or parts of
+commands:
+
+ #. :ref:`Kaldi Grammar/Rule/Element Weights <RefKaldiEngineWeights>`
+    (Kaldi-only)
+ #. Quoted words in :class:`dragonfly.grammar.elements_basic.Literal`
+    elements (only applies to Dragon)
+
+
 Why aren't Dragonfly actions working with Windows admin applications?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -387,6 +387,7 @@ recognized, possibly with the addition of a weight parameter.
 Future development work includes improving on these issues.
 
 
+.. _RefKaldiEngineWeights:
 Grammar/Rule/Element Weights
 ----------------------------------------------------------------------------
 Grammars, rules, and/or elements can have a weight specified, where
