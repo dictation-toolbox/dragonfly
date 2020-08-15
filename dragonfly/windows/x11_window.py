@@ -62,30 +62,6 @@ class X11Window(BaseWindow):
     xprop = "xprop"
 
     @classmethod
-    def _run_command_simple(cls, exe, arguments):
-        # Run the command and return whether or not it succeeded based on
-        # the return code.
-        stdout, return_code = cls._run_command(exe, arguments)
-        if stdout: print(stdout)
-        return return_code == 0
-
-    @classmethod
-    def _run_xdotool_command(cls, arguments):
-        return cls._run_command(cls.xdotool, arguments)
-
-    @classmethod
-    def _run_xdotool_command_simple(cls, arguments):
-        return cls._run_command_simple(cls.xdotool, arguments)
-
-    @classmethod
-    def _run_wmctrl_command_simple(cls, arguments):
-        return cls._run_command_simple(cls.wmctrl, arguments)
-
-    @classmethod
-    def _run_xprop_command(cls, arguments):
-        return cls._run_command(cls.xprop, arguments)
-
-    @classmethod
     def _run_command(cls, command, arguments):
         """
         Run a command with arguments and return the result.
@@ -131,6 +107,30 @@ class X11Window(BaseWindow):
                            "%s installed?",
                            full_readable_command, e, command)
             raise e
+
+    @classmethod
+    def _run_command_simple(cls, exe, arguments):
+        # Run the command and return whether or not it succeeded based on
+        # the return code.
+        stdout, return_code = cls._run_command(exe, arguments)
+        if stdout: print(stdout)
+        return return_code == 0
+
+    @classmethod
+    def _run_wmctrl_command_simple(cls, arguments):
+        return cls._run_command_simple(cls.wmctrl, arguments)
+
+    @classmethod
+    def _run_xdotool_command(cls, arguments):
+        return cls._run_command(cls.xdotool, arguments)
+
+    @classmethod
+    def _run_xdotool_command_simple(cls, arguments):
+        return cls._run_command_simple(cls.xdotool, arguments)
+
+    @classmethod
+    def _run_xprop_command(cls, arguments):
+        return cls._run_command(cls.xprop, arguments)
 
     #-----------------------------------------------------------------------
     # Class methods to create new Window objects.
