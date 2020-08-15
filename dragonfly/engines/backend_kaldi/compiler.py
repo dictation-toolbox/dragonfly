@@ -22,9 +22,8 @@
 Compiler classes for Kaldi backend
 """
 
-import collections, logging, os.path, re, subprocess, types
+import collections, types
 
-from .testing                   import debug_timer
 from .dictation                 import AlternativeDictation, DefaultDictation, UserDictation
 from ..base                     import CompilerBase, CompilerError
 from ...grammar                 import elements as elements_
@@ -35,8 +34,6 @@ from kaldi_active_grammar import Compiler as KaldiAGCompiler
 import six
 from six import text_type
 from six.moves import map, range
-
-_log = logging.getLogger("engine.compiler")
 
 
 #---------------------------------------------------------------------------
@@ -147,16 +144,15 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
                 kaldi_rule = KaldiRule(self,
                     name='%s::%s' % (grammar.name, rule.name),
-                    has_dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))  # FIXME
+                    has_dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))  # FIXME: make more accurate
                 kaldi_rule.parent_grammar = grammar
                 kaldi_rule.parent_rule = rule
                 kaldi_rule_by_rule_dict[rule] = kaldi_rule
 
                 try:
                     self._compile_rule_root(rule, grammar, kaldi_rule)
-                except Exception as e:
-                    kaldi_rule.destroy()
-                    raise
+                except Exception:
+                    raise self.make_compiler_error_for_kaldi_rule(kaldi_rule)
 
         self.kaldi_rule_by_rule_dict.update(kaldi_rule_by_rule_dict)
         return kaldi_rule_by_rule_dict
@@ -384,3 +380,18 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         inner_src_state = fst.add_state()
         fst.add_arc(outer_src_state, inner_src_state, None, weight=weight)
         return inner_src_state
+
+    def make_compiler_error_for_kaldi_rule(self, kaldi_rule):
+        message = "Exception while compiling %s in %s" % (kaldi_rule.parent_rule, kaldi_rule.parent_grammar)
+        if six.PY2: self._log.exception("%s: %s", self, message)  # Imitate PY3's chained exceptions traceback
+        rule_tree = kaldi_rule.parent_rule.element.element_tree_string()
+        # Limit to at most 100 lines, unless debug logging enabled
+        if not self._log.isEnabledFor(10) and rule_tree.count('\n') >= 10:
+            rule_tree_lines = rule_tree.split('\n')[:10]
+            rule_tree_lines.append("----8<----" * 7)
+            rule_tree_lines.append("Printout truncated at 100 lines. To see all, run with:")
+            rule_tree_lines.append("    logging.getLogger('kaldi.compiler').setLevel(logging.DEBUG)")
+            rule_tree = '\n'.join(rule_tree_lines)
+        self._log.error("Failed rule's elements:\n" + rule_tree)
+        kaldi_rule.destroy()
+        return CompilerError(message)

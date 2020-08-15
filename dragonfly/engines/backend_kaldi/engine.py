@@ -25,12 +25,14 @@ Kaldi engine classes
 import collections, logging, os, subprocess, sys, threading, time
 
 from packaging.version import Version
-from six import integer_types, string_types, print_, reraise
+from six import PY2, integer_types, string_types, print_, reraise
 from six.moves import zip
 import kaldi_active_grammar
-from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError
+from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError, KaldiRule
 
-from ..base                     import (EngineBase, EngineError, MimicFailure,
+from ..base                     import (EngineBase,
+                                        EngineError, CompilerError,
+                                        MimicFailure,
                                         DelegateTimerManager,
                                         DelegateTimerManagerInterface,
                                         DictationContainerBase,
@@ -305,7 +307,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def prepare_for_recognition(self):
         """ Can be called optionally before ``do_recognition()`` to speed up its starting of active recognition. """
-        self._compiler.prepare_for_recognition()
+        try:
+            self._compiler.prepare_for_recognition()
+        except KaldiError as e:
+            if len(e.args) >= 2 and isinstance(e.args[1], KaldiRule):
+                kaldi_rule = e.args[1]
+                raise self._compiler.make_compiler_error_for_kaldi_rule(kaldi_rule)
+            raise
 
     def _do_recognition(self, timeout=None, single=False, audio_iter=None):
         """
