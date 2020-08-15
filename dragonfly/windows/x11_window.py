@@ -57,8 +57,17 @@ class X11Window(BaseWindow):
     # Methods and attributes for running commands.
 
     # Commands
+    wmctrl = "wmctrl"
     xdotool = "xdotool"
     xprop = "xprop"
+
+    @classmethod
+    def _run_command_simple(cls, exe, arguments):
+        # Run the command and return whether or not it succeeded based on
+        # the return code.
+        stdout, return_code = cls._run_command(exe, arguments)
+        if stdout: print(stdout)
+        return return_code == 0
 
     @classmethod
     def _run_xdotool_command(cls, arguments):
@@ -66,11 +75,11 @@ class X11Window(BaseWindow):
 
     @classmethod
     def _run_xdotool_command_simple(cls, arguments):
-        # Run the command and return whether or not it succeeded based on
-        # the return code.
-        stdout, return_code = cls._run_command(cls.xdotool, arguments)
-        if stdout: print(stdout)
-        return return_code == 0
+        return cls._run_command_simple(cls.xdotool, arguments)
+
+    @classmethod
+    def _run_wmctrl_command_simple(cls, arguments):
+        return cls._run_command_simple(cls.wmctrl, arguments)
 
     @classmethod
     def _run_xprop_command(cls, arguments):
@@ -437,17 +446,19 @@ class X11Window(BaseWindow):
         return self._run_xdotool_command_simple(['windowminimize',
                                                  self.id])
 
-    def _toggle_maximize(self):
-        # Doesn't seem possible with xdotool. We'll try pressing a-f10
-        # with the window focused. Only maximize if set_foreground()
-        # succeeded.
-        return self.set_foreground() and self._run_xdotool_command_simple([
-            'keydown', 'Alt_L', 'key', 'F10', 'keyup', 'Alt_L'
+    def _toggle_maximize(self, is_maximized):
+        # Use wmctrl to add or remove the maximized window properties from
+        # the window's _NET_WM_STATE set.
+        # Note: this should be possible with xprop, but is not supported.
+        maximized_props = 'maximized_vert,maximized_horz'
+        add_remove = 'remove' if is_maximized else 'add'
+        return self._run_wmctrl_command_simple([
+            '-ir', self.id, '-b', '%s,%s' % (add_remove, maximized_props)
         ])
 
     def maximize(self):
         if not self.is_maximized:
-            return self._toggle_maximize()
+            return self._toggle_maximize(False)
         return True  # already maximized.
 
     def restore(self):
@@ -457,7 +468,7 @@ class X11Window(BaseWindow):
                 'windowactivate', self.id
             ])
         elif self._is_maximized(state):
-            return self._toggle_maximize()
+            return self._toggle_maximize(True)
         else:
             # True if already restored or False if no _NET_WM_STATE.
             return state is not None
