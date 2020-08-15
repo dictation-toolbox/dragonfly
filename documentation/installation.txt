@@ -128,10 +128,19 @@ You can download Dragonfly's module loaders and other example files in
 <https://github.com/dictation-toolbox/dragonfly/tree/master/dragonfly/examples>`__.
 
 
+Installation for Kaldi
+----------------------------------------------------------------------------
+
+Please see the :ref:`Kaldi engine page <RefKaldiEngine>` for
+installation and usage information. There is a *loader* program for
+the Sphinx engine available in the
+``dragonfly/examples/kaldi_module_loader_plus.py`` file.
+
+
 Installation for CMU Pocket Sphinx
 ----------------------------------------------------------------------------
 
 Please see the :ref:`Pocket Sphinx engine page <RefSphinxEngine>` for
 installation and usage information. There is a *loader* program for
 the Sphinx engine available in the
-``dragonfly/examples/sphinx_module_loader.py.py`` file.
+``dragonfly/examples/sphinx_module_loader.py`` file.
