@@ -21,10 +21,20 @@
 # pylint: disable=E0401
 # This file imports a Win32-only module.
 
+import ctypes
 import win32api
 
 from .base_monitor import BaseMonitor
 from .rectangle import Rectangle
+
+# Force the current process to be DPI aware. This will ensure that the
+# resolution is reported properly even when DPI scaling is on. This appears to
+# be set to PROCESS_SYSTEM_DPI_AWARE when running embedded in Dragon, which
+# provides awareness of the DPI when the application starts, but not when it
+# changes. Unfortunately, this cannot be changed (presumably it is declared in a
+# manifest). When running from the command line, however, the default is
+# PROCESS_DPI_UNAWARE and can be adjusted here.
+ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PROCESS_PER_MONITOR_DPI_AWARE
 
 
 #===========================================================================
