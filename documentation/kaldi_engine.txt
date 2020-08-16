@@ -90,10 +90,11 @@ from `kaldi-active-grammar
 <https://github.com/daanzu/kaldi-active-grammar>`_. Unzip it into a
 directory within the directory containing your grammar modules.
 
-**Note for Linux:** Before proceeding, you'll need ``xdotool``.
-Under ``apt``-based distributions, you can get them by running::
+**Note for Linux:** Before proceeding, you'll need ``wmctrl`` and
+``xdotool``. Under ``apt``-based distributions, you can get them by
+running::
 
-  sudo apt install xdotool
+  sudo apt install wmctrl xdotool
 
 Once the dependencies and model are installed, you're ready to go!
 

@@ -572,12 +572,16 @@ Why aren't Dragonfly's input actions working on my Linux system?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dragonfly's :code:`Key`, :code:`Text` and :code:`Mouse` action classes use
-`xdotool`_ on Linux. These actions will not work if it isn't installed. It
-can normally be installed through your system's package manager. On
-Debian-based or Ubuntu-based systems, this is done by running the following
-console command::
+the `xdotool`_ program on Linux. These actions will not work if it isn't
+installed. It can normally be installed through your system's package
+manager. On Debian-based or Ubuntu-based systems, this is done by running
+the following console command::
 
   sudo apt install xdotool
+
+The :code:`Window` class also requires the `wmctrl`_ program::
+
+  sudo apt install wmctrl
 
 The keyboard/mouse input classes will only work in an X11 session. You will
 get the following error if you are using `Wayland`_ or something else::
@@ -633,5 +637,6 @@ touch:
 .. _python-modernize: https://pypi.org/project/modernize/
 .. _pywin32: https://github.com/mhammond/pywin32
 .. _switch to X11: https://askubuntu.com/questions/961304/how-do-you-switch-from-wayland-back-to-xorg-in-ubuntu-17-10
+.. _wmctrl: https://www.freedesktop.org/wiki/Software/wmctrl/
 .. _xdotool: https://www.semicomplete.com/projects/xdotool
 .. _ydotool: https://github.com/ReimuNotMoe/ydotool
