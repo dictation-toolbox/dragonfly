@@ -49,6 +49,12 @@ class X11Window(BaseWindow):
         Window control methods such as :meth:`close` will return ``True``
         if successful.
 
+        This class requires the following external programs:
+
+        * ``wmctrl``
+        * ``xdotool``
+        * ``xprop``
+
     """
 
     _log = logging.getLogger("window")
