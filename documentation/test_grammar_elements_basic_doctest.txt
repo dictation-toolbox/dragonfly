@@ -133,7 +133,7 @@ Constructor arguments::
 Repetition element class
 ============================================================================
 
-Usage::
+Basic usage::
 
     >>> # Repetition is given a dragonfly element, in this case a Sequence.
     >>> seq = Sequence([Literal("hello"), Literal("world")])
@@ -159,6 +159,28 @@ Usage::
     [[u'hello', u'world']]
     >>> test_rep.recognize("hello world hello world")
     [[u'hello', u'world'], [u'hello', u'world']]
+
+Exact number of repetitions::
+
+    >>> seq = Sequence([Literal("hello"), Literal("world")])
+    >>> rep = Repetition(seq, min=3, max=None, optimize=False)
+    >>> test_rep = ElementTester(rep)
+    >>> test_rep.recognize("hello world")
+    RecognitionFailure
+    >>> test_rep.recognize("hello world hello world")
+    RecognitionFailure
+    >>> test_rep.recognize("hello world hello world hello world")
+    [[u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world']]
+    >>> test_rep.recognize("hello world hello world hello world hello world")
+    RecognitionFailure
+
+min must be less than max::
+
+    >>> rep = Repetition(Literal("hello"), min=3, max=3, optimize=False)
+    Traceback (most recent call last):
+      ...
+    AssertionError: min must be less than max
+
 
 Modifier element class
 ============================================================================
