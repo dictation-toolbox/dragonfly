@@ -600,7 +600,7 @@ class Repetition(Sequence):
                             " ElementBase instance." % self)
         assert isinstance(min, integer_types)
         assert max is None or isinstance(max, integer_types)
-        assert max is None or min < max
+        assert max is None or min < max, "min must be less than max"
 
         self._child = child
         self._min = min
