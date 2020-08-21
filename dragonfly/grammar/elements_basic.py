@@ -611,7 +611,7 @@ class Repetition(Sequence):
         optional_length = self._max - self._min - 1
         if optional_length > 0:
             element = Optional(child)
-            for index in range(optional_length):
+            for index in range(optional_length-1):
                 element = Optional(Sequence([child, element]))
 
             if self._min >= 1:
