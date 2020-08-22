@@ -388,9 +388,9 @@ recognized, possibly with the addition of a weight parameter.
 **Experimental:** You can avoid the above issues by using this engine's "user
 dictation" feature. This also allows you to have separate "spoken" and "written
 forms" of terms in dictation. Do so by adding any words you want added/modified
-to the user dictation list (spoken=written form) or dictlist (different spoken
-and written forms), and using the ``UserDictation`` element in your grammars (in
-place of the standard dragonfly ``Dictation`` element)::
+to the user dictation list (identical spoken and written form) or dictlist
+(different spoken and written forms), and using the ``UserDictation`` element in
+your grammars (in place of the standard dragonfly ``Dictation`` element)::
 
     from dragonfly import *
     from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
@@ -665,6 +665,8 @@ Engine API
 .. autoclass:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
    :members:
 
+.. autoclass:: dragonfly.engines.backend_kaldi.dictation.UserDictation
+   :members:
 .. autoclass:: dragonfly.engines.backend_kaldi.dictation.AlternativeDictation
    :members:
 .. autoclass:: dragonfly.engines.backend_kaldi.dictation.DefaultDictation
