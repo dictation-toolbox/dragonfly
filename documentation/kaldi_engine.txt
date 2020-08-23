@@ -385,7 +385,20 @@ This technique can also help mitigate dictation **recognizing the wrong
 of similar sounding words** by emphasizing the word you want to be
 recognized, possibly with the addition of a weight parameter.
 
-Future development work includes improving on these issues.
+**Experimental:** You can avoid the above issues by using this engine's "user
+dictation" feature. This also allows you to have separate "spoken" and "written
+forms" of terms in dictation. Do so by adding any words you want added/modified
+to the user dictation list (identical spoken and written form) or dictlist
+(different spoken and written forms), and using the ``UserDictation`` element in
+your grammars (in place of the standard dragonfly ``Dictation`` element)::
+
+    from dragonfly import *
+    from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
+    get_engine().add_word_list_to_user_dictation(['kaldi'])
+    get_engine().add_word_dict_to_user_dictation({'open F S T': 'openFST'})
+    class TestUserDictationRule(MappingRule):
+        mapping = { "dictate <text>": Function(lambda text: print("text: %s" % text)), }
+        extras = [ Dictation("text"), ]
 
 
 .. _RefKaldiEngineWeights:
@@ -652,6 +665,8 @@ Engine API
 .. autoclass:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
    :members:
 
+.. autoclass:: dragonfly.engines.backend_kaldi.dictation.UserDictation
+   :members:
 .. autoclass:: dragonfly.engines.backend_kaldi.dictation.AlternativeDictation
    :members:
 .. autoclass:: dragonfly.engines.backend_kaldi.dictation.DefaultDictation

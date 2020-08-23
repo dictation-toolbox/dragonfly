@@ -36,6 +36,7 @@ from ..base                     import (EngineBase, EngineError, MimicFailure,
                                         DictationContainerBase,
                                         GrammarWrapperBase)
 from .audio                     import MicAudio, VADAudio, AudioStore, WavAudio
+from .dictation                 import user_dictation_list, user_dictation_dictlist
 from .recobs                    import KaldiRecObsManager
 from .testing                   import debug_timer
 from dragonfly.grammar.state    import State
@@ -448,6 +449,31 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def reset_adaptation_state(self):
         self._decoder.reset_adaptation_state()
+
+    def add_word_list_to_user_dictation(self, word_list):
+        """ Make UserDictation elements able to recognize each item of given
+            list of strings *word_list*. Note: all characters will be converted
+            to lowercase, and recognized as such. """
+        word_list = [str(word).lower() for word in word_list]
+        word_list = [word for word in word_list
+            if word not in user_dictation_list]
+        # if any((word != word.lower()) for word in word_list):
+        #     raise ValueError("Cannot recognize words with uppercase")
+        user_dictation_list.extend(word_list)
+
+    def add_word_dict_to_user_dictation(self, word_dict):
+        """ Make UserDictation elements able to recognize each item of given
+            dict of strings *word_dict*. The key is the "spoken form" (which is
+            recognized), and the value is the "written form" (which is returned
+            as the text in the UserDictation element). Note: all characters in
+            the keys will be converted to lowercase, but the values are returned
+            as text verbatim. """
+        word_dict = {str(key).lower(): str(value) for key, value in word_dict.items()}
+        word_dict = {key: value for key, value in word_dict.items()
+            if key not in user_dictation_dictlist.keys()}
+        # if any((word != word.lower()) for word in word_dict.keys()):
+        #     raise ValueError("Cannot recognize words with uppercase")
+        user_dictation_dictlist.update(word_dict)
 
     #-----------------------------------------------------------------------
     # Internal processing methods.

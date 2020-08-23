@@ -25,7 +25,7 @@ Compiler classes for Kaldi backend
 import collections, logging, os.path, re, subprocess, types
 
 from .testing                   import debug_timer
-from .dictation                 import AlternativeDictation, DefaultDictation
+from .dictation                 import AlternativeDictation, DefaultDictation, UserDictation
 from ..base                     import CompilerBase, CompilerError
 from ...grammar                 import elements as elements_
 
@@ -363,16 +363,16 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def get_weight(self, obj, name='weight'):
         """ Gets the weight of given grammar or rule, checking for invalid values. """
         weight = getattr(obj, name, 1)
+        if isinstance(obj, (elements_.Dictation, UserDictation)) and isinstance(weight, types.FunctionType):
+            # Ignore crazy string method handling on Dictation elements; use default value
+            weight = 1
         try:
             weight = float(weight)
         except TypeError:
-            # Ignore crazy string method handling on Dictation elements; otherwise error
-            if not (isinstance(obj, elements_.Dictation) and isinstance(weight, types.FunctionType)):
-                self._log.error("%s: Weight must be a numeric, but %s %s is %s" % (self, obj, name, weight))
-                import pdb; pdb.set_trace()
+            self._log.error("%s: Weight must be a numeric, but %s.%s is %s: %r" % (self, obj, name, type(weight), weight))
             weight = 1
         if weight <= 0:
-            self._log.error("%s: Weight cannot be negative or 0, but %s %s is %s" % (self, obj, name, weight))
+            self._log.error("%s: Weight cannot be negative or 0, but %s.%s is %s" % (self, obj, name, weight))
             weight = 1e-9
         return weight
 
