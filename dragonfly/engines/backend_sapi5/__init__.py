@@ -22,21 +22,6 @@
 SR back-end package for WSR and SAPI 5
 ============================================================================
 
-The WSR / SAPI 5 back-end has two engine classes:
-
-* `sapi5inproc` - engine class for SAPI 5 in process recognizer. This is the
-  default implementation and has no GUI (yet). :meth:`get_engine` will
-  return an instance of this class if the ``name`` parameter is ``None``
-  (default) or ``"sapi5inproc"``. It is recommended that you run this from
-  command-line.
-
-* `sapi5shared` - engine class for SAPI 5 shared recognizer. This
-  implementation uses the Windows Speech Recognition GUI. This
-  implementation's behaviour can be inconsistent and a little buggy at
-  times, which is why it is no longer the default. To use it anyway
-  pass ``"sapi5"`` or ``"sapi5shared"`` to :meth:`get_engine`.
-
-
 """
 
 import logging

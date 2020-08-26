@@ -1,6 +1,6 @@
 .. _RefSphinxEngine:
 
-CMU Pocket Sphinx dragonfly engine
+CMU Pocket Sphinx engine back-end
 ============================================================================
 
 This version of dragonfly contains an engine implementation using the open
@@ -211,6 +211,9 @@ Engine API
 ----------------------------------------------------------------------------
 
 .. autoclass:: dragonfly.engines.backend_sphinx.engine.SphinxEngine
+   :members:
+
+.. automodule:: dragonfly.engines.backend_sphinx.timer
    :members:
 
 

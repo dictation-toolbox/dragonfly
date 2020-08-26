@@ -18,12 +18,6 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-Main SR engine back-end interface
-============================================================================
-
-"""
-
 import logging
 import os
 import traceback

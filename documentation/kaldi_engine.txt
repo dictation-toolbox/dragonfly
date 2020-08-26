@@ -1,6 +1,6 @@
 .. _RefKaldiEngine:
 
-Kaldi dragonfly engine
+Kaldi engine back-end
 ============================================================================
 
 This version of dragonfly contains an engine implementation using the
