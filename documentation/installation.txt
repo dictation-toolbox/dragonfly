@@ -76,8 +76,8 @@ dependencies, then you may need to upgrade pip with the following command:
 Installation for specific SR engine back-ends
 ----------------------------------------------------------------------------
 
-Each Dragonfly speech recognition engine back-end has specific requirements.
-These are documented separately for each:
+Each Dragonfly speech recognition engine back-end and its requirements are
+documented separately:
 
 * :ref:`RefNatlinkEngine`
 * :ref:`RefSapi5Engine`
