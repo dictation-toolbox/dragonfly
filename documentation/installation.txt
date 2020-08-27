@@ -23,6 +23,15 @@ To be able to use the dragonfly, you will need the following:
  * **Natlink** *(only for Dragon users)* -- latest
    versions available from `SourceForge
    <https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`_.
+ * `Xdotool <https://www.semicomplete.com/projects/xdotool/>`__ and `wmctrl
+   <https://www.freedesktop.org/wiki/Software/wmctrl/>`__ programs *(only
+   for Linux/X11 users)* -- usually available from your system's package
+   manager
+
+**Note for Linux users**: Dragonfly is only fully functional in an X11
+session. Input action classes, application contexts and the ``Window`` class
+will **not** be functional under Wayland. It is recommended that Wayland
+users switch to X11.
 
 
 Installation of Dragonfly
@@ -40,14 +49,6 @@ upload releases to PyPI.org, but everything can still be imported using
 :code:`pkg_resources.require("dragonfly >= 0.6.5")`, you will need to either
 replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
 altogether.
-
-If you are installing this on Linux, you will also need to install the
-`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ and `wmctrl
-<https://www.freedesktop.org/wiki/Software/wmctrl/>`__ programs. Please note
-that Dragonfly is only fully functional in an X11 session. Input action
-classes, application contexts and the ``Window`` class will **not** be
-functional under Wayland. It is recommended that Wayland users switch to
-X11.
 
 If you have dragonfly installed under the original *dragonfly*
 distribution name, you'll need to remove the old version using:
