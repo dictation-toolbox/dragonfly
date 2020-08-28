@@ -97,6 +97,14 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, retain_dir=None):
+        """
+        :param retain_dir: Retains recognized audio and/or  metadata in the
+          given directory, saving audio to ``retain_[timestamp].wav`` file
+          and metadata to ``retain.tsv``.
+
+          Disabled by default (``None``).
+        :type retain_dir: str|None
+        """
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
 
