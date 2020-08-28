@@ -429,7 +429,7 @@ class Sapi5InProcEngine(Sapi5SharedEngine):
              - As a *str* containing the description of the audio source
                to use, or a substring thereof
 
-            This class' method *get_audio_sources()* can be used to
+            The :meth:`get_audio_sources()` method can be used to
             retrieve the available sources together with their indices
             and descriptions.
 
