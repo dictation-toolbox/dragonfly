@@ -142,11 +142,13 @@ setup(
                    "Development Status :: 4 - Beta",
                    "Environment :: Win32 (MS Windows)",
                    "Environment :: X11 Applications",
+                   "Environment :: MacOS X",
                    "License :: OSI Approved :: "
                    "GNU Library or Lesser General Public License (LGPL)",
                    "Intended Audience :: Developers",
                    "Operating System :: Microsoft :: Windows",
                    "Operating System :: POSIX",
+                   "Operating System :: MacOS",
                    "Programming Language :: Python :: 2.7",
                    "Programming Language :: Python :: 3.4",
                    "Programming Language :: Python :: 3.5",
