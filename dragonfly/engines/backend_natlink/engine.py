@@ -301,7 +301,19 @@ class NatlinkEngine(EngineBase):
         self.natlink.waitForSpeech()
 
     def mimic(self, words):
-        """ Mimic a recognition of the given *words*. """
+        """
+        Mimic a recognition of the given *words*.
+
+        .. note:: This method has a few quirks to be aware of:
+
+           #. Mimic is not limited to one element per word as seen with
+              proper nouns from DNS. For example, "Buffalo Bills" can be
+              passed as one word.
+           #. Mimic can handle by the extra formatting by DNS built-in
+              commands.
+           #. Mimic is case sensitive.
+
+        """
         if isinstance(words, string_types):
             words = words.split()
 

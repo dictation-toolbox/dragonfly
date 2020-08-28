@@ -220,7 +220,19 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     # Miscellaneous methods.
 
     def mimic(self, words):
-        """ Mimic a recognition of the given *words*. """
+        """
+        Mimic a recognition of the given *words*.
+
+        .. note:: This method has a few quirks to be aware of:
+
+           #. Mimic can fail to recognize a command if the relevant grammar
+              is not yet active.
+           #. Mimic does not work reliably with the shared recognizer unless
+              there are one or more exclusive grammars active.
+           #. Mimic can **crash the process** in some circumstances, e.g.
+              when mimicking non-ASCII characters.
+
+        """
         self._log.debug("SAPI5 mimic: %r" % (words,))
         if isinstance(words, string_types):
             phrase = words

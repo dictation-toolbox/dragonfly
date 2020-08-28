@@ -63,7 +63,7 @@ Engine API
 ----------------------------------------------------------------------------
 
 .. autoclass:: dragonfly.engines.backend_sapi5.engine.Sapi5SharedEngine
-   :members: connect, disconnect
+   :members:
 
 .. autoclass:: dragonfly.engines.backend_sapi5.engine.Sapi5InProcEngine
    :members:
