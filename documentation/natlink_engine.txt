@@ -27,6 +27,30 @@ command-modules in the Natlink directory, because otherwise
 Natlink does not immediately see the new file.
 
 
+Engine Configuration
+----------------------------------------------------------------------------
+
+This engine can be configured by passing (optional) keyword arguments to
+the ``get_engine()`` function, which passes them to the engine constructor
+(documented below). For example:
+
+.. code:: Python
+
+   engine = get_engine("natlink",
+     retain_dir="natlink_recordings",
+   )
+
+The engine can also be configured via the :ref:`command-line interface
+<RefCLI>`:
+
+.. code:: shell
+
+   # Initialize the Natlink engine back-end with custom arguments, then load
+   # command modules and recognize speech.
+   python -m dragonfly load _*.py --engine natlink --engine-options \
+       retain_dir="natlink_recordings"
+
+
 Engine API
 ----------------------------------------------------------------------------
 

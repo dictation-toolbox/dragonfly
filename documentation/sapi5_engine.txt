@@ -59,6 +59,30 @@ names via the :ref:`command-line interface <RefCLI>` instead of using
    python -m dragonfly load _*.py --engine sapi5shared
 
 
+Engine Configuration
+----------------------------------------------------------------------------
+
+This engine can be configured by passing (optional) keyword arguments to
+the ``get_engine()`` function, which passes them to the engine constructor
+(documented below). For example:
+
+.. code:: Python
+
+   engine = get_engine("sapi5inproc",
+     retain_dir="C:/sapi5_recordings",
+   )
+
+The engine can also be configured via the :ref:`command-line interface
+<RefCLI>`:
+
+.. code:: shell
+
+   # Initialize the SAPI 5 engine back-end with custom arguments, then load
+   # command modules and recognize speech.
+   python -m dragonfly load _*.py --engine sapi5inproc --engine-options \
+       retain_dir="C:/sapi5_recordings"
+
+
 Engine API
 ----------------------------------------------------------------------------
 
