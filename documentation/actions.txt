@@ -27,6 +27,10 @@ Dragonfly's action types are derived from the
 implements standard action behavior, such as the ability to concatenate 
 multiple actions and to duplicate an action.
 
+.. contents:: Contents
+   :depth: 2
+   :local:
+
 
 Basic examples
 ----------------------------------------------------------------------------
