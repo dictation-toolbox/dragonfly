@@ -4,6 +4,7 @@ Base engine classes
 ============================================================================
 
 .. contents:: Contents
+   :local:
 
 
 EngineBase class

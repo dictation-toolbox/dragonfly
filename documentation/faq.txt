@@ -8,6 +8,7 @@ The following is a list of frequently asked questions related to the
 Dragonfly speech recognition framework.
 
 .. contents:: Table of Contents
+   :local:
 
 
 General Questions
