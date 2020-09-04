@@ -173,16 +173,31 @@ directory:
 
     python setup.py install
 
-To use the CMU Pocket Sphinx engine, see the `relevant documentation
-page <http://dragonfly2.readthedocs.org/en/latest/sphinx_engine.html>`__
-on it.
-
 If pip fails to install *dragonfly2* or any of its required or extra
 dependencies, then you may need to upgrade pip with the following command:
 
 .. code:: shell
 
     pip install --upgrade pip
+
+
+SR engine back-ends
+----------------------------------------------------------------------------
+
+Each Dragonfly speech recognition engine back-end and its requirements are
+documented separately:
+
+* `Natlink and DNS engine
+  <http://dragonfly2.readthedocs.org/en/latest/natlink_engine.html>`_
+* `SAPI 5 and WSR engine
+  <http://dragonfly2.readthedocs.org/en/latest/sapi5_engine.html>`_
+* `Kaldi engine
+  <http://dragonfly2.readthedocs.org/en/latest/kaldi_engine.html>`_
+* `CMU Pocket Sphinx engine
+  <http://dragonfly2.readthedocs.org/en/latest/sphinx_engine.html>`_
+* `Text-input engine
+  <http://dragonfly2.readthedocs.org/en/latest/text_engine.html>`_
+
 
 Existing command modules
 ----------------------------------------------------------------------------

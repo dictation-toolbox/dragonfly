@@ -1,0 +1,35 @@
+.. _RefBaseEngine:
+
+Base engine classes
+============================================================================
+
+.. contents:: Contents
+
+
+EngineBase class
+----------------------------------------------------------------------------
+
+The :class:`dragonfly.engines.engine_base.EngineBase` class forms the base
+class for this specific speech recognition engine classes.  It defines
+the stubs required and performs some of the logic necessary for
+Dragonfly to be able to interact with a speech recognition engine.
+
+.. autoclass:: dragonfly.engines.base.EngineBase
+   :members:
+
+
+Dictation container classes
+----------------------------------------------------------------------------
+
+.. automodule:: dragonfly.engines.base.dictation
+   :members:
+
+.. _RefEngineTimers:
+
+Engine timer classes
+----------------------------------------------------------------------------
+
+.. automodule:: dragonfly.engines.base.timer
+   :members: Timer, TimerManagerBase, ThreadedTimerManager,
+             DelegateTimerManager, DelegateTimerManagerInterface
+   :private-members:

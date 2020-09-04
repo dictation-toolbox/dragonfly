@@ -34,11 +34,11 @@ Which speech recognition software and operating systems are supported?
 
 Dragonfly supports the following speech recognition (SR) engines:
 
-* :ref:`Dragon <RefDNSInstall>`, a product of *Nuance*. All versions up to
-  15 (the latest) are supported. *Home*, *Professional Individual* and
+* :ref:`Dragon <RefNatlinkEngine>`, a product of *Nuance*. All versions up
+  to 15 (the latest) are supported. *Home*, *Professional Individual* and
   previous similar editions of *Dragon* are supported. Other editions may
   work too
-* :ref:`Windows Speech Recognition <RefWSRInstall>` (WSR), included with
+* :ref:`Windows Speech Recognition <RefSapi5Engine>` (WSR), included with
   Microsoft Windows Vista, Windows 7+, and freely available for Windows XP
 * :ref:`Kaldi <RefKaldiEngine>`
 * :ref:`CMU Pocket Sphinx <RefSphinxEngine>`

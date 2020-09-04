@@ -1,6 +1,6 @@
 .. _RefKaldiEngine:
 
-Kaldi dragonfly engine
+Kaldi engine back-end
 ============================================================================
 
 This version of dragonfly contains an engine implementation using the
@@ -402,6 +402,7 @@ your grammars (in place of the standard dragonfly ``Dictation`` element)::
 
 
 .. _RefKaldiEngineWeights:
+
 Grammar/Rule/Element Weights
 ----------------------------------------------------------------------------
 Grammars, rules, and/or elements can have a weight specified, where

@@ -36,6 +36,14 @@ This class could for example be used to reload with one single action::
     action.execute()
 
 
+Mimic quirks
+----------------------------------------------------------------------------
+
+Some SR engine back-ends have confusing :meth:`engine.mimic` method
+behavior.  See the engine-specific mimic method documentation in sections
+under :ref:`RefEngines` for more information.
+
+
 Class reference
 ----------------------------------------------------------------------------
 

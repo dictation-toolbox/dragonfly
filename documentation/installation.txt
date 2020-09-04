@@ -23,6 +23,15 @@ To be able to use the dragonfly, you will need the following:
  * **Natlink** *(only for Dragon users)* -- latest
    versions available from `SourceForge
    <https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`_.
+ * `Xdotool <https://www.semicomplete.com/projects/xdotool/>`__ and `wmctrl
+   <https://www.freedesktop.org/wiki/Software/wmctrl/>`__ programs *(only
+   for Linux/X11 users)* -- usually available from your system's package
+   manager
+
+**Note for Linux users**: Dragonfly is only fully functional in an X11
+session. Input action classes, application contexts and the ``Window`` class
+will **not** be functional under Wayland. It is recommended that Wayland
+users switch to X11.
 
 
 Installation of Dragonfly
@@ -40,14 +49,6 @@ upload releases to PyPI.org, but everything can still be imported using
 :code:`pkg_resources.require("dragonfly >= 0.6.5")`, you will need to either
 replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
 altogether.
-
-If you are installing this on Linux, you will also need to install the
-`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ and `wmctrl
-<https://www.freedesktop.org/wiki/Software/wmctrl/>`__ programs. Please note
-that Dragonfly is only fully functional in an X11 session. Input action
-classes, application contexts and the ``Window`` class will **not** be
-functional under Wayland. It is recommended that Wayland users switch to
-X11.
 
 If you have dragonfly installed under the original *dragonfly*
 distribution name, you'll need to remove the old version using:
@@ -72,75 +73,15 @@ dependencies, then you may need to upgrade pip with the following command:
 
     pip install --upgrade pip
 
-.. _RefDNSInstall:
 
-Installation for Dragon
+Installation for specific SR engine back-ends
 ----------------------------------------------------------------------------
 
-Dragonfly uses Natlink to communicate with Dragon.  The latest versions of
-Natlink are available from `SourceForge
-<https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`__.
+Each Dragonfly speech recognition engine back-end and its requirements are
+documented separately:
 
-Dragonfly and Natlink support Dragon versions up to 15 (latest). The
-*Individual* editions of *Dragon* are recommended, although other editions
-such as *Home* will also work.
-
-Once Natlink is up and running, Dragonfly command-modules can be 
-treated as any other Natlink macro files.  Natlink automatically 
-loads macro files from a predefined directory.  Common locations 
-are:
-
- * ``C:\Program Files\NatLink\MacroSystem``
- * ``My Documents\Natlink``
-
-At least one of these should be present after installing 
-Natlink.  That is the place where you should put Dragonfly 
-command-modules so that Natlink will load them.  Don't forget to 
-turn the microphone off and on again after placing a new 
-command-modules in the Natlink directory, because otherwise 
-Natlink does not immediately see the new file.
-
-.. _RefWSRInstall:
-
-Installation for Windows Speech Recognition
-----------------------------------------------------------------------------
-
-If WSR is available, then no extra installation needs to be 
-done.  Dragonfly can find and communicate with WSR using 
-standard COM communication channels.
-
-If you would like to use Dragonfly command-modules with WSR, 
-then you must run a *loader* program which will load and manage 
-the command-modules.  A simple *loader* is available in the 
-``dragonfly/examples/dfly-loader-wsr.py`` file.  When run, it 
-will scan the directory it's in for files beginning with ``_`` and ending
-with ``.py``, then try to load them as command-modules.
-
-A *more full-featured loader* is available in the 
-``dragonfly/examples/wsr_module_loader_plus.py`` file. It includes a
-basic sleep/wake grammar to control recognition (simply say "start
-listening" or "halt listening"), along with a rudimentary user interface
-via sound effects and console text (easily modified in the file). It
-otherwise operates like the above loader.
-
-You can download Dragonfly's module loaders and other example files in
-``dragonfly/examples`` from `the source code repository
-<https://github.com/dictation-toolbox/dragonfly/tree/master/dragonfly/examples>`__.
-
-
-Installation for Kaldi
-----------------------------------------------------------------------------
-
-Please see the :ref:`Kaldi engine page <RefKaldiEngine>` for
-installation and usage information. There is a *loader* program for
-the Sphinx engine available in the
-``dragonfly/examples/kaldi_module_loader_plus.py`` file.
-
-
-Installation for CMU Pocket Sphinx
-----------------------------------------------------------------------------
-
-Please see the :ref:`Pocket Sphinx engine page <RefSphinxEngine>` for
-installation and usage information. There is a *loader* program for
-the Sphinx engine available in the
-``dragonfly/examples/sphinx_module_loader.py`` file.
+* :ref:`RefNatlinkEngine`
+* :ref:`RefSapi5Engine`
+* :ref:`RefKaldiEngine`
+* :ref:`RefSphinxEngine`
+* :ref:`RefTextEngine`

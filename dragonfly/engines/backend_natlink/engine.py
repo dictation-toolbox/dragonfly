@@ -111,6 +111,18 @@ class NatlinkEngine(EngineBase):
     #-----------------------------------------------------------------------
 
     def __init__(self, retain_dir=None):
+        """
+        :param retain_dir: directory to save audio data:
+          A ``.wav`` file for each utterance, and ``retain.tsv`` file
+          with each row listing (wav filename, wav length in seconds,
+          grammar name, rule name, recognized text) as tab separated
+          values.
+
+          If this parameter is used in a module loaded by
+          ``natlinkmain``, then the directory will be relative to the
+          Natlink user directory (e.g. ``MacroSystem``).
+        :type retain_dir: str|None
+        """
         EngineBase.__init__(self)
 
         self.natlink = None
@@ -301,7 +313,19 @@ class NatlinkEngine(EngineBase):
         self.natlink.waitForSpeech()
 
     def mimic(self, words):
-        """ Mimic a recognition of the given *words*. """
+        """
+        Mimic a recognition of the given *words*.
+
+        .. note:: This method has a few quirks to be aware of:
+
+           #. Mimic is not limited to one element per word as seen with
+              proper nouns from DNS. For example, "Buffalo Bills" can be
+              passed as one word.
+           #. Mimic can handle by the extra formatting by DNS built-in
+              commands.
+           #. Mimic is case sensitive.
+
+        """
         if isinstance(words, string_types):
             words = words.split()
 

@@ -1,0 +1,93 @@
+.. _RefSapi5Engine:
+
+SAPI 5 and WSR engine back-end
+============================================================================
+
+Dragonfly can use the built-in speech recognition included with Microsoft
+Windows Vista and above: Windows Speech Recognition (WSR).  If WSR is
+available on the machine, then no extra installation needs to be done.
+Dragonfly can find and communicate with WSR using standard COM communication
+channels.
+
+If you would like to use Dragonfly command-modules with WSR, 
+then you must run a *loader* program which will load and manage 
+the command-modules.  A simple *loader* is available in the 
+``dragonfly/examples/dfly-loader-wsr.py`` file.  When run, it 
+will scan the directory it's in for files beginning with ``_`` and ending
+with ``.py``, then try to load them as command-modules.
+
+A *more full-featured loader* is available in the 
+``dragonfly/examples/wsr_module_loader_plus.py`` file. It includes a
+basic sleep/wake grammar to control recognition (simply say "start
+listening" or "halt listening"), along with a rudimentary user interface
+via sound effects and console text (easily modified in the file). It
+otherwise operates like the above loader.
+
+You can download Dragonfly's module loaders and other example files in
+``dragonfly/examples`` from `the source code repository
+<https://github.com/dictation-toolbox/dragonfly/tree/master/dragonfly/examples>`__.
+
+Dragonfly interfaces with this speech recognition engine using Microsoft's
+Speech API version 5.  This is why it is referred to in many places by
+"SAPI" or "SAPI 5" instead of WSR.
+
+
+Shared vs in-process recognizers
+----------------------------------------------------------------------------
+
+The WSR / SAPI 5 back-end has two engine classes:
+
+* `sapi5inproc` - engine class for SAPI 5 in process recognizer. This is the
+  default implementation and has no GUI (yet). :meth:`get_engine` will
+  return an instance of this class if the ``name`` parameter is ``None``
+  (default) or ``"sapi5inproc"``. It is recommended that you run this from
+  command-line.
+
+* `sapi5shared` - engine class for SAPI 5 shared recognizer. This
+  implementation uses the Windows Speech Recognition GUI. This
+  implementation's behaviour can be inconsistent and a little buggy at
+  times, which is why it is no longer the default. To use it anyway
+  pass ``"sapi5"`` or ``"sapi5shared"`` to :meth:`get_engine`.
+
+The engine class can be selected by passing one of the above-mentioned names
+names via the :ref:`command-line interface <RefCLI>` instead of using
+:meth:`get_engine` directly:
+
+.. code:: shell
+
+   # Initialize the SAPI 5 engine using the shared recognizer class.
+   python -m dragonfly load _*.py --engine sapi5shared
+
+
+Engine Configuration
+----------------------------------------------------------------------------
+
+This engine can be configured by passing (optional) keyword arguments to
+the ``get_engine()`` function, which passes them to the engine constructor
+(documented below). For example:
+
+.. code:: Python
+
+   engine = get_engine("sapi5inproc",
+     retain_dir="C:/sapi5_recordings",
+   )
+
+The engine can also be configured via the :ref:`command-line interface
+<RefCLI>`:
+
+.. code:: shell
+
+   # Initialize the SAPI 5 engine back-end with custom arguments, then load
+   # command modules and recognize speech.
+   python -m dragonfly load _*.py --engine sapi5inproc --engine-options \
+       retain_dir="C:/sapi5_recordings"
+
+
+Engine API
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_sapi5.engine.Sapi5SharedEngine
+   :members:
+
+.. autoclass:: dragonfly.engines.backend_sapi5.engine.Sapi5InProcEngine
+   :members:

@@ -114,15 +114,6 @@ def get_engine(**kwargs):
 
         :param \\**kwargs: optional keyword arguments passed through to the
             engine for engine-specific configuration.
-        :Keyword Arguments:
-            * **retain_dir** (``str``) -- directory to save audio data:
-                A ``.wav`` file for each utterance, and ``retain.tsv`` file
-                with each row listing (wav filename, wav length in seconds,
-                grammar name, rule name, recognized text) as tab separated
-                values.
-                If this parameter is used in a module loaded by
-                ``natlinkmain``, then the directory will be relative to the
-                Natlink user directory (e.g. ``MacroSystem``).
     """
     global _engine
     if not _engine:

@@ -1,4 +1,6 @@
 ﻿
+.. _RefEngines:
+
 Engines sub-package
 ============================================================================
 
@@ -6,77 +8,23 @@ Dragonfly supports multiple speech recognition engines as its backend.
 The *engines* sub-package implements the interface code for each
 supported engine.
 
-There are separate pages on the Kaldi and CMU Pocket Sphinx engines:
 
-.. toctree::
-    :titlesonly:
-    :maxdepth: 1
-
-    kaldi_engine
-    sphinx_engine
-
-EngineBase class
-----------------------------------------------------------------------------
-
-The :class:`dragonfly.engines.engine_base.EngineBase` class forms the base
-class for this specific speech recognition engine classes.  It defines
-the stubs required and performs some of the logic necessary for
-Dragonfly to be able to interact with a speech recognition engine.
-
-.. autoclass:: dragonfly.engines.base.EngineBase
-   :members: 
-
-
-Engine backends
+Main SR engine back-end interface
 ----------------------------------------------------------------------------
 
 .. automodule:: dragonfly.engines
    :members:
 
-.. automodule:: dragonfly.engines.backend_natlink
-   :members:
 
-.. automodule:: dragonfly.engines.backend_sapi5
-   :members:
-
-.. autoclass:: dragonfly.engines.backend_sapi5.engine.Sapi5SharedEngine
-   :members: connect, disconnect
-
-.. autoclass:: dragonfly.engines.backend_sapi5.engine.Sapi5InProcEngine
-   :members:
-
-.. automodule:: dragonfly.engines.backend_kaldi
-   :members:
-
-.. automodule:: dragonfly.engines.backend_sphinx
-   :members:
-
-.. automodule:: dragonfly.engines.backend_text
-   :members:
-
-
-Dictation container classes
+Engine back-ends
 ----------------------------------------------------------------------------
 
-.. automodule:: dragonfly.engines.base.dictation
-   :members:
+.. toctree::
+    :maxdepth: 1
 
-.. automodule:: dragonfly.engines.backend_natlink.dictation
-   :members:
-
-
-.. _RefEngineTimers:
-
-Engine timer classes
-----------------------------------------------------------------------------
-
-.. automodule:: dragonfly.engines.base.timer
-   :members: Timer, TimerManagerBase, ThreadedTimerManager,
-             DelegateTimerManager, DelegateTimerManagerInterface
-   :private-members:
-
-.. automodule:: dragonfly.engines.backend_natlink.timer
-   :members:
-
-.. automodule:: dragonfly.engines.backend_sphinx.timer
-   :members:
+    base_engine
+    natlink_engine
+    sapi5_engine
+    kaldi_engine
+    sphinx_engine
+    text_engine

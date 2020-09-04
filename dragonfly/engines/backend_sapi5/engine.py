@@ -97,6 +97,14 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
 
     def __init__(self, retain_dir=None):
+        """
+        :param retain_dir: Retains recognized audio and/or  metadata in the
+          given directory, saving audio to ``retain_[timestamp].wav`` file
+          and metadata to ``retain.tsv``.
+
+          Disabled by default (``None``).
+        :type retain_dir: str|None
+        """
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
 
@@ -220,7 +228,19 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     # Miscellaneous methods.
 
     def mimic(self, words):
-        """ Mimic a recognition of the given *words*. """
+        """
+        Mimic a recognition of the given *words*.
+
+        .. note:: This method has a few quirks to be aware of:
+
+           #. Mimic can fail to recognize a command if the relevant grammar
+              is not yet active.
+           #. Mimic does not work reliably with the shared recognizer unless
+              there are one or more exclusive grammars active.
+           #. Mimic can **crash the process** in some circumstances, e.g.
+              when mimicking non-ASCII characters.
+
+        """
         self._log.debug("SAPI5 mimic: %r" % (words,))
         if isinstance(words, string_types):
             phrase = words
@@ -409,7 +429,7 @@ class Sapi5InProcEngine(Sapi5SharedEngine):
              - As a *str* containing the description of the audio source
                to use, or a substring thereof
 
-            This class' method *get_audio_sources()* can be used to
+            The :meth:`get_audio_sources()` method can be used to
             retrieve the available sources together with their indices
             and descriptions.
 

@@ -1,0 +1,55 @@
+.. _RefTextEngine:
+
+Text-input engine back-end
+============================================================================
+
+The text-input engine is a convenient, always available implementation
+designed to be used via the :meth:`engine.mimic` method.
+
+To initialise the text-input engine, do the following::
+
+    get_engine("text")
+
+Note that :meth:`dragonfly.engines.get_engine` called without ``"text"``
+will **never** initialise the text-input engine. This is because real speech
+recognition backends should be returned from the function by default.
+
+All dragonfly elements and rule classes should be supported. Use all
+uppercase words to mimic input for :class:`Dictation` elements, e.g.
+`"find SOME TEXT"` to match the dragonfly spec `"find <text>"`.
+`executable`, `title`, and `handle` keyword arguments may optionally be
+passed to :meth:`engine.mimic` to simulate a particular foreground window.
+
+
+Engine Configuration
+----------------------------------------------------------------------------
+
+Dragonfly's :ref:`command-line interface <RefCLI>` can be used to test
+command modules with the text-input engine. Below are a few use cases for
+this engine:
+
+.. code:: shell
+
+   # Example 1:
+   # Initialize the text-input engine back-end, load a command module and
+   # recognize from stdin.
+   echo "hello world" | python -m dragonfly test _module1.py
+
+   # Example 2:
+   # Initialize the text-input engine back-end and load a command module
+   # for browser commands and recognize from stdin with a processing delay
+   # of 2 seconds. This allows testing context-specific browser commands.
+   python -m dragonfly test _browser.py --delay 2
+
+   # Example 3:
+   # Initialize the text-input engine back-end using German (de) as the
+   # language, then load a command module and recognize from stdin.
+   python -m dragonfly test _german_commands.py --language de
+
+
+
+Engine API
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_text.engine.TextInputEngine
+   :members:

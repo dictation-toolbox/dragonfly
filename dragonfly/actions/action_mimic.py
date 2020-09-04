@@ -22,6 +22,30 @@
 Mimic action
 ============================================================================
 
+
+The :class:`Mimic` action mimics a single recognition.  This is useful for
+repeating a single prerecorded or predefined voice-command.
+
+This class could for example be used to open a new Windows Explorer window::
+
+    action = Mimic("open", "windows", "explorer")
+    action.execute()
+
+
+A more in-depth example is given below in the class reference.
+
+
+Mimic quirks
+----------------------------------------------------------------------------
+
+Some SR engine back-ends have confusing :meth:`engine.mimic` method
+behavior.  See the engine-specific mimic method documentation in sections
+under :ref:`RefEngines` for more information.
+
+
+Class reference
+----------------------------------------------------------------------------
+
 """
 from six               import string_types
 from .action_base      import ActionBase, ActionError

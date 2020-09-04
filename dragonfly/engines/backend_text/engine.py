@@ -167,7 +167,24 @@ class TextInputEngine(EngineBase):
             pass
 
     def mimic(self, words, **kwargs):
-        """ Mimic a recognition of the given *words*. """
+        """
+        Mimic a recognition of the given *words*.
+
+        :param words: words to mimic
+        :type words: str|iter
+        :Keyword Arguments:
+
+           optional *executable*, *title* and/or *handle* keyword arguments
+           may be used to simulate a specific foreground window context. The
+           current foreground window attributes will be used instead for any
+           keyword arguments not present.
+
+        .. note::
+
+           Any dictation words should be all uppercase, e.g. "HELLO WORLD".
+           Dictation words not in uppercase will result in the engine
+           **not** decoding and recognizing the command!
+        """
         # Handle string input.
         if isinstance(words, string_types):
             words = words.split()
