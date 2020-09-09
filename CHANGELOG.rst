@@ -11,6 +11,33 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add Kaldi support for special user-modifiable Dictation elements (thanks
+  `@daanzu`_).
+
+Changed
+~~~~~~~
+* Bump required KaldiAG version to 1.8.0 for various improvements. See
+  `KaldiAG release notes`_ (thanks `@daanzu`_).
+* Change X11Window.maximize() method to use Extended Window Manager Hints
+  instead of a hardcoded shortcut.
+* Add the *wmctrl* command-line program as a **new required X11 session
+  dependency** for properly maximizing X11 windows via maximization hints.
+* Improve Kaldi engine error messages for failed compilation (thanks
+  `@daanzu`_).
+* Reorganize, fix and improve various parts of the documentation.
+
+Fixed
+~~~~~
+* Fix Repetition element so the *max* argument is an exclusive bound (thanks
+  `@starwarswii`_).
+* Fix Windows bug where the printscreen key cannot be pressed.
+
+
 0.26.0_ - 2020-08-08
 --------------------
 
@@ -1005,15 +1032,17 @@ This release is the first in the Git version control system.
 .. _@lexxish: https://github.com/lexxish
 .. _@mrob95: https://github.com/mrob95
 .. _@shervinemami: https://github.com/shervinemami
+.. _@starwarswii: https://github.com/starwarswii
 .. _@thatch: https://github.com/thatch
 .. _@tylercal: https://github.com/tylercal
 .. _@wolfmanstout: https://github.com/wolfmanstout
 
 .. Other links.
-.. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
-.. _reStructuredText format: http://docutils.sourceforge.net/rst.html
-.. _Semantic Versioning: http://semver.org/spec/v2.0.0.html
 .. _Aenea: https://github.com/dictation-toolbox/aenea
-.. _pynput: https://github.com/moses-palmer/pynput
 .. _Kaldi engine: https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html
+.. _KaldiAG release notes: https://github.com/daanzu/kaldi-active-grammar/releases
+.. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
 .. _Lark-based: https://github.com/lark-parser/lark
+.. _Semantic Versioning: http://semver.org/spec/v2.0.0.html
+.. _pynput: https://github.com/moses-palmer/pynput
+.. _reStructuredText format: http://docutils.sourceforge.net/rst.html
