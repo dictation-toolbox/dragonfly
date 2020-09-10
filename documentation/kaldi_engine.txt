@@ -72,12 +72,12 @@ Installing the correct versions of the Python dependencies can be most
 easily done by installing the ``kaldi`` sub-package of ``dragonfly2``
 using::
 
-  pip install dragonfly2[kaldi]
+  pip install 'dragonfly2[kaldi]'
 
 If you are installing to *develop* dragonfly2, use the following instead
 (from your dragonfly2 git repository)::
 
-  pip install -e .[kaldi]
+  pip install -e '.[kaldi]'
 
 **Note:** If you have errors installing the kaldi-active-grammar
 package, make sure you're using a 64-bit Python, and update your ``pip``
@@ -131,7 +131,7 @@ Updating To A New Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When updating to a new version of dragonfly, you should always rerun
-``pip install dragonfly2[kaldi]`` (or ``pip install .[kaldi]``, etc.) to
+``pip install 'dragonfly2[kaldi]'`` (or ``pip install '.[kaldi]'``, etc.) to
 make sure you get the required version of kaldi_active_grammar.
 
 

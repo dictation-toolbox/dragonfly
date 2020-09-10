@@ -132,7 +132,7 @@ Follow the following steps to run the test suite for the Kaldi backend:
     .. code:: shell
 
         cd <dir>
-        pip install -e .[kaldi]
+        pip install -e '.[kaldi]'
         pip install -r test_requirements.txt
 
  #. Run the tests with the following command:
@@ -154,7 +154,7 @@ Follow the following steps to run the test suite for the Sphinx backend:
     .. code:: shell
 
         cd <dir>
-        pip install -e .[sphinx]
+        pip install -e '.[sphinx]'
         pip install -r test_requirements.txt
 
 
