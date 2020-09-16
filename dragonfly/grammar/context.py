@@ -388,7 +388,7 @@ class FuncContext(Context):
         Context.__init__(self)
         self._function = function
         self._defaults = defaults
-        self._str = "%s" % (self._function,)
+        self._str = "%s, defaults: %s" % (self._function, self._defaults)
 
         (args, _, varkw, defaults) = inspect.getargspec(self._function)
         if varkw:  self._filter_keywords = False
@@ -405,7 +405,13 @@ class FuncContext(Context):
                 del arguments[key]
 
         try:
-            return bool(self._function(**arguments))
+            match = bool(self._function(**arguments))
+            if match:
+                self._log_match.debug("%s: Match.", self)
+            else:
+                self._log_match.debug("%s: No match, function"
+                                      " returned false.", self)
+            return match
         except:
             self._log.exception("Exception from function %s:",
                                 self._function.__name__)
