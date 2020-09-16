@@ -450,3 +450,10 @@ class WavAudio(object):
                     next_time += float(MicAudio.BLOCK_SIZE_SAMPLES) / MicAudio.SAMPLE_RATE
                 yield data
             yield None
+
+    @classmethod
+    def read_file_with_vad(cls, filename, realtime=False, **kwargs):
+        """ Yields raw audio blocks from wav file after processing by VAD. """
+        vad_audio = VADAudio()
+        vad_audio_iter = vad_audio.vad_collector(blocks=cls.read_file(filename, realtime=realtime), **kwargs)
+        return vad_audio_iter

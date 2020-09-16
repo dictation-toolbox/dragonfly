@@ -436,6 +436,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         """
         self.do_recognition(audio_iter=WavAudio.read_file(filename, realtime=realtime), **kwargs)
 
+    def recognize_wave_file_as_stream(self, filename, realtime=False, **kwargs):
+        """
+            Does recognition on given wave file, treating it as a stream and
+            processing it with VAD to break it into multiple utterances (as with
+            normal microphone audio input), then returns.
+        """
+        self.do_recognition(audio_iter=WavAudio.read_file_with_vad(filename, realtime=realtime), **kwargs)
+
     def ignore_current_phrase(self):
         """
             Marks the current phrase's recognition to be ignored when it completes, or does nothing if there is none.
