@@ -421,7 +421,7 @@ class AudioStoreEntry(object):
 class WavAudio(object):
 
     @classmethod
-    def read_file(cls, filename):
+    def read_file(cls, filename, realtime=False):
         """ Yields raw audio blocks from wav file. """
         if not os.path.isfile(filename):
             raise IOError("'%s' is not a file. Please use a different file path.")
@@ -438,9 +438,15 @@ class WavAudio(object):
                 raise ValueError("WAV file '%s' should use sample rate %d, not "
                            "%d!" % (filename, MicAudio.SAMPLE_RATE, file.getframerate()))
 
+            next_time = time.time()
             for _ in range(0, int(file.getnframes() / MicAudio.BLOCK_SIZE_SAMPLES) + 1):
                 data = file.readframes(MicAudio.BLOCK_SIZE_SAMPLES)
                 if not data:
                     break
+                if realtime:
+                    time_behind = next_time - time.time()
+                    if time_behind > 0:
+                        time.sleep(time_behind)
+                    next_time += float(MicAudio.BLOCK_SIZE_SAMPLES) / MicAudio.SAMPLE_RATE
                 yield data
             yield None

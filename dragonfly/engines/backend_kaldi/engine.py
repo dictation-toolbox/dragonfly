@@ -429,9 +429,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     in_phrase = property(lambda self: self._in_phrase,
         doc="Whether or not the engine is currently in the middle of hearing a phrase from the user.")
 
-    def recognize_wave_file(self, filename, **kwargs):
-        """ Does recognition on given wave file, treating it as a single utterance (without VAD), then returns. """
-        self.do_recognition(audio_iter=WavAudio.read_file(filename), **kwargs)
+    def recognize_wave_file(self, filename, realtime=False, **kwargs):
+        """
+            Does recognition on given wave file, treating it as a single
+            utterance (without VAD), then returns.
+        """
+        self.do_recognition(audio_iter=WavAudio.read_file(filename, realtime=realtime), **kwargs)
 
     def ignore_current_phrase(self):
         """
