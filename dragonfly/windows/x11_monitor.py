@@ -109,23 +109,21 @@ class X11Monitor(BaseMonitor):
 
             # Get resolution and position info.
             res_info = parts[0].split("+")
-            width, height = res_info.pop(0).split("x")
-            origin_x, origin_y = res_info
+            dx, dy = res_info.pop(0).split("x")
+            top_left_x, top_left_y = res_info
 
             # Convert values to integers and create a rectangle object
             # representing the monitor's dimensions and relative position.
-            width, height = int(width), int(height)
-            origin_x, origin_y = int(origin_x), int(origin_y)
-            dx = width - origin_x
-            dy = height - origin_y
-            rectangle = Rectangle(origin_x, origin_y, dx, dy)
+            dx, dy = int(dx), int(dy)
+            top_left_x, top_left_y = int(top_left_x), int(top_left_y)
+            rectangle = Rectangle(top_left_x, top_left_y, dx, dy)
 
             # Get a new or updated monitor object and add it to the list.
             monitor = cls.get_monitor(name, rectangle)
             monitor.is_primary = primary
 
-            # Ensure that the origin monitor is the first in the list.
-            if origin_x == 0 and origin_y == 0:
+            # Ensure that the top_left monitor is the first in the list.
+            if top_left_x == 0:
                 monitors.insert(0, monitor)
             else:
                 monitors.append(monitor)
