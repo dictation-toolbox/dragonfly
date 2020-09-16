@@ -109,7 +109,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 raise ValueError("Cannot set both input_device_index and audio_input_device")
             self._log.warning("%s: input_device_index is deprecated; please use audio_input_device", self)
             audio_input_device = int(input_device_index)
-        if audio_input_device is not None and not isinstance(audio_input_device, (int, string_types)):
+        if audio_input_device not in (None, False) and not isinstance(audio_input_device, (int, string_types)):
             raise TypeError("Invalid audio_input_device not int or string: %r" % (audio_input_device,))
         if audio_reconnect_callback is not None and not callable(audio_reconnect_callback):
             raise TypeError("Invalid audio_reconnect_callback not callable: %r" % (audio_reconnect_callback,))
@@ -148,6 +148,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._compiler = None
         self._decoder = None
         self._audio = None
+        self._audio_iter = None
         self.audio_store = None
         self._recognition_observer_manager = KaldiRecObsManager(self)
         self._timer_manager = DelegateTimerManager(0.02, self)
@@ -181,22 +182,23 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             config=self._options['decoder_init_config'],)
         self._compiler.decoder = self._decoder
 
-        self._audio = VADAudio(
-            aggressiveness=self._options['vad_aggressiveness'],
-            start=False,
-            input_device=self._options['audio_input_device'],
-            self_threaded=self._options['audio_self_threaded'],
-            reconnect_callback=self._options['audio_reconnect_callback'],
-            )
-        self._audio_iter = self._audio.vad_collector(nowait=True,
-            audio_auto_reconnect=self._options['audio_auto_reconnect'],
-            start_window_ms=self._options['vad_padding_start_ms'],
-            end_window_ms=self._options['vad_padding_end_ms'],
-            complex_end_window_ms=self._options['vad_complex_padding_end_ms'],
-            )
-        self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0),
-            save_dir=self._options['retain_dir'], save_audio=self._options['retain_audio'], save_metadata=self._options['retain_metadata'],
-            retain_approval_func=self._options['retain_approval_func'])
+        if self._options['audio_input_device'] is not False:
+            self._audio = VADAudio(
+                aggressiveness=self._options['vad_aggressiveness'],
+                start=False,
+                input_device=self._options['audio_input_device'],
+                self_threaded=self._options['audio_self_threaded'],
+                reconnect_callback=self._options['audio_reconnect_callback'],
+                )
+            self._audio_iter = self._audio.vad_collector(nowait=True,
+                audio_auto_reconnect=self._options['audio_auto_reconnect'],
+                start_window_ms=self._options['vad_padding_start_ms'],
+                end_window_ms=self._options['vad_padding_end_ms'],
+                complex_end_window_ms=self._options['vad_complex_padding_end_ms'],
+                )
+            self.audio_store = AudioStore(self._audio, maxlen=(1 if self._options['retain_dir'] else 0),
+                save_dir=self._options['retain_dir'], save_audio=self._options['retain_audio'], save_metadata=self._options['retain_metadata'],
+                retain_approval_func=self._options['retain_approval_func'])
 
         self._any_exclusive_grammars = False
         self._in_phrase = False
@@ -325,6 +327,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._log.debug("do_recognition: timeout %s" % timeout)
         if not self._decoder:
             raise EngineError("Cannot recognize before connect()")
+        if audio_iter is None and self._audio is None:
+            raise EngineError("No audio input")
         self._doing_recognition = True
 
         try:
