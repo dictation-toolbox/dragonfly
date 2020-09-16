@@ -214,7 +214,7 @@ class VADAudio(MicAudio):
 
     def vad_collector(self, start_window_ms=150, start_padding_ms=100,
         end_window_ms=150, end_padding_ms=None, complex_end_window_ms=None,
-        ratio=0.8, blocks=None, nowait=False,
+        ratio=0.8, blocks=None, nowait=False, audio_auto_reconnect=False,
         ):
         """Generator/coroutine that yields series of consecutive audio blocks comprising each phrase, separated by yielding a single None.
             Determines voice activity by ratio of blocks in window_ms. Uses a buffer to include window_ms prior to being triggered.
@@ -249,7 +249,7 @@ class VADAudio(MicAudio):
             if block is False or block is None:
                 # Bad/empty block
                 num_empty_blocks += 1
-                if (num_empty_blocks >= audio_reconnect_threshold_blocks) and (time.time() - last_good_block_time >= audio_reconnect_threshold_time):
+                if audio_auto_reconnect and (num_empty_blocks >= audio_reconnect_threshold_blocks) and (time.time() - last_good_block_time >= audio_reconnect_threshold_time):
                     _log.warning("%s: no good block received recently, so reconnecting audio", self)
                     self.reconnect()
                     num_empty_blocks = 0
