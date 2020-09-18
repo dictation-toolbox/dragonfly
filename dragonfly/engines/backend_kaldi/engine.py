@@ -234,7 +234,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
         wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self,
                                  self._recognition_observer_manager)
-        for kaldi_rule in kaldi_rule_by_rule_dict.values():
+        for (rule, kaldi_rule) in kaldi_rule_by_rule_dict.items():
+            kaldi_rule.active = bool(rule.active)  # Initialize to correct activity
             kaldi_rule.load(lazy=self._compiler.lazy_compilation)
 
         return wrapper
@@ -665,6 +666,8 @@ class GrammarWrapper(GrammarWrapperBase):
         rule = recognition.kaldi_rule.parent_rule
         words_are_dictation_mask = recognition.words_are_dictation_mask
         try:
+            assert (rule.active and rule.exported), "Kaldi engine should only ever return the correct rule"
+
             # Prepare the words and rule names for the element parsers
             rule_names = (rule.name,) + (('dgndictation',) if any(words_are_dictation_mask) else ())
             words_rules = tuple((word, 0 if not is_dictation else 1)
