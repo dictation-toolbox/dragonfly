@@ -62,6 +62,14 @@ class MicAudio(object):
         self.thread = None
         self.thread_cancelled = False
         self.device_info = None
+
+        try:
+            sounddevice.query_devices(device=self.input_device)
+        except ValueError as e:
+            message = e.args[0]
+            message += "\nAvailable devices are:\n" + str(sounddevice.query_devices())
+            raise ValueError(message)
+
         self._connect(start=start)
 
     def _connect(self, start=None):
