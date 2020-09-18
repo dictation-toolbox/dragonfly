@@ -11,6 +11,18 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Changed
+~~~~~~~
+* Add missing debug logging for the FuncContext action (thanks `@Timoses`_).
+
+Fixed
+~~~~~
+* Fix two bugs with the Monitor class for X11 (Linux).
+
+
 0.27.0_ - 2020-09-09
 --------------------
 
@@ -1021,6 +1033,7 @@ This release is the first in the Git version control system.
 .. Contributors.
 .. _@JasoonS: https://github.com/JasoonS
 .. _@LexiconCode: https://github.com/LexiconCode
+.. _@Timoses: https://github.com/Timoses
 .. _@Versatilus: https://github.com/Versatilus
 .. _@alexboche: https://github.com/alexboche
 .. _@calmofthestorm: https://github.com/calmofthestorm
