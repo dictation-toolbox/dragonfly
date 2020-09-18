@@ -145,15 +145,21 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         )
 
         # Setup
+        self._reset_state()
+        self._recognition_observer_manager = KaldiRecObsManager(self)
+        self._timer_manager = DelegateTimerManager(0.02, self)
+
+    def _reset_state(self):
         self._compiler = None
         self._decoder = None
         self._audio = None
         self._audio_iter = None
         self.audio_store = None
-        self._recognition_observer_manager = KaldiRecObsManager(self)
-        self._timer_manager = DelegateTimerManager(0.02, self)
 
+        self._any_exclusive_grammars = False
         self._saving_adaptation_state = False
+        self._ignore_current_phrase = False
+        self._in_phrase = False
         self._doing_recognition = False
         self._deferred_disconnect = False
 
@@ -161,10 +167,10 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         """ Connect to back-end SR engine. """
         if self._decoder:
             return
+        self._reset_state()
 
         self._log.info("Loading Kaldi-Active-Grammar v%s in process %s." % (kaldi_active_grammar.__version__, os.getpid()))
         self._log.info("Kaldi options: %s" % self._options)
-        # subprocess.call(['vsjitdebugger', '-p', str(os.getpid())]); time.sleep(1)
 
         self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
@@ -200,23 +206,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 save_dir=self._options['retain_dir'], save_audio=self._options['retain_audio'], save_metadata=self._options['retain_metadata'],
                 retain_approval_func=self._options['retain_approval_func'])
 
-        self._any_exclusive_grammars = False
-        self._in_phrase = False
-        self._ignore_current_phrase = False
-
     def disconnect(self):
         """ Disconnect from back-end SR engine. Exits from ``do_recognition()``. """
         if self._doing_recognition:
             self._deferred_disconnect = True
         else:
-            self._deferred_disconnect = False
             if self._audio:
                 self._audio.destroy()
-                self._audio = None
-                self._audio_iter = None
-                self.audio_store = None
-            self._compiler = None
-            self._decoder = None
+            self._reset_state()
             self._grammar_wrappers = {}  # From EngineBase
 
     def print_mic_list(self):
@@ -529,7 +526,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._active_kaldi_rules = set()
         self._kaldi_rules_activity = [False] * self._compiler.num_kaldi_rules
         for grammar_wrapper in self._iter_all_grammar_wrappers_dynamically():
-            if grammar_wrapper.active and (not self._any_exclusive_grammars or (self._any_exclusive_grammars and grammar_wrapper.exclusive)):
+            if grammar_wrapper.active and (not self._any_exclusive_grammars or grammar_wrapper.exclusive):
                 for kaldi_rule in grammar_wrapper.kaldi_rule_by_rule_dict.values():
                     if kaldi_rule.active:
                         self._active_kaldi_rules.add(kaldi_rule)
