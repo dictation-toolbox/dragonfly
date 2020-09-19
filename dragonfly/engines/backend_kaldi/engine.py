@@ -620,10 +620,11 @@ class Recognition(object):
     def construct_empty(cls, engine):
         return cls(engine, kaldi_rule=None, words=())
 
-    def __del__(self):
-        # Exactly one of process() or fail() should be called by someone!
-        if not self.finalized:
-            self.engine._log.warn("%s not finalized!", self)
+    # def __del__(self):
+    #     # Exactly one of process() or fail() should be called by someone!
+    #     if not self.finalized:
+    #         self.engine._log.warning("%s not finalized!", self)
+    #     # Note: this can be generated spurriously upon exit or testing
 
     def process(self, expected_error_rate=None, confidence=None):
         if expected_error_rate is not None: self.expected_error_rate = expected_error_rate
