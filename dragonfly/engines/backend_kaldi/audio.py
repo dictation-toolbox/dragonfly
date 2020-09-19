@@ -64,7 +64,9 @@ class MicAudio(object):
         self.device_info = None
 
         try:
-            sounddevice.query_devices(device=self.input_device)
+            device_list = sounddevice.query_devices(device=self.input_device)
+            if not device_list:
+                raise EngineError("No audio devices found.")
         except ValueError as e:
             message = e.args[0]
             message += "\nAvailable devices are:\n" + str(sounddevice.query_devices())
