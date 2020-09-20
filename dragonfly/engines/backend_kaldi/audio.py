@@ -62,6 +62,16 @@ class MicAudio(object):
         self.thread = None
         self.thread_cancelled = False
         self.device_info = None
+
+        try:
+            device_list = sounddevice.query_devices(device=self.input_device)
+            if not device_list:
+                raise EngineError("No audio devices found.")
+        except ValueError as e:
+            message = e.args[0]
+            message += "\nAvailable devices are:\n" + str(sounddevice.query_devices())
+            raise ValueError(message)
+
         self._connect(start=start)
 
     def _connect(self, start=None):
@@ -214,7 +224,7 @@ class VADAudio(MicAudio):
 
     def vad_collector(self, start_window_ms=150, start_padding_ms=100,
         end_window_ms=150, end_padding_ms=None, complex_end_window_ms=None,
-        ratio=0.8, blocks=None, nowait=False,
+        ratio=0.8, blocks=None, nowait=False, audio_auto_reconnect=False,
         ):
         """Generator/coroutine that yields series of consecutive audio blocks comprising each phrase, separated by yielding a single None.
             Determines voice activity by ratio of blocks in window_ms. Uses a buffer to include window_ms prior to being triggered.
@@ -249,7 +259,7 @@ class VADAudio(MicAudio):
             if block is False or block is None:
                 # Bad/empty block
                 num_empty_blocks += 1
-                if (num_empty_blocks >= audio_reconnect_threshold_blocks) and (time.time() - last_good_block_time >= audio_reconnect_threshold_time):
+                if audio_auto_reconnect and (num_empty_blocks >= audio_reconnect_threshold_blocks) and (time.time() - last_good_block_time >= audio_reconnect_threshold_time):
                     _log.warning("%s: no good block received recently, so reconnecting audio", self)
                     self.reconnect()
                     num_empty_blocks = 0
@@ -421,7 +431,7 @@ class AudioStoreEntry(object):
 class WavAudio(object):
 
     @classmethod
-    def read_file(cls, filename):
+    def read_file(cls, filename, realtime=False):
         """ Yields raw audio blocks from wav file. """
         if not os.path.isfile(filename):
             raise IOError("'%s' is not a file. Please use a different file path.")
@@ -438,9 +448,22 @@ class WavAudio(object):
                 raise ValueError("WAV file '%s' should use sample rate %d, not "
                            "%d!" % (filename, MicAudio.SAMPLE_RATE, file.getframerate()))
 
+            next_time = time.time()
             for _ in range(0, int(file.getnframes() / MicAudio.BLOCK_SIZE_SAMPLES) + 1):
                 data = file.readframes(MicAudio.BLOCK_SIZE_SAMPLES)
                 if not data:
                     break
+                if realtime:
+                    time_behind = next_time - time.time()
+                    if time_behind > 0:
+                        time.sleep(time_behind)
+                    next_time += float(MicAudio.BLOCK_SIZE_SAMPLES) / MicAudio.SAMPLE_RATE
                 yield data
             yield None
+
+    @classmethod
+    def read_file_with_vad(cls, filename, realtime=False, **kwargs):
+        """ Yields raw audio blocks from wav file after processing by VAD. """
+        vad_audio = VADAudio()
+        vad_audio_iter = vad_audio.vad_collector(blocks=cls.read_file(filename, realtime=realtime), **kwargs)
+        return vad_audio_iter

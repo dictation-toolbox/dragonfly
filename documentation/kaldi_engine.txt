@@ -149,6 +149,7 @@ the ``get_engine()`` function, which passes them to the
     tmp_dir='kaldi_tmp',
     audio_input_device=None,
     audio_self_threaded=True,
+    audio_auto_reconnect=True,
     audio_reconnect_callback=None,
     retain_dir=None,
     retain_audio=None,
@@ -188,16 +189,25 @@ The engine can also be configured via the :ref:`command-line interface
   cache (used both during execution and between executions but safe to
   delete).
 
-* ``audio_input_device`` (``int|str|None``) -- Microphone PortAudio input
-  device: the default of ``None`` chooses the default input device. To
-  see a list of available input devices and their corresponding indexes
-  an names, call ``get_engine('kaldi').print_mic_list()``. To select a
-  specific device, pass an ``int`` representing the index number of the
-  device, or pass a ``str`` representing (part of) the name of the
-  device. If a string is given, the device is selected which contains
-  all space-separated parts in the right order. Each device string
-  contains the name of the corresponding host API in the end. The string
-  comparison is case-insensitive. The string match must be unique.
+* ``audio_input_device`` (``int|str|None|False``) -- Microphone PortAudio input
+  device: the default of ``None`` chooses the default input device, or ``False``
+  disables microphone input. To see a list of available input devices and their
+  corresponding indexes an names, call ``get_engine('kaldi').print_mic_list()``.
+  To select a specific device, pass an ``int`` representing the index number of
+  the device, or pass a ``str`` representing (part of) the name of the device.
+  If a string is given, the device is selected which contains all
+  space-separated parts in the right order. Each device string contains the name
+  of the corresponding host API in the end. The string comparison is
+  case-insensitive. The string match must be unique.
+
+* ``audio_auto_reconnect`` (``bool``) -- Whether to automatically reconnect the
+  audio device if it appears to have stopped (by not returning any audio data
+  for some period of time).
+
+* ``audio_reconnect_callback`` (``callable|None``) -- Callable to be called
+  every time the audio system attempts to reconnect (automatically or manually).
+  It must take exactly one positional argument, which is the ``MicAudio``
+  object.
 
 * ``retain_dir`` (``str|None``) -- Retains recognized audio and/or
   metadata in the given directory, saving audio to
