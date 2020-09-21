@@ -622,7 +622,7 @@ touch:
 .. _Dragonfly issue #205: https://github.com/dictation-toolbox/dragonfly/issues/205
 .. _Dragonfly mailing list: https://groups.google.com/forum/#!forum/dragonflyspeech
 .. _Gitter Channel: https://gitter.im/dictation-toolbox/dragonfly
-.. _Matrix channel: https://riot.im/app/#/room/#dragonfly2:matrix.org
+.. _Matrix channel: https://app.element.io/#/room/#dragonfly2:matrix.org
 .. _Natlink Troubleshooting page: https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html
 .. _Python 2-3 code porting guide: https://docs.python.org/3/howto/pyporting.html
 .. _Python 2.7 EOL: https://www.python.org/dev/peps/pep-0373/
