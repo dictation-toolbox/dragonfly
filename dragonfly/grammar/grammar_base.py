@@ -171,7 +171,25 @@ class Grammar(object):
     # Methods for populating a grammar object instance.
 
     def add_rule(self, rule):
-        """ Add a rule to this grammar. """
+        """
+        Add a rule to this grammar.
+
+        The following rules apply when adding rules into grammars:
+
+        #. Rules **cannot** be added to grammars that are currently loaded.
+        #. Two or more rules with the same name are **not** allowed.
+
+        .. warning::
+
+           Note that while adding the same ``Rule`` object to more than one
+           grammar is allowed, it is **not** recommended! This is because
+           the context and active/enabled states of these rules will not
+           function correctly if used. It is better to use *separate*
+           ``Rule`` instances for each grammar instead.
+
+        :param rule: Dragonfly rule
+        :type rule: Rule
+        """
         self._log_load.debug("Grammar %s: adding rule %s.",
                              self._name, rule.name)
 
@@ -193,7 +211,14 @@ class Grammar(object):
         rule.grammar = self
 
     def remove_rule(self, rule):
-        """ Remove a rule from this grammar. """
+        """
+        Remove a rule from this grammar.
+
+        Rules **cannot** be removed from grammars that are currently loaded.
+
+        :param rule: Dragonfly rule
+        :type rule: Rule
+        """
         self._log_load.debug("Grammar %s: removing rule %s.",
                              self._name, rule.name)
 
@@ -210,7 +235,14 @@ class Grammar(object):
         rule.grammar = None
 
     def add_list(self, lst):
-        """ Add a list to this grammar. """
+        """
+        Add a list to this grammar.
+
+        Lists **cannot** be added to grammars that are currently loaded.
+
+        :param lst: Dragonfly list
+        :type lst: ListBase
+        """
         self._log_load.debug("Grammar %s: adding list %s.",
                              self._name, lst.name)
 
