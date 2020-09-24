@@ -120,7 +120,7 @@ class Rule(object):
 
     def enable(self):
         """
-            Enable this grammar so that it is active to receive
+            Enable this rule so that it is active to receive
             recognitions when its context matches.
 
         """
@@ -129,7 +129,7 @@ class Rule(object):
 
     def disable(self):
         """
-            Disable this grammar so that it is never active to
+            Disable this rule so that it is never active to
             receive recognitions, regardless of whether its context
             matches or not.
 
