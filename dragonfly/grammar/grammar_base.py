@@ -167,6 +167,13 @@ class Grammar(object):
     engine = property(lambda self: self._engine, _set_engine,
                       doc="A grammar's SR engine.")
 
+    def _set_context(self, context):
+        self._context = context
+
+    context = property(lambda self: self._context, _set_context,
+                      doc="A grammar's context."
+                          " Can be modified at any time.")
+
     # ----------------------------------------------------------------------
     # Methods for populating a grammar object instance.
 

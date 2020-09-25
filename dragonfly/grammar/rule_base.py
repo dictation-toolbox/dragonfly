@@ -155,6 +155,13 @@ class Rule(object):
     grammar = property(_get_grammar, _set_grammar,
                        doc="This rule's grammar object.  (Set once)")
 
+    def _set_context(self, context):
+        self._context = context
+
+    context = property(lambda self: self._context, _set_context,
+                      doc="This rule's context."
+                          " Can be modified at any time.")
+
     #-----------------------------------------------------------------------
     # Internal methods for controlling a rules active state.
 
