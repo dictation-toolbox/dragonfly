@@ -213,6 +213,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         else:
             if self._audio:
                 self._audio.destroy()
+            if self.audio_store:
+                self.audio_store.save_all()
             self._reset_state()
             self._grammar_wrappers = {}  # From EngineBase
 
@@ -421,10 +423,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         finally:
             self._doing_recognition = False
-            if audio_iter == self._audio_iter and self._audio:
-                self._audio.stop()
-            if self.audio_store:
-                self.audio_store.save_all()
+            if (audio_iter == self._audio_iter) and self._audio:
+                try:
+                    self._audio.stop()  # We started the audio above, so we should stop it
+                except Exception:
+                    self._log.exception("Error stopping audio")
+            if self._deferred_disconnect:
+                self.disconnect()
 
         return not timed_out
 

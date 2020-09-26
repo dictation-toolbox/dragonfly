@@ -114,17 +114,23 @@ class MicAudio(object):
                 callback(bytes(in_data))  # Must copy data from temporary C buffer!
             else:
                 time.sleep(0.001)
-
-    def destroy(self):
-        self.stream.close()
-
-    def reconnect(self):
-        # FIXME: flapping
-        old_device_info = self.device_info
+                
+    def _cancel_reader_thread(self):
         self.thread_cancelled = True
         if self.thread:
             self.thread.join()
             self.thread = None
+
+    def destroy(self):
+        self._cancel_reader_thread()
+        if self.stream:
+            self.stream.close()
+            self.stream = None
+
+    def reconnect(self):
+        # FIXME: flapping
+        old_device_info = self.device_info
+        self._cancel_reader_thread()
         self.stream.close()
         self._connect(start=True)
         if self.reconnect_callback is not None:
