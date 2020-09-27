@@ -167,6 +167,39 @@ The names of lists must be unique within a grammar::
     GrammarError: Two lists with the same name 'list_fruit' not allowed.
 
 
+List add/remove restrictions
+----------------------------------------------------------------------------
+
+Setup test tooling::
+
+    >>> list_fruit = List("list_fruit", ["apple", "banana"])
+    >>> element = Sequence([Literal("item"), ListRef("list_fruit_ref", list_fruit)])
+    >>> tester_fruit = ElementTester(element)
+    >>> # Explicitly load tester grammar because lists can only be updated
+    >>> # for loaded grammars.
+    >>> tester_fruit.load()
+
+Lists cannot be added while the grammar is loaded::
+
+    >>> list_other = List("list_other", ["other"])
+    >>> tester_fruit.add_list(list_other)  # Fails.
+    Traceback (most recent call last):
+        ...
+    GrammarError: Cannot add list while loaded.
+
+Lists cannot be removed while the grammar is loaded::
+
+    >>> tester_fruit.remove_list(list_fruit)  # Fails.
+    Traceback (most recent call last):
+        ...
+    GrammarError: Cannot remove list while loaded.
+
+Tear down test tooling::
+
+    >>> # Explicitly unload tester grammar.
+    >>> tester_fruit.unload()
+
+
 ListRef construction
 ----------------------------------------------------------------------------
 
