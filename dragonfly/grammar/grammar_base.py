@@ -264,6 +264,30 @@ class Grammar(object):
         self._lists.append(lst)
         lst.grammar = self
 
+    def remove_list(self, lst):
+        """
+        Remove a list from this grammar.
+
+        Lists **cannot** be removed from grammars that are currently loaded.
+
+        :param lst: Dragonfly list
+        :type lst: ListBase
+        """
+        self._log_load.debug("Grammar %s: removing list %s.",
+                             self._name, lst.name)
+
+        # Check for correct type.
+        if self._loaded:
+            raise GrammarError("Cannot remove list while loaded.")
+        elif not isinstance(lst, ListBase):
+            raise GrammarError("Invalid list object: %s" % lst)
+        elif lst.name not in [l.name for l in self._lists]:
+            return
+
+        # Remove the list from this grammar object's internal list.
+        self._lists.remove(lst)
+        lst.grammar = None
+
     def add_dependency(self, dep):
         """
             Add a rule or list dependency to this grammar.
