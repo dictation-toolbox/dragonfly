@@ -167,12 +167,19 @@ class Grammar(object):
     engine = property(lambda self: self._engine, _set_engine,
                       doc="A grammar's SR engine.")
 
-    def _set_context(self, context):
+    def set_context(self, context):
+        """
+            Set context for this grammar. This overwrites any
+            previous context.
+
+            Contexts are matched during :meth:`process_begin`.
+        """
+        if not isinstance(context, Context):
+            return
         self._context = context
 
-    context = property(lambda self: self._context, _set_context,
-                      doc="A grammar's context."
-                          " Can be modified at any time.")
+    context = property(lambda self: self._context,
+                       doc="Grammar's context.")
 
     # ----------------------------------------------------------------------
     # Methods for populating a grammar object instance.
