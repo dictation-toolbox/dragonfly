@@ -24,6 +24,7 @@ ContextAction
 
 
 from .action_base import ActionBase
+from ..grammar.context import Context
 from ..windows import Window
 
 
@@ -71,12 +72,43 @@ class ContextAction(ActionBase):
         if actions is None:
             actions = []
 
+        # Validate default action.
         # Use a new ActionBase action (to do nothing) if default is None.
-        self.default = default if default is not None else ActionBase()
+        if default is None:
+            self._log_init.debug("Using default action for ContextAction")
+            default = ActionBase()
+
+        # Otherwise check if default is an action.
+        elif not isinstance(default, ActionBase):
+            raise TypeError("Default action for ContextAction should be an "
+                            "ActionBase or None, not %s." % default)
+
+        # Set the default action.
+        self.default = default
+
+        # Validate the actions list.
+        # Check if it can be converted to a dictionary. or convert it to a
+        # is one already (for consistent evaluation order).
+        if not isinstance(actions, dict):
+            dict(actions)  # can raise a ValueError
+
+        # Convert dictionaries to lists instead for consistent evaluation
+        # order.
+        else:
+            actions = list(actions.items())
+
+        # Check the types of all keys and values.
+        for (context, action) in actions:
+            if not isinstance(context, Context):
+                raise TypeError("ContextAction actions list contains "
+                                "unexpected object: %s, instead of a "
+                                "Context." % context)
+            if not isinstance(action, ActionBase):
+                raise TypeError("ContextAction actions list contains "
+                                "unexpected object: %s, instead of an "
+                                "ActionBase." % action)
 
         # Set the actions list.
-        if isinstance(actions, dict):
-            actions = list(actions.items())
         self.actions = actions
         ActionBase.__init__(self)
 
