@@ -157,19 +157,27 @@ class Rule(object):
 
     def set_context(self, context):
         """
-            Set context for this rule. This overwrites any
-            previous context.
+            Set the context for this rule, under which it will be active and
+            receive recognitions if it is also enabled and its grammar is
+            active.
 
-            Contexts are matched during :meth:`process_begin`.
+            Use of this method overwrites any previous context.
+
+            Contexts can be modified at any time, but will only be checked
+            when :meth:`process_begin` is called.
+
+            :param context: context within which to be active.  If *None*,
+                the rule will be active when its grammar is.
+            :type context: Context|None
         """
         if not isinstance(context, Context):
             return
         self._context = context
 
     context = property(lambda self: self._context,
-                       doc="This rule's context."
-                           " Can be modified at any time.")
-
+                       doc="This rule's context, under which it will be "
+                           "active and receive recognitions if it is also "
+                           "enabled and its grammar is active.")
     #-----------------------------------------------------------------------
     # Internal methods for controlling a rules active state.
 

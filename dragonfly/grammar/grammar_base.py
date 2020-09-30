@@ -169,17 +169,26 @@ class Grammar(object):
 
     def set_context(self, context):
         """
-            Set context for this grammar. This overwrites any
-            previous context.
+            Set the context for this grammar, under which it and its rules
+            will be active and receive recognitions if it is also enabled.
 
-            Contexts are matched during :meth:`process_begin`.
+            Use of this method overwrites any previous context.
+
+            Contexts can be modified at any time, but will only be checked
+            when :meth:`process_begin` is called.
+
+            :param context: context within which to be active.  If *None*,
+                the grammar will always be active.
+            :type context: Context|None
         """
         if not isinstance(context, Context):
             return
         self._context = context
 
     context = property(lambda self: self._context,
-                       doc="Grammar's context.")
+                       doc="A grammar's context, under which it and its "
+                           "rules will be active and receive recognitions "
+                           "if it is also enabled.")
 
     # ----------------------------------------------------------------------
     # Methods for populating a grammar object instance.
