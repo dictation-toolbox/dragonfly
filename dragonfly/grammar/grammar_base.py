@@ -171,7 +171,25 @@ class Grammar(object):
     # Methods for populating a grammar object instance.
 
     def add_rule(self, rule):
-        """ Add a rule to this grammar. """
+        """
+        Add a rule to this grammar.
+
+        The following rules apply when adding rules into grammars:
+
+        #. Rules **cannot** be added to grammars that are currently loaded.
+        #. Two or more rules with the same name are **not** allowed.
+
+        .. warning::
+
+           Note that while adding the same ``Rule`` object to more than one
+           grammar is allowed, it is **not** recommended! This is because
+           the context and active/enabled states of these rules will not
+           function correctly if used. It is better to use *separate*
+           ``Rule`` instances for each grammar instead.
+
+        :param rule: Dragonfly rule
+        :type rule: Rule
+        """
         self._log_load.debug("Grammar %s: adding rule %s.",
                              self._name, rule.name)
 
@@ -187,13 +205,25 @@ class Grammar(object):
         elif [True for r in self._rules if r.name == rule.name]:
             raise GrammarError("Two rules with the same name '%s' not"
                                " allowed." % rule.name)
+        elif rule.grammar is not None and rule.exported:
+            self._log_load.warning("Exported rule %s is already in grammar "
+                                   "%s, adding it to grammar %s is not "
+                                   "recommended.", rule.name,
+                                   rule.grammar.name, self._name)
 
         # Append the rule to this grammar object's internal list.
         self._rules.append(rule)
         rule.grammar = self
 
     def remove_rule(self, rule):
-        """ Remove a rule from this grammar. """
+        """
+        Remove a rule from this grammar.
+
+        Rules **cannot** be removed from grammars that are currently loaded.
+
+        :param rule: Dragonfly rule
+        :type rule: Rule
+        """
         self._log_load.debug("Grammar %s: removing rule %s.",
                              self._name, rule.name)
 
@@ -210,7 +240,14 @@ class Grammar(object):
         rule.grammar = None
 
     def add_list(self, lst):
-        """ Add a list to this grammar. """
+        """
+        Add a list to this grammar.
+
+        Lists **cannot** be added to grammars that are currently loaded.
+
+        :param lst: Dragonfly list
+        :type lst: ListBase
+        """
         self._log_load.debug("Grammar %s: adding list %s.",
                              self._name, lst.name)
 
@@ -231,6 +268,30 @@ class Grammar(object):
         # Append the list to this grammar object's internal list.
         self._lists.append(lst)
         lst.grammar = self
+
+    def remove_list(self, lst):
+        """
+        Remove a list from this grammar.
+
+        Lists **cannot** be removed from grammars that are currently loaded.
+
+        :param lst: Dragonfly list
+        :type lst: ListBase
+        """
+        self._log_load.debug("Grammar %s: removing list %s.",
+                             self._name, lst.name)
+
+        # Check for correct type.
+        if self._loaded:
+            raise GrammarError("Cannot remove list while loaded.")
+        elif not isinstance(lst, ListBase):
+            raise GrammarError("Invalid list object: %s" % lst)
+        elif lst.name not in [l.name for l in self._lists]:
+            return
+
+        # Remove the list from this grammar object's internal list.
+        self._lists.remove(lst)
+        lst.grammar = None
 
     def add_dependency(self, dep):
         """
