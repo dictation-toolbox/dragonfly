@@ -22,7 +22,7 @@
 Kaldi engine classes
 """
 
-import collections, logging, os, subprocess, sys, threading, time
+import collections, functools, logging, os, sys, time
 
 from packaging.version import Version
 from six import PY2, integer_types, string_types, print_, reraise
@@ -330,14 +330,14 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if audio_iter is None and self._audio is None:
             raise EngineError("No audio input")
         self._doing_recognition = True
+        self._in_phrase = False
+        self._ignore_current_phrase = False
+        in_complex = False
+        end_time = None
+        timed_out = False
 
         try:
             self.prepare_for_recognition()
-
-            self._in_phrase = False
-            self._ignore_current_phrase = False
-            in_complex = False
-            timed_out = False
 
             if timeout != None:
                 end_time = time.time() + timeout
@@ -350,7 +350,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             next(audio_iter)  # Prime the audio iterator
 
             # Loop until timeout (if set) or until disconnect() is called.
-            while (not self._deferred_disconnect) and ((not timeout) or (time.time() < end_time)):
+            while (not self._deferred_disconnect) and ((not end_time) or (time.time() < end_time)):
                 self.prepare_for_recognition()
                 block = audio_iter.send(in_complex)
 
