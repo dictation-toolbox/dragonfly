@@ -69,7 +69,9 @@ class Grammar(object):
     def __init__(self, name, description=None, context=None, engine=None):
         self._name = name
         self._description = description
-        assert isinstance(context, Context) or context is None
+        if not (isinstance(context, Context) or context is None):
+            raise TypeError("context must be either a Context object or "
+                            "None")
         self._context = context
 
         if engine:
@@ -181,8 +183,9 @@ class Grammar(object):
                 the grammar will always be active.
             :type context: Context|None
         """
-        if not isinstance(context, Context):
-            return
+        if not (isinstance(context, Context) or context is None):
+            raise TypeError("context must be either a Context object or "
+                            "None")
         self._context = context
 
     context = property(lambda self: self._context,

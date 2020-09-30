@@ -88,7 +88,9 @@ class Rule(object):
 
         self._active = None
         self._enabled = True
-        assert isinstance(context, Context) or context is None
+        if not (isinstance(context, Context) or context is None):
+            raise TypeError("context must be either a Context object or "
+                            "None")
         self._context = context
         self._grammar = None
 
@@ -170,8 +172,9 @@ class Rule(object):
                 the rule will be active when its grammar is.
             :type context: Context|None
         """
-        if not isinstance(context, Context):
-            return
+        if not (isinstance(context, Context) or context is None):
+            raise TypeError("context must be either a Context object or "
+                            "None")
         self._context = context
 
     context = property(lambda self: self._context,
