@@ -205,6 +205,11 @@ class Grammar(object):
         elif [True for r in self._rules if r.name == rule.name]:
             raise GrammarError("Two rules with the same name '%s' not"
                                " allowed." % rule.name)
+        elif rule.grammar is not None and rule.exported:
+            self._log_load.warning("Exported rule %s is already in grammar "
+                                   "%s, adding it to grammar %s is not "
+                                   "recommended.", rule.name,
+                                   rule.grammar.name, self._name)
 
         # Append the rule to this grammar object's internal list.
         self._rules.append(rule)
