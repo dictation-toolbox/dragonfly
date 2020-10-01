@@ -88,7 +88,9 @@ class Rule(object):
 
         self._active = None
         self._enabled = True
-        assert isinstance(context, Context) or context is None
+        if not (isinstance(context, Context) or context is None):
+            raise TypeError("context must be either a Context object or "
+                            "None")
         self._context = context
         self._grammar = None
 
@@ -155,6 +157,30 @@ class Rule(object):
     grammar = property(_get_grammar, _set_grammar,
                        doc="This rule's grammar object.  (Set once)")
 
+    def set_context(self, context):
+        """
+            Set the context for this rule, under which it will be active and
+            receive recognitions if it is also enabled and its grammar is
+            active.
+
+            Use of this method overwrites any previous context.
+
+            Contexts can be modified at any time, but will only be checked
+            when :meth:`process_begin` is called.
+
+            :param context: context within which to be active.  If *None*,
+                the rule will be active when its grammar is.
+            :type context: Context|None
+        """
+        if not (isinstance(context, Context) or context is None):
+            raise TypeError("context must be either a Context object or "
+                            "None")
+        self._context = context
+
+    context = property(lambda self: self._context,
+                       doc="This rule's context, under which it will be "
+                           "active and receive recognitions if it is also "
+                           "enabled and its grammar is active.")
     #-----------------------------------------------------------------------
     # Internal methods for controlling a rules active state.
 

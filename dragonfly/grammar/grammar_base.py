@@ -69,7 +69,9 @@ class Grammar(object):
     def __init__(self, name, description=None, context=None, engine=None):
         self._name = name
         self._description = description
-        assert isinstance(context, Context) or context is None
+        if not (isinstance(context, Context) or context is None):
+            raise TypeError("context must be either a Context object or "
+                            "None")
         self._context = context
 
         if engine:
@@ -166,6 +168,30 @@ class Grammar(object):
 
     engine = property(lambda self: self._engine, _set_engine,
                       doc="A grammar's SR engine.")
+
+    def set_context(self, context):
+        """
+            Set the context for this grammar, under which it and its rules
+            will be active and receive recognitions if it is also enabled.
+
+            Use of this method overwrites any previous context.
+
+            Contexts can be modified at any time, but will only be checked
+            when :meth:`process_begin` is called.
+
+            :param context: context within which to be active.  If *None*,
+                the grammar will always be active.
+            :type context: Context|None
+        """
+        if not (isinstance(context, Context) or context is None):
+            raise TypeError("context must be either a Context object or "
+                            "None")
+        self._context = context
+
+    context = property(lambda self: self._context,
+                       doc="A grammar's context, under which it and its "
+                           "rules will be active and receive recognitions "
+                           "if it is also enabled.")
 
     # ----------------------------------------------------------------------
     # Methods for populating a grammar object instance.
