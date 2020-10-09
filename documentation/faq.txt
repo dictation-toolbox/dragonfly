@@ -510,6 +510,32 @@ commands:
     elements (only applies to Dragon)
 
 
+Why isn't Dragonfly code aware of DPI scaling settings on Windows?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There can be problems with Dragonfly's monitor-related functionality on
+Windows Vista and above if the system is set up to use one or more monitors
+with a high number of dots per inch (DPI). The process running your Python
+code needs to be set as DPI-aware, if possible.
+
+The ``SetProcessDpiAwareness()`` function can be used to do this on Windows
+8.1 and above:
+
+.. code-block:: python
+
+   import ctypes
+   ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PROCESS_PER_MONITOR_DPI_AWARE
+
+The ``SetProcessDpiAware()`` function can be used instead on older Windows
+versions (e.g. Vista and 7). The ``SetProcessDpiAwarenessContext()``
+function can be used on Windows 10 (version 1703) and above. Both are
+functions in ``user32.dll`` instead of ``shcore.dll``. For more information
+on this topic, please see the following Microsoft documentation pages:
+
+* `High DPI Desktop Application Development on Windows`_
+* `Setting the default DPI awareness for a process`_
+
+
 Why aren't Dragonfly actions working with Windows admin applications?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -622,11 +648,13 @@ touch:
 .. _Dragonfly issue #205: https://github.com/dictation-toolbox/dragonfly/issues/205
 .. _Dragonfly mailing list: https://groups.google.com/forum/#!forum/dragonflyspeech
 .. _Gitter Channel: https://gitter.im/dictation-toolbox/dragonfly
+.. _High DPI Desktop Application Development on Windows: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
 .. _Matrix channel: https://app.element.io/#/room/#dragonfly2:matrix.org
 .. _Natlink Troubleshooting page: https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html
 .. _Python 2-3 code porting guide: https://docs.python.org/3/howto/pyporting.html
 .. _Python 2.7 EOL: https://www.python.org/dev/peps/pep-0373/
 .. _Security Considerations for Assistive Technologies: https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-securityoverview
+.. _Setting the default DPI awareness for a process: https://docs.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
 .. _User Account Control: https://en.wikipedia.org/wiki/User_Account_Control
 .. _Wayland: https://wayland.freedesktop.org/
 .. _Web API security: https://en.wikipedia.org/wiki/Web_API_security
