@@ -22,6 +22,7 @@
 # This file imports a Win32-only module.
 
 import ctypes
+
 import win32api
 
 from .base_monitor import BaseMonitor
@@ -34,7 +35,11 @@ from .rectangle import Rectangle
 # changes. Unfortunately, this cannot be changed (presumably it is declared in a
 # manifest). When running from the command line, however, the default is
 # PROCESS_DPI_UNAWARE and can be adjusted here.
-ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PROCESS_PER_MONITOR_DPI_AWARE
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PROCESS_PER_MONITOR_DPI_AWARE
+except OSError:
+    # Do nothing if SetProcessDpiAwareness() could not be called.
+    pass
 
 
 #===========================================================================
