@@ -22,6 +22,7 @@
 # This file imports a Win32-only module.
 
 import ctypes
+import logging
 
 import win32api
 
@@ -36,7 +37,16 @@ from .rectangle import Rectangle
 # manifest). When running from the command line, however, the default is
 # PROCESS_DPI_UNAWARE and can be adjusted here.
 try:
-    ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PROCESS_PER_MONITOR_DPI_AWARE
+    log = logging.getLogger("monitor.init")
+    value = 2  # PROCESS_PER_MONITOR_DPI_AWARE
+    hresult = ctypes.windll.shcore.SetProcessDpiAwareness(value)
+    if hresult == -2147024809:  # E_INVALIDARG
+        log.warning("DPI awareness could not be set; "
+                    "SetProcessDpiAwareness() received an invalid "
+                    "argument: %d", value)
+    elif hresult == -2147024891:  # E_ACCESSDENIED
+        log.warning("DPI awareness could not be set; it has been set "
+                    "already.")
 except OSError:
     # Do nothing if SetProcessDpiAwareness() could not be called.
     pass
