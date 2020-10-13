@@ -515,11 +515,14 @@ Why isn't Dragonfly code aware of DPI scaling settings on Windows?
 
 There can be problems with Dragonfly's monitor-related functionality on
 Windows Vista and above if the system is set up to use one or more monitors
-with a high number of dots per inch (DPI). The process running your Python
-code needs to be set as DPI-aware, if possible.
+with a high number of dots per inch (DPI). For this reason, Dragonfly
+*attempts* to set the DPI awareness for the process when it is imported. The
+``SetProcessDpiAwareness()`` function is used to do this on Windows 8.1 and
+above.
 
-The ``SetProcessDpiAwareness()`` function can be used to do this on Windows
-8.1 and above:
+If you need to set the DPI awareness manually using a different DPI
+awareness value, do so before importing dragonfly. The following is
+equivalent to what dragonfly does internally:
 
 .. code-block:: python
 
@@ -528,9 +531,9 @@ The ``SetProcessDpiAwareness()`` function can be used to do this on Windows
 
 The ``SetProcessDpiAware()`` function can be used instead on older Windows
 versions (e.g. Vista and 7). The ``SetProcessDpiAwarenessContext()``
-function can be used on Windows 10 (version 1703) and above. Both are
-functions in ``user32.dll`` instead of ``shcore.dll``. For more information
-on this topic, please see the following Microsoft documentation pages:
+function can be used on Windows 10 (version 1703) and above. For more
+information on this topic, please see the following Microsoft documentation
+pages:
 
 * `High DPI Desktop Application Development on Windows`_
 * `Setting the default DPI awareness for a process`_
