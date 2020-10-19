@@ -31,13 +31,9 @@ class TestEngineNatlink(unittest.TestCase):
         engine = get_engine("natlink")
         assert isinstance(engine, EngineBase)
         assert engine.name == "natlink"
-        engine.connect()
-        try:
-            engine.speak("testing natlink")
-            from dragonfly import Literal
-            from dragonfly.test import ElementTester
-            tester = ElementTester(Literal("hello world"))
-            results = tester.recognize("hello world")
-            assert results == "hello world"
-        finally:
-            engine.disconnect()
+        engine.speak("testing natlink")
+        from dragonfly import Literal
+        from dragonfly.test import ElementTester
+        tester = ElementTester(Literal("hello world"))
+        results = tester.recognize("hello world")
+        assert results == "hello world"

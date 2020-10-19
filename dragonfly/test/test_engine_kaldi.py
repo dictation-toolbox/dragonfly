@@ -83,9 +83,6 @@ class KaldiEngineCase(unittest.TestCase):
         # Map for test functions
         self.test_map = {}
 
-        # Connect the engine.
-        self.engine.connect()
-
         # Register a recognition observer.
         self.test_recobs = RecognitionObserverTester()
         self.test_recobs.register()
@@ -93,7 +90,6 @@ class KaldiEngineCase(unittest.TestCase):
     def tearDown(self):
         self.test_map.clear()
         self.test_recobs.unregister()
-        self.engine.disconnect()
 
     # ---------------------------------------------------------------------
     # Methods for control-flow assertion.
