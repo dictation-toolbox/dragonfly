@@ -46,11 +46,8 @@ class RPCTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.current_response = None
 
-        # Start the server on a different port for the tests and esure the
-        # engine is connected.
+        # Start the server on a different port for the tests.
         cls.server = RPCServer(port=50052)
-        engine = get_engine()
-        engine.connect()
         cls.server.start()
 
     @classmethod

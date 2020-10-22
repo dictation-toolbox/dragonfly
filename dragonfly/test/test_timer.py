@@ -46,9 +46,6 @@ class TestTimer(unittest.TestCase):
         logging.getLogger("engine.timer").addHandler(self.log_capture)
         self.engine = get_engine()
 
-        # Ensure the engine is connected to avoid errors.
-        self.engine.connect()
-
     def test_timer_callback_exception(self):
         """ Test handling of exceptions during timer callback. """
 

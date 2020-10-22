@@ -38,11 +38,7 @@ class TestEngineText(unittest.TestCase):
         engine = get_engine("text")
         assert isinstance(engine, EngineBase)
         assert engine.name == "text"
-        engine.connect()
         self.engine = engine
-
-    def tearDown(self):
-        self.engine.disconnect()
 
     def test_literal(self):
         """ Verify that the text engine is usable. """

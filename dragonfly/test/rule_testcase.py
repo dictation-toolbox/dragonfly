@@ -34,12 +34,15 @@ class RuleTestCase(unittest.TestCase):
 
     def run(self, result=None):
         self.engine = get_engine()
-        self.engine.connect()
         self.grammar = RuleTestGrammar()
-        try:
-            return unittest.TestCase.run(self, result)
-        finally:
-            self.engine.disconnect()
+        return unittest.TestCase.run(self, result)
+
+    def tearDown(self):
+        self.grammar.unload()
+        for rule in self.grammar.rules:
+            self.grammar.remove_rule(rule)
+        for lst in self.grammar.lists:
+            self.grammar.remove_list(lst)
 
     def add_rule(self, rule):
         self.grammar.add_rule(rule)

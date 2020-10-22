@@ -65,7 +65,6 @@ class TestRules(RuleTestCase):
         context = TestContext(True)
         self.add_rule(CompoundRule(name="r1", spec="test context",
                                    context=context))
-        self.grammar.load()
 
         # Test that the rule matches when in-context.
         results = self.recognize_node("test context").words()
@@ -77,10 +76,12 @@ class TestRules(RuleTestCase):
         context.active = False
         self.process_grammars_context()
         try:
+            self.grammar.load()
             self.grammar.set_exclusiveness(True)
             self.assertRaises(MimicFailure, self.engine.mimic, "test context")
         finally:
             self.grammar.set_exclusiveness(False)
+            self.grammar.unload()
 
         # Test again after going back into context.
         context.active = True
