@@ -114,17 +114,23 @@ class MicAudio(object):
                 callback(bytes(in_data))  # Must copy data from temporary C buffer!
             else:
                 time.sleep(0.001)
-
-    def destroy(self):
-        self.stream.close()
-
-    def reconnect(self):
-        # FIXME: flapping
-        old_device_info = self.device_info
+                
+    def _cancel_reader_thread(self):
         self.thread_cancelled = True
         if self.thread:
             self.thread.join()
             self.thread = None
+
+    def destroy(self):
+        self._cancel_reader_thread()
+        if self.stream:
+            self.stream.close()
+            self.stream = None
+
+    def reconnect(self):
+        # FIXME: flapping
+        old_device_info = self.device_info
+        self._cancel_reader_thread()
         self.stream.close()
         self._connect(start=True)
         if self.reconnect_callback is not None:
@@ -264,7 +270,7 @@ class VADAudio(MicAudio):
                     self.reconnect()
                     num_empty_blocks = 0
                     last_good_block_time = time.time()
-                in_complex_phrase = yield block
+                in_complex_phrase = yield False
 
             else:
                 # Good block
@@ -301,6 +307,10 @@ class VADAudio(MicAudio):
                         in_complex_phrase = yield None
                         # print('*')
                         ring_buffer.clear()
+
+        if triggered:
+            # We were in a phrase, so we must terminate it (this may be abrupt!)
+            yield None
 
     def debug_print_simple(self):
         print("block_duration_ms=%s" % self.BLOCK_DURATION_MS)
@@ -429,10 +439,11 @@ class AudioStoreEntry(object):
 
 
 class WavAudio(object):
+    """ Class for mimicking normal microphone input, but from wav files. """
 
     @classmethod
     def read_file(cls, filename, realtime=False):
-        """ Yields raw audio blocks from wav file. """
+        """ Yields raw audio blocks from wav file, terminated by a None element. """
         if not os.path.isfile(filename):
             raise IOError("'%s' is not a file. Please use a different file path.")
 
@@ -463,7 +474,7 @@ class WavAudio(object):
 
     @classmethod
     def read_file_with_vad(cls, filename, realtime=False, **kwargs):
-        """ Yields raw audio blocks from wav file after processing by VAD. """
+        """ Yields raw audio blocks from wav file, after processing by VAD, terminated by a None element. """
         vad_audio = VADAudio()
         vad_audio_iter = vad_audio.vad_collector(blocks=cls.read_file(filename, realtime=realtime), **kwargs)
         return vad_audio_iter

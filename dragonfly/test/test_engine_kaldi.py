@@ -14,14 +14,9 @@ import unittest
 
 import logging
 
-from dragonfly.engines import (EngineBase, EngineError, MimicFailure, get_engine)
-from dragonfly.grammar.elements import Literal, Sequence, ListRef
-from dragonfly.grammar.list import List
-from dragonfly.grammar.grammar_base import Grammar
-from dragonfly.grammar.rule_base import Rule
-from dragonfly.grammar.recobs import RecognitionObserver
-from dragonfly.grammar.rule_compound import CompoundRule
-from dragonfly.test import (ElementTester, RuleTestGrammar)
+from dragonfly.engines import (EngineBase, get_engine)
+from dragonfly.grammar.elements import Literal, Sequence
+from dragonfly.test import ElementTester
 
 try:
     from dragonfly.engines.backend_kaldi.engine import KaldiError
@@ -49,116 +44,9 @@ class MockLoggingHandler(logging.Handler):
         self.messages[record.levelname.lower()].append(record.getMessage())
 
 
-class RecognitionObserverTester(RecognitionObserver):
-    """ RecognitionObserver class from the recobs doctests. """
-
-    def __init__(self):
-        RecognitionObserver.__init__(self)
-        self.waiting = False
-        self.words = None
-
-    def on_begin(self):
-        self.waiting = True
-        self.words = None
-
-    def on_recognition(self, words):
-        self.waiting = False
-        self.words = words
-
-    def on_failure(self):
-        self.waiting = False
-        self.words = False
-
-
-class KaldiEngineCase(unittest.TestCase):
+class KaldiEngineTests(unittest.TestCase):
     """
-    Base TestCase class for Kaldi engine tests
-    """
-
-    log = logging.getLogger("engine")
-
-    def setUp(self):
-        self.engine = get_engine("kaldi")
-
-        # Map for test functions
-        self.test_map = {}
-
-        # Register a recognition observer.
-        self.test_recobs = RecognitionObserverTester()
-        self.test_recobs.register()
-
-    def tearDown(self):
-        self.test_map.clear()
-        self.test_recobs.unregister()
-
-    # ---------------------------------------------------------------------
-    # Methods for control-flow assertion.
-
-    def get_test_function(self):
-        """
-        Create and return a test function used for testing whether
-        key phrases or rules are processed correctly, insofar as they reach
-        the correct processing method/function.
-
-        Note that returned test functions accept variable arguments.
-        :return: callable
-        """
-        def func(*_):
-            # Function was reached
-            try:
-                self.test_map[id(func)] += 1
-            except KeyError:
-                # Ignore any key errors; if this function's id is not in
-                # test_map, then it's not relevant to the currently running
-                # test method.
-                pass
-
-        self.test_map[id(func)] = 0
-        return func
-
-    def assert_test_function_called(self, func, n):
-        """
-        Assert that a test function was called n times.
-        :type func: callable
-        :param n: number of times the test function should have been called
-        """
-        x = self.test_map[id(func)]
-        self.assertEqual(x, n, "wrapped test function was called %d time(s) "
-                               "instead of %d time(s)" % (x, n))
-
-    def reset_test_functions(self):
-        """
-        Reset the test_map values for all test functions.
-        """
-        for key in self.test_map.keys():
-            self.test_map[key] = 0
-
-    # ---------------------------------------------------------------------
-    # Methods for asserting recognition success or failure.
-
-    def assert_mimic_success(self, *phrases):
-        """
-        Assert that the engine can successfully mimic a number of speech
-        strings.
-        """
-        try:
-            for phrase in phrases:
-                self.engine.mimic(phrase)
-        except MimicFailure:
-            self.fail("MimicFailure caught")
-
-    def assert_mimic_failure(self, *phrases):
-        for phrase in phrases:
-            self.assertRaises(MimicFailure, self.engine.mimic, phrase)
-
-    def assert_recobs_result(self, waiting, words):
-        self.assertEqual(self.test_recobs.waiting, waiting)
-        self.assertEqual(self.test_recobs.words, words)
-
-
-class EngineTests(KaldiEngineCase):
-    """
-    Tests for most of the engine's functionality.
+    Tests for the Kaldi engine.
     """
     def test_get_engine_kaldi_is_usable(self):
         """
@@ -167,7 +55,7 @@ class EngineTests(KaldiEngineCase):
         """
         engine = get_engine()
         assert engine.name == "kaldi"
-        assert isinstance(self.engine, EngineBase)
+        assert isinstance(engine, EngineBase)
         engine.speak("testing kaldi")
 
         # Test that a basic rule can be loaded and recognized.
@@ -197,20 +85,6 @@ class EngineTests(KaldiEngineCase):
     #     self.assertIn("wordz", warnings[1])
     #     self.assertIn("morwordz", warnings[2])
     #     self.assertNotIn("testing", '\n'.join(warnings))
-
-    def test_reference_names_with_spaces(self):
-        """ Verify that reference names with spaces are accepted. """
-        lst = List("my list", ["test list"])
-        grammar = Grammar("My dragonfly grammar")
-        grammar.add_rule(CompoundRule(name="my rule", spec="test rule"))
-        grammar.add_rule(Rule(element=ListRef("my list", lst),
-                              exported=True))
-        try:
-            grammar.load()
-            self.assert_mimic_success("test rule")
-            self.assert_mimic_success("test list")
-        finally:
-            grammar.unload()
 
 
 # ---------------------------------------------------------------------
