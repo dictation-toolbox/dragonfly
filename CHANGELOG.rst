@@ -11,6 +11,27 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Changed
+~~~~~~~
+* Add methods for setting Rule and Grammar contexts after instantiation
+  (thanks `@Timoses`_).
+* Add warning messages on adding the same exported rule to multiple grammars.
+* Change default values for Kaldi vad_padding_end_ms and
+  vad_complex_padding_end_ms engine config arguments (thanks `@daanzu`_).
+* Set DPI awareness automatically when dragonfly is imported (Windows only)
+  (thanks `@wolfmanstout`_).
+
+Fixed
+~~~~~
+* Add missing Grammar.remove_list() method.
+* Add missing validation and type checks into the ContextAction class.
+* Fix SAPI5 engine processing issues with window title context changes.
+* Fix various Kaldi engine bugs and other issues (thanks `@daanzu`_).
+
+
 0.27.1_ - 2020-09-18
 --------------------
 
