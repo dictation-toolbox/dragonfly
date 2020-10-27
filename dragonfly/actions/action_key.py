@@ -259,7 +259,9 @@ The following code will press the browser refresh multimedia key: ::
     Key("XF86Refresh").execute()
 
 Although this key is not defined in dragonfly's typeables list, it still
-works because it is passed directly to xdotool.
+works because it is passed directly to xdotool. X11 (Xorg) multimedia keys
+can be found online: `XF86 keyboard symbols
+<https://wiki.linuxquestions.org/wiki/XF86_keyboard_symbols>`__.
 
 
 Key class reference
