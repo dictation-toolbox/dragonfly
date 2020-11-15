@@ -11,6 +11,14 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Fixed
+~~~~~
+* Fix DNS dictation bug where formatting can be applied incorrectly.
+
+
 0.28.0_ - 2020-10-24
 --------------------
 
