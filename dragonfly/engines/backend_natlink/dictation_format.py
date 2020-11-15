@@ -373,7 +373,6 @@ class WordParserDns11(WordParserBase):
             flags = WordFlags()
         return flags
 
-
     def parse_input(self, input):
         # Not unicode (Python 2) or str (Python 3)
         if not isinstance(input, text_type):
@@ -381,6 +380,7 @@ class WordParserDns11(WordParserBase):
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
             input = text_type(input).encode("windows-1252")
+
         parts = input.split("\\")
         if len(parts) == 1:
             # Word doesn't have "written\property\spoken" form, so
@@ -406,11 +406,6 @@ class WordParserDns11(WordParserBase):
             written = "\\".join(parts[:-2])
             property = parts[-2]
             spoken = parts[-1]
-        """ The if statement below allows users to add the spoken form
-        # (or the written form if and only if there isn't a spoken form)
-        # of their own custom Dragon vocabulary words into the property_mapping """
-        if spoken in self.property_map:
-            property = spoken
 
         word_flags = self.create_word_flags(property)
 
