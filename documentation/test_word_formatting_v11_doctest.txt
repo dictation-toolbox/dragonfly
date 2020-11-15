@@ -162,3 +162,12 @@ forms and formatting info::
   #    u'1234'
   #    >>> format_dictation_dns11("thirty four")
   #    u'34'
+
+Spoken words with multiple, context-dependent written forms, such as "point"
+and ".", are formatted correctly::
+
+    >>> format_dictation_dns11("\cap\cap what is the point of that "
+    ...                         "?\question-mark\question-mark")
+    u'What is the point of that?'
+    >>> format_dictation_dns11(".\point\point")
+    u'.'
