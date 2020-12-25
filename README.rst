@@ -214,4 +214,4 @@ which lists various sources.
 .. |Join Gitter chat| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/dictation-toolbox/dragonfly
 .. |Join Matrix chat| image:: https://img.shields.io/matrix/dragonfly2:matrix.org.svg?label=%5Bmatrix%5D
-   :target: https://app.element.io/#/room/#dragonfly2:matrix.org
+   :target: https://app.element.io/#/room/#dictation-toolbox_dragonfly:gitter.im
