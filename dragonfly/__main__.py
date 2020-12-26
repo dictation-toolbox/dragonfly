@@ -1,4 +1,5 @@
 import argparse
+import ast
 import glob
 import logging
 import os
@@ -235,15 +236,23 @@ def _add_arguments(parser, *arguments):
         parser.add_argument(*args, **kwargs)
 
 
+def _smart_cast(value):
+    """ Attempts to convert given str to a more precise type based on Python literals. """
+    try:
+        return ast.literal_eval(value)
+    except ValueError:
+        return value
+
 def _engine_options_string(string):
     if '=' not in string:
         msg = "%r is not a valid option string" % string
         raise argparse.ArgumentTypeError(msg)
 
-    # Return a dictionary off any key/value arguments separated by commas or
+    # Return a dictionary of any key/value arguments separated by commas or
     # spaces. Filter out empty strings.
-    return dict(sub_string.split('=')
-                for sub_string in re.split('[,\\s]', string) if sub_string)
+    options = dict(sub_string.split('=', maxsplit=1)
+                   for sub_string in re.split('[,\\s]', string) if sub_string)
+    return { key: _smart_cast(value) for (key, value) in options.items() }
 
 
 def _valid_file_or_pattern(string):
@@ -293,7 +302,9 @@ def make_arg_parser():
         "-o", "--engine-options", default={}, type=_engine_options_string,
         help="One or more engine options to be passed to *get_engine()*. "
              "Each option should specify a key word argument and value. "
-             "Multiple options should be separated by spaces or commas."
+             "Multiple options should be separated by spaces or commas. "
+             "Values are treated as Python literals if possible, "
+             "otherwise as strings."
     )
     language_argument = _build_argument(
         "--language", default="en",
