@@ -34,7 +34,12 @@ class BaseKeyboard(object):
     def send_keyboard_events(cls, events):
         """ Send a sequence of keyboard events. """
         raise NotImplementedError("Keyboard support is not implemented for "
-                                  "this platform!")
+                                  "this platform or your platform was not "
+                                  "detected correctly. On Linux, the "
+                                  "XDG_SESSION_TYPE environment variable may "
+                                  "not be set correctly in some circumstances, "
+                                  "in which case it can be set manually in "
+                                  "~/.profile.")
 
     @classmethod
     def get_typeable(cls, char, is_text=False):
