@@ -305,6 +305,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         recognition = self._parse_recognition(output, mimic=True)
         if not recognition.kaldi_rule:
+            recognition.fail()
             raise MimicFailure("No matching rule found for %r." % (output,))
         recognition.process()
         self._log.debug("End of mimic: rule %s, %r" % (recognition.kaldi_rule, output))
