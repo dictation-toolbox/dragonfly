@@ -156,6 +156,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._audio_iter = None
         self.audio_store = None
 
+        self._loadunload_queue = collections.deque()
         self._any_exclusive_grammars = False
         self._saving_adaptation_state = False
         self._ignore_current_phrase = False
@@ -226,24 +227,35 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar*. """
-        self._log.info("Loading grammar %s" % grammar.name)
         if not self._decoder:
             self.connect()
 
+        self._log.info("Loading grammar %s" % grammar.name)
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
         wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self,
                                  self._recognition_observer_manager)
-        for (rule, kaldi_rule) in kaldi_rule_by_rule_dict.items():
-            kaldi_rule.active = bool(rule.active)  # Initialize to correct activity
-            kaldi_rule.load(lazy=self._compiler.lazy_compilation)
+
+        def load():
+            for (rule, kaldi_rule) in kaldi_rule_by_rule_dict.items():
+                kaldi_rule.active = bool(rule.active)  # Initialize to correct activity
+                kaldi_rule.load(lazy=self._compiler.lazy_compilation)
+        if self._in_phrase:
+            self._loadunload_queue.append(load)
+        else:
+            load()
 
         return wrapper
 
     def _unload_grammar(self, grammar, wrapper):
         """ Unload the given *grammar*. """
         self._log.debug("Unloading grammar %s." % grammar.name)
-        rules = list(wrapper.kaldi_rule_by_rule_dict.keys())
-        self._compiler.unload_grammar(grammar, rules, self)
+        def unload():
+            rules = list(wrapper.kaldi_rule_by_rule_dict.keys())
+            self._compiler.unload_grammar(grammar, rules, self)
+        if self._in_phrase:
+            self._loadunload_queue.append(unload)
+        else:
+            unload()
 
     def activate_grammar(self, grammar):
         """ Activate the given *grammar*. """
@@ -311,7 +323,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def prepare_for_recognition(self):
         """ Can be called optionally before ``do_recognition()`` to speed up its starting of active recognition. """
+        if self._in_phrase:
+            self._log.warning("prepare_for_recognition ignored while in phrase; will be run after")
+            return
         try:
+            while self._loadunload_queue:
+                operation = self._loadunload_queue.popleft()
+                operation()
             self._compiler.prepare_for_recognition()
         except KaldiError as e:
             if len(e.args) >= 2 and isinstance(e.args[1], KaldiRule):
@@ -337,7 +355,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         timed_out = False
 
         try:
-            self.prepare_for_recognition()
+            self.prepare_for_recognition()  # Try to get compilation out of the way before starting audio
 
             if timeout != None:
                 end_time = time.time() + timeout
@@ -351,7 +369,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
             # Loop until timeout (if set) or until disconnect() is called.
             while (not self._deferred_disconnect) and ((not end_time) or (time.time() < end_time)):
-                self.prepare_for_recognition()
                 block = audio_iter.send(in_complex)
 
                 if block is False:
@@ -414,6 +431,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     timed_out = False
                     if single:
                         break
+                    self.prepare_for_recognition()  # Do any of this leftover, now that phrase is done
 
                 self.call_timer_callback()
 
