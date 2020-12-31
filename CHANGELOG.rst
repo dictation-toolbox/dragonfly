@@ -11,6 +11,23 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+
+Unreleased_
+-----------
+
+Changed
+~~~~~~~
+* Add _functions_example.py example command module (thanks `@LexiconCode`_).
+* Add smart type casting to CLI loader engine parameter options (thanks
+  `@daanzu`_).
+* Improve error message when X11 can't be detected (thanks `@dasnessie`_)
+
+Fixed
+~~~~~
+* Fix Kaldi grammar loading/unloading while in phrase (thanks `@daanzu`_).
+* Fix recognition observer bug with the KaldiEngine.mimic() method.
+
+
 0.28.1_ - 2020-11-15
 --------------------
 
@@ -1072,6 +1089,7 @@ This release is the first in the Git version control system.
 .. _@caspark: https://github.com/caspark
 .. _@comodoro: https://github.com/comodoro
 .. _@daanzu: https://github.com/daanzu
+.. _@dasnessie: https://github.com/dasnessie
 .. _@dmakarov: https://github.com/dmakarov
 .. _@dusty-phillips: https://github.com/dusty-phillips
 .. _@kb100: https://github.com/kb100
