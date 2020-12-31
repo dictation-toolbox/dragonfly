@@ -19,6 +19,7 @@ Tim Hatch <tim@timhatch.com>
 Timoses <Timoses@users.noreply.github.com>
 Tyler Elliott <tylercal@gmail.com>
 Vojta Drabek <vojta.drabek@gmail.com>
+dasnessie <mail@dasnessie.de>
 lexxish <meandro7@gmail.com>
 sathishkottravel <sathishkottravel@gmail.com>
 starwarswii <starwarswii@users.noreply.github.com>
