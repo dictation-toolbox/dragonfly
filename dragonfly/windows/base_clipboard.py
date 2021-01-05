@@ -18,11 +18,25 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import sys
+class BaseClipboard(object):
+    @classmethod
+    def get_system_text(cls):
+        raise NotImplementedError()
 
-from .clipboard   import Clipboard
-from .fake_window import FakeWindow
-from .monitor     import Monitor, monitors
-from .point       import Point
-from .rectangle   import Rectangle, unit
-from .window      import Window
+    @classmethod
+    def set_system_text(cls, content):
+        raise NotImplementedError()
+
+    @classmethod
+    def clear_clipboard(cls):
+        raise NotImplementedError()
+
+    def has_text(self):
+        """ Determine whether this instance has text content. """
+        raise NotImplementedError()
+
+    def set_text(self, content):
+        raise NotImplementedError()
+
+    def get_text(self):
+        raise NotImplementedError()

@@ -18,9 +18,4 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-"""
-This package contains utility classes and functions such as the
-multi-platform clipboard class.
-"""
-
 from .clipboard import BaseClipboard, Clipboard
