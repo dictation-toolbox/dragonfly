@@ -480,7 +480,7 @@ class WordParserFactory(object):
 
 class WordFormatter(object):
 
-    _log = logging.getLogger("dictation.format")
+    _log = logging.getLogger("dictation.formatter")
 
     parser_factory = WordParserFactory()
 
