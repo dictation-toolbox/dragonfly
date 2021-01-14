@@ -31,7 +31,8 @@ on Windows, Mac OS and with X11 (e.g. on Linux).
 
 To use this class on X11/Linux, the
 `xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
-installed.
+installed and the ``XDG_SESSION_TYPE`` environment variable set to ``x11``.
+This class does **not** support typing text in Wayland sessions.
 
 It differs from the :class:`Key` action in that :class:`Text` is used for
 typing literal text, while :class:`dragonfly.actions.action_key.Key`
