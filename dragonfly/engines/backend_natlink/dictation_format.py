@@ -329,7 +329,7 @@ class WordParserDns11(WordParserBase):
 
         "space-bar":        WordFlags("no_format", "spacebar", "no_space_after", "no_cap_reset", "no_space_before"),
         "spelling-cap":     WordFlags("no_format", "no_space_reset", "cap_next_force"),
-        "letter":           WordFlags("no_space_after"),
+        "letter":           WordFlags(),
         "uppercase-letter": WordFlags("no_space_after"),
         "numeral":          WordFlags("no_space_after"),
 
