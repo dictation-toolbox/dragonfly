@@ -102,8 +102,9 @@ class X11Window(BaseWindow):
             if isinstance(stderr, binary_type):
                 stderr = stderr.decode(encoding)
 
+            # Print error messages to stderr. Filter BadWindow messages.
             stderr = stderr.rstrip()
-            if stderr:
+            if stderr and "BadWindow" not in stderr:
                 print(stderr, file=sys.stderr)
 
             # Return the process output and return code.
