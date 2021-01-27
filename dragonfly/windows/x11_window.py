@@ -242,7 +242,6 @@ class X11Window(BaseWindow):
         args = ['-id', self.id] + list(properties)
         stdout, return_code = self._run_xprop_command(args)
         if return_code > 0:
-            if stdout: print(stdout)
             return {}
 
         for line in stdout.split('\n'):
