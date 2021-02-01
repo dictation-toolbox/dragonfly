@@ -18,25 +18,30 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import sys
-import os
+# pylint: disable=E0401
+from talon import ui
 
-# Talon
-if 'talon' in sys.modules:
-    from .talon_window import TalonWindow as Window
+from .base_monitor import BaseMonitor
+from .rectangle import Rectangle
 
-# Windows-specific
-elif sys.platform.startswith("win"):
-    from .win32_window import Win32Window as Window
 
-# Linux/X11
-elif os.environ.get("XDG_SESSION_TYPE") == "x11":
-    from .x11_window import X11Window as Window
+#===========================================================================
+# Monitor class for storing info about a single display monitor.
 
-# Mac OS
-elif sys.platform == "darwin":
-    from .darwin_window import DarwinWindow as Window
+class TalonMonitor(BaseMonitor):
+    """
+    The monitor class used under Talon.
+    """
 
-# Unsupported
-else:
-    from .fake_window import FakeWindow as Window
+    @classmethod
+    def get_all_monitors(cls):
+        monitors = []
+        for screen in ui.screens():
+            rectangle = Rectangle(screen.x, screen.y, screen.width, screen.height)
+            monitors.append(cls.get_monitor(screen, rectangle))
+        return monitors
+
+    @property
+    def name(self):
+        """ The name of this monitor. """
+        return self.handle.name

@@ -31,7 +31,11 @@ import sys
 # Import the Keyboard, KeySymbols and Typeable classes for the current
 # platform. Always use the base classes for building documentation.
 doc_build = bool(os.environ.get("SPHINX_BUILD_RUNNING"))
-if sys.platform.startswith("win") and not doc_build:
+
+if 'talon' in sys.modules and not doc_build:
+    from ._talon import Keyboard, Typeable, TalonKeySymbols as KeySymbols
+
+elif sys.platform.startswith("win") and not doc_build:
     # Import classes for Windows.
     from ._win32 import Keyboard, Typeable, Win32KeySymbols as KeySymbols
 

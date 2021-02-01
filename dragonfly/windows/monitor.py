@@ -21,8 +21,12 @@
 import sys
 import os
 
+# Talon
+if 'talon' in sys.modules:
+    from .talon_monitor import TalonMonitor as Monitor
+
 # Windows
-if sys.platform.startswith("win"):
+elif sys.platform.startswith("win"):
     from .win32_monitor import Win32Monitor as Monitor
 
 # Mac OS

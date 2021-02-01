@@ -20,6 +20,7 @@
 
 import logging
 import os
+import sys
 import traceback
 from .base import EngineBase, EngineError, MimicFailure
 
@@ -73,6 +74,18 @@ def get_engine(name=None, **kwargs):
     # Check if we're on Windows. If name is None and we're not on Windows,
     # then we don't evaluate Windows-only engines like natlink.
     windows = os.name == 'nt'
+
+    if 'talon' in sys.modules and not name or name == 'talon':
+        try:
+            from .backend_talon import is_engine_available
+            from .backend_talon import get_engine as get_specific_engine
+            if is_engine_available(**kwargs):
+                return get_specific_engine(**kwargs)
+        except Exception as e:
+            message = ("Exception while initializing Talon engine:"
+                       " %s" % (e,))
+            if name:
+                raise EngineError(message)
 
     if (windows and not name) or name == "natlink":
         # Attempt to retrieve the natlink back-end.

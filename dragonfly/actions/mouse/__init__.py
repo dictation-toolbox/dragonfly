@@ -34,7 +34,13 @@ from ._base import (EventBase, PauseEvent, MoveEvent, MoveRelativeEvent,
 # Import the mouse functions and classes for the current platform.
 # Always use the base classes for building documentation.
 DOC_BUILD = bool(os.environ.get("SPHINX_BUILD_RUNNING"))
-if sys.platform.startswith("win") and not DOC_BUILD:
+if 'talon' in sys.modules and not DOC_BUILD:
+    from ._talon import (
+        ButtonEvent, get_cursor_position, set_cursor_position,
+        PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS,
+    )
+
+elif sys.platform.startswith("win") and not DOC_BUILD:
     from ._win32 import (
         ButtonEvent, get_cursor_position, set_cursor_position,
         PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS
