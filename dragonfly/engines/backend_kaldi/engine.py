@@ -525,17 +525,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     #-----------------------------------------------------------------------
     # Internal processing methods.
 
-    def _iter_all_grammar_wrappers_dynamically(self):
-        """ Accounts for grammar wrappers being dynamically added during iteration. """
-        processed_grammar_wrappers = set()
-        todo_grammar_wrappers = set(self._grammar_wrappers.values())
-        while todo_grammar_wrappers:
-            while todo_grammar_wrappers:
-                grammar_wrapper = todo_grammar_wrappers.pop()
-                yield grammar_wrapper
-                processed_grammar_wrappers.add(grammar_wrapper)
-            todo_grammar_wrappers = set(self._grammar_wrappers.values()) - processed_grammar_wrappers
-
     def _compute_kaldi_rules_activity(self, phrase_start=True):
         if phrase_start:
             fg_window = Window.get_foreground()

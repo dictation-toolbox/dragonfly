@@ -21,19 +21,25 @@
 """
 SR back-end for Talon
 """
+import logging
+
 from ..base        import (EngineBase, EngineError, MimicFailure,
-                           GrammarWrapperBase)
+                           GrammarWrapperBase, DictationContainerBase,
+                           RecObsManagerBase)
 from .compiler     import TalonCompiler
+from ...grammar import state as state_
+from ...windows import Window
 
 
 class TalonEngine(EngineBase):
     """ Speech recognition engine back-end for Talon. """
 
     _name = "talon"
-    # DictationContainer = TalonDictationContainer
+    DictationContainer = DictationContainerBase
 
     def __init__(self):
         super().__init__()
+        self._recognition_observer_manager = RecObsManagerBase(self)
         try:
             from talon.lib.dragonfly import DragonflyInterface
         except ImportError:
@@ -45,6 +51,16 @@ class TalonEngine(EngineBase):
     # -----------------------------------------------------------------------
     # Methods for working with grammars.
 
+    def load_grammar(self, grammar):
+        if grammar.name in self._grammar_wrappers:
+            self._log.warning("Grammar %s loaded multiple times." % grammar)
+            return
+
+        wrapper = self._load_grammar(grammar)
+        # On the base class this dictionary is id -> wrapper,
+        # but we prefer to use names
+        self._grammar_wrappers[grammar.name] = wrapper
+
     def _load_grammar(self, grammar):
         """ Load the given *grammar*. """
         self._log.debug("Engine %s: loading grammar %s."
@@ -53,6 +69,16 @@ class TalonEngine(EngineBase):
         c = TalonCompiler()
         grammar_dict = c.compile_grammar(grammar)
         self._interface.load_grammar(grammar.name, grammar_dict)
+
+        wrapper = GrammarWrapper(grammar, self, self._recognition_observer_manager)
+        return wrapper
+
+    def unload_grammar(self, grammar):
+        wrapper = self._grammar_wrappers.pop(grammar.name)
+        if not wrapper:
+            raise EngineError("Grammar %s cannot be unloaded because"
+                              " it was not loaded." % grammar)
+        self._unload_grammar(grammar, wrapper)
 
     def _unload_grammar(self, grammar, wrapper):
         """ Unload the given *grammar*. """
@@ -79,6 +105,27 @@ class TalonEngine(EngineBase):
         self._interface.set_list(grammar.name, lst.name, lst.get_list_items())
 
     #-----------------------------------------------------------------------
+    # Recognition handling
+
+    def phrase_begin(self):
+        # Called on phrase begin while engine is paused
+        self._recognition_observer_manager.notify_begin()
+        fg_window = Window.get_foreground()
+
+        for wrapper in self._iter_all_grammar_wrappers_dynamically():
+            wrapper.grammar.process_begin(
+                fg_window.executable,
+                fg_window.title,
+                fg_window.handle
+            )
+
+    def handle_recognition(self, grammar_name, words_rules):
+        if grammar_name not in self._grammar_wrappers:
+            raise EngineError("Trying to handle recognition for grammar '%s', but the grammar is not loaded." % grammar_name)
+        wrapper = self._grammar_wrappers[grammar_name]
+        wrapper.process_words(words_rules)
+
+    #-----------------------------------------------------------------------
     # Miscellaneous methods.
 
     def mimic(self, words):
@@ -93,3 +140,59 @@ class TalonEngine(EngineBase):
 
     def _get_language(self):
         return self._interface.get_language()
+
+
+class GrammarWrapper(GrammarWrapperBase):
+
+    _log = logging.getLogger("engine")
+
+    def process_begin(self, executable, title, handle):
+        self.grammar.process_begin(executable, title, handle)
+
+    def process_words(self, words_rules):
+        # words_rules is a sequence of (word, rule_id) 2-tuples.
+        # rule_id - 1_000_000 if dictation else 0
+        if not (self.grammar.enabled and self.grammar.active_rules):
+            return
+
+        self._log.debug("Grammar %s: received recognition %r."
+                        % (self.grammar.name, words_rules))
+
+        results_obj = None
+        words = tuple(word for word, _ in words_rules)
+
+        func = getattr(self.grammar, "process_recognition", None)
+        if func:
+            if not self._process_grammar_callback(func, words=words,
+                                                  results=results_obj):
+                return
+
+        s = state_.State(words_rules, self.grammar.rule_names, self.engine)
+        for r in self.grammar.rules:
+            if not (r.active and r.exported):
+                continue
+            s.initialize_decoding()
+            for _ in r.decode(s):
+                if s.finished():
+                    try:
+                        root = s.build_parse_tree()
+
+                        notify_args = (words, r, root, results_obj)
+                        self.recobs_manager.notify_recognition(
+                            *notify_args
+                        )
+
+                        r.process_recognition(root)
+
+                        self.recobs_manager.notify_post_recognition(
+                            *notify_args
+                        )
+                    except Exception as e:
+                        self._log.exception("Failed to process rule "
+                                            "'%s': %s" % (r.name, e))
+                    return True
+
+        self._log.debug("Grammar %s: failed to decode recognition %r."
+                        % (self.grammar.name, words))
+        return False
+
