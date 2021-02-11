@@ -24,6 +24,8 @@ elements.
 
 """
 
+# pylint: disable=redefined-builtin,no-self-use,too-many-branches
+
 from ...grammar.elements  import (Alternative, Sequence, Optional, RuleRef,
                                   Compound, ListRef, Literal, Impossible)
 from ...grammar.list      import List
@@ -34,26 +36,28 @@ from ...grammar.list      import List
 
 class IntBuilderBase(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, modifier_function=None):
+        self._modifier_function = modifier_function
 
     def build_element(self, min, max):
         raise NotImplementedError("Call to virtual method build_element()"
                                   " in base class IntBuilderBase")
 
-    def _build_modified_paths(self, children, modifier_function):
+    def _build_modified_paths(self, children):
         if len(children) == 0:    return None
         if len(children) == 1:    root = children[0]
         else:                     root = Alternative(children)
-        return ModifiedPathsCollection(root, modifier_function)
+        return ModifiedPathsCollection(root, self._modifier_function)
 
 
 class MapIntBuilder(IntBuilderBase):
 
     def __init__(self, mapping):
         self._mapping = mapping
+        IntBuilderBase.__init__(self)
 
-    def build_element(self, min, max, memo={}):
+    def build_element(self, min, max):
+        memo = {}
         children = []
         for spec, value in self._mapping.items():
             if min <= value < max:
@@ -76,7 +80,7 @@ class CollectionIntBuilder(IntBuilderBase):
     def __init__(self, spec, set, modifier_function=None):
         self._spec = spec
         self._set = set
-        self._modifier_function = modifier_function
+        IntBuilderBase.__init__(self, modifier_function)
 
     def build_element(self, min, max):
         child = self._build_range_set(self._set, min, max)
@@ -93,8 +97,7 @@ class CollectionIntBuilder(IntBuilderBase):
 
         # Build modified path elements, if necessary.
         if self._modifier_function is not None:
-            c = self._build_modified_paths(children,
-                                           self._modifier_function)
+            c = self._build_modified_paths(children)
             if c: children.append(c)
 
         # Wrap up results appropriately.
@@ -113,7 +116,7 @@ class MagnitudeIntBuilder(IntBuilderBase):
     @classmethod
     def _get_empty_list(cls):
         """ Class method to ensure only one empty list is created. """
-        if cls._empty_list == None:
+        if cls._empty_list is None:
             cls._empty_list = List("_MagnitudeIntBuilder_empty")
         return cls._empty_list
 
@@ -123,7 +126,7 @@ class MagnitudeIntBuilder(IntBuilderBase):
         self._spec = spec
         self._multipliers = multipliers
         self._remainders = remainders
-        self._modifier_function = modifier_function
+        IntBuilderBase.__init__(self, modifier_function)
 
     def build_element(self, min, max):
 
@@ -168,8 +171,7 @@ class MagnitudeIntBuilder(IntBuilderBase):
 
         # Build modified path elements, if necessary.
         if self._modifier_function is not None:
-            c = self._build_modified_paths(children,
-                                           self._modifier_function)
+            c = self._build_modified_paths(children)
             if c: children.append(c)
 
         # Wrap up result as is appropriate.
@@ -178,7 +180,7 @@ class MagnitudeIntBuilder(IntBuilderBase):
         else:                     return Alternative(children)
 
     def _build_range(self, first_multiplier, last_multiplier,
-                           first_remainder, last_remainder):
+                     first_remainder, last_remainder):
 
         # Build range for multipliers.
         multipliers = self._build_range_set(self._multipliers,
@@ -361,7 +363,7 @@ class ModifiedPath(Compound):
 
     def value(self, node):
         """
-            The *value* of a :class:`ModifiedPathCompound` is the *value*
+            The *value* of a :class:`ModifiedPath` is the *value*
             obtained by decoding the original words.
 
         """
@@ -375,6 +377,7 @@ class ModifiedPath(Compound):
                 return root.value()
         self._log_decode.error("CompoundWord %s: failed to decode original"
                                " words %r.", self, " ".join(self._words))
+        return None
 
 
 #---------------------------------------------------------------------------
