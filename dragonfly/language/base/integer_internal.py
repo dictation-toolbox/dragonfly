@@ -24,8 +24,8 @@ elements.
 
 """
 
-from ...grammar.elements  import (Alternative, Sequence, Optional,
-                                  Compound, ListRef)
+from ...grammar.elements  import (Alternative, Sequence, Optional, RuleRef,
+                                  Compound, ListRef, Literal, Impossible)
 from ...grammar.list      import List
 
 
@@ -40,6 +40,13 @@ class IntBuilderBase(object):
     def build_element(self, min, max):
         raise NotImplementedError("Call to virtual method build_element()"
                                   " in base class IntBuilderBase")
+
+    def _build_modified_paths(self, children, modifier_function):
+        if len(children) == 0:    return None
+        if len(children) == 1:    root = children[0]
+        else:                     root = Alternative(children)
+        return ModifiedPathsCollection(root, modifier_function)
+
 
 class MapIntBuilder(IntBuilderBase):
 
@@ -66,9 +73,10 @@ class MapIntBuilder(IntBuilderBase):
 
 class CollectionIntBuilder(IntBuilderBase):
 
-    def __init__(self, spec, set):
+    def __init__(self, spec, set, modifier_function=None):
         self._spec = spec
         self._set = set
+        self._modifier_function = modifier_function
 
     def build_element(self, min, max):
         child = self._build_range_set(self._set, min, max)
@@ -82,6 +90,12 @@ class CollectionIntBuilder(IntBuilderBase):
         # Iterate through the set allowing each item to build an element.
         children = [c.build_element(min, max) for c in set]
         children = [c for c in children if c]
+
+        # Build modified path elements, if necessary.
+        if self._modifier_function is not None:
+            c = self._build_modified_paths(children,
+                                           self._modifier_function)
+            if c: children.append(c)
 
         # Wrap up results appropriately.
         if not children:
@@ -103,11 +117,13 @@ class MagnitudeIntBuilder(IntBuilderBase):
             cls._empty_list = List("_MagnitudeIntBuilder_empty")
         return cls._empty_list
 
-    def __init__(self, factor, spec, multipliers, remainders):
+    def __init__(self, factor, spec, multipliers, remainders,
+                 modifier_function=None):
         self._factor = factor
         self._spec = spec
         self._multipliers = multipliers
         self._remainders = remainders
+        self._modifier_function = modifier_function
 
     def build_element(self, min, max):
 
@@ -148,6 +164,12 @@ class MagnitudeIntBuilder(IntBuilderBase):
         if first_multiplier < last_multiplier:
             c = self._build_range(first_multiplier, last_multiplier,
                                   0, self._factor)
+            if c: children.append(c)
+
+        # Build modified path elements, if necessary.
+        if self._modifier_function is not None:
+            c = self._build_modified_paths(children,
+                                           self._modifier_function)
             if c: children.append(c)
 
         # Wrap up result as is appropriate.
@@ -234,6 +256,125 @@ class Magnitude(Compound):
         else:         remainder  = self._rem_default
 
         return multiplier * self._factor + remainder
+
+
+class ModifiedPathsCollection(Alternative):
+
+    def __init__(self, element, modifier_function, name=None):
+        # Generate element tree recognition paths and use them to create
+        #  elements.
+        children = []
+        specs = set()
+        for path in self._generate_paths(element):
+            # Get a flat list of each word in this path.
+            all_words = []
+            for words in path:
+                all_words.extend(words)
+
+            # Get a spec using the modifier function.
+            text = " ".join(all_words)
+            spec = modifier_function(text)
+
+            # Skip unchanged, duplicate or nil specs.
+            if not spec or text == spec or spec in specs:
+                continue
+
+            # Initialize a new ModifiedPath element, passing the original
+            #  element and words for decode-time calculation of the integer
+            #  value.
+            specs.add(spec)
+            children.append(ModifiedPath(spec, all_words, element))
+
+        # Initialize super class.
+        Alternative.__init__(self, children=children, name=name)
+
+    def _generate_sequence_paths(self, element, child_no):
+        if child_no > len(element.children) - 1:
+            yield []
+            return
+
+        child = element.children[child_no]
+        next_child = child_no + 1
+        for head in self._generate_paths(child):
+            if None in head:
+                continue
+            for tail in self._generate_sequence_paths(element, next_child):
+                yield head + tail
+
+    def _generate_paths(self, element):
+        if isinstance(element, Literal):
+            yield [element.words]
+
+        elif isinstance(element, ListRef):
+            if len(element.list) == 0:
+                # Impossible path.
+                yield [None]
+            else:
+                # Generate paths from the list words.
+                for word in element.list.get_list_items():
+                    yield [word.split()]
+
+        elif isinstance(element, Sequence):
+            # Generate each complete path of the sequence.
+            for path in self._generate_sequence_paths(element, 0):
+                if None not in path:
+                    yield path
+
+        elif isinstance(element, Alternative):
+            # Generate the paths of each alternative.
+            for child in element.children:
+                for path in self._generate_paths(child):
+                    if None not in path:
+                        yield path
+
+        elif isinstance(element, Optional):
+            # Generate the possible paths.
+            # Optional element is not spoken.
+            yield []
+
+            # Optional element is spoken.
+            for path in self._generate_paths(element.children[0]):
+                if None not in path:
+                    yield path
+
+        elif isinstance(element, Impossible):
+            # Impossible path.
+            yield [None]
+
+        elif isinstance(element, RuleRef):
+            # Generate the possible paths from the referenced rule's element
+            # tree.
+            for path in self._generate_paths(element.rule.element):
+                if None not in path:
+                    yield path
+
+        else:
+            yield []
+
+
+class ModifiedPath(Compound):
+
+    def __init__(self, spec, words, orig_root_element, name=None):
+        self._words = words
+        self._orig_root_element = orig_root_element
+        Compound.__init__(self, spec, name=name)
+
+    def value(self, node):
+        """
+            The *value* of a :class:`ModifiedPathCompound` is the *value*
+            obtained by decoding the original words.
+
+        """
+        import dragonfly.grammar.state as state_
+        words_rules = tuple((word, 0) for word in self._words)
+        s = state_.State(words_rules, [], node.engine)
+        s.initialize_decoding()
+        for _ in self._orig_root_element.decode(s):
+            if s.finished():
+                root = s.build_parse_tree()
+                return root.value()
+        self._log_decode.error("CompoundWord %s: failed to decode original"
+                               " words %r.", self, " ".join(self._words))
 
 
 #---------------------------------------------------------------------------
