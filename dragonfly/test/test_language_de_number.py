@@ -37,6 +37,7 @@ class GermanIntegerTestCase(ElementTestCase):
     def _build_element(self):
         return Integer(content=IntegerContent, min=0, max=10**12 - 1)
     input_output = [
+                    # Test a range of non-compound integer words.
                     ("null",                             0),
                     ("eins",                             1),
                     ("zwei",                             2),
@@ -61,6 +62,7 @@ class GermanIntegerTestCase(ElementTestCase):
                     ("ein und zwanzig",                 21),
                     ("zwei und zwanzig",                22),
                     ("drei und zwanzig",                23),
+                    ("ein und dreissig",                31),
                     ("vier und dreissig",               34),
                     ("fuenf und vierzig",               45),
                     ("sechs und fuenfzig",              56),
@@ -70,4 +72,28 @@ class GermanIntegerTestCase(ElementTestCase):
                     ("hundert",                        100),
                     ("ein hundert",                    100),
                     ("ein hundert drei und zwanzig",   123),
+                    ("drei hundert neun und achtzig",  389),
+                    ("ein tausend ein hundert ein und dreissig", 1131),
+                    ("ein und dreissig tausend ein hundert ein und dreissig", 31131),
+                    ("ein hundert ein und dreissig tausend ein hundert ein und dreissig", 131131),
+                    ("ein million ein hundert ein und dreissig tausend ein hundert ein und dreissig", 1131131),
+
+                    # Test a range of compound integer words.
+                    ("einundzwanzig",                  21),
+                    ("zweiundzwanzig",                 22),
+                    ("dreiundzwanzig",                 23),
+                    ("einunddreissig",                 31),
+                    ("vierunddreissig",                34),
+                    ("fuenfundvierzig",                45),
+                    ("sechsundfuenfzig",               56),
+                    ("siebenundsechzig",               67),
+                    ("achtundsiebzig",                 78),
+                    ("neunundachtzig",                 89),
+                    ("ein hundert dreiundzwanzig",     123),
+                    ("ein hundert einunddreissig",     131),
+                    ("drei hundert neunundachtzig",    389),
+                    ("ein tausend ein hundert einunddreissig", 1131),
+                    ("einunddreissig tausend ein hundert einunddreissig", 31131),
+                    ("ein hundert einunddreissig tausend ein hundert einunddreissig", 131131),
+                    ("ein million ein hundert einunddreissig tausend ein hundert einunddreissig", 1131131),
                    ]
