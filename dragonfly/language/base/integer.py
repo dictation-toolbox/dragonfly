@@ -80,7 +80,8 @@ class Integer(Alternative):
     # Methods for load-time setup.
 
     def _build_children(self, min, max):
-        children = [c.build_element(min, max)
+        memo = {}
+        children = [c.build_element(min, max, memo)
                     for c in self._builders]
         return [c for c in children if c]
 

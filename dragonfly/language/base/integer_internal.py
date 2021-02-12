@@ -26,6 +26,8 @@ elements.
 
 # pylint: disable=redefined-builtin,no-self-use,too-many-branches
 
+import copy
+
 from ...grammar.elements  import (Alternative, Sequence, Optional, RuleRef,
                                   Compound, ListRef, Literal, Impossible)
 from ...grammar.list      import List
@@ -39,11 +41,27 @@ class IntBuilderBase(object):
     def __init__(self, modifier_function=None):
         self._modifier_function = modifier_function
 
-    def build_element(self, min, max):
-        raise NotImplementedError("Call to virtual method build_element()"
+    def build_element(self, min, max, memo=None):
+        if memo is None:
+            memo = {}
+
+        # Check if an appropriate element already exists in the memo.
+        #  If so, then return it.
+        key = (id(self), min, max)
+        if key in memo:
+            return copy.copy(memo[key])
+
+        # Otherwise, build the element, save it in the memo and return it.
+        element = self._build_element(min, max, memo)
+        memo[key] = element
+        return element
+
+    def _build_element(self, min, max, memo):
+        raise NotImplementedError("Call to virtual method _build_element()"
                                   " in base class IntBuilderBase")
 
-    def _build_modified_paths(self, children):
+    def _build_modified_paths(self, children, memo):
+        # pylint: disable=unused-argument
         if len(children) == 0:    return None
         if len(children) == 1:    root = children[0]
         else:                     root = Alternative(children)
@@ -56,17 +74,17 @@ class MapIntBuilder(IntBuilderBase):
         self._mapping = mapping
         IntBuilderBase.__init__(self)
 
-    def build_element(self, min, max):
-        memo = {}
+    def _build_element(self, min, max, memo):
+        mapping_memo = {}
         children = []
         for spec, value in self._mapping.items():
             if min <= value < max:
-                if spec in memo:
-                    children.append(memo[spec])
+                if spec in mapping_memo:
+                    children.append(mapping_memo[spec])
                 else:
                     element = Compound(spec=spec, value=value)
                     children.append(element)
-                    memo[spec] = element
+                    mapping_memo[spec] = element
         if len(children) > 1:
             return Alternative(children)
         elif len(children) == 1:
@@ -82,22 +100,22 @@ class CollectionIntBuilder(IntBuilderBase):
         self._set = set
         IntBuilderBase.__init__(self, modifier_function)
 
-    def build_element(self, min, max):
-        child = self._build_range_set(self._set, min, max)
+    def _build_element(self, min, max, memo):
+        child = self._build_range_set(self._set, min, max, memo)
         if not child:
             return None
         child.name = "element"
         element = Collection(self._spec, child)
         return element
 
-    def _build_range_set(self, set, min, max):
+    def _build_range_set(self, set, min, max, memo):
         # Iterate through the set allowing each item to build an element.
-        children = [c.build_element(min, max) for c in set]
+        children = [c.build_element(min, max, memo) for c in set]
         children = [c for c in children if c]
 
         # Build modified path elements, if necessary.
         if self._modifier_function is not None:
-            c = self._build_modified_paths(children)
+            c = self._build_modified_paths(children, memo)
             if c: children.append(c)
 
         # Wrap up results appropriately.
@@ -128,7 +146,7 @@ class MagnitudeIntBuilder(IntBuilderBase):
         self._remainders = remainders
         IntBuilderBase.__init__(self, modifier_function)
 
-    def build_element(self, min, max):
+    def _build_element(self, min, max, memo):
 
         # Sanity check.
         if min >= max: return None
@@ -144,21 +162,21 @@ class MagnitudeIntBuilder(IntBuilderBase):
         # Handle special case of only one possible multiplier value.
         if first_multiplier == last_multiplier - 1:
             return self._build_range(first_multiplier, last_multiplier,
-                                     first_remainder, last_remainder)
+                                     first_remainder, last_remainder, memo)
 
         children = []
 
         # Build partial range for first multiplier value, if necessary.
         if first_remainder > 0:
             c = self._build_range(first_multiplier, first_multiplier + 1,
-                                  first_remainder, self._factor)
+                                  first_remainder, self._factor, memo)
             if c: children.append(c)
             first_multiplier += 1
 
         # Build partial range for last multiplier value, if necessary.
         if last_remainder > 0:
             c = self._build_range(last_multiplier - 1, last_multiplier,
-                                  0, last_remainder)
+                                  0, last_remainder, memo)
             if c: children.append(c)
             last_multiplier -= 1
 
@@ -166,12 +184,12 @@ class MagnitudeIntBuilder(IntBuilderBase):
         #  range of remainder values.
         if first_multiplier < last_multiplier:
             c = self._build_range(first_multiplier, last_multiplier,
-                                  0, self._factor)
+                                  0, self._factor, memo)
             if c: children.append(c)
 
         # Build modified path elements, if necessary.
         if self._modifier_function is not None:
-            c = self._build_modified_paths(children)
+            c = self._build_modified_paths(children, memo)
             if c: children.append(c)
 
         # Wrap up result as is appropriate.
@@ -180,18 +198,18 @@ class MagnitudeIntBuilder(IntBuilderBase):
         else:                     return Alternative(children)
 
     def _build_range(self, first_multiplier, last_multiplier,
-                     first_remainder, last_remainder):
+                     first_remainder, last_remainder, memo):
 
         # Build range for multipliers.
         multipliers = self._build_range_set(self._multipliers,
                                             first_multiplier,
-                                            last_multiplier)
+                                            last_multiplier, memo)
         if not multipliers: return None
 
         # Build range for remainders.
         remainders = self._build_range_set(self._remainders,
                                            first_remainder,
-                                           last_remainder)
+                                           last_remainder, memo)
         if not remainders:
             empty = self._get_empty_list()
             remainders = ListRef("_MagnitudeIntBuilder_empty_ref", empty)
@@ -201,9 +219,9 @@ class MagnitudeIntBuilder(IntBuilderBase):
         remainders.name = "remainder"
         return Magnitude(self._factor, self._spec, multipliers, remainders)
 
-    def _build_range_set(self, set, min, max):
+    def _build_range_set(self, set, min, max, memo):
         # Iterate through the set allowing each item to build an element.
-        children = [c.build_element(min, max) for c in set]
+        children = [c.build_element(min, max, memo) for c in set]
         children = [c for c in children if c]
 
         # Wrap up results appropriately.
