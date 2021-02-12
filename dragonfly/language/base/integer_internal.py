@@ -38,8 +38,12 @@ from ...grammar.list      import List
 
 class IntBuilderBase(object):
 
-    def __init__(self, modifier_function=None):
+    def __init__(self, modifier_function=None, modifier_mode=None):
+        if modifier_mode is None:
+            modifier_mode = ModifiedPathsCollection.MODE_AUGMENT
+
         self._modifier_function = modifier_function
+        self._modifier_mode = modifier_mode
 
     def build_element(self, min, max, memo=None):
         if memo is None:
@@ -65,7 +69,8 @@ class IntBuilderBase(object):
         if len(children) == 0:    return None
         if len(children) == 1:    root = children[0]
         else:                     root = Alternative(children)
-        return ModifiedPathsCollection(root, self._modifier_function)
+        return ModifiedPathsCollection(root, self._modifier_function,
+                                       self._modifier_mode)
 
 
 class MapIntBuilder(IntBuilderBase):
@@ -95,10 +100,11 @@ class MapIntBuilder(IntBuilderBase):
 
 class CollectionIntBuilder(IntBuilderBase):
 
-    def __init__(self, spec, set, modifier_function=None):
+    def __init__(self, spec, set, modifier_function=None,
+                 modifier_mode=None):
         self._spec = spec
         self._set = set
-        IntBuilderBase.__init__(self, modifier_function)
+        IntBuilderBase.__init__(self, modifier_function, modifier_mode)
 
     def _build_element(self, min, max, memo):
         child = self._build_range_set(self._set, min, max, memo)
@@ -116,7 +122,14 @@ class CollectionIntBuilder(IntBuilderBase):
         # Build modified path elements, if necessary.
         if self._modifier_function is not None:
             c = self._build_modified_paths(children, memo)
-            if c: children.append(c)
+            if c:
+                # Don't use other children if in modifier mode REPLACE.
+                mode = self._modifier_mode
+                if mode == ModifiedPathsCollection.MODE_REPLACE:
+                    del children[:]
+
+                # Add the ModifiedPathsCollection element.
+                children.append(c)
 
         # Wrap up results appropriately.
         if not children:
@@ -139,12 +152,12 @@ class MagnitudeIntBuilder(IntBuilderBase):
         return cls._empty_list
 
     def __init__(self, factor, spec, multipliers, remainders,
-                 modifier_function=None):
+                 modifier_function=None, modifier_mode=None):
         self._factor = factor
         self._spec = spec
         self._multipliers = multipliers
         self._remainders = remainders
-        IntBuilderBase.__init__(self, modifier_function)
+        IntBuilderBase.__init__(self, modifier_function, modifier_mode)
 
     def _build_element(self, min, max, memo):
 
@@ -190,7 +203,14 @@ class MagnitudeIntBuilder(IntBuilderBase):
         # Build modified path elements, if necessary.
         if self._modifier_function is not None:
             c = self._build_modified_paths(children, memo)
-            if c: children.append(c)
+            if c:
+                # Don't use other children if in modifier mode REPLACE.
+                mode = self._modifier_mode
+                if mode == ModifiedPathsCollection.MODE_REPLACE:
+                    del children[:]
+
+                # Add the ModifiedPathsCollection element.
+                children.append(c)
 
         # Wrap up result as is appropriate.
         if len(children) == 0:    return None
@@ -280,7 +300,22 @@ class Magnitude(Compound):
 
 class ModifiedPathsCollection(Alternative):
 
-    def __init__(self, element, modifier_function, name=None):
+    # Collect and use paths to *augment* recognition of the given element
+    #  (default).  Discards nil value or unchanged strings returned by the
+    #  modifier function.
+    MODE_AUGMENT = 1
+
+    # Collect and use paths to *replace* recognition of the given element.
+    #  Discards nil value strings returned by the modifier function.  Keeps
+    #  unchanged path strings.
+    MODE_REPLACE = 2
+
+    def __init__(self, element, modifier_function, modifier_mode,
+                 name=None):
+
+        if not 0 < modifier_mode <= 2:
+            raise ValueError("Invalid modifier mode: %d" % modifier_mode)
+
         # Generate element tree recognition paths and use them to create
         #  elements.
         children = []
@@ -295,8 +330,16 @@ class ModifiedPathsCollection(Alternative):
             text = " ".join(all_words)
             spec = modifier_function(text)
 
-            # Skip unchanged, duplicate or nil specs.
-            if not spec or text == spec or spec in specs:
+            # Handle the result based on the specified modifier mode.
+            if modifier_mode is self.MODE_AUGMENT:
+                if not spec or text == spec:
+                    continue
+            elif modifier_mode is self.MODE_REPLACE:
+                if not spec:
+                    continue
+
+            # Always skip duplicate specs.
+            if spec in specs:
                 continue
 
             # Initialize a new ModifiedPath element, passing the original

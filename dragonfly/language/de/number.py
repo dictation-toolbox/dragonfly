@@ -95,6 +95,7 @@ int_20_99       = MagnitudeIntBuilder(
                    multipliers = [int_20_90_10],
                    remainders  = [int_1_9],
                    modifier_function = int_20_99_func,
+                   modifier_mode = 1,  # MODE_AUGMENT (default)
                   )
 int_and_1_99    = CollectionIntBuilder(
                    spec        = "<element>",
