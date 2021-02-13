@@ -301,6 +301,9 @@ class Clipboard(BaseClipboard):
             return None
 
     def set_text(self, content):
-        self._contents[self.format_unicode] = text_type(content)
+        if content is None:
+            self._contents.pop(self.format_unicode, None)
+        else:
+            self._contents[self.format_unicode] = text_type(content)
 
     text = property(get_text, set_text)

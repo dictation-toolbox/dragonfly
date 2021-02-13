@@ -149,9 +149,9 @@ class Clipboard(BaseClipboard):
             is available, this method returns *None*.
 
         """
-        return None if not self._content else self._content
+        return self._content
 
     def set_text(self, content):
-        self._content = text_type(content)
+        self._content = None if content is None else text_type(content)
 
     text = property(get_text, set_text)
