@@ -78,11 +78,24 @@ int_20_90_10    = MapIntBuilder({
                                  "achtzig":      8,
                                  "neunzig":      9,
                                })
+
+
+#---------------------------------------------------------------------------
+
+def int_20_99_func(text):
+    # Join any 'und' conjugates with the words on either side.
+    return text.replace(" und", "und").replace("und ", "und")
+
+
+#---------------------------------------------------------------------------
+
 int_20_99       = MagnitudeIntBuilder(
                    factor      = 10,
                    spec        = "[<remainder> und] <multiplier>",
                    multipliers = [int_20_90_10],
                    remainders  = [int_1_9],
+                   modifier_function = int_20_99_func,
+                   modifier_mode = 1,  # MODE_AUGMENT (default)
                   )
 int_and_1_99    = CollectionIntBuilder(
                    spec        = "<element>",
