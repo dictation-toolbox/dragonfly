@@ -106,6 +106,11 @@ class TestClipboard(unittest.TestCase):
         self.assertEqual(c.get_text(), text)
         self.assertEqual(c.text, text)
 
+        # Setting the text to None clears the stored text.
+        c.set_text(None)
+        self.assertFalse(c.has_text())
+        self.assertIs(c.get_text(), None)
+
     def test_backwards_compatibility(self):
         # The multi-platform class should be backwards compatible with the
         # Windows-only Clipboard class, at least for the constructor.
