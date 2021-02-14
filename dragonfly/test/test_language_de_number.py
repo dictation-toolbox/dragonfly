@@ -76,7 +76,10 @@ class GermanIntegerTestCase(ElementTestCase):
                     ("ein tausend ein hundert ein und dreissig", 1131),
                     ("ein und dreissig tausend ein hundert ein und dreissig", 31131),
                     ("ein hundert ein und dreissig tausend ein hundert ein und dreissig", 131131),
-                    ("ein million ein hundert ein und dreissig tausend ein hundert ein und dreissig", 1131131),
+                    ("million", 1000000),
+                    ("eine million ein hundert ein und dreissig tausend ein hundert ein und dreissig", 1131131),
+                    ("zwei millionen", 2000000),
+                    ("millionen", RecognitionFailure),
 
                     # Test a range of compound integer words.
                     ("einundzwanzig",                  21),
@@ -95,5 +98,5 @@ class GermanIntegerTestCase(ElementTestCase):
                     ("ein tausend ein hundert einunddreissig", 1131),
                     ("einunddreissig tausend ein hundert einunddreissig", 31131),
                     ("ein hundert einunddreissig tausend ein hundert einunddreissig", 131131),
-                    ("ein million ein hundert einunddreissig tausend ein hundert einunddreissig", 1131131),
+                    ("eine million ein hundert einunddreissig tausend ein hundert einunddreissig", 1131131),
                    ]
