@@ -28,7 +28,7 @@ from packaging.version import Version
 from six import string_types, print_, reraise
 from six.moves import zip
 import kaldi_active_grammar
-from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError, KaldiRule
+from kaldi_active_grammar       import KaldiError, KaldiRule
 
 from ..base                     import (EngineBase,
                                         EngineError,
@@ -73,7 +73,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         expected_error_rate_threshold=None,
         alternative_dictation=None,
-        decoder_init_config=None,
+        compiler_init_config=None, decoder_init_config=None,
         ):
         EngineBase.__init__(self)
         DelegateTimerManagerInterface.__init__(self)
@@ -140,7 +140,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             invalidate_cache = bool(invalidate_cache),
             expected_error_rate_threshold = float(expected_error_rate_threshold) if expected_error_rate_threshold is not None else None,
             alternative_dictation = alternative_dictation,
-            decoder_init_config = dict(decoder_init_config) if decoder_init_config else None,
+            compiler_init_config = dict(compiler_init_config) if compiler_init_config else {},
+            decoder_init_config = dict(decoder_init_config) if decoder_init_config else {},
         )
 
         # Setup
@@ -177,16 +178,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
             lazy_compilation=self._options['lazy_compilation'],
             alternative_dictation=self._options['alternative_dictation'],
+            **self._options['compiler_init_config'],
             )
         if self._options['invalidate_cache']:
             self._compiler.fst_cache.invalidate()
 
-        top_fst = self._compiler.compile_top_fst()
-        dictation_fst_file = self._compiler.dictation_fst_filepath
-        self._decoder = KaldiAgfNNet3Decoder(model_dir=self._compiler.model_dir, tmp_dir=self._compiler.tmp_dir,
-            top_fst_file=top_fst.filepath, dictation_fst_file=dictation_fst_file, save_adaptation_state=False,
-            config=self._options['decoder_init_config'],)
-        self._compiler.decoder = self._decoder
+        self._decoder = self._compiler.init_decoder(config=self._options['decoder_init_config'])
 
         if self._options['audio_input_device'] is not False:
             self._audio = VADAudio(

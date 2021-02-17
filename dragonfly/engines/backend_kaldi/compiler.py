@@ -72,9 +72,9 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         self.auto_add_to_user_lexicon = bool(auto_add_to_user_lexicon)
         self.lazy_compilation = bool(lazy_compilation)
 
-        self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
-        self._grammar_rule_states_dict = dict()  # FIXME: disabled!
-        self.kaldi_rules_by_listreflist_dict = collections.defaultdict(set)
+        self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # Rule -> KaldiRule
+        # self._grammar_rule_states_dict = dict()  # FIXME: disabled!
+        self.kaldi_rules_by_listreflist_dict = collections.defaultdict(set)  # Rule -> Set[KaldiRule]
         self.internal_grammar = InternalGrammar('!kaldi_engine_internal')
 
     impossible_word = property(lambda self: self._longest_word.lower())  # FIXME
@@ -133,7 +133,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def compile_grammar(self, grammar, engine):
         self._log.debug("%s: Compiling grammar %s." % (self, grammar.name))
 
-        kaldi_rule_by_rule_dict = collections.OrderedDict()
+        kaldi_rule_by_rule_dict = collections.OrderedDict()  # Rule -> KaldiRule
         for rule in grammar.rules:
             if rule.exported:
                 if rule.element is None:
@@ -156,10 +156,10 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         return kaldi_rule_by_rule_dict
 
     def _compile_rule_root(self, rule, grammar, kaldi_rule):
-        self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
+        self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst, export=True)
         kaldi_rule.compile(lazy=self.lazy_compilation)
 
-    def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
+    def _compile_rule(self, rule, grammar, kaldi_rule, fst, export):
         """ :param export: whether rule is exported (a root rule) """
         # Determine whether this rule has already been compiled.
         # if (grammar.name, rule.name) in self._grammar_rule_states_dict:
@@ -308,6 +308,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     # @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         weight = self.get_weight(element)  # Handle weight internally below without adding a state
+        # Compile target rule "inline"
         rule_src_state, rule_dst_state = self._compile_rule(element.rule, grammar, kaldi_rule, fst, export=False)
         fst.add_arc(src_state, rule_src_state, None, weight=weight)
         fst.add_arc(rule_dst_state, dst_state, None)
