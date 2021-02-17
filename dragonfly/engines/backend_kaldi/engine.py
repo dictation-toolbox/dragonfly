@@ -22,16 +22,16 @@
 Kaldi engine classes
 """
 
-import collections, functools, logging, os, sys, time
+import collections, logging, os, sys, time
 
 from packaging.version import Version
-from six import PY2, integer_types, string_types, print_, reraise
+from six import string_types, print_, reraise
 from six.moves import zip
 import kaldi_active_grammar
 from kaldi_active_grammar       import KaldiAgfNNet3Decoder, KaldiError, KaldiRule
 
 from ..base                     import (EngineBase,
-                                        EngineError, CompilerError,
+                                        EngineError,
                                         MimicFailure,
                                         DelegateTimerManager,
                                         DelegateTimerManagerInterface,
@@ -309,6 +309,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             raise MimicFailure("No matching rule found for %r." % (output,))
         recognition.process()
         self._log.debug("End of mimic: rule %s, %r" % (recognition.kaldi_rule, output))
+        if not self._log.isEnabledFor(10):
+            self._log.log(15, "End of mimic: rule %s, %r" % (recognition.kaldi_rule, output))
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
@@ -537,6 +539,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             todo_grammar_wrappers = set(self._grammar_wrappers.values()) - processed_grammar_wrappers
 
     def _compute_kaldi_rules_activity(self, phrase_start=True):
+        window_info = {}
         if phrase_start:
             fg_window = Window.get_foreground()
             window_info = {
@@ -555,7 +558,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     if kaldi_rule.active:
                         self._active_kaldi_rules.add(kaldi_rule)
                         self._kaldi_rules_activity[kaldi_rule.id] = True
-        self._log.debug("active kaldi_rules: %s", [kr.name for kr in self._active_kaldi_rules])
+        self._log.debug("active kaldi_rules (from window %s): %s", window_info, [kr.name for kr in self._active_kaldi_rules])
         return self._kaldi_rules_activity
 
     def _parse_recognition(self, output, mimic=False):
