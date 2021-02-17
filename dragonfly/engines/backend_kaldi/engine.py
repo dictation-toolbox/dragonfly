@@ -157,6 +157,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self.audio_store = None
 
         self._loadunload_queue = collections.deque()
+        self._grammar_wrappers_copy = {}
         self._any_exclusive_grammars = False
         self._saving_adaptation_state = False
         self._ignore_current_phrase = False
@@ -306,9 +307,9 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         recognition = self._parse_recognition(output, mimic=True)
         if not recognition.kaldi_rule:
-            recognition.fail()
+            recognition.fail(mimic=True)
             raise MimicFailure("No matching rule found for %r." % (output,))
-        recognition.process()
+        recognition.process(mimic=True)
         self._log.debug("End of mimic: rule %s, %r" % (recognition.kaldi_rule, output))
         if not self._log.isEnabledFor(10):
             self._log.log(15, "End of mimic: rule %s, %r" % (recognition.kaldi_rule, output))
@@ -387,6 +388,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                             kaldi_rules_activity = self._compute_kaldi_rules_activity()
                         self._in_phrase = True
                         self._ignore_current_phrase = False
+                        self._grammar_wrappers_copy = self._grammar_wrappers.copy()  # Keep a copy of valid grammar wrappers as of the start of utterance
 
                     else:
                         # Ongoing phrase
@@ -654,19 +656,22 @@ class Recognition(object):
     #         self.engine._log.warning("%s not finalized!", self)
     #     # Note: this can be generated spurriously upon exit or testing
 
-    def process(self, expected_error_rate=None, confidence=None):
+    def process(self, expected_error_rate=None, confidence=None, mimic=False):
         if expected_error_rate is not None: self.expected_error_rate = expected_error_rate
         if confidence is not None: self.confidence = confidence
+        self.mimic = mimic
         self.acceptable = True
         assert self.words
-        grammar_wrapper = self.engine._get_grammar_wrapper(self.kaldi_rule.parent_grammar)
+        grammar_wrappers = self.engine._grammar_wrappers if mimic else self.engine._grammar_wrappers_copy
+        grammar_wrapper = grammar_wrappers[id(self.kaldi_rule.parent_grammar)]
         with debug_timer(self.engine._log.debug, "dragonfly parse time"):
             grammar_wrapper.recognition_callback(self)
         self.finalized = True
 
-    def fail(self, expected_error_rate=None, confidence=None):
+    def fail(self, expected_error_rate=None, confidence=None, mimic=False):
         if expected_error_rate is not None: self.expected_error_rate = expected_error_rate
         if confidence is not None: self.confidence = confidence
+        self.mimic = mimic
         self.acceptable = False
         self.engine._recognition_observer_manager.notify_failure(results=self)
         self.finalized = True
