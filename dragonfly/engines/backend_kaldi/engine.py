@@ -219,7 +219,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             self._reset_state()
             self._grammar_wrappers = {}  # From EngineBase
 
-    def print_mic_list(self):
+    @staticmethod
+    def print_mic_list():
         MicAudio.print_list()
 
     #-----------------------------------------------------------------------
