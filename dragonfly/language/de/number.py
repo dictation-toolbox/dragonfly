@@ -112,7 +112,7 @@ int_20_99       = MagnitudeIntBuilder(
                   )
 int_and_1_99    = CollectionIntBuilder(
                    spec        = "<element>",
-                   set         = [int_1_9, int_10_19, int_20_99],
+                   set         = [int_1_9_eins, int_10_19, int_20_99],
                   )
 int_100s        = MagnitudeIntBuilder(
                    factor      = 100,
@@ -141,7 +141,8 @@ int_1000000     = MagnitudeIntBuilder(
 int_1000000s    = MagnitudeIntBuilder(
                    factor      = 1000000,
                    spec        = "<multiplier> millionen [<remainder>]",
-                   multipliers = [int_2_9, int_10_19, int_20_99, int_100s, int_1000s],
+                   multipliers = [int_2_9, int_10_19, int_20_99, int_100s,
+                                  int_1000s],
                    remainders  = [int_and_1_99, int_100s, int_1000s],
                   )
 
@@ -149,7 +150,7 @@ int_1000000s    = MagnitudeIntBuilder(
 #---------------------------------------------------------------------------
 
 class IntegerContent(IntegerContentBase):
-    builders = [int_0, int_1_9_eins, int_10_19, int_20_99,
+    builders = [int_0, int_1_9, int_1_9_eins, int_10_19, int_20_99,
                 int_100s, int_100big, int_1000s, int_1000000, int_1000000s]
 
 class DigitsContent(DigitsContentBase):

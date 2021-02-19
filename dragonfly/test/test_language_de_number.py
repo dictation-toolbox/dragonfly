@@ -40,6 +40,7 @@ class GermanIntegerTestCase(ElementTestCase):
         # Test a range of non-compound integer words.
         ("null",                                                        0),
         ("eins",                                                        1),
+        ("ein",                                                         1),
         ("zwei",                                                        2),
         ("drei",                                                        3),
         ("vier",                                                        4),
@@ -71,17 +72,27 @@ class GermanIntegerTestCase(ElementTestCase):
         ("neun und achtzig",                                           89),
         ("hundert",                                                   100),
         ("ein hundert",                                               100),
+        ("ein hundert eins",                                          101),
+        ("ein hundert ein",                            RecognitionFailure),
         ("ein hundert drei und zwanzig",                              123),
         ("drei hundert neun und achtzig",                             389),
+        ("ein tausend eins",                                         1001),
+        ("ein tausend ein",                            RecognitionFailure),
         ("ein tausend ein hundert ein und dreissig",                 1131),
         ("ein und dreissig tausend ein hundert ein und dreissig",   31131),
         ("ein hundert ein und dreissig tausend ein hundert ein "
          "und dreissig",                                           131131),
         ("million",                                               1000000),
         ("millionen",                                  RecognitionFailure),
+        ("eine million eins",                                     1000001),
+        ("eine million ein",                           RecognitionFailure),
+        ("eine million zwei tausend eins",                        1002001),
+        ("eine million zwei tausend ein",              RecognitionFailure),
         ("eine million ein hundert ein und dreissig tausend ein "
          "hundert ein und dreissig",                              1131131),
         ("zwei millionen",                                        2000000),
+        ("ein hundert eins millionen",                          101000000),
+        ("ein hundert ein millionen",                  RecognitionFailure),
 
         # Test a range of compound integer words.
         ("einundzwanzig",                                              21),
