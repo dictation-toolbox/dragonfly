@@ -142,13 +142,14 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
                 kaldi_rule = KaldiRule(self,
                     name='%s::%s' % (grammar.name, rule.name),
-                    has_dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))  # FIXME: make more accurate
+                    has_dictation=None)  # has_dictation is set to True during compilation below if that is the case
                 kaldi_rule.parent_grammar = grammar
                 kaldi_rule.parent_rule = rule
                 kaldi_rule_by_rule_dict[rule] = kaldi_rule
 
                 try:
                     self._compile_rule_root(rule, grammar, kaldi_rule)
+                    kaldi_rule.has_dictation = bool(kaldi_rule.has_dictation)  # Convert None to False
                 except Exception:
                     raise self.make_compiler_error_for_kaldi_rule(kaldi_rule)
 
@@ -326,6 +327,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
+        kaldi_rule.has_dictation = True
         src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         # fst.add_arc(src_state, dst_state, '#nonterm:dictation', olabel=WFST.eps)
         extra_state = fst.add_state()
