@@ -72,7 +72,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         vad_aggressiveness=3, vad_padding_start_ms=150, vad_padding_end_ms=200, vad_complex_padding_end_ms=600,
         auto_add_to_user_lexicon=True, lazy_compilation=True, invalidate_cache=False,
         expected_error_rate_threshold=None,
-        alternative_dictation=None, cloud_dictation_lang='en-US',
+        alternative_dictation=None,
         decoder_init_config=None,
         ):
         EngineBase.__init__(self)
@@ -140,7 +140,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             invalidate_cache = bool(invalidate_cache),
             expected_error_rate_threshold = float(expected_error_rate_threshold) if expected_error_rate_threshold is not None else None,
             alternative_dictation = alternative_dictation,
-            cloud_dictation_lang = cloud_dictation_lang,
             decoder_init_config = dict(decoder_init_config) if decoder_init_config else None,
         )
 
@@ -178,7 +177,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
             lazy_compilation=self._options['lazy_compilation'],
             alternative_dictation=self._options['alternative_dictation'],
-            cloud_dictation_lang=self._options['cloud_dictation_lang'],
             )
         if self._options['invalidate_cache']:
             self._compiler.fst_cache.invalidate()
