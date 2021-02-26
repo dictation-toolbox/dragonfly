@@ -75,11 +75,10 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
         self._grammar_rule_states_dict = dict()  # FIXME: disabled!
         self.kaldi_rules_by_listreflist_dict = collections.defaultdict(set)
-        self.added_word = False
         self.internal_grammar = InternalGrammar('!kaldi_engine_internal')
 
     impossible_word = property(lambda self: self._longest_word.lower())  # FIXME
-    unknown_word = '<unk>'
+    unknown_word = property(lambda self: self._oov_word)
 
     #-----------------------------------------------------------------------
     # Methods for handling lexicon translation.
@@ -116,8 +115,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def handle_oov_word(self, word):
         if self.auto_add_to_user_lexicon:
             try:
-                pronunciations = self.model.add_word(word, lazy_compilation=True)
-                self.added_word = True
+                pronunciations = self.add_word(word, lazy_compilation=True)
             except Exception as e:
                 self._log.exception("%s: exception automatically adding word %r" % (self, word))
             else:
@@ -159,11 +157,6 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     def _compile_rule_root(self, rule, grammar, kaldi_rule):
         self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
-        if self.added_word:
-            self.model.generate_lexicon_files()
-            self.model.load_words()
-            self.decoder.load_lexicon()
-            self.added_word = False
         kaldi_rule.compile(lazy=self.lazy_compilation)
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
