@@ -65,12 +65,12 @@ class TalonCompiler(CompilerBase):
             child_pieces = []
             self.compile_element(child, child_pieces)
             tmp.append(' '.join(child_pieces))
-        pieces.append(' | '.join(tmp))
+        pieces.append('(' + ' | '.join(tmp) + ')')
 
     def _compile_optional(self, element, pieces):
         tmp = []
         self.compile_element(element.children[0], tmp)
-        pieces.append('[' + (' '.join(tmp)) + ']')
+        pieces.append('[' + ' '.join(tmp) + ']')
 
     def _compile_literal(self, element, pieces):
         words = ' '.join(element.words_ext)
