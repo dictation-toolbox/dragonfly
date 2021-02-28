@@ -32,7 +32,7 @@ import sys
 from .action_base  import DynStrActionBase
 from .keyboard     import Keyboard
 
-
+TALON = "talon" in sys.modules
 UNICODE_KEYBOARD = False
 HARDWARE_APPS = [
     "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
@@ -91,14 +91,14 @@ class BaseKeyboardAction(DynStrActionBase):
     _pause_default = PAUSE_DEFAULT
 
     def __init__(self, spec=None, static=False, use_hardware=False):
-        # Note: these are only used on Windows.
+        # Note: these are only used on non-talon Windows.
         self._event_cache = {}
         self._use_hardware = use_hardware
 
         super(BaseKeyboardAction, self).__init__(spec, static)
 
         # Save events for the current layout if on Windows.
-        if self._events is not None and sys.platform.startswith("win"):
+        if self._events is not None and sys.platform.startswith("win") and not TALON:
             layout = self._keyboard.get_current_layout()
             self._event_cache[layout] = self._events
 
@@ -107,7 +107,7 @@ class BaseKeyboardAction(DynStrActionBase):
         Return `True` if the current context requires hardware emulation.
         """
         # Always use hardware_events for non-Windows platforms.
-        if not sys.platform.startswith("win") or self._use_hardware:
+        if not sys.platform.startswith("win") or self._use_hardware or TALON:
             return True
 
         # Otherwise check if hardware events should be used with the current
@@ -121,7 +121,7 @@ class BaseKeyboardAction(DynStrActionBase):
     def _execute(self, data=None):
         # Get updated events on Windows for each new keyboard layout
         # encountered.
-        if sys.platform.startswith("win") and self._static:
+        if sys.platform.startswith("win") and self._static and not TALON:
             layout = self._keyboard.get_current_layout()
             events = self._event_cache.get(layout)
             if events is None:
