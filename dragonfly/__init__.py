@@ -61,13 +61,13 @@ from .actions           import (ActionBase, DynStrActionBase, ActionError,
                                 Typeable, Keyboard, typeables, RunCommand,
                                 ContextAction)
 
-if sys.platform.startswith("win"):
+if sys.platform.startswith("win") and not 'talon' in sys.modules:
     from .actions       import (KeyboardInput, MouseInput, HardwareInput,
                                 make_input_array, send_input_array)
 
 # --------------------------------------------------------------------------
 
-if sys.platform.startswith("win"):
+if sys.platform.startswith("win") and not 'talon' in sys.modules:
     from .windows.clipboard import Clipboard
 else:
     from .util              import Clipboard

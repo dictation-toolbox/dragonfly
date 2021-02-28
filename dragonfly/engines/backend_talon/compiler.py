@@ -42,7 +42,6 @@ class TalonCompiler(CompilerBase):
             name = 'dragonfly::{}::{}'.format(grammar.name, rule.name)
             pieces = []
             self.compile_element(rule.element, pieces)
-            print('compiled', pieces)
             rules[name] = ' '.join(pieces)
             if rule.exported:
                 rule_exports.add(name)

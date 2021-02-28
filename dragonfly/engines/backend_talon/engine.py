@@ -41,20 +41,25 @@ class TalonEngine(EngineBase):
         super().__init__()
         self._recognition_observer_manager = RecObsManagerBase(self)
         try:
-            from talon.lib.dragonfly import DragonflyInterface
+            from talon.experimental.dragonfly import DragonflyInterface
         except ImportError:
             self._log.error("%s: failed to import talon module." % self)
             raise EngineError("Requested engine 'talon' is not available: "
                               "not running under a supported Talon app.")
-        self._interface = DragonflyInterface(self)
+        self._interface = DragonflyInterface(self.phrase_begin, self.handle_recognition)
 
     # -----------------------------------------------------------------------
     # Methods for working with grammars.
 
     def load_grammar(self, grammar):
-        if grammar.name in self._grammar_wrappers:
-            self._log.warning("Grammar %s loaded multiple times." % grammar)
-            return
+        # this duplicate reload strategy makes Talon autoreload work
+        wrapper = self._grammar_wrappers.get(grammar.name)
+        if wrapper is not None:
+            if wrapper.grammar == grammar:
+                self._log.warning("Grammar %s loaded multiple times." % grammar)
+                return
+            else:
+                self.unload_grammar(wrapper.grammar)
 
         wrapper = self._load_grammar(grammar)
         # On the base class this dictionary is id -> wrapper,
@@ -67,14 +72,23 @@ class TalonEngine(EngineBase):
                         % (self, grammar.name))
 
         c = TalonCompiler()
-        grammar_dict = c.compile_grammar(grammar)
-        self._interface.load_grammar(grammar.name, grammar_dict)
+        rule_dict, exports = c.compile_grammar(grammar)
+        self._interface.load_grammar(grammar.name, rule_dict, exports)
+        self._interface.register_cleanup(disable_eval='grammar.unload()',
+                                         enable_eval='grammar.load()',
+                                         grammar=grammar)
 
         wrapper = GrammarWrapper(grammar, self, self._recognition_observer_manager)
         return wrapper
 
     def unload_grammar(self, grammar):
-        wrapper = self._grammar_wrappers.pop(grammar.name)
+        # this wrapper check makes Talon autoreload work
+        wrapper = self._grammar_wrappers.get(grammar.name)
+        if wrapper is not None and wrapper.grammar != grammar:
+            return
+        else:
+            wrapper = self._grammar_wrappers.pop(grammar.name)
+
         if not wrapper:
             raise EngineError("Grammar %s cannot be unloaded because"
                               " it was not loaded." % grammar)
@@ -95,11 +109,13 @@ class TalonEngine(EngineBase):
 
     def activate_rule(self, rule, grammar):
         self._log.debug("Activating rule %s in grammar %s." % (rule.name, grammar.name))
-        self._interface.activate_rule(grammar.name, rule.name)
+        rule_name = 'dragonfly::{}::{}'.format(grammar.name, rule.name)
+        self._interface.activate_rule(grammar.name, rule_name)
 
     def deactivate_rule(self, rule, grammar):
         self._log.debug("Deactivating rule %s in grammar %s." % (rule.name, grammar.name))
-        self._interface.deactivate_rule(grammar.name, rule.name)
+        rule_name = 'dragonfly::{}::{}'.format(grammar.name, rule.name)
+        self._interface.deactivate_rule(grammar.name, rule_name)
 
     def update_list(self, lst, grammar):
         self._interface.set_list(grammar.name, lst.name, lst.get_list_items())
@@ -141,6 +157,8 @@ class TalonEngine(EngineBase):
     def _get_language(self):
         return self._interface.get_language()
 
+    def _has_quoted_words_support(self):
+        return False
 
 class GrammarWrapper(GrammarWrapperBase):
 
@@ -195,4 +213,3 @@ class GrammarWrapper(GrammarWrapperBase):
         self._log.debug("Grammar %s: failed to decode recognition %r."
                         % (self.grammar.name, words))
         return False
-

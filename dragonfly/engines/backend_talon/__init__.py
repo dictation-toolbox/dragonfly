@@ -36,12 +36,8 @@ def is_engine_available(**kwargs):
         :param \\**kwargs: optional keyword arguments passed through to the
             engine for engine-specific configuration.
     """
-    try:
-        import talon.lib.dragonfly
-        return True
-    except Exception:
-        pass
-    return False
+    import talon.experimental.dragonfly
+    return True
 
 
 def get_engine(**kwargs):
