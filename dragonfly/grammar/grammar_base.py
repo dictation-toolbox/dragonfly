@@ -73,18 +73,16 @@ class Grammar(object):
             raise TypeError("context must be either a Context object or "
                             "None")
         self._context = context
-
-        if engine:
-            self._engine = engine
-        else:
-            self._engine = get_engine()
-
         self._rules = []
         self._lists = []
         self._rule_names = None
         self._loaded = False
         self._enabled = True
         self._in_context = False
+        if engine:
+            self._engine = engine
+        else:
+            self._engine = get_engine()
 
     def __del__(self):
         try:
