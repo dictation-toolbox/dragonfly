@@ -27,6 +27,15 @@ from ..base import CompilerBase, CompilerError
 
 import dragonfly.grammar.elements as elements_
 
+from talon.experimental.dragonfly import DragonflyInterface
+
+
+class TalonCompilerState:
+    def __init__(self, grammar):
+        self.grammar = grammar
+        self.path = DragonflyInterface.get_path(grammar.name)
+        self.rule_refs = set()
+        self.list_refs = set()
 
 class TalonCompiler(CompilerBase):
     def __init__(self):
@@ -36,60 +45,64 @@ class TalonCompiler(CompilerBase):
     def compile_grammar(self, grammar):
         self._log.debug("%s: Compiling grammar %s." % (self, grammar.name))
 
+        state = TalonCompilerState(grammar)
         rules = {}
         rule_exports = set()
         for rule in grammar.rules:
-            name = 'dragonfly::{}::{}'.format(grammar.name, rule.name)
+            rule_name = DragonflyInterface.sanitize_name(rule.name)
             pieces = []
-            self.compile_element(rule.element, pieces)
-            rules[name] = ' '.join(pieces)
+            self.compile_element(rule.element, state, pieces)
+            rules[rule_name] = ' '.join(pieces)
             if rule.exported:
-                rule_exports.add(name)
+                rule_exports.add(rule_name)
 
-        return rules, rule_exports
+        return rules, rule_exports, state.rule_refs, state.list_refs
 
     #-----------------------------------------------------------------------
     # Methods for compiling elements.
 
-    def _compile_sequence(self, element, pieces):
+    def _compile_sequence(self, element, state, pieces):
         for child in element.children:
-            self.compile_element(child, pieces)
+            self.compile_element(child, state, pieces)
         is_rep = isinstance(element, elements_.Repetition)
         if is_rep:
             pieces.append('+')
         return [' '.join(pieces)]
 
-    def _compile_alternative(self, element, pieces):
+    def _compile_alternative(self, element, state, pieces):
         tmp = []
         for child in element.children:
             child_pieces = []
-            self.compile_element(child, child_pieces)
+            self.compile_element(child, state, child_pieces)
             tmp.append(' '.join(child_pieces))
         pieces.append('(' + ' | '.join(tmp) + ')')
 
-    def _compile_optional(self, element, pieces):
+    def _compile_optional(self, element, state, pieces):
         tmp = []
-        self.compile_element(element.children[0], tmp)
+        self.compile_element(element.children[0], state, tmp)
         pieces.append('[' + ' '.join(tmp) + ']')
 
-    def _compile_literal(self, element, pieces):
+    def _compile_literal(self, element, state, pieces):
         words = ' '.join(element.words_ext)
         pieces.append(words)
 
-    def _compile_rule_ref(self, element, pieces):
-        # FIXME: dragonfly vs talon rule names?
-        # OLD: compiler.add_rule(element.rule.name, imported=element.rule.imported)
-        pieces.append('<' + element.rule.name + '>')
+    def _compile_rule_ref(self, element, state, pieces):
+        name = DragonflyInterface.sanitize_name(element.rule.name)
+        rule_path = '{}_{}'.format(state.path, name)
+        pieces.append('<' + rule_path + '>')
+        state.rule_refs.add(name)
 
-    def _compile_list_ref(self, element, pieces):
-        # FIXME: dragonfly vs talon list names?
-        pieces.append('{' + element.list.name + '}')
+    def _compile_list_ref(self, element, state, pieces):
+        name = DragonflyInterface.sanitize_name(element.list.name)
+        list_path = '{}_{}'.format(state.path, name)
+        pieces.append('{' + list_path + '}')
+        state.list_refs.add(name)
 
-    def _compile_dictation(self, element, pieces):
+    def _compile_dictation(self, element, state, pieces):
         pieces.append('<phrase>')
 
-    def _compile_impossible(self, element, pieces):
+    def _compile_impossible(self, element, state, pieces):
         pieces.append('{::impossible}')
 
-    def _compile_empty(self, element, pieces):
+    def _compile_empty(self, element, state, pieces):
         pass

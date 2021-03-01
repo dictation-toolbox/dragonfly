@@ -72,8 +72,8 @@ class TalonEngine(EngineBase):
                         % (self, grammar.name))
 
         c = TalonCompiler()
-        rule_dict, exports = c.compile_grammar(grammar)
-        self._interface.load_grammar(grammar.name, rule_dict, exports)
+        rule_dict, exports, rule_refs, list_refs = c.compile_grammar(grammar)
+        self._interface.load_grammar(grammar.name, rule_dict, exports, rule_refs, list_refs)
         self._interface.register_cleanup(disable_eval='grammar.unload()',
                                          enable_eval='grammar.load()',
                                          grammar=grammar)
@@ -109,13 +109,11 @@ class TalonEngine(EngineBase):
 
     def activate_rule(self, rule, grammar):
         self._log.debug("Activating rule %s in grammar %s." % (rule.name, grammar.name))
-        rule_name = 'dragonfly::{}::{}'.format(grammar.name, rule.name)
-        self._interface.activate_rule(grammar.name, rule_name)
+        self._interface.activate_rule(grammar.name, rule.name)
 
     def deactivate_rule(self, rule, grammar):
         self._log.debug("Deactivating rule %s in grammar %s." % (rule.name, grammar.name))
-        rule_name = 'dragonfly::{}::{}'.format(grammar.name, rule.name)
-        self._interface.deactivate_rule(grammar.name, rule_name)
+        self._interface.deactivate_rule(grammar.name, rule.name)
 
     def update_list(self, lst, grammar):
         self._interface.update_list(grammar.name, lst.name, lst.get_list_items())
