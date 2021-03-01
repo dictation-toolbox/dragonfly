@@ -118,7 +118,7 @@ class TalonEngine(EngineBase):
         self._interface.deactivate_rule(grammar.name, rule_name)
 
     def update_list(self, lst, grammar):
-        self._interface.set_list(grammar.name, lst.name, lst.get_list_items())
+        self._interface.update_list(grammar.name, lst.name, lst.get_list_items())
 
     #-----------------------------------------------------------------------
     # Recognition handling
