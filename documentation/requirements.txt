@@ -5,7 +5,6 @@ six
 enum34;python_version<'3.4'
 regex
 sphinx-argparse
-decorator
 json-rpc
 Werkzeug
 requests

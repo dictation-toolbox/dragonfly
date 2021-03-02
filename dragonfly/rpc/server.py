@@ -54,7 +54,6 @@ import logging
 import threading
 import time
 
-from decorator import decorator
 from jsonrpc.dispatcher import Dispatcher as BaseDispatcher
 from jsonrpc.manager import JSONRPCResponseManager
 from werkzeug.wrappers import Request, Response
@@ -78,8 +77,13 @@ _log = logging.getLogger("rpc.methods")
 # --------------------------------------------------------------------------
 # RPC method decorator used by the server internally.
 
-@decorator
-def _rpc_method(method, *args, **kwargs):
+def _rpc_method(method):
+    @functools.wraps(method)
+    def wrapper(*args, **kwargs):
+        return _rpc_method_wrapper(method, *args, **kwargs)
+    return wrapper
+
+def _rpc_method_wrapper(method, *args, **kwargs):
     # Create a thread condition for waiting for the method's result.
     condition = threading.Condition()
 

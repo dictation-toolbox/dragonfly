@@ -97,7 +97,6 @@ setup(
                         "pyperclip >= 1.7.0",
                         "enum34;python_version<'3.4'",
                         "regex",
-                        "decorator",
                         "lark-parser == 0.8.*",
 
                         # Windows-only dependencies.
