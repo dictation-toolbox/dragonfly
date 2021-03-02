@@ -32,7 +32,8 @@ Examples of how to use this class are given in :ref:`RefKeySpecExamples`.
 
 To use this class on X11/Linux, the
 `xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
-installed.
+installed and the ``XDG_SESSION_TYPE`` environment variable set to ``x11``.
+This class does **not** support typing keys in Wayland sessions.
 
 .. _RefKeySpec:
 
@@ -226,7 +227,7 @@ type the character.
 X11 key support
 ............................................................................
 
-This :class:`Key` action can be used to type arbitrary keys and Unicode
+The :class:`Key` action can be used to type arbitrary keys and Unicode
 characters on X11/Linux. It is not limited to the key names listed above,
 although all of them will work too.
 
@@ -237,6 +238,8 @@ directly, e.g. with ``Key('U20AC')``.
 
 Unlike on Windows, the :class:`Key` action is able to use modifiers with
 Unicode characters on X11.
+
+This class does **not** support typing keys in Wayland sessions.
 
 
 Example X11 key actions

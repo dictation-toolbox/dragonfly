@@ -56,6 +56,19 @@ int_1_9         = MapIntBuilder({
                                  "acht":         8,
                                  "neun":         9,
                                })
+int_1_eine      = MapIntBuilder({
+                                 "eine":         1,
+                               })
+int_2_9         = MapIntBuilder({
+                                 "zwei":         2,
+                                 "drei":         3,
+                                 "vier":         4,
+                                 "fuenf":        5,
+                                 "sechs":        6,
+                                 "sieben":       7,
+                                 "acht":         8,
+                                 "neun":         9,
+                               })
 int_10_19       = MapIntBuilder({
                                  "zehn":        10,
                                  "elf":         11,
@@ -78,15 +91,28 @@ int_20_90_10    = MapIntBuilder({
                                  "achtzig":      8,
                                  "neunzig":      9,
                                })
+
+
+#---------------------------------------------------------------------------
+
+def int_20_99_func(text):
+    # Join any 'und' conjugates with the words on either side.
+    return text.replace(" und", "und").replace("und ", "und")
+
+
+#---------------------------------------------------------------------------
+
 int_20_99       = MagnitudeIntBuilder(
                    factor      = 10,
                    spec        = "[<remainder> und] <multiplier>",
                    multipliers = [int_20_90_10],
                    remainders  = [int_1_9],
+                   modifier_function = int_20_99_func,
+                   modifier_mode = 1,  # MODE_AUGMENT (default)
                   )
 int_and_1_99    = CollectionIntBuilder(
                    spec        = "<element>",
-                   set         = [int_1_9, int_10_19, int_20_99],
+                   set         = [int_1_9_eins, int_10_19, int_20_99],
                   )
 int_100s        = MagnitudeIntBuilder(
                    factor      = 100,
@@ -106,10 +132,17 @@ int_1000s       = MagnitudeIntBuilder(
                    multipliers = [int_1_9, int_10_19, int_20_99, int_100s],
                    remainders  = [int_and_1_99, int_100s]
                   )
-int_1000000s    = MagnitudeIntBuilder(
+int_1000000     = MagnitudeIntBuilder(
                    factor      = 1000000,
                    spec        = "[<multiplier>] million [<remainder>]",
-                   multipliers = [int_1_9, int_10_19, int_20_99, int_100s, int_1000s],
+                   multipliers = [int_1_eine],
+                   remainders  = [int_and_1_99, int_100s, int_1000s],
+                  )
+int_1000000s    = MagnitudeIntBuilder(
+                   factor      = 1000000,
+                   spec        = "<multiplier> millionen [<remainder>]",
+                   multipliers = [int_2_9, int_10_19, int_20_99, int_100s,
+                                  int_1000s],
                    remainders  = [int_and_1_99, int_100s, int_1000s],
                   )
 
@@ -117,8 +150,8 @@ int_1000000s    = MagnitudeIntBuilder(
 #---------------------------------------------------------------------------
 
 class IntegerContent(IntegerContentBase):
-    builders = [int_0, int_1_9_eins, int_10_19, int_20_99,
-                int_100s, int_100big, int_1000s, int_1000000s]
+    builders = [int_0, int_1_9, int_1_9_eins, int_10_19, int_20_99,
+                int_100s, int_100big, int_1000s, int_1000000, int_1000000s]
 
 class DigitsContent(DigitsContentBase):
     digits = [("null"), "eins", "zwei", "drei", "vier",

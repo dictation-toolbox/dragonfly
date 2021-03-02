@@ -240,7 +240,7 @@ def _smart_cast(value):
     """ Attempts to convert given str to a more precise type based on Python literals. """
     try:
         return ast.literal_eval(value)
-    except ValueError:
+    except:
         return value
 
 def _engine_options_string(string):
