@@ -23,7 +23,12 @@ This file implements an interface to the system clipboard using pyperclip
 and should work on Windows, Mac OS and Linux-based operating systems.
 """
 
-from six import text_type
+# pylint: disable=W0622
+# Suppress warnings about redefining the built-in 'format' function.
+
+import locale
+
+from six import integer_types, binary_type
 import pyperclip
 
 from .base_clipboard import BaseClipboard
@@ -41,13 +46,13 @@ class PyperclipClipboard(BaseClipboard):
     .. note::
 
        This class does work on Windows, however the Windows
-       :class:`dragonfly.windows.clipboard.Clipboard` class should be used
-       instead because this class only currently supports the Unicode text
-       clipboard format.
+       :class:`dragonfly.windows.win32_clipboard.Win32Clipboard` class
+       should be used instead because this class only currently supports
+       the Unicode text clipboard format.
 
     """
 
-    # ----------------------------------------------------------------------
+    #-----------------------------------------------------------------------
 
     @classmethod
     def get_system_text(cls):
@@ -56,7 +61,10 @@ class PyperclipClipboard(BaseClipboard):
     @classmethod
     def set_system_text(cls, content):
         if not content:
-            content = ""
+            content = u""
+        if isinstance(content, binary_type):
+            encoding = locale.getpreferredencoding()
+            content = content.decode(encoding)
         pyperclip.copy(content)
 
     @classmethod
@@ -65,70 +73,41 @@ class PyperclipClipboard(BaseClipboard):
 
     # ----------------------------------------------------------------------
 
-    def __init__(self, contents=None, text=None, from_system=False):
-        # Process given contents for this Clipboard instance
-        content = contents
-        if contents and isinstance(contents, dict):
-            # Keep constructor arguments compatible with the Windows-only
-            # clipboard class.
-            format_unicode = 13
-            format_text = 1
-            unicode_content = contents.get(format_unicode, None)
-            text_content = contents.get(format_text, None)
-            if unicode_content:
-                content = unicode_content
-            elif text_content:
-                content = text_content
+    def copy_from_system(self, formats=None, clear=False):
+        # Determine which formats to retrieve.
+        if not formats:
+            formats = (self.format_text, self.format_unicode)
+        elif isinstance(formats, integer_types):
+            formats = (formats,)
 
-        self._content = content
+        # Verify that the given formats are valid.
+        for format in formats:
+            if not isinstance(format, integer_types):
+                raise TypeError("Invalid clipboard format: %r"
+                                % format)
 
-        # If requested, retrieve current system clipboard contents.
-        if from_system:
-            self.copy_from_system()
-
-        # Handle text content.
-        if text is not None:
-            self._content = text_type(text)
-
-    def __repr__(self):
-        return "%s(%s)" % (self.__class__.__name__, self._content)
-
-    def copy_from_system(self, clear=False):
-        """
-            Copy the system clipboard contents into this instance.
-
-            Arguments:
-             - *clear* (boolean, default: False) -- if true, the system
-               clipboard will be cleared after its contents have been
-               retrieved.
-
-        """
         # Retrieve the system clipboard content.
-        self._content = self.get_system_text()
+        # This class only handles text formats.
+        text = self.get_system_text()
+        contents = {}
+        if self.format_text in formats:
+            text = self.convert_format_content(self.format_text, text)
+            contents[self.format_text] = text
+        if self.format_unicode in formats:
+            text = self.convert_format_content(self.format_unicode, text)
+            contents[self.format_unicode] = text
+        self._contents = contents
 
         # Then clear the system clipboard, if requested.
         if clear:
             self.clear_clipboard()
 
-    def copy_to_system(self):
-        """
-            Copy the contents of this instance into the system clipboard.
-        """
-        # Transfer content to system clipboard.
-        self.set_system_text(self._content)
+    def copy_to_system(self, clear=False):
+        # Clear the system clipboard, if requested.
+        if clear:
+            self.clear_clipboard()
 
-    def has_text(self):
-        return bool(self._content)
-
-    def get_text(self):
-        """
-            Retrieve this instance's text content.  If no text content
-            is available, this method returns *None*.
-
-        """
-        return self._content
-
-    def set_text(self, content):
-        self._content = None if content is None else text_type(content)
-
-    text = property(get_text, set_text)
+        # Transfer text content to system clipboard, if necessary.
+        text = self.get_text()
+        if text is not None:
+            self.set_system_text(text)

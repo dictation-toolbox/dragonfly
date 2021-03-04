@@ -19,7 +19,7 @@
 #
 
 """
-This module imports the correct clipboard interface for the current
+This module imports the clipboard interface for the current
 platform.
 """
 
