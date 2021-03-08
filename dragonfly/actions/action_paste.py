@@ -41,10 +41,12 @@ class Paste(DynStrActionBase):
         Paste-from-clipboard action.
 
         Constructor arguments:
-         - *contents* (*str*) -- contents to paste.  This may be a dynamic
-           action *spec*.
+         - *contents* (*str* | *dict*) -- contents to paste.  This may be a
+           simple string to paste, a dynamic action *spec* or a dictionary
+           of clipboard format ints to contents (typically strings).
          - *format* (*int*, clipboard format integer) --
-           clipboard format
+           clipboard format.  This argument is ignored if *contents* is a
+           dictionary.
          - *paste* (instance derived from *ActionBase*) --
            paste action
          - *static* (boolean) --
@@ -100,8 +102,12 @@ class Paste(DynStrActionBase):
                               " %s", e)
 
         # Store the contents to copy (i.e. *events*) in a Clipboard
-        #  instance using the specified (or default) format.
-        clipboard = Clipboard(contents={self.format: events})
+        #  instance using the specified (or default) format.  If *events* is
+        #  a dictionary, then pass it instead.
+        if isinstance(events, dict):
+            clipboard = Clipboard(contents=events)
+        else:
+            clipboard = Clipboard(contents={self.format: events})
 
         # Copy the contents to the system clipboard and paste using the
         #  paste action.
