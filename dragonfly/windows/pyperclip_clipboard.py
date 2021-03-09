@@ -102,7 +102,7 @@ class PyperclipClipboard(BaseClipboard):
         if clear:
             self.clear_clipboard()
 
-    def copy_to_system(self, clear=False):
+    def copy_to_system(self, clear=True):
         # Clear the system clipboard, if requested.
         if clear:
             self.clear_clipboard()

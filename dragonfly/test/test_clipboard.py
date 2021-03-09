@@ -122,10 +122,31 @@ class TestClipboard(unittest.TestCase):
         self.assertEqual(c2.get_format(format_text), b"text")
 
     def test_copy_to_system(self):
-        text = "testing"
-        c = Clipboard(text=text)
-        c.copy_to_system()
-        self.assertEqual(Clipboard.get_system_text(), text)
+        # Test with format_unicode.
+        text1 = u"unicode text"
+        c = Clipboard(contents={format_unicode: text1})
+        c.copy_to_system(clear=True)
+        self.assertEqual(Clipboard.get_system_text(), text1)
+
+        # Test with format_text. Text string used deliberately here;
+        # get_system_text() should returns those.
+        text2 = u"text"
+        c = Clipboard(contents={format_text: text2})
+        c.copy_to_system(clear=True)
+        self.assertEqual(Clipboard.get_system_text(), text2)
+
+        # Test with text.
+        text3 = u"testing"
+        c = Clipboard(text=text3)
+        c.copy_to_system(clear=True)
+        self.assertEqual(Clipboard.get_system_text(), text3)
+
+        # Test with an empty Clipboard instance.
+        c = Clipboard()
+        c.copy_to_system(clear=False)
+        self.assertEqual(Clipboard.get_system_text(), text3)
+        c.copy_to_system(clear=True)
+        self.assertEqual(Clipboard.get_system_text(), u"")
 
     def test_has_format(self):
         # Test with an empty Clipboard instance.
