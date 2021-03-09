@@ -36,7 +36,7 @@ from .base_clipboard import BaseClipboard
 
 class PyperclipClipboard(BaseClipboard):
     """
-    Cross-platform class for interacting with the system clipboard via the
+    Class for interacting with the system clipboard via the
     `pyperclip <https://pyperclip.readthedocs.io/en/latest/>`__ Python
     package.
 
@@ -47,8 +47,8 @@ class PyperclipClipboard(BaseClipboard):
 
        This class does work on Windows, however the Windows
        :class:`dragonfly.windows.win32_clipboard.Win32Clipboard` class
-       should be used instead because this class only currently supports
-       the Unicode text clipboard format.
+       should be used instead because this class doesn't support as many
+       clipboard formats.
 
     """
 

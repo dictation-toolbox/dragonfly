@@ -219,6 +219,9 @@ class BaseClipboard(object):
 
             If the given *format* is not available, a *ValueError*
             is raised.
+
+            If *None* is given as the *content*, any content stored
+            for the given *format* will be cleared.
         """
         if content is None:
             self._contents.pop(format, None)
@@ -245,7 +248,16 @@ class BaseClipboard(object):
             return None
 
     def set_text(self, content):
-        """ Set the text content for this instance. """
+        """
+            Set the text content for this instance.
+
+            Arguments:
+             - *content* (string) -- the text content to set.
+
+            If *None* is given as the *content*, any text content
+            stored in this instance will be cleared.
+
+        """
         # Clear text content for this instance, if requested.
         if content is None:
             self._contents.pop(self.format_text, None)
