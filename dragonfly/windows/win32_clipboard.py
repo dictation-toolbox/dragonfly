@@ -150,6 +150,7 @@ class Win32Clipboard(BaseClipboard):
     def copy_from_system(self, formats=None, clear=False):
         with win32_clipboard_ctx():
             # Determine which formats to retrieve.
+            caller_specified_formats = bool(formats)
             if not formats:
                 format = 0
                 formats = []
@@ -173,8 +174,27 @@ class Win32Clipboard(BaseClipboard):
             # Retrieve Windows system clipboard content.
             contents = {}
             for format in formats:
-                content = win32clipboard.GetClipboardData(format)
-                contents[format] = content
+                # Allow GetClipboardData() to raise Windows API errors if
+                #  the caller specified one or more formats.  If the
+                #  function raises an error at this point, it is likely the
+                #  format is not retrievable and the caller will want to
+                #  know, since they explicitly asked for this format.
+                if caller_specified_formats:
+                    content = win32clipboard.GetClipboardData(format)
+                    contents[format] = content
+                    continue
+
+                # Otherwise, catch and log Windows API errors.  We assume
+                #  here that the caller is not much interested in
+                #  irretrievable formats.
+                try:
+                    content = win32clipboard.GetClipboardData(format)
+                    contents[format] = content
+                except pywintypes.error as err:
+                    format_repr = self.format_names.get(format, format)
+                    self._log.warning("Could not retrieve clipboard data "
+                                      "for format %r: %s", format_repr, err)
+
             self._contents = contents
 
             # Clear the system clipboard, if requested, and close it.

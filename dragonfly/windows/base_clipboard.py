@@ -26,6 +26,7 @@ This file contains the base interface to the system clipboard.
 # Suppress warnings about redefining the built-in 'format' function.
 
 import locale
+import logging
 
 from six import text_type, binary_type
 
@@ -37,6 +38,8 @@ class BaseClipboard(object):
     """
     Base clipboard class.
     """
+
+    _log = logging.getLogger("clipboard")
 
     format_text      = 1
     format_unicode   = 13
