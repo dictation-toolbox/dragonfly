@@ -134,6 +134,19 @@ class Win32Clipboard(BaseClipboard):
 
     #-----------------------------------------------------------------------
 
+    def _update_format_names(self, formats):
+        # Retrieve and store the names of any registered clipboard formats
+        #  in format_names, if necessary.
+        for format in formats:
+            if format in self.format_names:
+                continue
+
+            # Registered clipboard formats are identified by values in
+            #  the range 0xC000 through 0xFFFF.
+            if 0xC000 <= format <= 0xFFFF:
+                format_name = win32clipboard.GetClipboardFormatName(format)
+                self.format_names[format] = format_name
+
     def copy_from_system(self, formats=None, clear=False):
         with win32_clipboard_ctx():
             # Determine which formats to retrieve.
@@ -153,6 +166,9 @@ class Win32Clipboard(BaseClipboard):
                 if not isinstance(format, integer_types):
                     raise TypeError("Invalid clipboard format: %r"
                                     % format)
+
+            # Update clipboard format names.
+            self._update_format_names(formats)
 
             # Retrieve Windows system clipboard content.
             contents = {}
