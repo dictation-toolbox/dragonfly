@@ -5,33 +5,50 @@ Clipboard toolkit
 ============================================================================
 
 Dragonfly's clipboard toolkit offers easy access to and manipulation of 
-the Windows system clipboard.  The 
-:class:`dragonfly.windows.clipboard.Clipboard` class forms the core of 
-this toolkit.  Each instance of this class is a container with a structure
-similar to the Windows system clipboard, mapping content formats to
+the system clipboard.  The :class:`Clipboard` class forms the core
+of this toolkit.  Each instance of this class is a container with a
+structure similar to the system clipboard, mapping content formats to
 content data.
 
-The :class:`dragonfly.util.clipboard.Clipboard` can be used on other
-platforms, such as macOS or Linux. Its API is compatible with the Windows
-clipboard class **except** for the :meth:`has_format`, :meth:`get_format`
-and :meth:`set_format` methods, as the class doesn't support multiple
-formats.
+Dragonfly chooses the clipboard class to alias as :class:`Clipboard` based
+on the platform:
+
+ * :class:`dragonfly.windows.win32_clipboard.Win32Clipboard` is used on
+   Windows.
+
+ * :class:`dragonfly.windows.pyperclip_clipboard.PyperclipClipboard` is used
+   on other platforms, such as macOS or Linux.
+
+
+API differences
+----------------------------------------------------------------------------
+
+All platform clipboard classes have the same API, plus any platform-specific
+formats.  The following two basic formats are always available:
+
+ #. ``format_text`` -- ANSI text format (format int: 1)
+ #. ``format_unicode`` -- Unicode text format (format int: 13)
+
+The basic clipboard format constants used should match those used on
+Windows, e.g. ``format_unicode`` is represented by 13 (``CF_UNICODETEXT``).
+To be safe, use the ``format_*`` attributes defined by the clipboard class.
+
 
 Usage examples
 ----------------------------------------------------------------------------
 
 An instance of something contains clipboard data.  The data stored within 
-an instance can be transferred to and from the Windows system clipboard as 
-follows: (before running this example, the text "asdf" was copied into the 
-Windows system clipboard) ::
+an instance can be transferred to and from the system clipboard as follows:
+(before running this example, the text "asdf" was copied into the system
+clipboard) ::
 
    >>> from dragonfly.windows.clipboard import Clipboard
    >>> instance = Clipboard()        # Create empty instance.
-   >>> print instance
+   >>> print(instance)
    Clipboard()
 
    >>> instance.copy_from_system()   # Retrieve from system clipboard.
-   >>> print instance
+   >>> print(instance)
    Clipboard(unicode=u'asdf', text, oemtext, locale)
    >>> # The line above shows that *instance* now contains content for
    >>> #  4 different clipboard formats: unicode, text, oemtext, locale.
@@ -39,48 +56,55 @@ Windows system clipboard) ::
 
    >>> instance.copy_to_system()     # Transfer back to system clipboard.
 
-The situation frequently occurs that a developer would like to use the 
-Windows system clipboard to perform some task without the data currently 
-stored in it being lost.  This backing up and restoring can easily be 
-achieved as follows: ::
+The situation frequently occurs that a developer would like to use the
+system clipboard to perform some task without the data currently stored in
+it being lost.  This backing up and restoring can easily be achieved as
+follows: ::
 
    >>> from dragonfly.windows.clipboard import Clipboard
    >>> # Initialize instance with system clipboard content.
    ... original = Clipboard(from_system=True)
-   >>> print original
+   >>> print(original)
    Clipboard(unicode=u'asdf', text, oemtext, locale)
 
    >>> # Use the system clipboard to do something.
    ... temporary = Clipboard({Clipboard.format_unicode: u"custom content"})
-   >>> print temporary
+   >>> print(temporary)
    Clipboard(unicode=u'custom content')
    >>> temporary.copy_to_system()
    >>> from dragonfly import Key
    >>> Key("c-v").execute()
 
    >>> # Restore original system clipboard content.
-   ... print Clipboard(from_system=True) # Show system clipboard contents.
+   ... print(Clipboard(from_system=True)) # Show system clipboard contents.
    Clipboard(unicode=u'custom content', text, oemtext, locale)
    >>> original.copy_to_system()
-   >>> print Clipboard(from_system=True) # Show system clipboard contents.
+   >>> print(Clipboard(from_system=True)) # Show system clipboard contents.
    Clipboard(unicode=u'asdf', text, oemtext, locale)
+
+
+Base Clipboard class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.windows.base_clipboard.BaseClipboard
+   :members:
 
 
 Windows Clipboard class
 ----------------------------------------------------------------------------
 
-.. autoclass:: dragonfly.windows.clipboard.Clipboard
-   :members:
-
-
-Cross-platform Clipboard class
-----------------------------------------------------------------------------
-
-.. autoclass:: dragonfly.util.clipboard.Clipboard
+.. autoclass:: dragonfly.windows.win32_clipboard.Win32Clipboard
    :members:
 
 
 Windows Clipboard context manager function
 ----------------------------------------------------------------------------
 
-.. autofunction:: dragonfly.windows.clipboard.win32_clipboard_ctx
+.. autofunction:: dragonfly.windows.win32_clipboard.win32_clipboard_ctx
+
+
+Pyperclip Clipboard class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.windows.pyperclip_clipboard.PyperclipClipboard
+   :members:

@@ -24,9 +24,15 @@ import unittest
 from dragonfly import Clipboard
 
 
+format_unicode = Clipboard.format_unicode
+format_text = Clipboard.format_text
+
+
 class TestClipboard(unittest.TestCase):
     """
-    Tests for the multi-platform Clipboard class.
+    Tests for the Clipboard class.
+
+    These should pass on all supported platforms.
     """
 
     @classmethod
@@ -41,9 +47,6 @@ class TestClipboard(unittest.TestCase):
 
     def setUp(self):
         # Clear the clipboard before each test.
-        Clipboard.clear_clipboard()
-
-    def tearDown(self):
         Clipboard.clear_clipboard()
 
     def test_system_text_methods(self):
@@ -61,13 +64,6 @@ class TestClipboard(unittest.TestCase):
         # Then test that it has been cleared.
         self.assertEqual(Clipboard.get_system_text(), "")
 
-    def test_empty(self):
-        # A new clipboard has no content for the unicode format.
-        c = Clipboard()
-
-        # Neither does a new clipboard have text.
-        self.assertFalse(c.has_text())
-
     def test_from_system_argument(self):
         # Test the optional from_system argument of Clipboard.__init__
         text = "something"
@@ -81,22 +77,157 @@ class TestClipboard(unittest.TestCase):
         Clipboard.set_system_text(text)
         c = Clipboard()
 
-        # Test the method with clear=False (default)
+        # Test the method with clear=False (default).
         c.copy_from_system(clear=False)
         self.assertEqual(c.text, text)
         self.assertEqual(Clipboard.get_system_text(), text)
 
-        # Test again with clear=True
+        # Test again with clear=True.
         c = Clipboard()
         c.copy_from_system(clear=True)
         self.assertEqual(c.text, text)
         self.assertEqual(Clipboard.get_system_text(), "")
 
+        # Test formats=format_unicode.
+        # Set the system clipboard before testing.
+        text1 = u"unicode text"
+        c1 = Clipboard(contents={format_unicode: text1})
+        c1.copy_to_system()
+        c2 = Clipboard()
+        c2.copy_from_system(formats=format_unicode)
+        self.assertTrue(c2.has_format(format_unicode))
+        self.assertEqual(c2.get_format(format_unicode), text1)
+
+        # Test formats=format_text.
+        # Set the system clipboard before testing.
+        text2 = b"text"
+        c1 = Clipboard(contents={format_text: text2})
+        c1.copy_to_system()
+        c2 = Clipboard()
+        c2.copy_from_system(formats=format_text)
+        self.assertTrue(c2.has_format(format_text))
+        self.assertEqual(c2.get_format(format_text), text2)
+
+        # Test formats=(format_unicode, format_text).
+        # Set the system clipboard before testing. Use the same string for
+        # both formats so the test will work on all platforms.
+        c1 = Clipboard(contents={format_text: b"text",
+                                 format_unicode: u"text"})
+        c1.copy_to_system()
+        c2 = Clipboard()
+        c2.copy_from_system(formats=(format_unicode, format_text))
+        self.assertTrue(c2.has_format(format_unicode))
+        self.assertEqual(c2.get_format(format_unicode), u"text")
+        self.assertTrue(c2.has_format(format_text))
+        self.assertEqual(c2.get_format(format_text), b"text")
+
     def test_copy_to_system(self):
-        text = "testing"
-        c = Clipboard(text=text)
-        c.copy_to_system()
-        self.assertEqual(Clipboard.get_system_text(), text)
+        # Test with format_unicode.
+        text1 = u"unicode text"
+        c = Clipboard(contents={format_unicode: text1})
+        c.copy_to_system(clear=True)
+        self.assertEqual(Clipboard.get_system_text(), text1)
+
+        # Test with format_text. Text string used deliberately here;
+        # get_system_text() should returns those.
+        text2 = u"text"
+        c = Clipboard(contents={format_text: text2})
+        c.copy_to_system(clear=True)
+        self.assertEqual(Clipboard.get_system_text(), text2)
+
+        # Test with text.
+        text3 = u"testing"
+        c = Clipboard(text=text3)
+        c.copy_to_system(clear=True)
+        self.assertEqual(Clipboard.get_system_text(), text3)
+
+        # Test with an empty Clipboard instance.
+        c = Clipboard()
+        c.copy_to_system(clear=False)
+        self.assertEqual(Clipboard.get_system_text(), text3)
+        c.copy_to_system(clear=True)
+        self.assertEqual(Clipboard.get_system_text(), u"")
+
+    def test_has_format(self):
+        # Test with an empty Clipboard instance.
+        c = Clipboard()
+        self.assertFalse(c.has_format(format_unicode))
+        self.assertFalse(c.has_format(format_text))
+
+        # Test with one format.
+        c = Clipboard(contents={format_unicode: u"unicode text"})
+        self.assertTrue(c.has_format(format_unicode))
+        self.assertFalse(c.has_format(format_text))
+
+        # Test with two formats.
+        c = Clipboard(contents={format_unicode: u"unicode text",
+                                format_text: u"text"})
+        self.assertTrue(c.has_format(format_unicode))
+        self.assertTrue(c.has_format(format_text))
+
+    def test_get_format(self):
+        # Test with an empty Clipboard instance.
+        c = Clipboard()
+        self.assertRaises(ValueError, c.get_format, format_unicode)
+        self.assertRaises(ValueError, c.get_format, format_text)
+
+        # Test with one format.
+        text1 = u"unicode text"
+        c = Clipboard(contents={format_unicode: text1})
+        self.assertEqual(c.get_format(format_unicode), text1)
+        self.assertRaises(ValueError, c.get_format, format_text)
+
+        # Test with two formats.
+        text2 = b"text"
+        c = Clipboard(contents={format_unicode: text1,
+                                format_text: text2})
+        self.assertEqual(c.get_format(format_unicode), text1)
+        self.assertEqual(c.get_format(format_text), text2)
+
+    def test_set_format(self):
+        # Test with one format.
+        text1 = u"unicode text"
+        c = Clipboard()
+        c.set_format(format_unicode, text1)
+        self.assertTrue(c.has_format(format_unicode))
+        self.assertEqual(c.get_format(format_unicode), text1)
+        self.assertFalse(c.has_format(format_text))
+        self.assertRaises(ValueError, c.get_format, format_text)
+
+        # Test with two formats.
+        text2 = b"text"
+        c.set_format(format_text, text2)
+        self.assertTrue(c.has_format(format_unicode))
+        self.assertEqual(c.get_format(format_unicode), text1)
+        self.assertTrue(c.has_format(format_text))
+        self.assertEqual(c.get_format(format_text), text2)
+
+        # Setting a format to None removes the format's content from the
+        # instance.
+        c.set_format(format_text, None)
+        self.assertFalse(c.has_format(format_text))
+        self.assertRaises(ValueError, c.get_format, format_text)
+        c.set_format(format_unicode, None)
+        self.assertFalse(c.has_format(format_unicode))
+        self.assertRaises(ValueError, c.get_format, format_unicode)
+
+    def test_has_text(self):
+        # Test with an empty Clipboard instance.
+        c = Clipboard()
+        self.assertFalse(c.has_text())
+
+        # Test with format_unicode only.
+        c = Clipboard(contents={format_unicode: u"unicode text"})
+        self.assertTrue(c.has_text())
+
+        # Test with both text formats.
+        c = Clipboard(contents={format_unicode: u"unicode text",
+                                format_text: b"text"})
+        self.assertTrue(c.has_text())
+
+        # Test with format_text only.
+        c = Clipboard(contents={format_text: b"text"})
+        self.assertTrue(c.has_text())
 
     def test_set_text(self):
         c = Clipboard()
@@ -109,21 +240,51 @@ class TestClipboard(unittest.TestCase):
         # Setting the text to None clears the stored text.
         c.set_text(None)
         self.assertFalse(c.has_text())
-        self.assertIs(c.get_text(), None)
+        self.assertIsNone(c.get_text())
 
-    def test_backwards_compatibility(self):
-        # The multi-platform class should be backwards compatible with the
-        # Windows-only Clipboard class, at least for the constructor.
-        text = u"unicode text"
-        c = Clipboard(contents={13: text})
-        c.copy_to_system()
-        self.assertEqual(Clipboard.get_system_text(), text)
+        # Test setting the text using the text property.
+        c.text = text
+        self.assertTrue(c.has_text())
+        self.assertEqual(c.get_text(), text)
+        self.assertEqual(c.text, text)
 
-        # Test with the CF_TEXT format (1)
-        text = "text"
-        c = Clipboard(contents={1: text})
-        c.copy_to_system()
-        self.assertEqual(Clipboard.get_system_text(), text)
+    def test_get_text(self):
+        # Test with an empty Clipboard instance.
+        c = Clipboard()
+        self.assertIsNone(c.get_text())
+
+        # Test with Unicode text.
+        text1 = u"test"
+        c.set_text(text1)
+        self.assertEqual(c.get_text(), text1)
+
+        # Test with text set to None.
+        c.set_text(None)
+        self.assertIsNone(c.get_text())
+
+        # Test with binary text.
+        text2 = b"test"
+        c.set_text(text2)
+        self.assertEqual(c.get_text(), text2)
+
+    def test_flexible_string_types(self):
+        # This is similar to the clipboard format conversion that Windows
+        # performs when necessary. The Clipboard class should do this
+        # regardless of platform/implementation.
+
+        # Binary strings used with format_unicode are converted for us.
+        c = Clipboard(contents={format_unicode: b"text"})
+        self.assertEqual(c.get_format(format_unicode), u"text")
+        c = Clipboard()
+        c.set_format(format_unicode, b"text")
+        self.assertEqual(c.get_format(format_unicode), u"text")
+
+        # Text strings used with format_text (ANSI) are converted for us.
+        c = Clipboard(contents={format_text: u"text"})
+        self.assertEqual(c.get_format(format_text), b"text")
+        c = Clipboard()
+        c.set_format(format_text, u"text")
+        self.assertEqual(c.get_format(format_text), b"text")
 
     def test_non_ascii(self):
         text = u"""
@@ -133,6 +294,23 @@ class TestClipboard(unittest.TestCase):
         """
         Clipboard.set_system_text(text)
         self.assertEqual(Clipboard.get_system_text(), text)
+
+    def test_non_strings(self):
+        # Using non-string objects for text formats raises errors.
+        self.assertRaises(TypeError, Clipboard, {format_text: 0})
+        self.assertRaises(TypeError, Clipboard, {format_unicode: 0})
+        self.assertRaises(TypeError, Clipboard, {format_text: object()})
+        self.assertRaises(TypeError, Clipboard, {format_unicode: object()})
+        self.assertRaises(TypeError, Clipboard, {format_text: None})
+        self.assertRaises(TypeError, Clipboard, {format_unicode: None})
+
+        c = Clipboard()
+        self.assertRaises(TypeError, c.set_text, 0)
+        self.assertRaises(TypeError, c.set_text, object())
+        self.assertRaises(TypeError, c.set_format, format_text, 0)
+        self.assertRaises(TypeError, c.set_format, format_text, object())
+        self.assertRaises(TypeError, c.set_format, format_unicode, 0)
+        self.assertRaises(TypeError, c.set_format, format_unicode, object())
 
 
 if __name__ == '__main__':

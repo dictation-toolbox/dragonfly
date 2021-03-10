@@ -20,13 +20,9 @@
 
 import sys
 
-# Import classes that work on all platforms.
-from .rectangle   import Rectangle, unit
-from .point       import Point
-from .window      import Window
+from .clipboard   import Clipboard
 from .fake_window import FakeWindow
 from .monitor     import Monitor, monitors
-
-# Windows-specific
-if sys.platform.startswith("win"):
-    from .clipboard    import Clipboard
+from .point       import Point
+from .rectangle   import Rectangle, unit
+from .window      import Window
