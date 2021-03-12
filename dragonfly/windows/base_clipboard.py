@@ -191,6 +191,29 @@ class BaseClipboard(object):
         """
         raise NotImplementedError()
 
+    def get_available_formats(self):
+        """
+            Retrieve a list of this instance's available formats.
+
+            The preferred text format, if available, will always be the
+            first on the list followed by any remaining formats in
+            numerical order.
+
+        """
+        # Return a list of available formats using the same order as
+        #  __repr__().
+        formats = []
+        if self.format_unicode in self._contents:
+            formats.append(self.format_unicode)
+        elif self.format_text in self._contents:
+            formats.append(self.format_text)
+        for format in sorted(self._contents.keys()):
+            if format in formats:
+                continue
+            formats.append(format)
+
+        return formats
+
     def has_format(self, format):
         """
             Determine whether this instance has content for the given

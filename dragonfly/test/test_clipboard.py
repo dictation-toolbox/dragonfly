@@ -163,6 +163,40 @@ class TestClipboard(unittest.TestCase):
         c.copy_to_system(clear=True)
         self.assertEqual(Clipboard.get_system_text(), u"")
 
+    def test_get_available_formats(self):
+        # Test with an empty Clipboard instance.
+        c = Clipboard()
+        self.assertEqual(c.get_available_formats(), [])
+
+        # Test with one format.
+        c = Clipboard(contents={format_unicode: u"unicode text"})
+        self.assertEqual(c.get_available_formats(), [format_unicode])
+
+        # Test with two formats.
+        c = Clipboard(contents={format_unicode: u"unicode text",
+                                format_text: u"text"})
+        self.assertEqual(c.get_available_formats(), [format_unicode,
+                                                     format_text],
+                         "format_unicode should precede format_text")
+
+        # Test with text formats and one custom format. The preferred text
+        # format should be first on the list.
+        format_custom = 0
+        c = Clipboard(contents={format_custom: 123,
+                                format_unicode: u"unicode text"})
+        self.assertEqual(c.get_available_formats(), [format_unicode,
+                                                     format_custom],
+                         "format_unicode should precede format_custom")
+        c = Clipboard(contents={format_custom: 123,
+                                format_text: b"text"})
+        self.assertEqual(c.get_available_formats(), [format_text,
+                                                     format_custom],
+                         "format_text should precede format_custom")
+
+        # Test with no text format and one custom format.
+        c = Clipboard(contents={format_custom: 123})
+        self.assertEqual(c.get_available_formats(), [format_custom])
+
     def test_has_format(self):
         # Test with an empty Clipboard instance.
         c = Clipboard()
