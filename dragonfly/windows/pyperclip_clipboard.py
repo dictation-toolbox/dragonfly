@@ -26,9 +26,7 @@ and should work on Windows, Mac OS and Linux-based operating systems.
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
-import locale
-
-from six import integer_types, binary_type
+from six import integer_types
 import pyperclip
 
 from .base_clipboard import BaseClipboard
@@ -60,16 +58,18 @@ class PyperclipClipboard(BaseClipboard):
 
     @classmethod
     def set_system_text(cls, content):
-        if not content:
-            content = u""
-        if isinstance(content, binary_type):
-            encoding = locale.getpreferredencoding()
-            content = content.decode(encoding)
+        # If *content* is None, clear the clipboard and return early.
+        if content is None:
+            cls.clear_clipboard()
+            return
+
+        # Otherwise, convert *content* and set the system clipboard data.
+        content = cls.convert_format_content(cls.format_unicode, content)
         pyperclip.copy(content)
 
     @classmethod
     def clear_clipboard(cls):
-        cls.set_system_text("")
+        cls.set_system_text(u"")
 
     # ----------------------------------------------------------------------
 

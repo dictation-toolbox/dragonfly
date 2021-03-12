@@ -49,10 +49,25 @@ class TestClipboard(unittest.TestCase):
         # Clear the clipboard before each test.
         Clipboard.clear_clipboard()
 
-    def test_system_text_methods(self):
-        text = "testing testing"
-        Clipboard.set_system_text(text)
-        self.assertEqual(Clipboard.get_system_text(), text)
+    def test_get_set_system_text(self):
+        # Test with an empty system clipboard.
+        Clipboard.clear_clipboard()
+        self.assertEqual(Clipboard.get_system_text(), u"")
+
+        # Test setting a Unicode string on the system clipboard.
+        text1 = u"Unicode text"
+        Clipboard.set_system_text(text1)
+        self.assertEqual(Clipboard.get_system_text(), text1)
+
+        # Test setting a binary string on the system clipboard.
+        # get_system_text() should return the equivalent Unicode string, as
+        # format_unicode is preferred.
+        Clipboard.set_system_text(b"text")
+        self.assertEqual(Clipboard.get_system_text(), u"text")
+
+        # Test that setting the text using None clears the clipboard.
+        Clipboard.set_system_text(None)
+        self.assertEqual(Clipboard.get_system_text(), u"")
 
     def test_clear_clipboard(self):
         # Put something on the system clipboard.
@@ -311,6 +326,8 @@ class TestClipboard(unittest.TestCase):
         self.assertRaises(TypeError, c.set_format, format_text, object())
         self.assertRaises(TypeError, c.set_format, format_unicode, 0)
         self.assertRaises(TypeError, c.set_format, format_unicode, object())
+        self.assertRaises(TypeError, c.set_system_text, 0)
+        self.assertRaises(TypeError, c.set_system_text, object())
 
 
 if __name__ == '__main__':

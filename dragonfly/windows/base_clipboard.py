@@ -60,7 +60,14 @@ class BaseClipboard(object):
     @classmethod
     def set_system_text(cls, content):
         """
-        Set the system clipboard text.
+            Set the system clipboard text.
+
+            Arguments:
+             - *content* (string) -- the clipboard contents to set.
+
+            If *None* is given as the *content*, text on the system
+            clipboard will be cleared.
+
         """
         raise NotImplementedError()
 

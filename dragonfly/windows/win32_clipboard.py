@@ -122,7 +122,13 @@ class Win32Clipboard(BaseClipboard):
 
     @classmethod
     def set_system_text(cls, content):
-        content = text_type(content)
+        # If *content* is None, clear the clipboard and return early.
+        if content is None:
+            cls.clear_clipboard()
+            return
+
+        # Otherwise, convert *content* and set the system clipboard data.
+        content = cls.convert_format_content(cls.format_unicode, content)
         with win32_clipboard_ctx():
             win32clipboard.EmptyClipboard()
             win32clipboard.SetClipboardData(cls.format_unicode, content)
