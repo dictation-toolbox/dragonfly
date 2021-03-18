@@ -12,6 +12,39 @@ Note: this project had no release versions between 0.6.6b1_ and
 commit history and will be placed under headings in this file over time.
 
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add Clipboard class methods: get_available_formats() and
+  convert_format_content().
+
+Changed
+~~~~~~~
+* Change the Clipboard classes so they have a consistent API across
+  platforms.
+* Change the German integer element content to support compound words in
+  range 20-99, including when used as part of larger numbers.
+* Change the Paste action class to make use of the Clipboard class changes.
+* Change the X11Window class to filter out unhelpful xdotool BadWindow error
+  messages.
+* Change the internal integer builder classes to support replacing or adding
+  alternative recognition words for numbers.
+
+Fixed
+~~~~~
+* Fix a bug with the pyperclip Clipboard.copy_to_system() method.
+* Fix diction.formatter logger name to match log.py (thanks
+  `@wolfmanstout`_).
+* Fix incorrect handling of None in the Clipboard classes (thanks
+  `@MarkRx`_).
+* Fix issues with German integers in the millions and with the words "ein"
+  and "eins".
+* Fix smart casting for command-line interface (CLI) to handle other
+  possible exceptions for some inputs (thanks `@daanzu`_).
+
+
 0.29.0_ - 2020-12-31
 --------------------
 
@@ -1083,6 +1116,7 @@ This release is the first in the Git version control system.
 .. Contributors.
 .. _@JasoonS: https://github.com/JasoonS
 .. _@LexiconCode: https://github.com/LexiconCode
+.. _@MarkRx: https://github.com/MarkRx
 .. _@Timoses: https://github.com/Timoses
 .. _@Versatilus: https://github.com/Versatilus
 .. _@alexboche: https://github.com/alexboche
