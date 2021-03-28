@@ -43,7 +43,7 @@ try:
 except ImportError:
     natlink = None
 
-from six import text_type, binary_type, string_types, PY2
+from six import binary_type, string_types, PY2
 
 import dragonfly.engines
 
@@ -275,12 +275,15 @@ class WordParserDns10(WordParserBase):
         return WordFlags(*flag_names)
 
     def parse_input(self, input):
-        # Not unicode (Python 2) or str (Python 3)
-        if not isinstance(input, text_type):
+        if not isinstance(input, string_types):
+            raise TypeError("input must be a string, not {0!r}"
+                            .format(input))
+
+        if isinstance(input, binary_type):
             # DNS and Natlink provide recognized words as "Windows-1252"
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
-            input = text_type(input).encode("windows-1252")
+            input = input.decode("windows-1252")
 
         # The written and spoken forms of a word are separated by a "\"
         # character.
@@ -380,12 +383,15 @@ class WordParserDns11(WordParserBase):
         return flags
 
     def parse_input(self, input):
-        # Not unicode (Python 2) or str (Python 3)
-        if not isinstance(input, text_type):
+        if not isinstance(input, string_types):
+            raise TypeError("input must be a string, not {0!r}"
+                            .format(input))
+
+        if isinstance(input, binary_type):
             # DNS and Natlink provide recognized words as "Windows-1252"
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
-            input = text_type(input).encode("windows-1252")
+            input = input.decode("windows-1252")
 
         parts = input.split("\\")
         if len(parts) == 1:
