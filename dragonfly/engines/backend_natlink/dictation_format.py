@@ -329,8 +329,8 @@ class WordParserDns11(WordParserBase):
 
         "space-bar":        WordFlags("no_format", "spacebar", "no_space_after", "no_cap_reset", "no_space_before"),
         "spelling-cap":     WordFlags("no_format", "no_space_reset", "cap_next_force"),
-        "letter":           WordFlags("no_space_after"),
-        "uppercase-letter": WordFlags("no_space_after"),
+        "letter":           WordFlags("no_space_between"),
+        "uppercase-letter": WordFlags("no_space_between"),
         "numeral":          WordFlags("no_space_after"),
 
         "period":           WordFlags("two_spaces_after", "cap_next", "no_space_before", "not_after_period"),
