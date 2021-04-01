@@ -90,12 +90,9 @@ class PyperclipClipboard(BaseClipboard):
         # This class only handles text formats.
         text = self.get_system_text()
         contents = {}
-        if self.format_text in formats:
-            text = self.convert_format_content(self.format_text, text)
-            contents[self.format_text] = text
-        if self.format_unicode in formats:
-            text = self.convert_format_content(self.format_unicode, text)
-            contents[self.format_unicode] = text
+        for format in formats:
+            content = self.convert_format_content(format, text)
+            contents[format] = content
         self._contents = contents
 
         # Then clear the system clipboard, if requested.
