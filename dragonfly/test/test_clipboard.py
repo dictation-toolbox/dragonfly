@@ -79,6 +79,32 @@ class TestClipboard(unittest.TestCase):
         # Then test that it has been cleared.
         self.assertEqual(Clipboard.get_system_text(), "")
 
+    def test_convert_format_content(self):
+        # Define a convenient shorthand function for testing the
+        # Clipboard.convert_format_content() class method.
+        def convert(format, content):  # pylint: disable=redefined-builtin
+            return Clipboard.convert_format_content(format, content)
+
+        # Text strings used with format_text (ANSI) are converted.
+        self.assertEqual(convert(format_text, u"text"), b"text")
+
+        # Text strings used with format_unicode are not changed.
+        self.assertEqual(convert(format_unicode, u"text"), u"text")
+
+        # Binary strings used with format_unicode are converted.
+        self.assertEqual(convert(format_unicode, b"text"), u"text")
+
+        # Binary strings used with format_text are not changed.
+        self.assertEqual(convert(format_text, b"text"), b"text")
+
+        # Using non-string objects for text formats raises errors.
+        self.assertRaises(TypeError, convert, format_text, 0)
+        self.assertRaises(TypeError, convert, format_unicode, 0)
+        self.assertRaises(TypeError, convert, format_text, object())
+        self.assertRaises(TypeError, convert, format_unicode, object())
+        self.assertRaises(TypeError, convert, format_text, None)
+        self.assertRaises(TypeError, convert, format_unicode, None)
+
     def test_from_system_argument(self):
         # Test the optional from_system argument of Clipboard.__init__
         text = "something"
