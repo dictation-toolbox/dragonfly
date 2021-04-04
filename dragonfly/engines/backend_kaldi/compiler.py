@@ -157,7 +157,10 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         return kaldi_rule_by_rule_dict
 
     def _compile_rule_root(self, rule, grammar, kaldi_rule):
-        self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst, export=True)
+        src_state, dst_state = self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst, export=True)
+        if kaldi_rule.fst.native and not kaldi_rule.fst.has_path():
+            # Impossible paths break AGF compilation, so bolt on an Impossible element. This is less than ideal, but what are you doing compiling this anyway?
+            self._compile_impossible(None, src_state, dst_state, grammar, kaldi_rule, kaldi_rule.fst)
         kaldi_rule.compile(lazy=self.lazy_compilation)
 
     def _compile_rule(self, rule, grammar, kaldi_rule, fst, export):
