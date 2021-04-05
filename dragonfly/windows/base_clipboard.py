@@ -27,6 +27,8 @@ This file contains the base interface to the system clipboard.
 
 import locale
 import logging
+import os
+import re
 
 from six import text_type, binary_type
 
@@ -43,9 +45,11 @@ class BaseClipboard(object):
 
     format_text      = 1
     format_unicode   = 13
+    format_hdrop     = 15
     format_names = {
         format_text:     "text",
         format_unicode:  "unicode",
+        format_hdrop:    "hdrop",
     }
 
     #-----------------------------------------------------------------------
@@ -78,6 +82,105 @@ class BaseClipboard(object):
         """
         raise NotImplementedError()
 
+    #-----------------------------------------------------------------------
+
+    @classmethod
+    def _convert_format_text(cls, content):
+        format_name = cls.format_names[cls.format_text]
+        if not isinstance(content, (text_type, binary_type)):
+            raise TypeError("Invalid content for format %s: (%r)"
+                            % (format_name, content,))
+
+        # Use a binary string for CF_TEXT content.
+        if isinstance(content, text_type):
+            encoding = locale.getpreferredencoding()
+            content = content.encode(encoding)
+
+        return content
+
+    @classmethod
+    def _convert_format_unicode(cls, content):
+        format_name = cls.format_names[cls.format_unicode]
+        if not isinstance(content, (text_type, binary_type)):
+            raise TypeError("Invalid content for format %s: (%r)"
+                            % (format_name, content,))
+
+        # Use a text string for CF_UNICODETEXT content.
+        if isinstance(content, binary_type):
+            encoding = locale.getpreferredencoding()
+            content = content.decode(encoding)
+
+        return content
+
+    @classmethod
+    def _convert_format_hdrop(cls, content):
+        # The CF_HDROP clipboard format is for copied file paths.
+        format_name = cls.format_names[cls.format_hdrop]
+        result = content
+
+        # Convert string content into a list of file paths.  String content
+        #  must be a list of file paths separated by new lines and/or null
+        #  characters.  The following example string is acceptable:
+        #  "c:\\temp1.txt\0c:\\temp2.txt\0\0".
+        if isinstance(content, (text_type, binary_type)):
+            delimiter = u"[\0\r\n]"
+            if isinstance(content, binary_type):
+                delimiter = delimiter.encode()
+
+            # Convert string content into a list and remove empty
+            #  strings.
+            result = re.split(delimiter, content)
+            result = [string for string in result if string]
+
+        # Verify that the list/tuple items are non-empty strings.
+        elif isinstance(content, (list, tuple)):
+            string_items = all([
+                isinstance(item, (text_type, binary_type)) and item
+                for item in content
+            ])
+            if not string_items:
+                raise TypeError("Invalid content type for format %s: (%r)"
+                                % (format_name, content))
+
+        # Only strings, tuples and lists are accepted for CF_HDROP
+        #  content.
+        else:
+            raise TypeError("Invalid content type for format %s: (%r)"
+                            % (format_name, content))
+
+        # Remove the file scheme from strings if it is present.
+        file_paths = []
+        for string in result:
+            file_scheme = (u"file://" if isinstance(string, text_type)
+                           else b"file://")
+            if string.startswith(file_scheme):
+                string = string[7:]
+            file_paths.append(string)
+        result = file_paths
+
+        # Empty lists/tuples are not acceptable.
+        if not result:
+            raise ValueError("Invalid content value for format %s: (%r)"
+                             % (format_name, content))
+
+        # Verify that strings in the content list are existing, absolute
+        #  file paths.  Relative paths are not accepted because they do not
+        #  make sense without the context of a working directory. The system
+        #  clipboard does not typically have such a context.
+        file_paths_exist = all([
+            os.path.isabs(item) and os.path.exists(item)
+            for item in result
+        ])
+        if not (file_paths_exist and result):
+            raise ValueError("Invalid content value for format %s: (%r)"
+                             % (format_name, content))
+
+        # Use a tuple for CF_HDROP content.
+        if isinstance(result, list):
+            result = tuple(result)
+
+        return result
+
     @classmethod
     def convert_format_content(cls, format, content):
         """
@@ -89,6 +192,13 @@ class BaseClipboard(object):
                and if possible.
              - *unicode* -- decodes content to a text string, if necessary
                and if possible.
+             - *hdrop* -- converts content into a tuple of file paths, if
+               necessary and if possible.
+
+               String content must be a list of existing, absolute file
+               paths separated by new lines and/or null characters.  All
+               specified file paths must be absolute paths referring to
+               existing files on the system.
 
             If the content cannot be converted for the given *format*, an
             error is raised.
@@ -98,21 +208,13 @@ class BaseClipboard(object):
              - *content* (string) -- the clipboard contents to convert.
 
         """
-        if format in (cls.format_text, cls.format_unicode):
-            if not isinstance(content, (text_type, binary_type)):
-                raise TypeError("Invalid content for format %s: (%r)"
-                                % (cls.format_names[format], content))
-
-            # Use a binary string for CF_TEXT content.
-            if format == cls.format_text and isinstance(content, text_type):
-                encoding = locale.getpreferredencoding()
-                content = content.encode(encoding)
-
-            # Use a text string for CF_UNICODETEXT content.
-            elif (format == cls.format_unicode and isinstance(content,
-                                                              binary_type)):
-                encoding = locale.getpreferredencoding()
-                content = content.decode(encoding)
+        convert_method = {
+            cls.format_text:     cls._convert_format_text,
+            cls.format_unicode:  cls._convert_format_unicode,
+            cls.format_hdrop:    cls._convert_format_hdrop,
+        }.get(format)
+        if convert_method is not None:
+            content = convert_method(content)
 
         # Return the content.
         return content
