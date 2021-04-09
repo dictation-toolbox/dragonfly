@@ -22,13 +22,20 @@
 This file implements interfaces to the X selections (clipboards):
 
  * Abstract BaseX11Clipboard interface to the X selections.
+ * XselClipboard class implementation using the xsel program.
 
 """
 
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
-from six import integer_types
+from __future__ import print_function
+
+import locale
+from subprocess import Popen, PIPE
+import sys
+
+from six import integer_types, binary_type
 
 from .base_clipboard import BaseClipboard
 
@@ -193,3 +200,92 @@ class BaseX11Clipboard(BaseClipboard):
         if self.has_format(self.format_x_secondary):
             content = self.get_format(self.format_x_secondary)
             self._set_x_selection(self.format_x_secondary, content)
+
+
+#===========================================================================
+
+
+class XselClipboard(BaseX11Clipboard):
+    """
+    Class for interacting with X selections (clipboards) using xsel.
+
+    This is Dragonfly's default clipboard class on X11/Linux.
+
+    """
+
+    @classmethod
+    def _run_command(cls, command, arguments, input_data=None):
+        """
+        Run a command with arguments and return the result.
+        """
+        arguments = [str(arg) for arg in arguments]
+        full_command = [command] + arguments
+        full_readable_command = ' '.join(full_command)
+        cls._log.debug(full_readable_command)
+        try:
+            # Execute the child process, passing input data if necessary.
+            encoding = locale.getpreferredencoding()
+            popen_kwargs = dict(stdout=PIPE, stderr=PIPE)
+            comm_kwargs = {}
+            if input_data is not None:
+                popen_kwargs["stdin"] = PIPE
+                if not isinstance(input_data, binary_type):
+                    input_data = input_data.encode(encoding)
+                comm_kwargs["input"] = input_data
+            p = Popen(full_command, **popen_kwargs)
+            stdout, stderr = p.communicate(**comm_kwargs)
+
+            # Decode output if it is binary.
+            if isinstance(stdout, binary_type):
+                stdout = stdout.decode(encoding)
+            if isinstance(stderr, binary_type):
+                stderr = stderr.decode(encoding)
+
+            # Print error messages to stderr.
+            if stderr:
+                print(stderr, file=sys.stderr)
+
+            # Return the process output and return code.
+            return stdout, p.returncode
+        except OSError as e:
+            cls._log.error("Failed to execute command '%s': %s. Is "
+                           "%s installed?",
+                           full_readable_command, e, command)
+            raise e
+
+    @classmethod
+    def _get_x_selection(cls, format):
+        if format == cls.format_x_primary:
+            arguments = ["--primary", "-o"]
+        elif format == cls.format_x_secondary:
+            arguments = ["--secondary", "-o"]
+        elif format == cls.format_x_clipboard:
+            arguments = ["--clipboard", "-o"]
+        else:
+            raise ValueError("Invalid X selection: %r" % format)
+
+        stdout, return_code = cls._run_command("xsel", arguments)
+        if return_code != 0 or not stdout:
+            format_repr = cls.format_names.get(format, format)
+            message = ("Specified X selection %r is not available."
+                       % format_repr)
+            raise TypeError(message)
+
+        return stdout
+
+    @classmethod
+    def _set_x_selection(cls, format, content):
+        if format == cls.format_x_primary:
+            arguments = ["--primary", "-i"]
+        elif format == cls.format_x_secondary:
+            arguments = ["--secondary", "-i"]
+        elif format == cls.format_x_clipboard:
+            arguments = ["--clipboard", "-i"]
+        else:
+            raise ValueError("Invalid X selection: %r" % format)
+        _, return_code = cls._run_command("xsel", arguments, content)
+        if return_code != 0:
+            format_repr = cls.format_names.get(format, format)
+            message = ("Specified X selection %r could not be set."
+                       % format_repr)
+            raise TypeError(message)

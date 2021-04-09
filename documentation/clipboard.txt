@@ -16,6 +16,9 @@ on the platform:
  * :class:`dragonfly.windows.win32_clipboard.Win32Clipboard` is used on
    Windows.
 
+ * :class:`dragonfly.windows.x11_clipboard.XselClipboard` is used on
+   X11/Linux. This class requires the ``xclip`` program.
+
  * :class:`dragonfly.windows.pyperclip_clipboard.PyperclipClipboard` is used
    on other platforms, such as macOS or Linux.
 
@@ -101,6 +104,16 @@ Windows Clipboard context manager function
 ----------------------------------------------------------------------------
 
 .. autofunction:: dragonfly.windows.win32_clipboard.win32_clipboard_ctx
+
+
+X11 Clipboard classes
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.windows.x11_clipboard.BaseX11Clipboard
+   :members:
+
+.. autoclass:: dragonfly.windows.x11_clipboard.XselClipboard
+   :members:
 
 
 Pyperclip Clipboard class
