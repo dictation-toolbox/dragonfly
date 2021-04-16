@@ -35,7 +35,7 @@ affiliated with the dragonfly project itself).
 * `User Lexicon`_
 * `Grammar/Rule/Element Weights`_
 * `Retaining Audio and/or Recognition Metadata`_
-* `Alternative/Cloud Dictation`_
+* `Alternative Dictation`_
 
 
 Setup
@@ -50,7 +50,7 @@ Otherwise...
 
 **Requirements:**
 
-* Python 2.7 or 3.4+; *64-bit required!*
+* Python 3.6+; *64-bit required!*
 * OS: Windows/Linux/MacOS all supported (see `Cross-platform`_)
 * Only supports Kaldi left-biphone models, specifically *nnet3 chain* models, with specific modifications
 * ~1GB+ disk space for model plus temporary storage and cache, depending on your grammar complexity
@@ -149,7 +149,7 @@ the ``get_engine()`` function, which passes them to the
 
   engine = get_engine("kaldi",
     model_dir='kaldi_model',
-    tmp_dir='kaldi_tmp',
+    tmp_dir=None,
     audio_input_device=None,
     audio_self_threaded=True,
     audio_auto_reconnect=True,
@@ -160,14 +160,13 @@ the ``get_engine()`` function, which passes them to the
     retain_approval_func=None,
     vad_aggressiveness=3,
     vad_padding_start_ms=150,
-    vad_padding_end_ms=150,
-    vad_complex_padding_end_ms=500,
+    vad_padding_end_ms=200,
+    vad_complex_padding_end_ms=600,
     auto_add_to_user_lexicon=True,
     lazy_compilation=True,
     invalidate_cache=False,
     expected_error_rate_threshold=None,
     alternative_dictation=None,
-    cloud_dictation_lang='en-US',
   )
 
 The engine can also be configured via the :ref:`command-line interface
@@ -178,7 +177,7 @@ The engine can also be configured via the :ref:`command-line interface
    # Initialize the Kaldi engine backend with custom arguments, then load
    # command modules and recognize speech.
    python -m dragonfly load _*.py --engine kaldi --engine-options " \
-       model_dir=kaldi_model_zamia \
+       model_dir=kaldi_model_daanzu \
        vad_padding_end_ms=300"
 
 
@@ -189,7 +188,7 @@ The engine can also be configured via the :ref:`command-line interface
 * ``model_dir`` (``str|None``) -- Directory containing model.
 
 * ``tmp_dir`` (``str|None``) -- Directory to use for temporary storage and
-  cache (used both during execution and between executions but safe to
+  cache (used for caching during and between executions but safe to
   delete).
 
 * ``audio_input_device`` (``int|str|None|False``) -- Microphone PortAudio input
@@ -263,7 +262,7 @@ The engine can also be configured via the :ref:`command-line interface
 
 * ``auto_add_to_user_lexicon`` (``bool``) -- Enables automatically
   adding unknown words to the `User Lexicon`_. This may make requests to
-  the cloud, to predict pronunciations, depending on your installed
+  a cloud service, to predict pronunciations, depending on your installed
   packages.
 
 * ``lazy_compilation`` (``bool``) -- Enables deferred grammar/rule
@@ -271,7 +270,7 @@ The engine can also be configured via the :ref:`command-line interface
   of cores, for a large speed up loading uncached.
 
 * ``invalidate_cache`` (``bool``) -- Enables invalidating the engine's
-  cache prior to initialization.
+  cache prior to initialization, possibly for debugging.
 
 * ``expected_error_rate_threshold`` (``float|None``) -- Threshold of
   "confidence" in the recognition, as measured in estimated error rate
@@ -279,16 +278,11 @@ The engine can also be configured via the :ref:`command-line interface
   ignored. Setting this may be helpful for ignoring "bad" recognitions,
   possibly around ``0.1`` depending on personal preference.
 
-* ``alternative_dictation`` (``str|None``) -- Enables alternative
-  dictation and chooses the provider. Possible values:
+* ``alternative_dictation`` (``callable|None``) -- Enables alternative an
+  dictation model/engine and chooses the provider. Possible values:
 
   * ``None`` -- Disabled
-  * ``"gcloud"`` -- Google Cloud Speech-to-Text
-
-* ``cloud_dictation_lang`` (``str|None``) -- If you want a cloud
-  dictation language other than English, you can specify it here. Valid
-  codes for Google Cloud Speech-to-Text are listed on this `page
-  <https://cloud.google.com/speech-to-text/docs/languages>`_.
+  * a Python ``callable`` -- See `Alternative Dictation`_ section below
 
 
 Cross-platform
@@ -405,7 +399,7 @@ to the user dictation list (identical spoken and written form) or dictlist
 (different spoken and written forms), and using the ``UserDictation`` element in
 your grammars (in place of the standard dragonfly ``Dictation`` element)::
 
-    from dragonfly import *
+    from dragonfly import get_engine, MappingRule, Function
     from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
     get_engine().add_word_list_to_user_dictation(['kaldi'])
     get_engine().add_word_dict_to_user_dictation({'open F S T': 'openFST'})
@@ -485,7 +479,7 @@ chained to tag it at the same time::
 This is useful for retaining only known-correct data for later training.
 
 
-Alternative/Cloud Dictation
+Alternative Dictation
 ----------------------------------------------------------------------------
 
 This backend supports optionally using an alternative method of
@@ -504,62 +498,12 @@ in another language, or some other reason. You can use one of:
 You can enable this by setting the ``alternative_dictation`` engine
 option. Valid options:
 
-* ``'gcloud'``: Cloud dictation with Google Cloud Speech-to-Text
 * A ``callable`` object: Any external engine. The callable must accept at
   least one argument (for the audio data) and any keyword arguments. The
   audio data is passed in standard Linear16 (``int``) PCM encoding. The
   callable should return the recognized text.
 
-Cloud Dictation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Although the Kaldi engine has full native/local/offline dictation
-support, and can produce competitive state-of-the-art results with
-comparable training data, this backend also supports cloud dictation.
-This feature lets you transparently send audio to a cloud speech-to-text
-provider for *only the dictation portion* of your commands, while
-continuing to use Kaldi to recognize the commands themselves and whether
-there was dictation spoken. This gives you the best of both worlds:
-
-* Fast, low-latency, highly-accurate, grammar-exact recognition of
-  grammatical commands with Kaldi
-
-* Unbeatable general recognition of free-form dictation with the cloud
-
-The downsides of this is that each dictation request actually sent to
-the cloud (once it has been detected by Kaldi) incurs: (1) high latency
-(~1-2s) of Internet access, and (2) a monetary cost and relationship to
-the cloud provider.
-
-Google Cloud Speech-to-Text is currently the only supported provider.
-You can test its accuracy for free on its `product page
-<https://cloud.google.com/speech-to-text/>`_ and see its pricing there
-as well. It also supports many languages other than English, which can
-be enabled with the ``cloud_dictation_lang`` option.
-
-The process to enable your access to GCloud is nontrivial: set up an
-account with billing, set up a project, enable the Google Speech-to-Text
-API for that project, create a service account, download a private key
-as JSON, and set an environment variable
-``GOOGLE_APPLICATION_CREDENTIALS`` to the path to the JSON file. Details
-are in `Google's documentation
-<https://cloud.google.com/speech-to-text/docs/quickstart>`_
-(specifically steps 1 and 2 of `the Before You Begin section
-<https://cloud.google.com/speech-to-text/docs/quickstart-protocol#before_you_begin>`_).
-Then, run the Kaldi backend with the ``alternative_dictation='gcloud'``
-option.
-
-If this is too cumbersome for you and there is sufficient interest, I
-could set up a paid service where you pay me via PayPal/Stripe to fund
-an account with me, and I could send you a simple API key to pass as a
-keyword argument just like other normal engine options. Let me know if
-you're interested such a service.
-
-Prior to use, you must install the Google Cloud Speech-to-Text client library::
-
-  pip install google-cloud-speech==0.36.3
-
-Using Alternative/Cloud Dictation
+Using Alternative Dictation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To use alternative dictation, you *must both* pass the
@@ -635,8 +579,9 @@ Dictation Formatting & Punctuation
 
 The native dictation only provides recognitions as unformatted lowercase
 text without punctuation. Improving this generally is multifaceted and
-complex. However, the *cloud dictation* feature avoids this problem by
-using the formatting & punctuation applied by cloud provider.
+complex. However, the *alternative dictation* feature can avoid this
+problem by using the formatting & punctuation applied by a cloud
+provider.
 
 
 Models: Other Languages, Other Sizes, & Training

@@ -72,14 +72,13 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         self.auto_add_to_user_lexicon = bool(auto_add_to_user_lexicon)
         self.lazy_compilation = bool(lazy_compilation)
 
-        self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # maps Rule -> KaldiRule
-        self._grammar_rule_states_dict = dict()  # FIXME: disabled!
-        self.kaldi_rules_by_listreflist_dict = collections.defaultdict(set)
-        self.added_word = False
+        self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # Rule -> KaldiRule
+        # self._grammar_rule_states_dict = dict()  # FIXME: disabled!
+        self.kaldi_rules_by_listreflist_dict = collections.defaultdict(set)  # Rule -> Set[KaldiRule]
         self.internal_grammar = InternalGrammar('!kaldi_engine_internal')
 
     impossible_word = property(lambda self: self._longest_word.lower())  # FIXME
-    unknown_word = '<unk>'
+    unknown_word = property(lambda self: self._oov_word)
 
     #-----------------------------------------------------------------------
     # Methods for handling lexicon translation.
@@ -116,8 +115,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def handle_oov_word(self, word):
         if self.auto_add_to_user_lexicon:
             try:
-                pronunciations = self.model.add_word(word, lazy_compilation=True)
-                self.added_word = True
+                pronunciations = self.add_word(word, lazy_compilation=True)
             except Exception as e:
                 self._log.exception("%s: exception automatically adding word %r" % (self, word))
             else:
@@ -135,7 +133,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def compile_grammar(self, grammar, engine):
         self._log.debug("%s: Compiling grammar %s." % (self, grammar.name))
 
-        kaldi_rule_by_rule_dict = collections.OrderedDict()
+        kaldi_rule_by_rule_dict = collections.OrderedDict()  # Rule -> KaldiRule
         for rule in grammar.rules:
             if rule.exported:
                 if rule.element is None:
@@ -144,13 +142,14 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
                 kaldi_rule = KaldiRule(self,
                     name='%s::%s' % (grammar.name, rule.name),
-                    has_dictation=bool((rule.element is not None) and ('<Dictation()>' in rule.gstring())))  # FIXME: make more accurate
+                    has_dictation=None)  # has_dictation is set to True during compilation below if that is the case
                 kaldi_rule.parent_grammar = grammar
                 kaldi_rule.parent_rule = rule
                 kaldi_rule_by_rule_dict[rule] = kaldi_rule
 
                 try:
                     self._compile_rule_root(rule, grammar, kaldi_rule)
+                    kaldi_rule.has_dictation = bool(kaldi_rule.has_dictation)  # Convert None to False
                 except Exception:
                     raise self.make_compiler_error_for_kaldi_rule(kaldi_rule)
 
@@ -158,15 +157,13 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         return kaldi_rule_by_rule_dict
 
     def _compile_rule_root(self, rule, grammar, kaldi_rule):
-        self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst)
-        if self.added_word:
-            self.model.generate_lexicon_files()
-            self.model.load_words()
-            self.decoder.load_lexicon()
-            self.added_word = False
+        src_state, dst_state = self._compile_rule(rule, grammar, kaldi_rule, kaldi_rule.fst, export=True)
+        if kaldi_rule.fst.native and not kaldi_rule.fst.has_path():
+            # Impossible paths break AGF compilation, so bolt on an Impossible element. This is less than ideal, but what are you doing compiling this anyway?
+            self._compile_impossible(None, src_state, dst_state, grammar, kaldi_rule, kaldi_rule.fst)
         kaldi_rule.compile(lazy=self.lazy_compilation)
 
-    def _compile_rule(self, rule, grammar, kaldi_rule, fst, export=True):
+    def _compile_rule(self, rule, grammar, kaldi_rule, fst, export):
         """ :param export: whether rule is exported (a root rule) """
         # Determine whether this rule has already been compiled.
         # if (grammar.name, rule.name) in self._grammar_rule_states_dict:
@@ -315,6 +312,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     # @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         weight = self.get_weight(element)  # Handle weight internally below without adding a state
+        # Compile target rule "inline"
         rule_src_state, rule_dst_state = self._compile_rule(element.rule, grammar, kaldi_rule, fst, export=False)
         fst.add_arc(src_state, rule_src_state, None, weight=weight)
         fst.add_arc(rule_dst_state, dst_state, None)
@@ -332,6 +330,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
     # @trace_compile
     def _compile_dictation(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
+        kaldi_rule.has_dictation = True
         src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         # fst.add_arc(src_state, dst_state, '#nonterm:dictation', olabel=WFST.eps)
         extra_state = fst.add_state()
