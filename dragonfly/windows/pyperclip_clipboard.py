@@ -26,6 +26,8 @@ and should work on Windows, Mac OS and Linux-based operating systems.
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
+import os
+
 from six import integer_types
 import pyperclip
 
@@ -74,9 +76,16 @@ class PyperclipClipboard(BaseClipboard):
     # ----------------------------------------------------------------------
 
     def copy_from_system(self, formats=None, clear=False):
+        # Determine the supported formats.  Copied file paths may be
+        #  available to us on X11.
+        supported_formats = [self.format_text, self.format_unicode]
+        if os.environ.get("XDG_SESSION_TYPE") == "x11":
+            supported_formats.append(self.format_hdrop)
+
         # Determine which formats to retrieve.
+        caller_specified_formats = bool(formats)
         if not formats:
-            formats = (self.format_text, self.format_unicode)
+            formats = supported_formats
         elif isinstance(formats, integer_types):
             formats = (formats,)
 
@@ -90,12 +99,33 @@ class PyperclipClipboard(BaseClipboard):
         # This class only handles text formats.
         text = self.get_system_text()
         contents = {}
-        if self.format_text in formats:
-            text = self.convert_format_content(self.format_text, text)
-            contents[self.format_text] = text
-        if self.format_unicode in formats:
-            text = self.convert_format_content(self.format_unicode, text)
-            contents[self.format_unicode] = text
+
+        # Populate the clipboard contents dictionary and raise errors for
+        #  unavailable formats.
+        for format in formats:
+            try:
+                err = False
+                content = self.convert_format_content(format, text)
+                contents[format] = content
+            except (ValueError, TypeError):
+                err = True
+
+            # Do not raise an error for CF_HDROP content if the caller did
+            #  not specify it.
+            if format == self.format_hdrop and not caller_specified_formats:
+                err = False
+
+            # Always raise an error if the format is not supported.
+            if format not in supported_formats:
+                err = True
+
+            # Raise an error if a specified clipboard format was not
+            #  available.
+            if err:
+                format_repr = self.format_names.get(format, format)
+                message = ("Specified clipboard format %r is not "
+                           "available." % format_repr)
+                raise TypeError(message)
         self._contents = contents
 
         # Then clear the system clipboard, if requested.

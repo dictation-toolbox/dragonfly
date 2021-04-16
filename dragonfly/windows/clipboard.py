@@ -28,10 +28,14 @@ import sys
 
 from .base_clipboard import BaseClipboard
 
+
 # Import the clipboard classes and functions for the current platform.
 if sys.platform.startswith("win"):
     from .win32_clipboard import (Win32Clipboard as Clipboard,
-                                    win32_clipboard_ctx)
+                                  win32_clipboard_ctx)
+
+elif os.environ.get("XDG_SESSION_TYPE") == "x11":
+    from .x11_clipboard import XselClipboard as Clipboard
 
 else:
     from .pyperclip_clipboard import PyperclipClipboard as Clipboard

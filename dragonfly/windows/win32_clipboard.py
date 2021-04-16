@@ -44,10 +44,15 @@ from .base_clipboard import BaseClipboard
 
 
 @contextlib.contextmanager
-def win32_clipboard_ctx():
+def win32_clipboard_ctx(timeout=0.5, step=0.001):
     """
     Python context manager for safely opening the Windows clipboard by
-    polling for access for up to 500 ms.
+    polling for access, timing out after the specified number of seconds.
+
+    Arguments:
+     - *timeout* (float, default: 0.5) -- timeout in seconds
+     - *step* (float, default: 0.001) -- number of seconds between each
+       attempt to open the clipboard.
 
     The polling is necessary because the clipboard is a shared resource
     which may be in use by another process.
@@ -59,7 +64,8 @@ def win32_clipboard_ctx():
            win32clipboard.EmptyClipboard()
 
     """
-    timeout = time.time() + 0.5
+    timeout = time.time() + float(timeout)
+    step = float(step)
     success = False
     while time.time() < timeout:
         # Attempt to open the clipboard, catching Windows errors.
@@ -68,8 +74,8 @@ def win32_clipboard_ctx():
             success = True
             break
         except pywintypes.error:
-            # Failure. Try again in 10 ms.
-            time.sleep(0.01)
+            # Failure. Try again after *step* seconds.
+            time.sleep(step)
 
     # Try opening the clipboard one more time if it still isn't open.
     # If this fails, then an error will be raised this time.

@@ -149,8 +149,9 @@ replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
 altogether.
 
 If you are installing this on Linux, you will also need to install the
-`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ and `wmctrl
-<https://www.freedesktop.org/wiki/Software/wmctrl/>`__ programs. You may
+`wmctrl <https://www.freedesktop.org/wiki/Software/wmctrl/>`__, `xdotool
+<https://www.semicomplete.com/projects/xdotool/>`__ and `xsel
+<http://www.vergenet.net/~conrad/software/xsel/>`__ programs. You may
 also need to manually set the ``XDG_SESSION_TYPE`` environment variable to
 ``x11``.
 
