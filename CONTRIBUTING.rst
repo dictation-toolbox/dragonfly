@@ -35,10 +35,11 @@ with the format, the `reStructuredText primer`_ might be a good starting
 point.
 
 The `Sphinx documentation engine`_ and `Read the Docs`_ are used to
-generate documentation from the *.txt* files in *documentation/* and from
-docstrings in dragonfly's source code.
+generate documentation from the *.txt* files in the *documentation/* folder.
+Docstrings in the source code are included in a semi-automatic way through
+use of the `sphinx.ext.autodoc`_ extension.
 
-To build the documentation locally, install Sphinx and the documentation
+To build the documentation locally, install Sphinx and any other documentation
 requirements:
 
 .. code:: shell
@@ -165,9 +166,10 @@ doesn't work with some of dragonfly's functionality, such as ``Dictation``
 elements, it should be mentioned somewhere in the engine's documentation.
 
 .. Links.
-.. _Sphinx documentation engine: https://www.sphinx-doc.org/en/master/
-.. _reStructuredText format: http://docutils.sourceforge.net/rst.html
-.. _restructuredText primer: http://docutils.sourceforge.net/docs/user/rst/quickstart.html
 .. _Read the docs: https://readthedocs.org/
+.. _Sphinx documentation engine: https://www.sphinx-doc.org/en/master/
 .. _issue tracker: https://github.com/dictation-toolbox/dragonfly/issues
 .. _pull request: https://github.com/dictation-toolbox/dragonfly/compare
+.. _reStructuredText format: http://docutils.sourceforge.net/rst.html
+.. _restructuredText primer: http://docutils.sourceforge.net/docs/user/rst/quickstart.html
+.. _sphinx.ext.autodoc: https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
