@@ -186,20 +186,24 @@ class Choice(Alternative):
         Element allowing a dictionary of phrases to be recognised to be
         mapped to objects to be used in an action.
 
+        A list or tuple of phrases to be recognised may also be used. In
+        this case, returned values will be the recognised words.
+
         Constructor arguments:
             - *name* (*str*) -- the name of this element
-            - *choices* (*dict*) -- dictionary mapping recognised phrases to
-              returned values
+            - *choices* (*dict*, *list* or *tuple*) -- dictionary mapping
+              recognised phrases to returned values **or** a list/tuple of
+              recognised phrases
             - *extras* (*list*, default: *None*) -- a list of included
               extras
             - *default* (default: *None*) -- the default value of this
               element
 
-        Example:
+        Example using a dictionary:
 
         .. code:: python
 
-            # Tab switching command e.g. 'third tab'
+            # Tab switching command, e.g. 'third tab'.
             mapping = {
                 "<nth> tab": Key("c-%(nth)s"),
             }
@@ -218,11 +222,40 @@ class Choice(Alternative):
                     "previous"      : "pgup",
                 }),
             ]
+
+        Example using a list:
+
+        .. code:: python
+
+            # Command for recognising and typing nth words, e.g.
+            # 'type third'.
+            mapping = {
+                "type <nth>": Text("%(nth)s"),
+            }
+            extras = [
+                Choice("nth", [
+                    "first",
+                    "second",
+                    "third",
+                    "fourth",
+                    "fifth",
+                    "sixth",
+                    "seventh",
+                    "eighth",
+                    "(last | ninth)",
+                    "next",
+                    "previous",
+                ]),
+            ]
     """
     def __init__(self, name, choices, extras=None, default=None):
         # Argument type checking.
         assert isinstance(name, string_types) or name is None
-        assert isinstance(choices, dict)
+        assert isinstance(choices, (dict, list, tuple))
+        choices_is_sequence = isinstance(choices, (list, tuple))
+        if choices_is_sequence:
+            choices = {k: k for k in choices}
+
         for k, v in choices.items():
             assert isinstance(k, string_types)
 
@@ -231,7 +264,10 @@ class Choice(Alternative):
         self._extras = extras
         children = []
         for k, v in choices.items():
-            child = Compound(spec=k, value=v, extras=extras)
+            if choices_is_sequence:
+                child = Compound(spec=k, extras=extras)
+            else:
+                child = Compound(spec=k, value=v, extras=extras)
             children.append(child)
 
         # Initialize super class.
