@@ -18,6 +18,8 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+# pylint: disable=global-statement
+
 import logging
 import os
 import traceback
@@ -47,40 +49,45 @@ def get_engine(name=None, **kwargs):
         :returns: engine object
         :raises: EngineError
     """
+    # pylint: disable=too-many-statements,too-many-branches
     global _default_engine, _engines_by_name
     log = logging.getLogger("engine")
 
     if name and name in _engines_by_name:
-        # If the requested engine has already been loaded, return it.
-        if kwargs is not None and len(kwargs) > 0:
-            message = ("Error: Passing get_engine arguments to an engine "
-                       "that has already been created, hence these "
-                       "arguments are ignored.")
-            print(message)
-            raise EngineError(message)
-        return _engines_by_name[name]
+        # If the requested engine has already been initialized, return it.
+        engine = _engines_by_name[name]
     elif not name and _default_engine:
         # If no specific engine is requested and an engine has already
-        #  been loaded, return it.
-        if kwargs is not None and len(kwargs) > 0:
-            message = ("Error: Passing get_engine arguments to an engine "
-                       "that has already been created, hence these "
-                       "arguments are ignored.")
-            print(message)
-            raise EngineError(message)
-        return _default_engine
+        #  been initialized, return it.
+        engine = _default_engine
+    else:
+        # No engine has been initialized yet.
+        engine = None
 
-    # Check if we're on Windows. If name is None and we're not on Windows,
-    # then we don't evaluate Windows-only engines like natlink.
+    # Check if there is an already initialized engine *and* custom engine
+    #  initialization arguments.
+    if engine and kwargs is not None and len(kwargs) > 0:
+        message = ("Error: Passing get_engine arguments to an engine "
+                   "that has already been initialized, hence these "
+                   "arguments are ignored.")
+        print(message)
+        raise EngineError(message)
+
+    # If there is a relevant initialized engine already, then return it.
+    if engine:
+        return engine
+
+    # Check if we're on Windows. If  we're not on Windows, then we don't
+    #  evaluate Windows-only engines like natlink.
     windows = os.name == 'nt'
 
-    if (windows and not name) or name == "natlink":
+    if not engine and windows and name in (None, "natlink"):
         # Attempt to retrieve the natlink back-end.
         try:
             from .backend_natlink import is_engine_available
             from .backend_natlink import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                return get_specific_engine(**kwargs)
+                engine = get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing natlink engine:"
                        " %s" % (e,))
@@ -88,14 +95,14 @@ def get_engine(name=None, **kwargs):
             if name:
                 raise EngineError(message)
 
-    sapi5_names = ["sapi5shared", "sapi5inproc", "sapi5"]
-    if (windows and not name) or name in sapi5_names:
+    sapi5_names = (None, "sapi5shared", "sapi5inproc", "sapi5")
+    if not engine and windows and name in sapi5_names:
         # Attempt to retrieve the sapi5 back-end.
         try:
             from .backend_sapi5 import is_engine_available
             from .backend_sapi5 import get_engine as get_specific_engine
             if is_engine_available(name, **kwargs):
-                return get_specific_engine(name, **kwargs)
+                engine = get_specific_engine(name, **kwargs)
         except Exception as e:
             message = ("Exception while initializing sapi5 engine:"
                        " %s" % (e,))
@@ -103,13 +110,13 @@ def get_engine(name=None, **kwargs):
             if name:
                 raise EngineError(message)
 
-    if not name or name == "sphinx":
+    if not engine and name in (None, "sphinx"):
         # Attempt to retrieve the CMU Sphinx back-end.
         try:
             from .backend_sphinx import is_engine_available
             from .backend_sphinx import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                return get_specific_engine(**kwargs)
+                engine = get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing sphinx engine:"
                        " %s" % (e,))
@@ -117,13 +124,13 @@ def get_engine(name=None, **kwargs):
             if name:
                 raise EngineError(message)
 
-    if not name or name == "kaldi":
+    if not engine and name in (None, "kaldi"):
         # Attempt to retrieve the Kaldi back-end.
         try:
             from .backend_kaldi import is_engine_available
             from .backend_kaldi import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                return get_specific_engine(**kwargs)
+                engine = get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing kaldi engine:"
                        " %s" % (e,))
@@ -132,15 +139,15 @@ def get_engine(name=None, **kwargs):
                 raise EngineError(message)
 
     # Only retrieve the text input engine if explicitly specified; it is not
-    # an actual SR engine implementation and is mostly intended to be used
-    # for testing.
-    if name == "text":
+    #  an actual SR engine implementation and is mostly intended to be used
+    #  for testing.
+    if not engine and name == "text":
         # Attempt to retrieve the TextInput engine instance.
         try:
             from .backend_text import is_engine_available
             from .backend_text import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                return get_specific_engine(**kwargs)
+                engine = get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing text-input engine:"
                        " %s" % (e,))
@@ -148,7 +155,10 @@ def get_engine(name=None, **kwargs):
             if name:
                 raise EngineError(message)
 
-    if not name:
+    # Return the engine instance, if one has been initialized.
+    if engine:
+        return engine
+    elif not name:
         raise EngineError("No usable engines found.")
     else:
         valid_names = ["natlink", "kaldi", "sphinx", "sapi5shared",
