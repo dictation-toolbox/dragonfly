@@ -95,6 +95,20 @@ def get_engine(name=None, **kwargs):
             if name:
                 raise EngineError(message)
 
+    if not engine and name in (None, "kaldi"):
+        # Attempt to retrieve the Kaldi back-end.
+        try:
+            from .backend_kaldi import is_engine_available
+            from .backend_kaldi import get_engine as get_specific_engine
+            if is_engine_available(**kwargs):
+                engine = get_specific_engine(**kwargs)
+        except Exception as e:
+            message = ("Exception while initializing kaldi engine:"
+                       " %s" % (e,))
+            log.warning(message)
+            if name:
+                raise EngineError(message)
+
     sapi5_names = (None, "sapi5shared", "sapi5inproc", "sapi5")
     if not engine and windows and name in sapi5_names:
         # Attempt to retrieve the sapi5 back-end.
@@ -119,20 +133,6 @@ def get_engine(name=None, **kwargs):
                 engine = get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing sphinx engine:"
-                       " %s" % (e,))
-            log.warning(message)
-            if name:
-                raise EngineError(message)
-
-    if not engine and name in (None, "kaldi"):
-        # Attempt to retrieve the Kaldi back-end.
-        try:
-            from .backend_kaldi import is_engine_available
-            from .backend_kaldi import get_engine as get_specific_engine
-            if is_engine_available(**kwargs):
-                engine = get_specific_engine(**kwargs)
-        except Exception as e:
-            message = ("Exception while initializing kaldi engine:"
                        " %s" % (e,))
             log.warning(message)
             if name:
