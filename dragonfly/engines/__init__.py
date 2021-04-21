@@ -22,7 +22,7 @@
 
 import logging
 import os
-import traceback
+
 from .base import EngineBase, EngineError, MimicFailure
 
 
@@ -65,12 +65,12 @@ def get_engine(name=None, **kwargs):
         engine = None
 
     # Check if there is an already initialized engine *and* custom engine
-    #  initialization arguments.
+    #  initialization arguments.  This is not allowed.
     if engine and kwargs is not None and len(kwargs) > 0:
         message = ("Error: Passing get_engine arguments to an engine "
                    "that has already been initialized, hence these "
                    "arguments are ignored.")
-        print(message)
+        log.error(message)
         raise EngineError(message)
 
     # If there is a relevant initialized engine already, then return it.
@@ -91,7 +91,7 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing natlink engine:"
                        " %s" % (e,))
-            print(message)
+            log.warning(message)
             if name:
                 raise EngineError(message)
 
@@ -106,7 +106,7 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing sapi5 engine:"
                        " %s" % (e,))
-            print(message)
+            log.warning(message)
             if name:
                 raise EngineError(message)
 
@@ -120,7 +120,7 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing sphinx engine:"
                        " %s" % (e,))
-            log.exception(message)
+            log.warning(message)
             if name:
                 raise EngineError(message)
 
@@ -134,7 +134,7 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing kaldi engine:"
                        " %s" % (e,))
-            print(message)
+            log.warning(message)
             if name:
                 raise EngineError(message)
 
@@ -151,7 +151,7 @@ def get_engine(name=None, **kwargs):
         except Exception as e:
             message = ("Exception while initializing text-input engine:"
                        " %s" % (e,))
-            print(message)
+            log.warning(message)
             if name:
                 raise EngineError(message)
 
