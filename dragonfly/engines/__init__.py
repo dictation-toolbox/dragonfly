@@ -155,8 +155,11 @@ def get_engine(name=None, **kwargs):
             if name:
                 raise EngineError(message)
 
-    # Return the engine instance, if one has been initialized.
+    # Return the engine instance, if one has been initialized.  Log a
+    #  message about which SR engine back-end was used.
     if engine:
+        message = "Initialized %r SR engine: %r." % (engine.name, engine)
+        log.info(message)
         return engine
     elif not name:
         raise EngineError("No usable engines found.")
