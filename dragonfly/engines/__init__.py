@@ -36,17 +36,37 @@ def get_engine(name=None, **kwargs):
     """
         Get the engine implementation.
 
-        This function will initialize an engine object using the
+        This function will initialize an engine instance using the
         ``get_engine`` and ``is_engine_available`` functions in the engine
-        packages and return an instance of the first available engine. If
+        packages and return an instance of the first available engine.  If
         one has already been initialized, it will be returned instead.
+
+        If no specific engine is requested and no engine has already been
+        initialized, this function will initialize and return an instance of
+        the first available engine in the following order:
+
+         =======================   =========================================
+         SR engine back-end        Engine name string(s)
+         =======================   =========================================
+         1. Dragon/Natlink         ``"natlink"``
+         2. Kaldi                  ``"kaldi"``
+         3. WSR/SAPI 5             ``"sapi5", "sapi5inproc", "sapi5shared"``
+         4. CMU Pocket Sphinx      ``"sphinx"``
+         =======================   =========================================
+
+        The :ref:`Text-input engine <RefTextEngine>` can be initialized by
+        specifying ``"text"`` as the engine name.  This back-end will
+        **not** be initialized if no specific engine is requested because
+        the back-end is not a real SR engine and is used mostly for testing.
+
+        **Arguments**:
 
         :param name: optional human-readable name of the engine to return.
         :type name: str
         :param \\**kwargs: optional keyword arguments passed through to the
             engine for engine-specific configuration.
         :rtype: EngineBase
-        :returns: engine object
+        :returns: engine instance
         :raises: EngineError
     """
     # pylint: disable=too-many-statements,too-many-branches
