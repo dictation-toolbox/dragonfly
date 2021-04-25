@@ -32,7 +32,7 @@ import sys
 from .action_base  import DynStrActionBase
 from .keyboard     import Keyboard
 
-
+_CONFIG_LOADED = False
 UNICODE_KEYBOARD = False
 HARDWARE_APPS = [
     "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
@@ -50,6 +50,7 @@ def load_configuration():
     global UNICODE_KEYBOARD
     global HARDWARE_APPS
     global PAUSE_DEFAULT
+    global _CONFIG_LOADED
 
     home = os.path.expanduser("~")
     config_folder = os.path.join(home, ".dragonfly2-speech")
@@ -75,8 +76,7 @@ def load_configuration():
     if parser.has_option("Text", "pause_default"):
         PAUSE_DEFAULT = parser.getfloat("Text", "pause_default")
 
-
-load_configuration()
+    _CONFIG_LOADED = True
 
 
 class BaseKeyboardAction(DynStrActionBase):
@@ -109,6 +109,11 @@ class BaseKeyboardAction(DynStrActionBase):
         # Always use hardware_events for non-Windows platforms.
         if not sys.platform.startswith("win") or self._use_hardware:
             return True
+
+        # Load the keyboard configuration, if necessary.
+        global _CONFIG_LOADED
+        if not _CONFIG_LOADED:
+            load_configuration()
 
         # Otherwise check if hardware events should be used with the current
         # foreground window.
