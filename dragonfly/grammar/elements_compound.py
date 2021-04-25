@@ -254,7 +254,7 @@ class Choice(Alternative):
         assert isinstance(choices, (dict, list, tuple))
         choices_is_sequence = isinstance(choices, (list, tuple))
         if choices_is_sequence:
-            choices = {k: k for k in choices}
+            choices = {k: None for k in choices}
 
         for k, v in choices.items():
             assert isinstance(k, string_types)
@@ -264,10 +264,7 @@ class Choice(Alternative):
         self._extras = extras
         children = []
         for k, v in choices.items():
-            if choices_is_sequence:
-                child = Compound(spec=k, extras=extras)
-            else:
-                child = Compound(spec=k, value=v, extras=extras)
+            child = Compound(spec=k, value=v, extras=extras)
             children.append(child)
 
         # Initialize super class.
