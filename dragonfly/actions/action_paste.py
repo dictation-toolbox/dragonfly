@@ -63,20 +63,19 @@ class Paste(DynStrActionBase):
 
     _default_format = Clipboard.format_unicode
 
-    # Default paste action.
-    # Fallback on Shift-insert if 'v' isn't available. Use Super-v on macs.
-    try:
-        _default_paste = (Key("w-v/20") if sys.platform == "darwin"
-                          else Key("c-v/20"))
-    except ActionError:
-        _default_paste = Key("s-insert/20")
+    # Default paste action spec.
+    _default_paste_spec = "w-v/20" if sys.platform == "darwin" else "c-v/20"
 
     # pylint: disable=redefined-builtin
     def __init__(self, contents, format=None, paste=None, static=False):
         if not format:
             format = self._default_format
         if paste is None:
-            paste = self._default_paste
+            try:
+                paste = Key(self._default_paste_spec)
+            except ActionError:
+                # Fallback on Shift-insert if 'v' isn't available.
+                paste = Key("s-insert/20")
         if isinstance(contents, string_types):
             spec = contents
             self.contents = None
