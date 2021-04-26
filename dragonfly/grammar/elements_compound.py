@@ -22,8 +22,25 @@
 Compound element classes
 ============================================================================
 
-This file implements the Compound grammar element class for
-creating grammar element structures based on a simple text format.
+The following special *element* classes exist as convenient ways of
+constructing basic element types from string specifications:
+
+ * :class:`Compound` --
+   a special element which parses a string spec to create a hierarchy of
+   basic elements.
+
+ * :class:`Choice` --
+   a special element taking a :code:`choice` dictionary argument,
+   interpreting keys as :class:`Compound` string specifications and values
+   for what to return when compound specs are successfully decoded during
+   the recognition process.
+
+   The :code:`choice` argument may also be a list or tuple of strings, in
+   which case the strings are also interpreted as :class:`Compound` strings
+   specifications.  However, the values returned when compound specs are
+   successfully decoded during the recognition process are the recognized
+   words.  **Note**: these values will be matching part(s) of the compound
+   specs.
 
 """
 
@@ -37,7 +54,6 @@ import re
 from six import string_types, binary_type
 
 from dragonfly.grammar.elements_basic import Alternative, ElementBase
-
 from dragonfly.parsing.parse import spec_parser, CompoundTransformer, ParseError
 
 #---------------------------------------------------------------------------
@@ -183,17 +199,21 @@ class Compound(Alternative):
 
 class Choice(Alternative):
     """
-        Element allowing a dictionary of phrases to be recognised to be
-        mapped to objects to be used in an action.
+        Element allowing a dictionary of phrases (compound specs) to be
+        recognized to be mapped to objects to be used in an action.
 
-        A list or tuple of phrases to be recognised may also be used. In
-        this case, returned values will be the recognised words.
+        A list or tuple of phrases to be recognized may also be used.  In
+        this case the strings are also interpreted as :class:`Compound`
+        string specifications.  However, the values returned when compound
+        specs are successfully decoded during the recognition process are
+        the recognized words.  **Note**: these values will be matching
+        part(s) of the compound specs.
 
         Constructor arguments:
             - *name* (*str*) -- the name of this element
             - *choices* (*dict*, *list* or *tuple*) -- dictionary mapping
-              recognised phrases to returned values **or** a list/tuple of
-              recognised phrases
+              recognized phrases to returned values **or** a list/tuple of
+              recognized phrases
             - *extras* (*list*, default: *None*) -- a list of included
               extras
             - *default* (default: *None*) -- the default value of this
@@ -227,7 +247,7 @@ class Choice(Alternative):
 
         .. code:: python
 
-            # Command for recognising and typing nth words, e.g.
+            # Command for recognizing and typing nth words, e.g.
             # 'type third'.
             mapping = {
                 "type <nth>": Text("%(nth)s"),
@@ -242,7 +262,13 @@ class Choice(Alternative):
                     "sixth",
                     "seventh",
                     "eighth",
+
+                    # Note that the decoded value for a compound spec like
+                    #  this one, when used in a list/tuple of choices,
+                    #  rather than a dictionary, is the recognized word:
+                    #  "last" or "ninth".
                     "(last | ninth)",
+
                     "next",
                     "previous",
                 ]),

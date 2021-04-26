@@ -5,6 +5,8 @@ Element classes
 
 .. automodule:: dragonfly.grammar.elements_basic
 
+.. automodule:: dragonfly.grammar.elements_compound
+
 ElementBase class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_basic.ElementBase
