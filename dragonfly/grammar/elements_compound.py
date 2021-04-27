@@ -22,8 +22,25 @@
 Compound element classes
 ============================================================================
 
-This file implements the Compound grammar element class for
-creating grammar element structures based on a simple text format.
+The following special *element* classes exist as convenient ways of
+constructing basic element types from string specifications:
+
+ * :class:`Compound` --
+   a special element which parses a string spec to create a hierarchy of
+   basic elements.
+
+ * :class:`Choice` --
+   a special element taking a :code:`choice` dictionary argument,
+   interpreting keys as :class:`Compound` string specifications and values
+   for what to return when compound specs are successfully decoded during
+   the recognition process.
+
+   The :code:`choice` argument may also be a list or tuple of strings, in
+   which case the strings are also interpreted as :class:`Compound` strings
+   specifications.  However, the values returned when compound specs are
+   successfully decoded during the recognition process are the recognized
+   words.  **Note**: these values will be matching part(s) of the compound
+   specs.
 
 """
 
@@ -37,7 +54,6 @@ import re
 from six import string_types, binary_type
 
 from dragonfly.grammar.elements_basic import Alternative, ElementBase
-
 from dragonfly.parsing.parse import spec_parser, CompoundTransformer, ParseError
 
 #---------------------------------------------------------------------------
@@ -183,23 +199,31 @@ class Compound(Alternative):
 
 class Choice(Alternative):
     """
-        Element allowing a dictionary of phrases to be recognised to be
-        mapped to objects to be used in an action.
+        Element allowing a dictionary of phrases (compound specs) to be
+        recognized to be mapped to objects to be used in an action.
+
+        A list or tuple of phrases to be recognized may also be used.  In
+        this case the strings are also interpreted as :class:`Compound`
+        string specifications.  However, the values returned when compound
+        specs are successfully decoded during the recognition process are
+        the recognized words.  **Note**: these values will be matching
+        part(s) of the compound specs.
 
         Constructor arguments:
             - *name* (*str*) -- the name of this element
-            - *choices* (*dict*) -- dictionary mapping recognised phrases to
-              returned values
+            - *choices* (*dict*, *list* or *tuple*) -- dictionary mapping
+              recognized phrases to returned values **or** a list/tuple of
+              recognized phrases
             - *extras* (*list*, default: *None*) -- a list of included
               extras
             - *default* (default: *None*) -- the default value of this
               element
 
-        Example:
+        Example using a dictionary:
 
         .. code:: python
 
-            # Tab switching command e.g. 'third tab'
+            # Tab switching command, e.g. 'third tab'.
             mapping = {
                 "<nth> tab": Key("c-%(nth)s"),
             }
@@ -218,11 +242,46 @@ class Choice(Alternative):
                     "previous"      : "pgup",
                 }),
             ]
+
+        Example using a list:
+
+        .. code:: python
+
+            # Command for recognizing and typing nth words, e.g.
+            # 'type third'.
+            mapping = {
+                "type <nth>": Text("%(nth)s"),
+            }
+            extras = [
+                Choice("nth", [
+                    "first",
+                    "second",
+                    "third",
+                    "fourth",
+                    "fifth",
+                    "sixth",
+                    "seventh",
+                    "eighth",
+
+                    # Note that the decoded value for a compound spec like
+                    #  this one, when used in a list/tuple of choices,
+                    #  rather than a dictionary, is the recognized word:
+                    #  "last" or "ninth".
+                    "(last | ninth)",
+
+                    "next",
+                    "previous",
+                ]),
+            ]
     """
     def __init__(self, name, choices, extras=None, default=None):
         # Argument type checking.
         assert isinstance(name, string_types) or name is None
-        assert isinstance(choices, dict)
+        assert isinstance(choices, (dict, list, tuple))
+        choices_is_sequence = isinstance(choices, (list, tuple))
+        if choices_is_sequence:
+            choices = {k: None for k in choices}
+
         for k, v in choices.items():
             assert isinstance(k, string_types)
 

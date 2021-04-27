@@ -204,6 +204,14 @@ element types from string specifications:
    specifications and values for what to return when compound specs are
    successfully decoded during the recognition process.
 
+   The :code:`choice` argument may also be a list or tuple of strings, in
+   which case the strings are also interpreted as
+   :class:`~dragonfly.grammar.elements_compound.Compound` string
+   specifications.  However, the values returned when compound specs are
+   successfully decoded during the recognition process are the recognized
+   words.  **Note**: these values will be matching part(s) of the compound
+   specs.
+
 See the :ref:`RefElementCompoundDocTests` for
 :class:`~dragonfly.grammar.elements_compound.Compound` usage examples and
 see the :ref:`RefElementClasses` section for class references and further
