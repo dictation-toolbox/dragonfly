@@ -136,15 +136,26 @@ class Win32KeySymbols(object):
     BROWSER_BACK = win32con.VK_BROWSER_BACK
     BROWSER_FORWARD = win32con.VK_BROWSER_FORWARD
 
+    # Include virtual-key codes for digits and letters defined here:
+    # https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+    DIGITS_MAP = {chr(x): x for x in range(0x30, 0x39)}
+    LOWERCASE_ALPHABET_MAP = {chr(x): x - 0x20 for x in range(0x61, 0x7b)}
+    UPPERCASE_ALPHABET_MAP = {chr(x): x | 0x100 for x in range(0x41, 0x5b)}
+    CHAR_VK_MAP = DIGITS_MAP.copy()
+    CHAR_VK_MAP.update(LOWERCASE_ALPHABET_MAP)
+    CHAR_VK_MAP.update(UPPERCASE_ALPHABET_MAP)
+
 
 class Typeable(BaseTypeable):
 
-    __slots__ = ("_code", "_modifiers", "_name", "_is_text", "_char")
+    __slots__ = ("_code", "_modifiers", "_name", "_is_text", "_char",
+                 "_char_vk")
 
     def __init__(self, code, modifiers=(), name=None, is_text=False,
                  char=None):
         BaseTypeable.__init__(self, code, modifiers, name, is_text)
         self._char = char
+        self._char_vk = char and char in Win32KeySymbols.CHAR_VK_MAP
 
     def update(self, hardware_events_required):
         # Nothing to do for virtual keys.
@@ -156,12 +167,20 @@ class Typeable(BaseTypeable):
             self._is_text = False
             code, modifiers = Keyboard.get_keycode_and_modifiers(self._char)
         except ValueError:
-            if hardware_events_required:
+            if hardware_events_required and self._char_vk:
+                # Fallback on hardware events using the keycode in
+                # CHAR_VK_MAP instead. This will result in events for the
+                # equivalent key.
+                lookup_func = lambda char: Win32KeySymbols.CHAR_VK_MAP[char]
+                code, modifiers = Keyboard.get_keycode_and_modifiers(
+                    self._char, lookup_func)
+            elif hardware_events_required:
+                # This Typeable cannot be typed in the current context.
                 return False
-
-            # Fallback on Unicode events.
-            code, modifiers = self._char, ()
-            self._is_text = True
+            else:
+                # Fallback on Unicode events.
+                code, modifiers = self._char, ()
+                self._is_text = True
 
         # Set key code and modifiers.
         self._code, self._modifiers = code, modifiers
@@ -291,8 +310,11 @@ class Keyboard(BaseKeyboard):
         return code
 
     @classmethod
-    def xget_virtual_keycode(cls, char):
-        code = cls._get_initial_keycode(char)
+    def xget_virtual_keycode(cls, char, lookup_func=None):
+        if lookup_func is None:
+            code = cls._get_initial_keycode(char)
+        else:
+            code = lookup_func(char)
 
         # Construct a list of the virtual key code and modifiers.
         codes = [code & 0x00ff]
@@ -302,8 +324,11 @@ class Keyboard(BaseKeyboard):
         return codes
 
     @classmethod
-    def get_keycode_and_modifiers(cls, char):
-        code = cls._get_initial_keycode(char)
+    def get_keycode_and_modifiers(cls, char, lookup_func=None):
+        if lookup_func is None:
+            code = cls._get_initial_keycode(char)
+        else:
+            code = lookup_func(char)
 
         # Construct a list of the virtual key code and modifiers.
         modifiers = []
