@@ -55,7 +55,6 @@ It can be enabled by changing the ``unicode_keyboard`` setting in
 
     unicode_keyboard = True
 
-
 If you need to simulate typing arbitrary Unicode characters *and* have
 *individual* :class:`Text` actions respect modifier keys normally for normal
 characters, set the configuration as above and use the ``use_hardware``
@@ -65,7 +64,6 @@ parameter for :class:`Text` as follows:
 
    action = Text("σμ") + Key("ctrl:down") + Text("]", use_hardware=True) + Key("ctrl:up")
    action.execute()
-
 
 Some applications require hardware emulation versus Unicode keyboard
 emulation. If you use such applications, add their executable names to the
@@ -77,7 +75,15 @@ layout of the foreground window when calculating keyboard events. If any of
 the specified characters are not typeable using the current window's
 keyboard layout, then an error will be logged and no keys will be typed::
 
-    action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'c'
+    action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'μ'
+
+Keys in ranges 0-9, a-z and A-Z are always typeable. If keys in these ranges
+cannot be typed using the current keyboard layout, then the equivalent key
+will be used instead. For example, the following code will result in the 'я'
+key being pressed when using the main Cyrillic keyboard layout: ::
+
+   # This is equivalent to Text(u"яЯ").
+   Text("zZ").execute()
 
 These settings and parameters have no effect on other platforms.
 
