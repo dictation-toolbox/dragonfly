@@ -71,11 +71,9 @@ class Paste(DynStrActionBase):
         if not format:
             format = self._default_format
         if paste is None:
-            try:
-                paste = Key(self._default_paste_spec)
-            except ActionError:
-                # Fallback on Shift-insert if 'v' isn't available.
-                paste = Key("s-insert/20")
+            # Pass use_hardware=True to guarantee that Ctrl+V is always
+            # pressed, regardless of the keyboard layout.
+            paste = Key(self._default_paste_spec, use_hardware=True)
         if isinstance(contents, string_types):
             spec = contents
             self.contents = None
