@@ -11,6 +11,38 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Changed
+~~~~~~~
+* Adjust order of preferred SR engine implementations in get_engine() to
+  prefer Kaldi over SAPI 5 and Sphinx.
+* Change clipboard toolkit to support retrieving copied files (format_hdrop)
+  on X11.
+* Change clipboard toolkit to support setting and retrieving the three X
+  selections using the xsel program (X11).
+* Change get_engine() to log an info message for initialized engines.
+* Change the Choice element class to allow using list/tuple choices.
+* Make various improvements to the Kaldi engine back-end and bump required
+  Kaldi-Active-Grammar version to 2.1.0. (thanks `@daanzu`_).
+
+Fixed
+~~~~~
+* Fix a number of Kaldi engine back-end bugs (thanks `@daanzu`_).
+* Fix leak of file open() without close in dragonfly/config.py (thanks
+  `@wolfmanstout`_).
+* Fix problem with the default action used by the Paste action class.
+* Fix the Windows keyboard code so that letter and number keys can be
+  pressed using the Key and Text actions, regardless of the active
+  keyboard layout.
+
+Removed
+~~~~~~~
+* Remove Google cloud speech-to-text functionality from the Kaldi engine
+  back-end (unneeded dependency).
+
+
 0.30.1_ - 2021-03-30
 --------------------
 
