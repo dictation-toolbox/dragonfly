@@ -92,6 +92,7 @@ default_levels = {
                   "werkzeug":             (_warning, _warning),
                   "jsonrpc.manager":      (_critical, _critical),
                   "rule":                 (_warning, _info),
+                  "clipboard":            (_warning, _info),
                   "config":               (_warning, _info),
                   "module":               (_info, _info),
                   "monitor.init":         (_warning, _info),

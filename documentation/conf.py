@@ -40,13 +40,57 @@ class Mock(MagicMock):
 
 
 mock_modules = {
-    "ctypes", "ctypes.wintypes", "pythoncom", "pywintypes", "win32api",
-    "win32clipboard", "win32com", "win32com.client", "numpy",
-    "win32com.client.gencache", "win32com.gen_py",  "win32com.shell",
-    "win32con", "win32event", "win32file", "win32gui", "winsound",
-    "winxpgui", "psutil", "applescript", "jsgf", "jsgf.ext",
-    "sphinxwrapper", "pocketsphinx", "pyaudio", "kaldi_active_grammar",
-    "webrtcvad", "sounddevice", "AppKit"
+    # Modules required on Windows
+    "ctypes.wintypes",
+    "pythoncom",
+    "pywintypes",
+    "win32api",
+    "win32clipboard",
+    "win32com",
+    "win32com.client",
+    "win32com.client.gencache",
+    "win32com.gen_py",
+    "win32com.shell",
+    "win32con",
+    "win32event",
+    "win32file",
+    "win32gui",
+    "winsound",
+    "winxpgui",
+
+    # Modules required on Linux
+    "psutil",
+
+    # Modules required on macOS
+    "AppKit",
+    "applescript",
+
+    # Modules required by dragonfly.rpc
+    "decorator",
+    "jsonrpc",
+    "jsonrpc.dispatcher",
+    "jsonrpc.manager",
+    "werkzeug",
+    "werkzeug.serving",
+    "werkzeug.wrappers",
+
+    # Modules required by Kaldi engine
+    "kaldi_active_grammar",
+    "sounddevice",
+    "webrtcvad",
+
+    # Modules required by Sphinx engine
+    "jsgf",
+    "jsgf.ext",
+    "pocketsphinx",
+    "pyaudio",
+    "sphinxwrapper",
+
+    # Other
+    "ctypes",
+    "numpy",
+    "pyperclip",
+    "regex",
 }
 
 for module_name in mock_modules:

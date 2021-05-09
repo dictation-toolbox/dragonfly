@@ -131,6 +131,18 @@ of for example words not present in the dictionary::
     ...                        " H\\letter\\hotel N\\letter\\November")
     u'JOHN'
 
+Letters spoken in line within dictation have spaces separating adjacent
+words::
+
+    >>> format_dictation_dns11(["hello", "A\\letter\\alpha",
+    ...                         "B\\letter\\bravo", "C\\letter\\Charlie",
+    ...                         "world"])
+    u'hello ABC world'
+    >>> format_dictation_dns11(["hello", "A\\uppercase-letter\\capital A",
+    ...                         "B\\uppercase-letter\\capital B",
+    ...                         "C\\uppercase-letter\\capital C", "world"])
+    u'hello ABC world'
+
 Words may contain spaces in their written and/or spoken forms. For example
 a custom word added by the user might have the following form with a space
 in both spoken and written forms::

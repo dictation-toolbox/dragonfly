@@ -23,10 +23,11 @@ To be able to use the dragonfly, you will need the following:
  * **Natlink** *(only for Dragon users)* -- latest
    versions available from `SourceForge
    <https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`_.
- * `Xdotool <https://www.semicomplete.com/projects/xdotool/>`__ and `wmctrl
-   <https://www.freedesktop.org/wiki/Software/wmctrl/>`__ programs *(only
+ * `wmctrl <https://www.freedesktop.org/wiki/Software/wmctrl/>`__, `xdotool
+   <https://www.semicomplete.com/projects/xdotool/>`__ and `xsel
+   <http://www.vergenet.net/~conrad/software/xsel/>`__ programs *(only
    for Linux/X11 users)* -- usually available from your system's package
-   manager
+   manager.
 
 **Note for Linux users**: Dragonfly is only fully functional in an X11
 session. You may also need to manually set the ``XDG_SESSION_TYPE``

@@ -178,7 +178,7 @@ key, slowly moving down 4 lines, and then releasing the *shift* key: ::
     Key("shift:down, down/25:4, shift:up").execute()
 
 The following code locks the screen by pressing the *Windows* key together
-with the *l*: ::
+with the *l* key: ::
 
     Key("w-l").execute()
 
@@ -197,31 +197,37 @@ This is disabled by default because it ignores the up/down status of
 modifier keys (e.g. ctrl).
 
 It can be enabled by changing the ``unicode_keyboard`` setting in
-`~/.dragonfly2-speech/settings.cfg` to ``True``::
+`~/.dragonfly2-speech/settings.cfg` to ``True``: ::
 
     unicode_keyboard = True
 
 The ``use_hardware`` parameter can be set to ``True`` if you need to
-selectively require hardware events for a :class:`Key` action::
+selectively require hardware events for a :class:`Key` action: ::
 
-    # Only copy if 'c' is a typeable key.
+    # Passing use_hardware=True will guarantee that Ctrl+C is always
+    # pressed, regardless of the layout. See below.
     Key("c-c", use_hardware=True).execute()
 
 If the Unicode keyboard is not enabled or the ``use_hardware`` parameter is
 ``True``, then no keys will be typed and an error will be logged for
-untypeable keys::
+untypeable keys: ::
 
-   action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'c'
+   action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'μ'
+
+Keys in ranges 0-9, a-z and A-Z are always typeable. If keys in these ranges
+cannot be typed using the current keyboard layout, then the equivalent key
+will be used instead. For example, the following code will result in the 'я'
+key being pressed when using the main Cyrillic keyboard layout: ::
+
+   # This is equivalent to Key(u"я, Я, c-я").
+   Key("z, Z, c-z", use_hardware=True).execute()
 
 Unlike the :class:`Text` action, individual :class:`Key` actions can send
 both hardware *and* Unicode events. So the following example will work if
-the Unicode keyboard is enabled::
+the Unicode keyboard is enabled: ::
 
-    # Type 'σμ' and then press ctrl-z.
+    # Type 'σμ' and then press Ctrl+Z.
     Key(u"σ, μ, c-z").execute()
-
-Note that the 'z' in this example will be typed if the current layout cannot
-type the character.
 
 
 X11 key support

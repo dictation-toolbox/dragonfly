@@ -444,7 +444,7 @@ class GrammarWrapper(GrammarWrapperBase):
             elif isinstance(element, elements_.RuleRef):
                 words.update(self.get_rule_words(element.rule))
             elif isinstance(element, elements_.ListRef):
-                for string in element.list_.get_list_items():
+                for string in element.list.get_list_items():
                     # Only get the required first word.
                     list_item_words = string.split()
                     if list_item_words:

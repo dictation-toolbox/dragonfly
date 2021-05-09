@@ -24,23 +24,14 @@ Paste action
 
 """
 
-from locale import getpreferredencoding
 import sys
 
-from six import string_types, binary_type
+from six import string_types
 
-from ..actions.action_base import DynStrActionBase
+from ..actions.action_base import ActionError, DynStrActionBase
 from ..actions.action_key import Key
+from ..windows.clipboard import Clipboard
 
-if sys.platform.startswith("win"):
-    from ..windows.clipboard import Clipboard
-else:
-    from ..util import Clipboard
-
-
-# Define some win32 constants so that this module can work on other
-# platforms.
-CF_UNICODETEXT, CF_TEXT = 13, 1
 
 #---------------------------------------------------------------------------
 
@@ -50,41 +41,39 @@ class Paste(DynStrActionBase):
         Paste-from-clipboard action.
 
         Constructor arguments:
-         - *contents* (*str*) -- contents to paste
-         - *format* (*int*, Win32 clipboard format) --
-           clipboard format
+         - *contents* (*str* | *dict*) -- contents to paste.  This may be a
+           simple string to paste, a dynamic action *spec* or a dictionary
+           of clipboard format ints to contents (typically strings).
+         - *format* (*int*, clipboard format integer) --
+           clipboard format.  This argument is ignored if *contents* is a
+           dictionary.
          - *paste* (instance derived from *ActionBase*) --
            paste action
          - *static* (boolean) --
            flag indicating whether the
            specification contains dynamic elements
 
-        This action inserts the given *contents* into the Windows system
+        This action inserts the given *contents* into the system
         clipboard, and then performs the *paste* action to paste it into
         the foreground application.  By default, the *paste* action is the
-        :kbd:`Ctrl-v` keystroke or :kbd`Super-v` on a mac. The default
-        clipboard format to use is the *Unicode* text format.
-
-        Clipboard formats are not used if not running on Windows.
+        :kbd:`Ctrl-v` keystroke or :kbd:`Super-v` on a mac.  The default
+        clipboard format used by this action is the *Unicode* text format.
 
     """
 
-    _default_format = CF_UNICODETEXT
+    _default_format = Clipboard.format_unicode
 
-    # Default paste action.
-    # Fallback on Shift-insert if 'v' isn't available. Use Super-v on macs.
-    try:
-        _default_paste = (Key("w-v/20") if sys.platform == "darwin"
-                          else Key("c-v/20"))
-    except:
-        _default_paste = Key("s-insert/20")
+    # Default paste action spec.
+    _default_paste_spec = "w-v/20" if sys.platform == "darwin" else "c-v/20"
 
     # pylint: disable=redefined-builtin
     def __init__(self, contents, format=None, paste=None, static=False):
         if not format:
             format = self._default_format
         if paste is None:
-            paste = self._default_paste
+            # Pass use_hardware=True to guarantee that Ctrl+V is always
+            # pressed, regardless of the keyboard layout.
+            paste = Key(self._default_paste_spec, use_hardware=True)
         if isinstance(contents, string_types):
             spec = contents
             self.contents = None
@@ -93,7 +82,6 @@ class Paste(DynStrActionBase):
             self.contents = contents
         self.format = format
         self.paste = paste
-        self._on_windows = sys.platform.startswith("win")
         DynStrActionBase.__init__(self, spec, static=static)
 
     def _parse_spec(self, spec):
@@ -110,19 +98,21 @@ class Paste(DynStrActionBase):
             self._log.warning("Failed to store original clipboard contents:"
                               " %s", e)
 
-        # Convert the string to the appropriate type. Only use a binary
-        # string if on Windows and using the CF_TEXT clipboard format.
-        binary_string = isinstance(events, binary_type)
-        text_format = self._on_windows and self.format == CF_TEXT
-        if text_format and not binary_string:
-            events = events.encode(getpreferredencoding())
+        # Store the contents to copy (i.e. *events*) in a Clipboard
+        #  instance using the specified (or default) format.  If *events* is
+        #  a dictionary, then pass it instead.
+        if isinstance(events, dict):
+            clipboard = Clipboard(contents=events)
+        else:
+            clipboard = Clipboard(contents={self.format: events})
 
-        elif not text_format and binary_string:
-            events = events.decode(getpreferredencoding())
-
-        clipboard = Clipboard(contents={self.format: events})
+        # Copy the contents to the system clipboard and paste using the
+        #  paste action.
         clipboard.copy_to_system()
         self.paste.execute()
 
+        # Restore the original clipboard contents afterwards.  This should
+        #  clear the clipboard if we failed to store the original contents
+        #  above.
         original.copy_to_system()
         return True

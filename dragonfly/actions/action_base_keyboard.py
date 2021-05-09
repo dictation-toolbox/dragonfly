@@ -32,7 +32,10 @@ import sys
 from .action_base  import DynStrActionBase
 from .keyboard     import Keyboard
 
+
 TALON = "talon" in sys.modules
+WINDOWS = sys.platform.startswith("win")
+_CONFIG_LOADED = False
 UNICODE_KEYBOARD = False
 HARDWARE_APPS = [
     "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
@@ -50,6 +53,7 @@ def load_configuration():
     global UNICODE_KEYBOARD
     global HARDWARE_APPS
     global PAUSE_DEFAULT
+    global _CONFIG_LOADED
 
     home = os.path.expanduser("~")
     config_folder = os.path.join(home, ".dragonfly2-speech")
@@ -75,8 +79,7 @@ def load_configuration():
     if parser.has_option("Text", "pause_default"):
         PAUSE_DEFAULT = parser.getfloat("Text", "pause_default")
 
-
-load_configuration()
+    _CONFIG_LOADED = True
 
 
 class BaseKeyboardAction(DynStrActionBase):
@@ -97,8 +100,9 @@ class BaseKeyboardAction(DynStrActionBase):
 
         super(BaseKeyboardAction, self).__init__(spec, static)
 
-        # Save events for the current layout if on Windows.
-        if self._events is not None and sys.platform.startswith("win") and not TALON:
+        # Save events for the current layout if on Windows and not using
+        # Talon.
+        if self._events is not None and WINDOWS and not TALON:
             layout = self._keyboard.get_current_layout()
             self._event_cache[layout] = self._events
 
@@ -106,9 +110,14 @@ class BaseKeyboardAction(DynStrActionBase):
         """
         Return `True` if the current context requires hardware emulation.
         """
-        # Always use hardware_events for non-Windows platforms.
-        if not sys.platform.startswith("win") or self._use_hardware or TALON:
+        # Always use hardware_events for non-Windows platforms (or Talon).
+        if not WINDOWS or self._use_hardware or TALON:
             return True
+
+        # Load the keyboard configuration, if necessary.
+        global _CONFIG_LOADED
+        if not _CONFIG_LOADED:
+            load_configuration()
 
         # Otherwise check if hardware events should be used with the current
         # foreground window.
@@ -120,8 +129,8 @@ class BaseKeyboardAction(DynStrActionBase):
 
     def _execute(self, data=None):
         # Get updated events on Windows for each new keyboard layout
-        # encountered.
-        if sys.platform.startswith("win") and self._static and not TALON:
+        # encountered.  Do not do this for non-Windows platforms (or Talon).
+        if WINDOWS and self._static and not TALON:
             layout = self._keyboard.get_current_layout()
             events = self._event_cache.get(layout)
             if events is None:

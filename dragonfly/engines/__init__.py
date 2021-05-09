@@ -18,10 +18,12 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+# pylint: disable=global-statement
+
 import logging
 import os
 import sys
-import traceback
+
 from .base import EngineBase, EngineError, MimicFailure
 
 
@@ -35,133 +37,166 @@ def get_engine(name=None, **kwargs):
     """
         Get the engine implementation.
 
-        This function will initialize an engine object using the
+        This function will initialize an engine instance using the
         ``get_engine`` and ``is_engine_available`` functions in the engine
-        packages and return an instance of the first available engine. If
+        packages and return an instance of the first available engine.  If
         one has already been initialized, it will be returned instead.
+
+        If no specific engine is requested and no engine has already been
+        initialized, this function will initialize and return an instance of
+        the first available engine in the following order:
+
+         =======================   =========================================
+         SR engine back-end        Engine name string(s)
+         =======================   =========================================
+         1. Dragon/Natlink         ``"natlink"``
+         2. Kaldi                  ``"kaldi"``
+         3. WSR/SAPI 5             ``"sapi5", "sapi5inproc", "sapi5shared"``
+         4. CMU Pocket Sphinx      ``"sphinx"``
+         =======================   =========================================
+
+        The :ref:`Text-input engine <RefTextEngine>` can be initialized by
+        specifying ``"text"`` as the engine name.  This back-end will
+        **not** be initialized if no specific engine is requested because
+        the back-end is not a real SR engine and is used mostly for testing.
+
+        **Arguments**:
 
         :param name: optional human-readable name of the engine to return.
         :type name: str
         :param \\**kwargs: optional keyword arguments passed through to the
             engine for engine-specific configuration.
         :rtype: EngineBase
-        :returns: engine object
+        :returns: engine instance
         :raises: EngineError
     """
+    # pylint: disable=too-many-statements,too-many-branches
     global _default_engine, _engines_by_name
     log = logging.getLogger("engine")
 
     if name and name in _engines_by_name:
-        # If the requested engine has already been loaded, return it.
-        if kwargs is not None and len(kwargs) > 0:
-            message = ("Error: Passing get_engine arguments to an engine "
-                       "that has already been created, hence these "
-                       "arguments are ignored.")
-            print(message)
-            raise EngineError(message)
-        return _engines_by_name[name]
+        # If the requested engine has already been initialized, return it.
+        engine = _engines_by_name[name]
     elif not name and _default_engine:
         # If no specific engine is requested and an engine has already
-        #  been loaded, return it.
-        if kwargs is not None and len(kwargs) > 0:
-            message = ("Error: Passing get_engine arguments to an engine "
-                       "that has already been created, hence these "
-                       "arguments are ignored.")
-            print(message)
-            raise EngineError(message)
-        return _default_engine
+        #  been initialized, return it.
+        engine = _default_engine
+    else:
+        # No engine has been initialized yet.
+        engine = None
 
-    # Check if we're on Windows. If name is None and we're not on Windows,
-    # then we don't evaluate Windows-only engines like natlink.
+    # Check if there is an already initialized engine *and* custom engine
+    #  initialization arguments.  This is not allowed.
+    if engine and kwargs is not None and len(kwargs) > 0:
+        message = ("Error: Passing get_engine arguments to an engine "
+                   "that has already been initialized, hence these "
+                   "arguments are ignored.")
+        log.error(message)
+        raise EngineError(message)
+
+    # If there is a relevant initialized engine already, then return it.
+    if engine:
+        return engine
+
+    # Check if we're on Windows. If  we're not on Windows, then we don't
+    #  evaluate Windows-only engines like natlink.
     windows = os.name == 'nt'
 
-    if 'talon' in sys.modules and not name or name == 'talon':
+    if not engine and 'talon' in sys.modules and name in (None, 'talon'):
+        # Attempt to retrieve the Talon back-end.
         try:
             from .backend_talon import is_engine_available
             from .backend_talon import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                return get_specific_engine(**kwargs)
+                engine = get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing Talon engine:"
                        " %s" % (e,))
+            log.warning(message)
             if name:
                 raise EngineError(message)
 
-    if (windows and not name) or name == "natlink":
+    if not engine and windows and name in (None, "natlink"):
         # Attempt to retrieve the natlink back-end.
         try:
             from .backend_natlink import is_engine_available
             from .backend_natlink import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                return get_specific_engine(**kwargs)
+                engine = get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing natlink engine:"
                        " %s" % (e,))
-            print(message)
+            log.warning(message)
             if name:
                 raise EngineError(message)
 
-    sapi5_names = ["sapi5shared", "sapi5inproc", "sapi5"]
-    if (windows and not name) or name in sapi5_names:
-        # Attempt to retrieve the sapi5 back-end.
-        try:
-            from .backend_sapi5 import is_engine_available
-            from .backend_sapi5 import get_engine as get_specific_engine
-            if is_engine_available(name, **kwargs):
-                return get_specific_engine(name, **kwargs)
-        except Exception as e:
-            message = ("Exception while initializing sapi5 engine:"
-                       " %s" % (e,))
-            print(message)
-            if name:
-                raise EngineError(message)
-
-    if not name or name == "sphinx":
-        # Attempt to retrieve the CMU Sphinx back-end.
-        try:
-            from .backend_sphinx import is_engine_available
-            from .backend_sphinx import get_engine as get_specific_engine
-            if is_engine_available(**kwargs):
-                return get_specific_engine(**kwargs)
-        except Exception as e:
-            message = ("Exception while initializing sphinx engine:"
-                       " %s" % (e,))
-            log.exception(message)
-            if name:
-                raise EngineError(message)
-
-    if not name or name == "kaldi":
+    if not engine and name in (None, "kaldi"):
         # Attempt to retrieve the Kaldi back-end.
         try:
             from .backend_kaldi import is_engine_available
             from .backend_kaldi import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                return get_specific_engine(**kwargs)
+                engine = get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing kaldi engine:"
                        " %s" % (e,))
-            print(message)
+            log.warning(message)
+            if name:
+                raise EngineError(message)
+
+    sapi5_names = (None, "sapi5shared", "sapi5inproc", "sapi5")
+    if not engine and windows and name in sapi5_names:
+        # Attempt to retrieve the sapi5 back-end.
+        try:
+            from .backend_sapi5 import is_engine_available
+            from .backend_sapi5 import get_engine as get_specific_engine
+            if is_engine_available(name, **kwargs):
+                engine = get_specific_engine(name, **kwargs)
+        except Exception as e:
+            message = ("Exception while initializing sapi5 engine:"
+                       " %s" % (e,))
+            log.warning(message)
+            if name:
+                raise EngineError(message)
+
+    if not engine and name in (None, "sphinx"):
+        # Attempt to retrieve the CMU Sphinx back-end.
+        try:
+            from .backend_sphinx import is_engine_available
+            from .backend_sphinx import get_engine as get_specific_engine
+            if is_engine_available(**kwargs):
+                engine = get_specific_engine(**kwargs)
+        except Exception as e:
+            message = ("Exception while initializing sphinx engine:"
+                       " %s" % (e,))
+            log.warning(message)
             if name:
                 raise EngineError(message)
 
     # Only retrieve the text input engine if explicitly specified; it is not
-    # an actual SR engine implementation and is mostly intended to be used
-    # for testing.
-    if name == "text":
+    #  an actual SR engine implementation and is mostly intended to be used
+    #  for testing.
+    if not engine and name == "text":
         # Attempt to retrieve the TextInput engine instance.
         try:
             from .backend_text import is_engine_available
             from .backend_text import get_engine as get_specific_engine
             if is_engine_available(**kwargs):
-                return get_specific_engine(**kwargs)
+                engine = get_specific_engine(**kwargs)
         except Exception as e:
             message = ("Exception while initializing text-input engine:"
                        " %s" % (e,))
-            print(message)
+            log.warning(message)
             if name:
                 raise EngineError(message)
 
-    if not name:
+    # Return the engine instance, if one has been initialized.  Log a
+    #  message about which SR engine back-end was used.
+    if engine:
+        message = "Initialized %r SR engine: %r." % (engine.name, engine)
+        log.info(message)
+        return engine
+    elif not name:
         raise EngineError("No usable engines found.")
     else:
         valid_names = ["natlink", "kaldi", "sphinx", "sapi5shared",

@@ -26,10 +26,11 @@ Window mover classes
 
 import math
 import random
+import threading
+import time
 
 from .point        import Point
 from .rectangle    import Rectangle, unit
-from ..engines     import get_engine
 
 
 #===========================================================================
@@ -108,6 +109,22 @@ def linear_resize_path(max_count=10):
 # Suppress warnings about too many instance attributes and constructor
 # arguments.
 
+class TimerThread(threading.Thread):
+    def __init__(self, timer_callback, interval):
+        threading.Thread.__init__(self)
+        self._event = threading.Event()
+        self._interval = interval
+        self._timer_callback = timer_callback
+
+    def stop(self):
+        self._event.set()
+
+    def run(self):
+        while not self._event.is_set():
+            time.sleep(self._interval)
+            self._timer_callback()
+
+
 class PathBase(object):
 
     _interval = 0.025
@@ -131,10 +148,16 @@ class PathBase(object):
         self._timer = None
 
     def start(self):
-        engine = get_engine()
-        self._timer = engine.create_timer(self.timer_callback, self._interval)
+        if self._timer:
+            return
+
+        self._timer = TimerThread(self.timer_callback, self._interval)
+        self._timer.start()
 
     def stop(self):
+        if not self._timer:
+            return
+
         self._timer.stop()
         self._timer = None
         self._rectangles = None

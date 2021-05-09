@@ -11,6 +11,89 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+0.31.1_ - 2021-05-09
+--------------------
+
+Fixed
+~~~~~
+* Fix AttributeError bug in natlink engine.py file.
+
+
+0.31.0_ - 2021-05-04
+--------------------
+
+Changed
+~~~~~~~
+* Adjust order of preferred SR engine implementations in get_engine() to
+  prefer Kaldi over SAPI 5 and Sphinx.
+* Change clipboard toolkit to support retrieving copied files (format_hdrop)
+  on X11.
+* Change clipboard toolkit to support setting and retrieving the three X
+  selections using the xsel program (X11).
+* Change get_engine() to log an info message for initialized engines.
+* Change the Choice element class to allow using list/tuple choices.
+* Make various improvements to the Kaldi engine back-end and bump required
+  Kaldi-Active-Grammar version to 2.1.0. (thanks `@daanzu`_).
+
+Fixed
+~~~~~
+* Fix a number of Kaldi engine back-end bugs (thanks `@daanzu`_).
+* Fix leak of file open() without close in dragonfly/config.py (thanks
+  `@wolfmanstout`_).
+* Fix problem with the default action used by the Paste action class.
+* Fix the Windows keyboard code so that letter and number keys can be
+  pressed using the Key and Text actions, regardless of the active
+  keyboard layout.
+
+Removed
+~~~~~~~
+* Remove Google cloud speech-to-text functionality from the Kaldi engine
+  back-end (unneeded dependency).
+
+
+0.30.1_ - 2021-03-30
+--------------------
+
+Fixed
+~~~~~
+* Fix incorrect dictation formatting for DNS letters (thanks
+  `@wolfmanstout`_).
+* Fix incorrect handling of input strings in DNS dictation formatting
+  classes.
+
+
+0.30.0_ - 2021-03-20
+--------------------
+
+Added
+~~~~~
+* Add Clipboard class methods: get_available_formats() and
+  convert_format_content().
+
+Changed
+~~~~~~~
+* Change the Clipboard classes so they have a consistent API across
+  platforms.
+* Change the German integer element content to support compound words in
+  range 20-99, including when used as part of larger numbers.
+* Change the Paste action class to make use of the Clipboard class changes.
+* Change the X11Window class to filter out unhelpful xdotool BadWindow error
+  messages.
+* Change the internal integer builder classes to support replacing or adding
+  alternative recognition words for numbers.
+
+Fixed
+~~~~~
+* Fix a bug with the pyperclip Clipboard.copy_to_system() method.
+* Fix diction.formatter logger name to match log.py (thanks
+  `@wolfmanstout`_).
+* Fix incorrect handling of None in the Clipboard classes (thanks
+  `@MarkRx`_).
+* Fix issues with German integers in the millions and with the words "ein"
+  and "eins".
+* Fix smart casting for command-line interface (CLI) to handle other
+  possible exceptions for some inputs (thanks `@daanzu`_).
+
 
 0.29.0_ - 2020-12-31
 --------------------
@@ -1036,7 +1119,11 @@ This release is the first in the Git version control system.
 
 
 .. Release links.
-.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.29.0...HEAD
+.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.31.1...HEAD
+.. _0.31.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.31.0...0.31.1
+.. _0.31.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.30.1...0.31.0
+.. _0.30.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.30.0...0.30.1
+.. _0.30.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.29.0...0.30.0
 .. _0.29.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.28.1...0.29.0
 .. _0.28.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.28.0...0.28.1
 .. _0.28.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.27.1...0.28.0
@@ -1083,6 +1170,7 @@ This release is the first in the Git version control system.
 .. Contributors.
 .. _@JasoonS: https://github.com/JasoonS
 .. _@LexiconCode: https://github.com/LexiconCode
+.. _@MarkRx: https://github.com/MarkRx
 .. _@Timoses: https://github.com/Timoses
 .. _@Versatilus: https://github.com/Versatilus
 .. _@alexboche: https://github.com/alexboche

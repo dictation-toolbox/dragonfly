@@ -1,12 +1,8 @@
 Sphinx
 mock
-pyperclip>=1.7.0
 six
 enum34;python_version<'3.4'
-regex
 sphinx-argparse
-json-rpc
-Werkzeug
-requests
 sphinx_rtd_theme
 lark-parser
+requests

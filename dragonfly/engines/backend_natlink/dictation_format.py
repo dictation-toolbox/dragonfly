@@ -27,6 +27,8 @@ NaturallySpeaking engine.
 
 """
 
+# pylint: disable=attribute-defined-outside-init,redefined-builtin
+
 from locale import getpreferredencoding
 import logging
 import re
@@ -41,7 +43,7 @@ try:
 except ImportError:
     natlink = None
 
-from six import text_type, binary_type, string_types, PY2
+from six import binary_type, string_types, PY2
 
 import dragonfly.engines
 
@@ -77,8 +79,9 @@ class FlagContainer(object):
     def __getattr__(self, name):
         if name not in self.flag_names:
             raise AttributeError("Invalid flag name: %r" % (name,))
-        return (name in self._flags_true)
+        return name in self._flags_true
 
+    # pylint: disable=inconsistent-return-statements
     def __setattr__(self, name, value):
         if name.startswith("_"):
             return object.__setattr__(self, name, value)
@@ -108,6 +111,7 @@ class WordFlags(FlagContainer):
 
     """
 
+    # pylint: disable=line-too-long
     flag_names = (
         # Flags related to spacing
         "no_space_before",     # No space before this word (like right-paren)
@@ -153,6 +157,7 @@ class StateFlags(FlagContainer):
 
     """
 
+    # pylint: disable=line-too-long,too-many-instance-attributes
     flag_names = (
         # Flags related to spacing
         "no_space_before",       # No space before next word
@@ -258,7 +263,7 @@ class WordParserDns10(WordParserBase):
     ]
 
     def create_word_flags(self, info):
-        if info == None:
+        if info is None:
             # None indicates the word is not in DNS' vocabulary.
             return WordFlags()
 
@@ -270,12 +275,15 @@ class WordParserDns10(WordParserBase):
         return WordFlags(*flag_names)
 
     def parse_input(self, input):
-        # Not unicode (Python 2) or str (Python 3)
-        if not isinstance(input, text_type):
+        if not isinstance(input, string_types):
+            raise TypeError("input must be a string, not {0!r}"
+                            .format(input))
+
+        if isinstance(input, binary_type):
             # DNS and Natlink provide recognized words as "Windows-1252"
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
-            input = text_type(input).encode("windows-1252")
+            input = input.decode("windows-1252")
 
         # The written and spoken forms of a word are separated by a "\"
         # character.
@@ -295,7 +303,7 @@ class WordParserDns10(WordParserBase):
         word_flags = self.create_word_flags(info)
 
         word = Word(written, spoken, word_flags)
-        self._log.debug("Parsed input {0!r} -> {1}".format(input, word))
+        self._log.debug("Parsed input %r -> %s", input, word)
 #        print ("Parsed input {0!r} -> {1}".format(input, word))
         return word
 
@@ -310,6 +318,7 @@ class WordParserDns11(WordParserBase):
 
     """
 
+    # pylint: disable=line-too-long
     property_map = {
         "new-line":         WordFlags("no_format", "no_space_after", "no_cap_reset", "newline_after"),
         "new-paragraph":    WordFlags("no_format", "no_space_after", "cap_next", "two_newlines_after"),
@@ -329,8 +338,8 @@ class WordParserDns11(WordParserBase):
 
         "space-bar":        WordFlags("no_format", "spacebar", "no_space_after", "no_cap_reset", "no_space_before"),
         "spelling-cap":     WordFlags("no_format", "no_space_reset", "cap_next_force"),
-        "letter":           WordFlags("no_space_after"),
-        "uppercase-letter": WordFlags("no_space_after"),
+        "letter":           WordFlags("no_space_between"),
+        "uppercase-letter": WordFlags("no_space_between"),
         "numeral":          WordFlags("no_space_after"),
 
         "period":           WordFlags("two_spaces_after", "cap_next", "no_space_before", "not_after_period"),
@@ -369,17 +378,20 @@ class WordParserDns11(WordParserBase):
         elif property.startswith("right-"):
             flags = self.property_map["right-*"].clone()
         else:
-            self._log.warning("Unknown word property: %r" % (property,))
+            self._log.warning("Unknown word property: %r", property)
             flags = WordFlags()
         return flags
 
     def parse_input(self, input):
-        # Not unicode (Python 2) or str (Python 3)
-        if not isinstance(input, text_type):
+        if not isinstance(input, string_types):
+            raise TypeError("input must be a string, not {0!r}"
+                            .format(input))
+
+        if isinstance(input, binary_type):
             # DNS and Natlink provide recognized words as "Windows-1252"
             # encoded strings. Here we convert them to Unicode for internal
             # processing.
-            input = text_type(input).encode("windows-1252")
+            input = input.decode("windows-1252")
 
         parts = input.split("\\")
         if len(parts) == 1:
@@ -410,7 +422,7 @@ class WordParserDns11(WordParserBase):
         word_flags = self.create_word_flags(property)
 
         word = Word(written, spoken, word_flags)
-        self._log.debug("Parsed input {0!r} -> {1}".format(input, word))
+        self._log.debug("Parsed input %r -> %s", input, word)
 #        print ("Parsed input {0!r} -> {1}".format(input, word))
         return word
 
@@ -436,9 +448,9 @@ class WordParserFactory(object):
     # The following dictionary determines which words are used for which
     # language to detect whether natlink.getWordInfo() returns useful info.
     words_with_info = {
-                       "en": ".\\dot",
-                       "nl": ".\\dot",
-                      }
+        "en": ".\\dot",
+        "nl": ".\\dot",
+    }
 
     def __init__(self):
         self.parser_class = None
@@ -450,17 +462,17 @@ class WordParserFactory(object):
             info = natlink.getWordInfo(word.encode("windows-1252"))
         else:
             info = natlink.getWordInfo(word)
-        if info == None:
+        if info is None:
             parser_class = WordParserDns11
         else:
             parser_class = WordParserDns10
 
         parser_class_string = parser_class.__name__
-        if info == None:  info_string = "None"
+        if info is None:  info_string = "None"
         else:             info_string = "0x" + format(info, "08x")
-        self._log.info("Selected word parser class {0} because"
-                       " natlink.getWordInfo({1!r}) returned {2}"
-                       .format(parser_class_string, word, info_string))
+        self._log.info("Selected word parser class %s because"
+                       " natlink.getWordInfo(%r) returned %s",
+                       parser_class_string, word, info_string)
 
         return parser_class
 
@@ -487,6 +499,10 @@ class WordFormatter(object):
         else:       self.parser = self.parser_factory.get_parser()
         self.two_spaces_after_period = two_spaces_after_period
 
+    #-----------------------------------------------------------------------
+    # Main formatting methods.
+    # pylint: disable=bad-indentation,too-many-branches,line-too-long
+
     def format_dictation(self, input_words):
         if isinstance(input_words, string_types):
             raise ValueError("Argument input_words must be a sequence of"
@@ -498,10 +514,10 @@ class WordFormatter(object):
             word = self.parser.parse_input(input_word)
             formatted_words.append(self.apply_formatting(word))
             new_state = self.update_state(word)
-            self._log.debug("Processing {0}, formatted output: {1!r},"
-                            " {2} -> {3}"
-                            .format(word, formatted_words[-1],
-                                    self.state, new_state))
+            self._log.debug("Processing %s, formatted output: %r,"
+                            " %s -> %s",
+                            word, formatted_words[-1],  self.state,
+                            new_state)
             self.state = new_state
         return u"".join(formatted_words)
 
@@ -534,8 +550,8 @@ class WordFormatter(object):
 
         # Remove first period character if needed.
         if (state.prev_ended_in_period
-            and word.flags.not_after_period
-            and written.startswith(".")):
+                and word.flags.not_after_period
+                and written.startswith(".")):
             written = written[1:]
 
         # Determine suffix.
@@ -571,6 +587,10 @@ class WordFormatter(object):
 
         # Return newly created state.
         return state
+
+    #-----------------------------------------------------------------------
+    # String formatting utility methods.
+    # pylint: disable=no-self-use
 
     def capitalize_first(self, written):
         return written.capitalize()

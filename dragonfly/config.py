@@ -239,7 +239,8 @@ class Config(object):
             section.update_namespace(namespace)
 
         try:
-            exec(compile(open(path).read(), path, 'exec'), namespace)
+            with open(path) as file:
+                exec(compile(file.read(), path, 'exec'), namespace)
 #        except ConfigError, e:
         except Exception as e:
             print("exception:", e)
