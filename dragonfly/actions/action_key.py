@@ -69,11 +69,15 @@ that only *keyname* is required; the other fields are optional.
    :ref:`RefKeySpecNames`.
  - *innerpause* --
    The time to pause between repetitions of this keystroke.
+   It should be given in hundredths of a second.  For
+   example, "20" will pause for 20/100s = 0.2 seconds.
  - *repeat* --
    The number of times this keystroke should be repeated.
    If not specified, the key will be pressed and released once.
  - *outerpause* --
    The time to pause after this keystroke.
+   It should be given in hundredths of a second.  For
+   example, "20" will pause for 20/100s = 0.2 seconds.
  - *direction* --
    Whether to press-and-hold or release the key.  Must be
    one of the following:
