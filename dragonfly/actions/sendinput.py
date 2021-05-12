@@ -35,6 +35,7 @@ import win32api
 
 # These virtual keys don't have corresponding scancodes.
 # The list was found experimentally and is open to improvement.
+# TODO Remove this and defer to the Win32 MapVirtualKey(Ex) function.
 SOFT_KEYS = [x for x in range(0xc1, 0xdb)]
 SOFT_KEYS += [x for x in range(0x15, 0x1b)]
 SOFT_KEYS += [x for x in range(0x1c, 0x20)]
@@ -107,16 +108,14 @@ class KeyboardInput(Structure):
         if virtual_keycode == 0:
             flags |= 4  # KEYEVENTF_UNICODE
         else:
-            if virtual_keycode not in self.soft_keys:
+            if scancode != 0 and virtual_keycode not in self.soft_keys:
                 flags |= 8  # KEYEVENTF_SCANCODE
             if virtual_keycode in self.extended_keys:
                 flags |= win32con.KEYEVENTF_EXTENDEDKEY
         if not down:
             flags |= win32con.KEYEVENTF_KEYUP
-        
 
         extra = pointer(c_ulong(0))
-        # print(virtual_keycode, scancode, flags, 0, extra)
         Structure.__init__(self, virtual_keycode, scancode, flags, 0, extra)
 
 
