@@ -30,24 +30,9 @@ for simulating keyboard and mouse events.
 
 from ctypes import (c_short, c_long, c_ushort, c_ulong, sizeof,
                     POINTER, pointer, Structure, Union, windll)
+
 import win32con
 import win32api
-
-# These virtual keys don't have corresponding scancodes.
-# The list was found experimentally and is open to improvement.
-SOFT_KEYS = [x for x in range(0xc1, 0xdb)]
-SOFT_KEYS += [x for x in range(0x15, 0x1b)]
-SOFT_KEYS += [x for x in range(0x1c, 0x20)]
-SOFT_KEYS += [x for x in range(0x3a, 0x41)]
-SOFT_KEYS += [x for x in range(0x88, 0x90)]
-SOFT_KEYS += [x for x in range(0xa6, 0xba)]
-SOFT_KEYS += [
-    0xe0, 0xe5, 0xe7, 0xe8, 0xfc, 0x01, 0x02, 0x4, 0x5, 0x6, 0x7, 0x0a, 0x0b,
-    0x0e, 0x0f, 0x5d, 0x5e, 0x5f
-]
-SOFT_KEYS += [
-    win32con.VK_SNAPSHOT
-]
 
 
 class KeyboardInput(Structure):
@@ -58,7 +43,6 @@ class KeyboardInput(Structure):
                 ("dwFlags", c_ulong),
                 ("time", c_ulong),
                 ("dwExtraInfo", POINTER(c_ulong))]
-    soft_keys = set(SOFT_KEYS)
 
     # pylint: disable=line-too-long
 
@@ -93,30 +77,35 @@ class KeyboardInput(Structure):
         win32con.VK_RWIN,
     ))
 
-    def __init__(self, virtual_keycode, down, scancode=-1, layout=None):
+    def __init__(self, virtual_keycode, down, scancode=None, layout=None):
         """Initialize structure based on key type."""
-        if scancode == -1:
-            if not layout:
-                scancode = windll.user32.MapVirtualKeyW(virtual_keycode, 0)
-            else:
-                # Assume that 'layout' is a keyboard layout (HKL).
-                scancode = windll.user32.MapVirtualKeyExW(virtual_keycode,
-                                                          0, layout)
-
         flags = 0
         if virtual_keycode == 0:
             flags |= 4  # KEYEVENTF_UNICODE
         else:
-            if virtual_keycode not in self.soft_keys:
+            # Translate *virtual_keycode* into a scan code, if necessary.
+            #  Assume that *layout* is a keyboard layout (HKL).
+            if scancode is None:
+                user32 = windll.user32
+                if layout is None:
+                    scancode = user32.MapVirtualKeyW(virtual_keycode, 0)
+                else:
+                    scancode = user32.MapVirtualKeyExW(virtual_keycode, 0,
+                                                       layout)
+
+            # Add the KEYEVENTF_SCANCODE flag if the Win32 MapVirtualKey(Ex)
+            #  function returned a translation.  If not, then fallback on
+            #  the specified keycode.
+            if scancode:
                 flags |= 8  # KEYEVENTF_SCANCODE
+
+            # Add the KEYEVENTF_EXTENDEDKEY flag, if necessary.
             if virtual_keycode in self.extended_keys:
                 flags |= win32con.KEYEVENTF_EXTENDEDKEY
         if not down:
             flags |= win32con.KEYEVENTF_KEYUP
-        
 
         extra = pointer(c_ulong(0))
-        # print(virtual_keycode, scancode, flags, 0, extra)
         Structure.__init__(self, virtual_keycode, scancode, flags, 0, extra)
 
 

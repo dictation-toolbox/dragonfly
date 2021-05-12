@@ -305,8 +305,13 @@ class Keyboard(BaseKeyboard):
         except TypeError:
             code = -1
 
+        # Fallback on the keycode in CHAR_VK_MAP, if applicable.
+        if code == -1 and char in Win32KeySymbols.CHAR_VK_MAP:
+            code = Win32KeySymbols.CHAR_VK_MAP[char]
+
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
+
         return code
 
     @classmethod
