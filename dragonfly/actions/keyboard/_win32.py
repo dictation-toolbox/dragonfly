@@ -148,33 +148,26 @@ class Win32KeySymbols(object):
 
 class Typeable(BaseTypeable):
 
-    __slots__ = ("_code", "_modifiers", "_name", "_is_text", "_char",
-                 "_char_vk")
+    __slots__ = ("_code", "_modifiers", "_name", "_is_text", "_char")
 
     def __init__(self, code, modifiers=(), name=None, is_text=False,
                  char=None):
         BaseTypeable.__init__(self, code, modifiers, name, is_text)
         self._char = char
-        self._char_vk = char and char in Win32KeySymbols.CHAR_VK_MAP
 
     def update(self, hardware_events_required):
         # Nothing to do for virtual keys.
         if self._char is None:
             return True
 
-        # Get updated key code and modifiers for this Typeable.
+        # Get updated key code and modifiers for this Typeable, falling back
+        #  on the key codes in CHAR_VK_MAP where necessary.
         try:
             self._is_text = False
-            code, modifiers = Keyboard.get_keycode_and_modifiers(self._char)
+            code, modifiers = Keyboard.get_keycode_and_modifiers(
+                self._char, char_vk_fallback=hardware_events_required)
         except ValueError:
-            if hardware_events_required and self._char_vk:
-                # Fallback on hardware events using the keycode in
-                # CHAR_VK_MAP instead. This will result in events for the
-                # equivalent key.
-                lookup_func = lambda char: Win32KeySymbols.CHAR_VK_MAP[char]
-                code, modifiers = Keyboard.get_keycode_and_modifiers(
-                    self._char, lookup_func)
-            elif hardware_events_required:
+            if hardware_events_required:
                 # This Typeable cannot be typed in the current context.
                 return False
             else:
@@ -297,7 +290,7 @@ class Keyboard(BaseKeyboard):
             if timeout: time.sleep(timeout)
 
     @classmethod
-    def _get_initial_keycode(cls, char):
+    def _get_initial_keycode(cls, char, char_vk_fallback=True):
         # Get the code for this character.
         layout = cls.get_current_layout()
         try:
@@ -306,7 +299,10 @@ class Keyboard(BaseKeyboard):
             code = -1
 
         # Fallback on the keycode in CHAR_VK_MAP, if applicable.
-        if code == -1 and char in Win32KeySymbols.CHAR_VK_MAP:
+        #  Note: char_vk_fallback=False is used when typing these characters
+        #  with the Unicode keyboard.
+        if (char_vk_fallback and code == -1 and
+                char in Win32KeySymbols.CHAR_VK_MAP):
             code = Win32KeySymbols.CHAR_VK_MAP[char]
 
         if code == -1:
@@ -315,11 +311,8 @@ class Keyboard(BaseKeyboard):
         return code
 
     @classmethod
-    def xget_virtual_keycode(cls, char, lookup_func=None):
-        if lookup_func is None:
-            code = cls._get_initial_keycode(char)
-        else:
-            code = lookup_func(char)
+    def xget_virtual_keycode(cls, char, char_vk_fallback=True):
+        code = cls._get_initial_keycode(char, char_vk_fallback)
 
         # Construct a list of the virtual key code and modifiers.
         codes = [code & 0x00ff]
@@ -329,11 +322,8 @@ class Keyboard(BaseKeyboard):
         return codes
 
     @classmethod
-    def get_keycode_and_modifiers(cls, char, lookup_func=None):
-        if lookup_func is None:
-            code = cls._get_initial_keycode(char)
-        else:
-            code = lookup_func(char)
+    def get_keycode_and_modifiers(cls, char, char_vk_fallback=True):
+        code = cls._get_initial_keycode(char, char_vk_fallback)
 
         # Construct a list of the virtual key code and modifiers.
         modifiers = []
@@ -350,5 +340,6 @@ class Keyboard(BaseKeyboard):
         if is_text:
             return Typeable(char, is_text=True, char=char)
 
+        # Get the key code and modifiers for the Typeable.
         code, modifiers = cls.get_keycode_and_modifiers(char)
         return Typeable(code, modifiers, name=char, char=char)
