@@ -15,8 +15,9 @@ Prerequisites
 
 To be able to use the dragonfly, you will need the following:
 
- * **Python**, *v2.7 or later* -- available from the `Python dowloads page
+ * **Python** -- available from the `Python dowloads page
    <https://www.python.org/downloads/>`_.
+   **Version 2.7 (32-bit) is required if using Natlink**.
  * **Win32 extensions for Python** *(only for Windows users)* --
    available from the `pywin32 releases page
    <https://github.com/mhammond/pywin32/releases>`_.
@@ -28,6 +29,12 @@ To be able to use the dragonfly, you will need the following:
    <http://www.vergenet.net/~conrad/software/xsel/>`__ programs *(only
    for Linux/X11 users)* -- usually available from your system's package
    manager.
+
+**Note on Python 2.7**: Python version 2.7 (32-bit) is required if using the
+Natlink engine back-end, at least for the moment.  Support for this version
+is not maintained for the other engine back-ends and will be **dropped
+completely** in the first *MAJOR* release following stable Natlink support
+for Python 3.
 
 **Note for Linux users**: Dragonfly is only fully functional in an X11
 session. You may also need to manually set the ``XDG_SESSION_TYPE``
