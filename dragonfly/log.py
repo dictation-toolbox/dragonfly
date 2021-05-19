@@ -82,6 +82,8 @@ default_levels = {
                   "lang":                 (_warning, _info),
                   "compound.parse":       (_warning, _info),
                   "dictation.formatter":  (_warning, _warning),
+                  "dictation.word_parser":  (_warning, _warning),
+                  "dictation.word_parser_factory":  (_warning, _warning),
                   "action":               (_warning, _warning),
                   "action.init":          (_warning, _warning),
                   "action.exec":          (_warning, _warning),
