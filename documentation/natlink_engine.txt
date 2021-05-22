@@ -6,7 +6,10 @@ Natlink and DNS engine back-end
 Dragonfly uses Natlink to communicate with Dragon.  The latest versions of
 Natlink are available from `SourceForge
 <https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`__.
-All versions in the 4.X range should work with Dragonfly.
+All versions in the 4.X range should work with Dragonfly.  Please see the
+`Natlink install instructions
+<https://qh.antenna.nl/unimacro/installation/index.html>`__ on
+*qh.antenna.nl* for how to install Natlink on your machine and configure it.
 
 Dragonfly and Natlink support Dragon versions up to 15 (latest). The
 *Individual* editions of *Dragon* are recommended, although other editions
