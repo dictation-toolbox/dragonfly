@@ -24,9 +24,9 @@ SR back-end for Talon
 import logging
 
 from ..base        import (EngineBase, EngineError, MimicFailure,
-                           GrammarWrapperBase, DictationContainerBase,
-                           RecObsManagerBase)
+                           GrammarWrapperBase, DictationContainerBase)
 from .compiler     import TalonCompiler
+from .recobs       import TalonRecobsManager
 from ...grammar import state as state_
 from ...windows import Window
 
@@ -39,7 +39,7 @@ class TalonEngine(EngineBase):
 
     def __init__(self):
         super().__init__()
-        self._recognition_observer_manager = RecObsManagerBase(self)
+        self._recognition_observer_manager = TalonRecobsManager(self)
         try:
             from talon.experimental.dragonfly import DragonflyInterface
         except ImportError:
