@@ -24,7 +24,8 @@ SR back-end for Talon
 import logging
 
 from ..base        import (EngineBase, EngineError, MimicFailure,
-                           GrammarWrapperBase, DictationContainerBase)
+                           GrammarWrapperBase, DictationContainerBase,
+                           ThreadedTimerManager)
 from .compiler     import TalonCompiler
 from .recobs       import TalonRecobsManager
 from ...grammar import state as state_
@@ -40,6 +41,7 @@ class TalonEngine(EngineBase):
     def __init__(self):
         super().__init__()
         self._recognition_observer_manager = TalonRecobsManager(self)
+        self._timer_manager = ThreadedTimerManager(0.02, self)
         try:
             from talon.experimental.dragonfly import DragonflyInterface
         except ImportError:
