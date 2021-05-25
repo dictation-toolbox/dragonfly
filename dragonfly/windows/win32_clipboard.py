@@ -50,7 +50,7 @@ def win32_clipboard_ctx(timeout=0.5, step=0.001):
     polling for access, timing out after the specified number of seconds.
 
     Arguments:
-     - *timeout* (float, default: 0.5) -- timeout in seconds
+     - *timeout* (float, default: 0.5) -- timeout in seconds.
      - *step* (float, default: 0.001) -- number of seconds between each
        attempt to open the clipboard.
 
@@ -143,6 +143,54 @@ class Win32Clipboard(BaseClipboard):
     def clear_clipboard(cls):
         with win32_clipboard_ctx():
             win32clipboard.EmptyClipboard()
+
+    @classmethod
+    def wait_for_change(cls, timeout, step=0.001, formats=None):
+        # This method determines if the system clipboard has changed by
+        #  repeatedly checking the current sequence number.  Contents are
+        #  compared if specific clipboard formats are given.
+        last_seq_no = win32clipboard.GetClipboardSequenceNumber()
+        timeout = time.time() + float(timeout)
+        step = float(step)
+        if isinstance(formats, integer_types):
+            formats = (formats,)
+        elif formats:
+            for format in formats:
+                if not isinstance(format, integer_types):
+                    raise TypeError("Invalid clipboard format: %r"
+                                    % format)
+        if formats:
+            clipboard1 = cls(from_system=True)
+            clipboard2 = cls()
+        result = False
+        while time.time() < timeout:
+            seq_no_change = (win32clipboard.GetClipboardSequenceNumber()
+                             != last_seq_no)
+            if seq_no_change and formats:
+                # Check if the content of any specified format has changed.
+                clipboard2.copy_from_system()
+                for format in formats:
+                    format_available = clipboard2.has_format(format)
+                    result = (
+                        format_available != clipboard1.has_format(format) or
+                        format_available and clipboard2.get_format(format)
+                        != clipboard1.get_format(format))
+                    if result:
+                        break
+
+                # Reset the sequence number if the clipboard change is not
+                #  related.
+                if not result:
+                    last_seq_no = win32clipboard.GetClipboardSequenceNumber()
+            elif seq_no_change:
+                result = True
+
+            if result:
+                break
+
+            # Failure. Try again after *step* seconds.
+            time.sleep(step)
+        return result
 
     #-----------------------------------------------------------------------
 
