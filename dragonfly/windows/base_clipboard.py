@@ -25,6 +25,7 @@ This file contains the base interface to the system clipboard.
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
+import functools
 import locale
 import logging
 import os
@@ -36,6 +37,7 @@ from six import text_type, binary_type
 #===========================================================================
 
 
+@functools.total_ordering
 class BaseClipboard(object):
     """
     Base clipboard class.
@@ -245,6 +247,21 @@ class BaseClipboard(object):
         if text is not None:
             text = self.convert_format_content(self.format_unicode, text)
             self._contents[self.format_unicode] = text
+
+    def __eq__(self, other):
+        formats = self.get_available_formats()
+        if formats != other.get_available_formats():
+            return False
+        for format in formats:
+            if self.get_format(format) != other.get_format(format):
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __lt__(self, other):
+        return not self == other
 
     def __repr__(self):
         arguments = []
