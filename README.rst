@@ -184,8 +184,36 @@ dependencies, then you may need to upgrade pip with the following command:
 
     pip install --upgrade pip
 
+Quickstart - minimal working example
+----------------------------------------------------------------------------
 
-SR engine back-ends
+Test your installation of Dragonfly using the following steps: 
+1. Save the following as a file in a new directory such as `~/grammar`:
+
+File name: `_dragonfly_example_grammar.py` (the underscore is important)
+Contents: 
+```
+from dragonfly import Grammar, MappingRule, Text
+
+
+class MainRule(MappingRule):
+
+    mapping = {"hotel": Text("hotels are not cheap")}
+
+
+grammar = Grammar("sample")
+grammar.add_rule(MainRule())
+grammar.load()
+```
+
+2. Run `start_configurenatlink` from the command line. Under Natlink User Directory, change the path to the directory the grammar file is in (e.g. `~/grammar`). 
+
+3. Start the speech recognition engine of your choice, such as Dragon. You should see a Natlink window pop up. 
+
+4. Open a text input field such as an editor, and say "hotel" into the speech recognition engine. If Natlink is configured correctly and Dragonfly has recognized the example grammar, you should see the words "hotels are not cheap" entered. This means Natlink and Dragonfly are configured correctly. 
+
+
+Speech recognition engine back-ends
 ----------------------------------------------------------------------------
 
 Each Dragonfly speech recognition engine back-end and its requirements are
