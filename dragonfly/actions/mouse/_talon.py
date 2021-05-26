@@ -111,7 +111,7 @@ class ButtonEvent(BaseButtonEvent):
                 raise ValueError("Unsupported %s event" % event_type_s)
 
             if event_type == 0:  # Button press event
-                ctrl.mouse_click(button, down=flag)
+                ctrl.mouse_click(button, down=bool(flag))
             elif event_type == 1:  # Scroll event
                 if button == 'up':
                     ctrl.mouse_scroll(y=-flag)
