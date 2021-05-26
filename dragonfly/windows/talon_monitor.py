@@ -38,7 +38,7 @@ class TalonMonitor(BaseMonitor):
         monitors = []
         for screen in ui.screens():
             rectangle = Rectangle(screen.x, screen.y, screen.width, screen.height)
-            monitors.append(cls.get_monitor(screen, rectangle))
+            monitors.append(cls.get_monitor(id(screen), rectangle))
         return monitors
 
     @property
