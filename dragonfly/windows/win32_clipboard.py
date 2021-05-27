@@ -28,11 +28,12 @@ This file implements an interface to the Windows system clipboard.
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
-import contextlib
-import locale
+import logging
+import sys
 import time
+import threading
 
-from six import text_type, integer_types
+from six import integer_types, reraise
 
 import pywintypes
 import win32clipboard
@@ -42,9 +43,7 @@ from .base_clipboard import BaseClipboard
 
 #===========================================================================
 
-
-@contextlib.contextmanager
-def win32_clipboard_ctx(timeout=0.5, step=0.001):
+class win32_clipboard_ctx(object):
     """
     Python context manager for safely opening the Windows clipboard by
     polling for access, timing out after the specified number of seconds.
@@ -54,8 +53,10 @@ def win32_clipboard_ctx(timeout=0.5, step=0.001):
      - *step* (float, default: 0.001) -- number of seconds between each
        attempt to open the clipboard.
 
-    The polling is necessary because the clipboard is a shared resource
-    which may be in use by another process.
+    Notes:
+     - The polling is necessary because the clipboard is a shared resource
+       which may be in use by another process.
+     - Nested usage will not close the clipboard early.
 
     Use with a Python 'with' block::
 
@@ -64,30 +65,44 @@ def win32_clipboard_ctx(timeout=0.5, step=0.001):
            win32clipboard.EmptyClipboard()
 
     """
-    timeout = time.time() + float(timeout)
-    step = float(step)
-    success = False
-    while time.time() < timeout:
-        # Attempt to open the clipboard, catching Windows errors.
-        try:
+
+    _ctx_data = threading.local()
+    _log = logging.getLogger("clipboard")
+
+    def __init__(self, timeout=0.5, step=0.001):
+        self._timeout = float(timeout)
+        self._step = float(step)
+
+    def __enter__(self):
+        timeout = time.time() + self._timeout
+        success = False
+        while time.time() < timeout:
+            # Attempt to open the clipboard, catching Windows errors.
+            try:
+                win32clipboard.OpenClipboard()
+                success = True
+                break
+            except pywintypes.error:
+                # Failure. Try again after *step* seconds.
+                time.sleep(self._step)
+
+        # Try opening the clipboard one more time if it still isn't open.
+        #  If this fails, then an error will be raised this time.
+        if not success:
             win32clipboard.OpenClipboard()
-            success = True
-            break
-        except pywintypes.error:
-            # Failure. Try again after *step* seconds.
-            time.sleep(step)
 
-    # Try opening the clipboard one more time if it still isn't open.
-    # If this fails, then an error will be raised this time.
-    if not success:
-        win32clipboard.OpenClipboard()
+        # The clipboard is open now.  Increment our thread-local counter to
+        #  keep track of nested usage.
+        ctx_data = self._ctx_data
+        ctx_data.count = getattr(ctx_data, "count", 0) + 1
 
-    # The clipboard is open now, so yield and close the clipboard
-    # afterwards.
-    try:
-        yield
-    finally:
-        win32clipboard.CloseClipboard()
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # The clipboard is (presumably) still open.  Decrement our thread-
+        #  local counter and close the clipboard if it is at 0 again.
+        ctx_data = self._ctx_data
+        ctx_data.count -= 1
+        if ctx_data.count == 0:
+            win32clipboard.CloseClipboard()
 
 
 class Win32Clipboard(BaseClipboard):

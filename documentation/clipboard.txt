@@ -100,10 +100,10 @@ Windows Clipboard class
    :members:
 
 
-Windows Clipboard context manager function
+Windows Clipboard context manager
 ----------------------------------------------------------------------------
 
-.. autofunction:: dragonfly.windows.win32_clipboard.win32_clipboard_ctx
+.. autoclass:: dragonfly.windows.win32_clipboard.win32_clipboard_ctx
 
 
 X11 Clipboard classes
