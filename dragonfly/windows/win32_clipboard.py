@@ -160,11 +160,11 @@ class Win32Clipboard(BaseClipboard):
             win32clipboard.EmptyClipboard()
 
     @classmethod
-    def wait_for_change(cls, timeout, step=0.001, formats=None):
+    def _wait_for_change(cls, timeout, step, formats, initial_clipboard,
+                         seq_no):
         # This method determines if the system clipboard has changed by
         #  repeatedly checking the current sequence number.  Contents are
         #  compared if specific clipboard formats are given.
-        last_seq_no = win32clipboard.GetClipboardSequenceNumber()
         timeout = time.time() + float(timeout)
         step = float(step)
         if isinstance(formats, integer_types):
@@ -174,29 +174,23 @@ class Win32Clipboard(BaseClipboard):
                 if not isinstance(format, integer_types):
                     raise TypeError("Invalid clipboard format: %r"
                                     % format)
-        if formats:
-            clipboard1 = cls(from_system=True)
-            clipboard2 = cls()
+        clipboard2 = cls() if formats or initial_clipboard else None
         result = False
         while time.time() < timeout:
             seq_no_change = (win32clipboard.GetClipboardSequenceNumber()
-                             != last_seq_no)
-            if seq_no_change and formats:
-                # Check if the content of any specified format has changed.
+                             != seq_no)
+            if seq_no_change and initial_clipboard:
+                # Check if the content of any relevant format has changed.
                 clipboard2.copy_from_system()
-                for format in formats:
-                    format_available = clipboard2.has_format(format)
-                    result = (
-                        format_available != clipboard1.has_format(format) or
-                        format_available and clipboard2.get_format(format)
-                        != clipboard1.get_format(format))
-                    if result:
-                        break
+                formats_to_compare = formats if formats else "all"
+                result = cls._clipboard_formats_changed(formats_to_compare,
+                                                        initial_clipboard,
+                                                        clipboard2)
 
                 # Reset the sequence number if the clipboard change is not
                 #  related.
                 if not result:
-                    last_seq_no = win32clipboard.GetClipboardSequenceNumber()
+                    seq_no = win32clipboard.GetClipboardSequenceNumber()
             elif seq_no_change:
                 result = True
 
@@ -206,6 +200,18 @@ class Win32Clipboard(BaseClipboard):
             # Failure. Try again after *step* seconds.
             time.sleep(step)
         return result
+
+    @classmethod
+    def wait_for_change(cls, timeout, step=0.001, formats=None,
+                        initial_clipboard=None):
+        # Save the current clipboard sequence number and clipboard contents,
+        #  as necessary. The latter is not required unless formats are
+        #  specified.
+        seq_no = win32clipboard.GetClipboardSequenceNumber()
+        if formats and not initial_clipboard:
+            initial_clipboard = cls(from_system=True)
+        return cls._wait_for_change(timeout, step, formats,
+                                    initial_clipboard, seq_no)
 
     #-----------------------------------------------------------------------
 
