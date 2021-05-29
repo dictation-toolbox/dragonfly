@@ -28,6 +28,7 @@ for simulating keyboard and mouse events.
 # pylint: disable=E0401
 # This file imports Win32-only symbols.
 
+import sys
 from ctypes import (c_short, c_long, c_ushort, c_ulong, sizeof,
                     POINTER, pointer, Structure, Union, windll)
 
@@ -44,39 +45,6 @@ class KeyboardInput(Structure):
                 ("time", c_ulong),
                 ("dwExtraInfo", POINTER(c_ulong))]
 
-    # pylint: disable=line-too-long
-
-    #  From https://docs.microsoft.com/en-us/windows/desktop/inputdev/about-keyboard-input#extended-key-flag
-    #     The extended keys consist of the ALT and CTRL keys
-    #     on the right-hand side of the keyboard; the INS, DEL, HOME,
-    #     END, PAGE UP, PAGE DOWN, and arrow keys in the clusters to
-    #     the left of the numeric keypad; the NUM LOCK key; the BREAK
-    #     (CTRL+PAUSE) key; the PRINT SCRN key; and the divide (/) and
-    #     ENTER keys in the numeric keypad.
-    #
-    #  It's unclear if the Windows keys are also "extended", so they
-    #  have been included for historical reasons.
-    extended_keys = set((
-        win32con.VK_UP,
-        win32con.VK_DOWN,
-        win32con.VK_LEFT,
-        win32con.VK_RIGHT,
-        win32con.VK_HOME,
-        win32con.VK_END,
-        win32con.VK_PRIOR,
-        win32con.VK_NEXT,
-        win32con.VK_INSERT,
-        win32con.VK_DELETE,
-        win32con.VK_NUMLOCK,
-        win32con.VK_RCONTROL,
-        win32con.VK_RMENU,
-        win32con.VK_PAUSE,
-        win32con.VK_SNAPSHOT,
-        win32con.VK_DIVIDE,
-        win32con.VK_LWIN,
-        win32con.VK_RWIN,
-    ))
-
     def __init__(self, virtual_keycode, down, scancode=None, layout=None):
         """Initialize structure based on key type."""
         flags = 0
@@ -87,10 +55,16 @@ class KeyboardInput(Structure):
             #  Assume that *layout* is a keyboard layout (HKL).
             if scancode is None:
                 user32 = windll.user32
-                if layout is None:
-                    scancode = user32.MapVirtualKeyW(virtual_keycode, 0)
+                if sys.getwindowsversion().major < 6:
+                    map_type = 0  # MAPVK_VK_TO_VSC
                 else:
-                    scancode = user32.MapVirtualKeyExW(virtual_keycode, 0,
+                    map_type = 4  # MAPVK_VK_TO_VSC_EX
+                if layout is None:
+                    scancode = user32.MapVirtualKeyW(virtual_keycode,
+                                                     map_type)
+                else:
+                    scancode = user32.MapVirtualKeyExW(virtual_keycode,
+                                                       map_type,
                                                        layout)
 
             # Add the KEYEVENTF_SCANCODE flag if the Win32 MapVirtualKey(Ex)
@@ -99,9 +73,12 @@ class KeyboardInput(Structure):
             if scancode:
                 flags |= 8  # KEYEVENTF_SCANCODE
 
-            # Add the KEYEVENTF_EXTENDEDKEY flag, if necessary.
-            if virtual_keycode in self.extended_keys:
-                flags |= win32con.KEYEVENTF_EXTENDEDKEY
+                # Add the KEYEVENTF_EXTENDEDKEY flag, if necessary.
+                #  Starting with Windows Vista, extended scan codes are
+                #  specified with the high byte containing either 0xe0 or
+                #  0xe1.
+                if scancode >> 8 in (0xe0, 0xe1):
+                    flags |= win32con.KEYEVENTF_EXTENDEDKEY
         if not down:
             flags |= win32con.KEYEVENTF_KEYUP
 
