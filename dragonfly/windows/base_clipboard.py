@@ -25,6 +25,7 @@ This file contains the base interface to the system clipboard.
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
+import contextlib
 import functools
 import locale
 import logging
@@ -154,6 +155,20 @@ class BaseClipboard(object):
             # Failure. Try again after *step* seconds.
             time.sleep(step)
         return result
+
+    @classmethod
+    @contextlib.contextmanager
+    def synchronized_changes(cls, timeout, step=0.001, formats=None,
+                             initial_clipboard=None):
+        # Save the current clipboard contents, if necessary.
+        if initial_clipboard:
+            initial_clipboard = cls(from_system=True)
+        try:
+            # Yield for clipboard operations.
+            yield
+        finally:
+            # Wait for the system clipboard to change.
+            cls.wait_for_change(timeout, step, formats, initial_clipboard)
 
     #-----------------------------------------------------------------------
 

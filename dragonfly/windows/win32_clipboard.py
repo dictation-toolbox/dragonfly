@@ -28,6 +28,7 @@ This file implements an interface to the Windows system clipboard.
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
+import contextlib
 import logging
 import sys
 import time
@@ -212,6 +213,21 @@ class Win32Clipboard(BaseClipboard):
             initial_clipboard = cls(from_system=True)
         return cls._wait_for_change(timeout, step, formats,
                                     initial_clipboard, seq_no)
+
+    @classmethod
+    @contextlib.contextmanager
+    def synchronized_changes(cls, timeout, step=0.001, formats=None,
+                             initial_clipboard=None):
+        seq_no = win32clipboard.GetClipboardSequenceNumber()
+        if formats and not initial_clipboard:
+            initial_clipboard = cls(from_system=True)
+        try:
+            # Yield for clipboard operations.
+            yield
+        finally:
+            # Wait for the system clipboard to change.
+            cls._wait_for_change(timeout, step, formats, initial_clipboard,
+                                 seq_no)
 
     #-----------------------------------------------------------------------
 
