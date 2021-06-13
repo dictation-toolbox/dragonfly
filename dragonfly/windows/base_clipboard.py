@@ -25,17 +25,21 @@ This file contains the base interface to the system clipboard.
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
+import contextlib
+import functools
 import locale
 import logging
 import os
 import re
+import time
 
-from six import text_type, binary_type
+from six import text_type, binary_type, integer_types
 
 
 #===========================================================================
 
 
+@functools.total_ordering
 class BaseClipboard(object):
     """
     Base clipboard class.
@@ -81,6 +85,120 @@ class BaseClipboard(object):
         Clear the system clipboard.
         """
         raise NotImplementedError()
+
+    @classmethod
+    def _clipboard_formats_changed(cls, formats, clipboard1, clipboard2):
+        # Check if the content of any specified format has changed.
+        # Use all formats, if specified.
+        if formats == "all":
+            return clipboard1 != clipboard2
+        result = False
+        for format in formats:
+            format_available = clipboard1.has_format(format)
+            result = (
+                format_available != clipboard2.has_format(format) or
+                format_available and clipboard1.get_format(format)
+                != clipboard2.get_format(format))
+            if result:
+                break
+        return result
+
+    @classmethod
+    def wait_for_change(cls, timeout, step=0.001, formats=None,
+                        initial_clipboard=None):
+        """
+            Wait (poll) for the system clipboard to change.
+
+            This is a blocking method which returns whether or not the
+            system clipboard changed within a specified timeout period.
+
+            Arguments:
+             - *timeout* (float) -- timeout in seconds.
+             - *step* (float, default: 0.001) -- number of seconds between
+               each check.
+             - *formats* (iterable, default: None) -- if not None, only
+               changes to the given content formats will register.  If None,
+               all formats will be observed.
+             - *initial_clipboard* (Clipboard, default: None) -- if a
+               clipboard is given, the method will wait until the system
+               clipboard differs from the instance's contents.
+
+        """
+        # By default, this method retrieves the system clipboard every
+        #  *step* seconds until the contents change.  This method should be
+        #  overridden by the sub-class if there is a more efficient way for
+        #  the platform.
+        if not initial_clipboard:
+            initial_clipboard = cls(from_system=True)
+        clipboard2 = cls()
+        timeout = time.time() + float(timeout)
+        step = float(step)
+        if isinstance(formats, integer_types):
+            formats = (formats,)
+        elif formats:
+            for format in formats:
+                if not isinstance(format, integer_types):
+                    raise TypeError("Invalid clipboard format: %r"
+                                    % format)
+        result = False
+        while time.time() < timeout:
+            # Check if the content of any relevant format has changed.
+            clipboard2.copy_from_system()
+            formats_to_compare = formats if formats else "all"
+            result = cls._clipboard_formats_changed(formats_to_compare,
+                                                    initial_clipboard,
+                                                    clipboard2)
+
+            if result:
+                break
+
+            # Failure. Try again after *step* seconds.
+            time.sleep(step)
+        return result
+
+    @classmethod
+    @contextlib.contextmanager
+    def synchronized_changes(cls, timeout, step=0.001, formats=None,
+                             initial_clipboard=None):
+        """
+            Context manager for synchronizing local and system clipboard
+            changes.  This takes the same arguments as the
+            :meth:`wait_for_change` method.
+
+            Arguments:
+             - *timeout* (float) -- timeout in seconds.
+             - *step* (float, default: 0.001) -- number of seconds between
+               each check.
+             - *formats* (iterable, default: None) -- if not None, only
+               changes to the given content formats will register.  If None,
+               all formats will be observed.
+             - *initial_clipboard* (Clipboard, default: None) -- if a
+               clipboard is given, the method will wait until the system
+               clipboard differs from the instance's contents.
+
+            Use with a Python 'with' block::
+
+               from dragonfly import Clipboard, Key
+
+               # Copy the selected text with Ctrl+C and wait until a system
+               #  clipboard change is detected.
+               timeout = 3
+               with Clipboard.synchronized_changes(timeout):
+                   Key("c-c", use_hardware=True).execute()
+
+               # Retrieve the system text.
+               text = Clipboard.get_system_text()
+
+        """
+        # Save the current clipboard contents, if necessary.
+        if initial_clipboard:
+            initial_clipboard = cls(from_system=True)
+        try:
+            # Yield for clipboard operations.
+            yield
+        finally:
+            # Wait for the system clipboard to change.
+            cls.wait_for_change(timeout, step, formats, initial_clipboard)
 
     #-----------------------------------------------------------------------
 
@@ -245,6 +363,21 @@ class BaseClipboard(object):
         if text is not None:
             text = self.convert_format_content(self.format_unicode, text)
             self._contents[self.format_unicode] = text
+
+    def __eq__(self, other):
+        formats = self.get_available_formats()
+        if formats != other.get_available_formats():
+            return False
+        for format in formats:
+            if self.get_format(format) != other.get_format(format):
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __lt__(self, other):
+        return not self == other
 
     def __repr__(self):
         arguments = []

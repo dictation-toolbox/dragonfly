@@ -444,6 +444,46 @@ class TestClipboard(unittest.TestCase):
             c = Clipboard(contents={format_hdrop: f.name})
             self.assertIsNone(c.get_text())
 
+    def test_comparison(self):
+        # Test with two empty Clipboard instances.
+        self.assertEqual(Clipboard(), Clipboard())
+
+        # Test with format_unicode.
+        c1 = Clipboard(contents={format_unicode: u"unicode text"})
+        c2 = Clipboard(contents={format_unicode: u"unicode text"})
+        self.assertEqual(c1, c2)
+        self.assertNotEqual(c1, Clipboard())
+
+        # Test with the same clipboard instance.
+        self.assertEqual(c1, c1)
+
+        # Test with both text formats.
+        c1 = Clipboard(contents={format_unicode: u"unicode text",
+                                 format_text: b"text"})
+        c2 = Clipboard(contents={format_unicode: u"unicode text",
+                                 format_text: b"text"})
+        self.assertEqual(c1, c2)
+        self.assertNotEqual(c1, Clipboard())
+
+        # Test with format_text only.
+        c1 = Clipboard(contents={format_text: b"text"})
+        c2 = Clipboard(contents={format_text: b"text"})
+        self.assertEqual(c1, c2)
+        self.assertNotEqual(c1, Clipboard())
+
+        # Test with different text formats.
+        c1 = Clipboard(contents={format_unicode: u"unicode text"})
+        c2 = Clipboard(contents={format_text: b"text"})
+        self.assertNotEqual(c1, c2)
+
+        # Test with format_hdrop only.
+        with NamedTemporaryFile() as f:
+            c1 = Clipboard(contents={format_hdrop: f.name})
+            c2 = Clipboard(contents={format_hdrop: f.name})
+            self.assertEqual(c1, c2)
+            self.assertNotEqual(c1, Clipboard())
+            self.assertNotEqual(c1, Clipboard(text="text"))
+
     def test_flexible_string_types(self):
         # This is similar to the clipboard format conversion that Windows
         # performs when necessary. The Clipboard class should do this

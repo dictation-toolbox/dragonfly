@@ -29,10 +29,12 @@ This file implements an interface to the Windows system clipboard.
 # Suppress warnings about redefining the built-in 'format' function.
 
 import contextlib
-import locale
+import logging
+import sys
 import time
+import threading
 
-from six import text_type, integer_types
+from six import integer_types, reraise
 
 import pywintypes
 import win32clipboard
@@ -42,20 +44,20 @@ from .base_clipboard import BaseClipboard
 
 #===========================================================================
 
-
-@contextlib.contextmanager
-def win32_clipboard_ctx(timeout=0.5, step=0.001):
+class win32_clipboard_ctx(object):
     """
     Python context manager for safely opening the Windows clipboard by
     polling for access, timing out after the specified number of seconds.
 
     Arguments:
-     - *timeout* (float, default: 0.5) -- timeout in seconds
+     - *timeout* (float, default: 0.5) -- timeout in seconds.
      - *step* (float, default: 0.001) -- number of seconds between each
        attempt to open the clipboard.
 
-    The polling is necessary because the clipboard is a shared resource
-    which may be in use by another process.
+    Notes:
+     - The polling is necessary because the clipboard is a shared resource
+       which may be in use by another process.
+     - Nested usage will not close the clipboard early.
 
     Use with a Python 'with' block::
 
@@ -64,30 +66,44 @@ def win32_clipboard_ctx(timeout=0.5, step=0.001):
            win32clipboard.EmptyClipboard()
 
     """
-    timeout = time.time() + float(timeout)
-    step = float(step)
-    success = False
-    while time.time() < timeout:
-        # Attempt to open the clipboard, catching Windows errors.
-        try:
+
+    _ctx_data = threading.local()
+    _log = logging.getLogger("clipboard")
+
+    def __init__(self, timeout=0.5, step=0.001):
+        self._timeout = float(timeout)
+        self._step = float(step)
+
+    def __enter__(self):
+        timeout = time.time() + self._timeout
+        success = False
+        while time.time() < timeout:
+            # Attempt to open the clipboard, catching Windows errors.
+            try:
+                win32clipboard.OpenClipboard()
+                success = True
+                break
+            except pywintypes.error:
+                # Failure. Try again after *step* seconds.
+                time.sleep(self._step)
+
+        # Try opening the clipboard one more time if it still isn't open.
+        #  If this fails, then an error will be raised this time.
+        if not success:
             win32clipboard.OpenClipboard()
-            success = True
-            break
-        except pywintypes.error:
-            # Failure. Try again after *step* seconds.
-            time.sleep(step)
 
-    # Try opening the clipboard one more time if it still isn't open.
-    # If this fails, then an error will be raised this time.
-    if not success:
-        win32clipboard.OpenClipboard()
+        # The clipboard is open now.  Increment our thread-local counter to
+        #  keep track of nested usage.
+        ctx_data = self._ctx_data
+        ctx_data.count = getattr(ctx_data, "count", 0) + 1
 
-    # The clipboard is open now, so yield and close the clipboard
-    # afterwards.
-    try:
-        yield
-    finally:
-        win32clipboard.CloseClipboard()
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # The clipboard is (presumably) still open.  Decrement our thread-
+        #  local counter and close the clipboard if it is at 0 again.
+        ctx_data = self._ctx_data
+        ctx_data.count -= 1
+        if ctx_data.count == 0:
+            win32clipboard.CloseClipboard()
 
 
 class Win32Clipboard(BaseClipboard):
@@ -143,6 +159,75 @@ class Win32Clipboard(BaseClipboard):
     def clear_clipboard(cls):
         with win32_clipboard_ctx():
             win32clipboard.EmptyClipboard()
+
+    @classmethod
+    def _wait_for_change(cls, timeout, step, formats, initial_clipboard,
+                         seq_no):
+        # This method determines if the system clipboard has changed by
+        #  repeatedly checking the current sequence number.  Contents are
+        #  compared if specific clipboard formats are given.
+        timeout = time.time() + float(timeout)
+        step = float(step)
+        if isinstance(formats, integer_types):
+            formats = (formats,)
+        elif formats:
+            for format in formats:
+                if not isinstance(format, integer_types):
+                    raise TypeError("Invalid clipboard format: %r"
+                                    % format)
+        clipboard2 = cls() if formats or initial_clipboard else None
+        result = False
+        while time.time() < timeout:
+            seq_no_change = (win32clipboard.GetClipboardSequenceNumber()
+                             != seq_no)
+            if seq_no_change and initial_clipboard:
+                # Check if the content of any relevant format has changed.
+                clipboard2.copy_from_system()
+                formats_to_compare = formats if formats else "all"
+                result = cls._clipboard_formats_changed(formats_to_compare,
+                                                        initial_clipboard,
+                                                        clipboard2)
+
+                # Reset the sequence number if the clipboard change is not
+                #  related.
+                if not result:
+                    seq_no = win32clipboard.GetClipboardSequenceNumber()
+            elif seq_no_change:
+                result = True
+
+            if result:
+                break
+
+            # Failure. Try again after *step* seconds.
+            time.sleep(step)
+        return result
+
+    @classmethod
+    def wait_for_change(cls, timeout, step=0.001, formats=None,
+                        initial_clipboard=None):
+        # Save the current clipboard sequence number and clipboard contents,
+        #  as necessary. The latter is not required unless formats are
+        #  specified.
+        seq_no = win32clipboard.GetClipboardSequenceNumber()
+        if formats and not initial_clipboard:
+            initial_clipboard = cls(from_system=True)
+        return cls._wait_for_change(timeout, step, formats,
+                                    initial_clipboard, seq_no)
+
+    @classmethod
+    @contextlib.contextmanager
+    def synchronized_changes(cls, timeout, step=0.001, formats=None,
+                             initial_clipboard=None):
+        seq_no = win32clipboard.GetClipboardSequenceNumber()
+        if formats and not initial_clipboard:
+            initial_clipboard = cls(from_system=True)
+        try:
+            # Yield for clipboard operations.
+            yield
+        finally:
+            # Wait for the system clipboard to change.
+            cls._wait_for_change(timeout, step, formats, initial_clipboard,
+                                 seq_no)
 
     #-----------------------------------------------------------------------
 
