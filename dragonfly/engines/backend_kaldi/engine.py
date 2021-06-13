@@ -425,7 +425,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                             if kaldi_rule and is_acceptable_recognition:  # Don't store audio/metadata for bad recognitions
                                 self.audio_store.finalize(parsed_output,
                                     kaldi_rule.parent_grammar.name, kaldi_rule.parent_rule.name,
-                                    likelihood=expected_error_rate, has_dictation=kaldi_rule.has_dictation)
+                                    likelihood=expected_error_rate, has_dictation=recognition.has_dictation)
                             else:
                                 self.audio_store.cancel()
 
