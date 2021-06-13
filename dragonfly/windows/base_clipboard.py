@@ -160,6 +160,36 @@ class BaseClipboard(object):
     @contextlib.contextmanager
     def synchronized_changes(cls, timeout, step=0.001, formats=None,
                              initial_clipboard=None):
+        """
+            Context manager for synchronizing local and system clipboard
+            changes.  This takes the same arguments as the
+            :meth:`wait_for_change` method.
+
+            Arguments:
+             - *timeout* (float) -- timeout in seconds.
+             - *step* (float, default: 0.001) -- number of seconds between
+               each check.
+             - *formats* (iterable, default: None) -- if not None, only
+               changes to the given content formats will register.  If None,
+               all formats will be observed.
+             - *initial_clipboard* (Clipboard, default: None) -- if a
+               clipboard is given, the method will wait until the system
+               clipboard differs from the instance's contents.
+
+            Use with a Python 'with' block::
+
+               from dragonfly import Clipboard, Key
+
+               # Copy the selected text with Ctrl+C and wait until a system
+               #  clipboard change is detected.
+               timeout = 3
+               with Clipboard.synchronized_changes(timeout):
+                   Key("c-c", use_hardware=True).execute()
+
+               # Retrieve the system text.
+               text = Clipboard.get_system_text()
+
+        """
         # Save the current clipboard contents, if necessary.
         if initial_clipboard:
             initial_clipboard = cls(from_system=True)
