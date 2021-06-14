@@ -413,50 +413,31 @@ class Key(BaseKeyboardAction):
         error_message = ("Keyboard interface cannot type this character: %r"
                          % keyname)
         code = typeables.get(keyname)
-        is_windows = sys.platform.startswith("win")
-        if code is None and not is_windows:
-            # Delegate to the keyboard class. Any invalid keys will cause
-            # error messages later than normal, but this allows using valid
-            # key symbols that dragonfly doesn't define.
-            code = self._keyboard.get_typeable(keyname)
-            typeables[keyname] = code
-
-        elif code is None and is_windows:
-            # Handle this differently on Windows.
-            invalid_key_name = (
-                len(keyname) > 1 and
-
-                # Check if 'keyname' is an encoded character or code point.
-                (keyname.encode('unicode-escape', errors='ignore')
-                 .startswith(b"\\\\"))
-            )
-            if invalid_key_name:
-                # Raise an error on Windows for unknown keys that aren't
-                # single characters, encoded characters or Unicode code
-                # points.
-                raise ActionError("Invalid key name: %r" % keyname)
-
-            # Otherwise get a new Typeable.
+        if code is None:
+            # Delegate to the platform keyboard class. Any invalid keys will
+            # cause error messages later than normal, but this allows using
+            # valid key symbols that dragonfly doesn't define.
             try:
                 code = self._keyboard.get_typeable(keyname)
+                typeables[keyname] = code
             except ValueError:
                 if hardware_events_required:
                     # Return an error message to display when this action
                     # is executed.
                     return [], error_message
 
-                # Use the Unicode keyboard instead.
-                try:
-                    code = self._keyboard.get_typeable(keyname,
-                                                       is_text=True)
-                except ValueError:
-                    return [], error_message
-
-            # Save the typeable.
-            typeables[keyname] = code
+                # If on Windows and if hardware events are not required,
+                # then attempt to use the Unicode keyboard instead.
+                if sys.platform.startswith("win"):
+                    try:
+                        code = self._keyboard.get_typeable(keyname,
+                                                           is_text=True)
+                        typeables[keyname] = code
+                    except ValueError:
+                        return [], error_message
         else:
             # Update the Typeable. Return an error message if this fails.
-            # Note: this only does anything on Windows.
+            # Note: this only currently does anything on Windows.
             if not code.update(hardware_events_required):
                 return [], error_message
 
