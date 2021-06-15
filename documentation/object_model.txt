@@ -1,5 +1,5 @@
 
-Object model
+Object model (Grammar sub-package)
 ****************************************************************************
 
 The core of Dragonfly is a language object model revolving around three 

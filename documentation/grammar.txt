@@ -1,7 +1,7 @@
 ﻿
 .. _RefGrammar:
 
-Grammar sub-package
+Grammars
 ****************************************************************************
 
 Dragonfly's core is a language object model containing the following
