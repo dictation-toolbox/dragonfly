@@ -11,6 +11,29 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add Clipboard.synchronized_changes() context manager.
+* Add Clipboard.wait_for_change() class method.
+
+Changed
+~~~~~~~
+* Make Clipboard class instances comparable based on content difference.
+
+Fixed
+~~~~~
+* Add missing logger names and default levels into log.py.
+* Fix bug caused by storing an internal lark grammar in a text file.
+* Fix bug caused by storing the required KaldiAG version in a text file.
+* Fix bug with mouse button emulation on Windows.
+* Fix bug with the open/close mechanism of the Windows Clipboard class.
+* Fix incorrect and messy Key action code for handling unknown keys.
+* Fix incorrect handling of extended scan codes on Windows (keyboard input).
+
+
 0.31.2_ - 2021-05-15
 --------------------
 
