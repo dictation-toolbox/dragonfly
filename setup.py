@@ -128,7 +128,7 @@ setup(
                      "pyaudio"
                     ],
           "kaldi": [
-                    "kaldi-active-grammar ~= %s" % read("dragonfly", "engines", "backend_kaldi", "kag_version.txt").strip(),
+                    "kaldi-active-grammar ~= 2.1.0",
                     "sounddevice == 0.3.*",
                     "webrtcvad-wheels == 2.0.*",
                    ],

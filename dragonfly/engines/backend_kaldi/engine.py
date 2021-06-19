@@ -63,6 +63,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     _name = "kaldi"
     DictationContainer = DictationContainerBase
+    _required_kag_version = "2.1.0"
 
     #-----------------------------------------------------------------------
 
@@ -87,8 +88,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Compatible release version specification
         # https://stackoverflow.com/questions/11887762/how-do-i-compare-version-numbers-in-python/21065570
-        with open(os.path.join(os.path.dirname(__file__), 'kag_version.txt')) as file:
-            required_kag_version = Version(file.read().strip())
+        required_kag_version = Version(self._required_kag_version)
         kag_version = Version(kaldi_active_grammar.__version__)
         if not ((kag_version >= required_kag_version) and (kag_version.release[0:2] == required_kag_version.release[0:2])):
             self._log.error("%s: Incompatible kaldi_active_grammar version %s! Expected ~= %s!" % (self, kag_version, required_kag_version))
