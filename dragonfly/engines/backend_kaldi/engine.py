@@ -96,13 +96,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             if not os.environ.get('DRAGONFLY_DEVELOP'):
                 raise EngineError("Incompatible kaldi_active_grammar version")
 
-        # Hack to avoid bug processing keyboard actions on Windows
-        if os.name == 'nt':
-            action_exec_logger = logging.getLogger('action.exec')
-            if action_exec_logger.getEffectiveLevel() > logging.DEBUG:
-                self._log.warning("%s: Enabling logging of actions execution to avoid bug processing keyboard actions on Windows", self)
-                action_exec_logger.setLevel(logging.DEBUG)
-
         # Handle engine parameters
         if input_device_index is not None:
             if audio_input_device is not None:
@@ -218,6 +211,16 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     @staticmethod
     def print_mic_list():
         MicAudio.print_list()
+
+    def _apply_win32_kb_input_logging_fix(self):
+        # Hack to avoid bug processing keyboard actions on Windows
+        if os.name == 'nt':
+            action_exec_logger = logging.getLogger('action.exec')
+            if action_exec_logger.getEffectiveLevel() > logging.DEBUG:
+                self._log.warning("%s: Enabling logging of actions "
+                                  "execution to avoid bug processing "
+                                  "keyboard actions on Windows", self)
+                action_exec_logger.setLevel(logging.DEBUG)
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.

@@ -21,6 +21,7 @@ Added
 
 Changed
 ~~~~~~~
+* Disable Kaldi debug logging workaround for Windows Key action bug.
 * Make Clipboard class instances comparable based on content difference.
 
 Fixed
