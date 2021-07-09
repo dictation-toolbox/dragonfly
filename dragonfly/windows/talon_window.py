@@ -33,6 +33,10 @@ class TalonWindow(BaseWindow):
     # Methods for initialization and introspection.
 
     def __init__(self, win):
+        if isinstance(win, int):
+            return
+        if not isinstance(win, ui.BaseWindow):
+            raise TypeError()
         super().__init__(win.id)
         self._window = win
 
