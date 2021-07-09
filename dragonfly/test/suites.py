@@ -108,6 +108,10 @@ engine_tests_dict = {
         "test_dictation",
     ] + common_names,
 
+    "talon": [
+        "test_engine_talon",
+    ] + common_names,
+
     "kaldi": [
         "test_engine_kaldi",
         # "test_language_en_number",
