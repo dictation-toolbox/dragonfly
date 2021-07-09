@@ -56,7 +56,7 @@ class TestTimer(unittest.TestCase):
 
         interval = 0.01
         timer = self.engine.create_timer(callback, interval)
-        time.sleep(0.02)
+        time.sleep(0.015)
         timer.manager.main_callback()
 
         # Callback was called once.
