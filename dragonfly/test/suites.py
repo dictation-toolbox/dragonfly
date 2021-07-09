@@ -148,13 +148,18 @@ engine_params_dict = {
 
 
 def run_pytest_suite(engine_name, pytest_options):
+    # find path to "dragonfly/" directory, by moving upward from dragonfly.test.suites (this file)
+    dragonfly_path = os.path.dirname(os.path.dirname(__file__))
+
     # Get test file paths.
     paths = []
     for name in engine_tests_dict[engine_name]:
         if name.startswith("test_"):
             # Use full module paths so pytest can import the files
             # correctly.
-            name = "dragonfly/test/" + name + ".py"
+            name = os.path.join(dragonfly_path, 'test', name + ".py")
+        else:
+            name = os.path.join(dragonfly_path, '..', name)
 
         paths.append(name)
 
