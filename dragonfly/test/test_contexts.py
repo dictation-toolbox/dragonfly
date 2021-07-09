@@ -139,34 +139,39 @@ class TestRules(RuleTestCase):
         grammar2.load()
         grammar3.load()
 
-        # Set grammar1 as exclusive and make some assertions.
-        grammar1.set_exclusiveness(True)
-        self.engine.mimic("grammar one")
-        assert grammar1.rules[0].words == "grammar one"
-        self.assertRaises(MimicFailure, self.engine.mimic, "grammar two")
+        try:
+            # Set grammar1 as exclusive and make some assertions.
+            grammar1.set_exclusiveness(True)
+            self.engine.mimic("grammar one")
+            assert grammar1.rules[0].words == "grammar one"
+            self.assertRaises(MimicFailure, self.engine.mimic, "grammar two")
 
-        # Set grammar2 as exclusive and make some assertions.
-        # Both exclusive grammars should be active.
-        grammar2.set_exclusiveness(True)
-        self.engine.mimic("grammar one")
-        assert grammar1.rules[0].words == "grammar one"
-        self.engine.mimic("grammar two")
-        assert grammar2.rules[0].words == "grammar two"
+            # Set grammar2 as exclusive and make some assertions.
+            # Both exclusive grammars should be active.
+            grammar2.set_exclusiveness(True)
+            self.engine.mimic("grammar one")
+            assert grammar1.rules[0].words == "grammar one"
+            self.engine.mimic("grammar two")
+            assert grammar2.rules[0].words == "grammar two"
 
-        # Non-exclusive grammar 'grammar3' should not be active.
-        self.assertRaises(MimicFailure, self.engine.mimic, "grammar three")
+            # Non-exclusive grammar 'grammar3' should not be active.
+            self.assertRaises(MimicFailure, self.engine.mimic, "grammar three")
 
-        # Set both grammars as no longer exclusive and make some assertions.
-        grammar1.set_exclusiveness(False)
-        grammar2.set_exclusiveness(False)
-        if get_engine().name == 'natlink':
-            self.temp_grammar.set_exclusiveness(False)
-        self.engine.mimic("grammar one")
-        assert grammar1.rules[0].words == "grammar one"
-        self.engine.mimic("grammar two")
-        assert grammar2.rules[0].words == "grammar two"
-        self.engine.mimic("grammar three")
-        assert grammar3.rules[0].words == "grammar three"
+            # Set both grammars as no longer exclusive and make some assertions.
+            grammar1.set_exclusiveness(False)
+            grammar2.set_exclusiveness(False)
+            if get_engine().name == 'natlink':
+                self.temp_grammar.set_exclusiveness(False)
+            self.engine.mimic("grammar one")
+            assert grammar1.rules[0].words == "grammar one"
+            self.engine.mimic("grammar two")
+            assert grammar2.rules[0].words == "grammar two"
+            self.engine.mimic("grammar three")
+            assert grammar3.rules[0].words == "grammar three"
+        finally:
+            grammar1.unload()
+            grammar2.unload()
+            grammar3.unload()
 
 # ==========================================================================
 
