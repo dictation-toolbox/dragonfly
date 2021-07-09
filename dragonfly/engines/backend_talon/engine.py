@@ -50,32 +50,29 @@ class TalonEngine(EngineBase):
                               "not running under a supported Talon app.")
         self._interface = DragonflyInterface(self.phrase_begin, self.handle_recognition)
 
+    def connect(self):
+        pass
+
+    def disconnect(self):
+        pass
+
     # -----------------------------------------------------------------------
     # Methods for working with grammars.
 
     def load_grammar(self, grammar):
-        # this duplicate reload strategy makes Talon autoreload work
-        wrapper = self._grammar_wrappers.get(grammar.name)
-        if wrapper is not None:
-            if wrapper.grammar == grammar:
-                self._log.warning("Grammar %s loaded multiple times." % grammar)
-                return
-            else:
-                self.unload_grammar(wrapper.grammar)
-
-        wrapper = self._load_grammar(grammar)
-        # On the base class this dictionary is id -> wrapper,
-        # but we prefer to use names
-        self._grammar_wrappers[grammar.name] = wrapper
+        _id = id(grammar)
+        if _id in self._grammar_wrappers:
+            self._log.warning("Grammar %s loaded multiple times." % grammar)
+            return
+        self._grammar_wrappers[_id] = self._load_grammar(grammar)
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar*. """
-        self._log.debug("Engine %s: loading grammar %s."
-                        % (self, grammar.name))
+        self._log.debug("Engine %s: loading grammar %s." % (self, grammar.name))
 
         c = TalonCompiler()
         rule_dict, exports, rule_refs, list_refs = c.compile_grammar(grammar)
-        self._interface.load_grammar(grammar.name, rule_dict, exports, rule_refs, list_refs)
+        self._interface.load_grammar(grammar, rule_dict, exports, rule_refs, list_refs)
         self._interface.register_cleanup(disable_eval='grammar.unload()',
                                          enable_eval='grammar.load()',
                                          grammar=grammar)
@@ -84,21 +81,16 @@ class TalonEngine(EngineBase):
         return wrapper
 
     def unload_grammar(self, grammar):
-        # this wrapper check makes Talon autoreload work
-        wrapper = self._grammar_wrappers.get(grammar.name)
-        if wrapper is not None and wrapper.grammar != grammar:
-            return
-        else:
-            wrapper = self._grammar_wrappers.pop(grammar.name)
-
-        if not wrapper:
+        _id = id(grammar)
+        wrapper = self._grammar_wrappers.pop(_id, None)
+        if wrapper is None:
             raise EngineError("Grammar %s cannot be unloaded because"
                               " it was not loaded." % grammar)
         self._unload_grammar(grammar, wrapper)
 
     def _unload_grammar(self, grammar, wrapper):
         """ Unload the given *grammar*. """
-        self._interface.unload_grammar(grammar.name)
+        self._interface.unload_grammar(grammar)
 
     def set_exclusiveness(self, grammar, exclusive):
         pass # FIXME?
@@ -111,14 +103,14 @@ class TalonEngine(EngineBase):
 
     def activate_rule(self, rule, grammar):
         self._log.debug("Activating rule %s in grammar %s." % (rule.name, grammar.name))
-        self._interface.activate_rule(grammar.name, rule.name)
+        self._interface.activate_rule(grammar, rule.name)
 
     def deactivate_rule(self, rule, grammar):
         self._log.debug("Deactivating rule %s in grammar %s." % (rule.name, grammar.name))
-        self._interface.deactivate_rule(grammar.name, rule.name)
+        self._interface.deactivate_rule(grammar, rule.name)
 
     def update_list(self, lst, grammar):
-        self._interface.update_list(grammar.name, lst.name, lst.get_list_items())
+        self._interface.update_list(grammar, lst.name, lst.get_list_items())
 
     #-----------------------------------------------------------------------
     # Recognition handling
@@ -135,10 +127,10 @@ class TalonEngine(EngineBase):
                 fg_window.handle
             )
 
-    def handle_recognition(self, grammar_name, words_rules):
-        if grammar_name not in self._grammar_wrappers:
-            raise EngineError("Trying to handle recognition for grammar '%s', but the grammar is not loaded." % grammar_name)
-        wrapper = self._grammar_wrappers[grammar_name]
+    def handle_recognition(self, grammar, words_rules):
+        wrapper = self._grammar_wrappers.get(id(grammar))
+        if wrapper is None:
+            raise EngineError("Trying to handle recognition for grammar '%s', but the grammar is not loaded." % grammar.name)
         wrapper.process_words(words_rules)
 
     #-----------------------------------------------------------------------
