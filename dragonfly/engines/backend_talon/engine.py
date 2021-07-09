@@ -93,7 +93,7 @@ class TalonEngine(EngineBase):
         self._interface.unload_grammar(grammar)
 
     def set_exclusiveness(self, grammar, exclusive):
-        pass # FIXME?
+        self._interface.set_exclusive(grammar, exclusive)
 
     def activate_grammar(self, grammar):
         pass
