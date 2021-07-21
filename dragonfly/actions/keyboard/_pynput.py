@@ -20,22 +20,21 @@
 
 """
 This file implements the a keyboard interface using the *pynput* Python
-package. This implementation is used for Linux (X11) and Mac OS (Darwin).
+package.
+
+Currently, this interface can be used on macOS (Darwin) or X11.
 
 """
 
-import logging
-import sys
 import time
 
 from pynput.keyboard import Controller, KeyCode, Key
 
-from ._base import BaseKeyboard, Typeable as BaseTypeable
+from ._base import BaseKeyboard, BaseTypeable, BaseKeySymbols
 
 
-class Typeable(BaseTypeable):
+class PynputTypeable(BaseTypeable):
     """ Typeable class for pynput. """
-    _log = logging.getLogger("keyboard")
 
     def __init__(self, code, modifiers=(), name=None, is_text=False):
         BaseTypeable.__init__(self, code, modifiers, name, is_text)
@@ -48,15 +47,15 @@ class SafeKeyCode(object):
 
     def __getattr__(self, name):
         # Get the key code from pynput, returning KeyCode(vk=-1, char=name)
-        # if the key name isn't present.
-        # Keys are undefined on some platforms, e.g. "pause" on Darwin.
+        #  if the key name isn't present.  Keys are undefined on some
+        #  platforms, e.g. "pause" on Darwin.
         return getattr(Key, name, KeyCode(vk=-1, char=name))
 
 
 virtual_keys = SafeKeyCode()
 
 
-class BaseKeySymbols(object):
+class BasePynputKeySymbols(BaseKeySymbols):
     """ Base key symbols for pynput. """
 
     # Whitespace and editing keys
@@ -145,11 +144,11 @@ class BaseKeySymbols(object):
     F20 = virtual_keys.f20
 
 
-class X11KeySymbols(BaseKeySymbols):
+class X11KeySymbols(BasePynputKeySymbols):
     """
     Symbols for X11 from pynput.
 
-    This class includes extra symbols matching those that dragonfly's Win32
+    This class defines extra symbols matching those that dragonfly's Win32
     keyboard interface provides.
     """
 
@@ -199,15 +198,14 @@ class X11KeySymbols(BaseKeySymbols):
     BROWSER_FORWARD = KeyCode.from_vk(0x1008FF27)
 
 
-class DarwinKeySymbols(BaseKeySymbols):
+class DarwinKeySymbols(BasePynputKeySymbols):
     """
     Symbols for Darwin from pynput.
-
-    This class includes some extra symbols to prevent errors in
-    typeables.py.
-
-    All extras will be disabled (key code of -1).
     """
+
+    # The key symbols below are defined solely to prevent errors in
+    #  typeables.py.  ValueErrors will be raised by send_keyboard_events()
+    #  if these symbols are given in an event sequence.
 
     # Extra function keys.
     F21 = virtual_keys.f21
@@ -226,11 +224,10 @@ class DarwinKeySymbols(BaseKeySymbols):
     BROWSER_FORWARD = virtual_keys.browser_forward
 
 
-class Keyboard(BaseKeyboard):
+class PynputKeyboard(BaseKeyboard):
     """Static class wrapper around pynput.keyboard."""
 
     _controller = Controller()
-    _log = logging.getLogger("keyboard")
 
     @classmethod
     def send_keyboard_events(cls, events):
@@ -270,4 +267,4 @@ class Keyboard(BaseKeyboard):
 
     @classmethod
     def get_typeable(cls, char, is_text=False):
-        return Typeable(char, is_text=is_text)
+        return PynputTypeable(char, is_text=is_text)

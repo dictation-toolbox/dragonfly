@@ -19,8 +19,7 @@
 #
 
 """
-This module initializes the correct keyboard interface for the current
-platform.
+This module initializes the keyboard interface for the current platform.
 """
 
 import os
@@ -28,35 +27,43 @@ import sys
 
 # TODO Implement classes for Wayland (XDG_SESSION_TYPE == "wayland").
 
-# Import the Keyboard, KeySymbols and Typeable classes for the current
-# platform. Always use the base classes for building documentation.
-doc_build = bool(os.environ.get("SPHINX_BUILD_RUNNING"))
-if sys.platform.startswith("win") and not doc_build:
-    # Import classes for Windows.
-    from ._win32 import Keyboard, Typeable, Win32KeySymbols as KeySymbols
+if sys.platform.startswith("win"):
+    # Import Win32 classes.
+    from ._win32 import (
+        Win32Keyboard as Keyboard,
+        Win32Typeable as Typeable,
+        Win32KeySymbols as KeySymbols
+    )
 
-elif sys.platform == "darwin" and not doc_build:
-    # Import classes for Mac OS.
-    from ._pynput import Keyboard, Typeable, DarwinKeySymbols as KeySymbols
+elif sys.platform == "darwin":
+    from ._pynput import (
+        PynputKeyboard as Keyboard,
+        PynputTypeable as Typeable,
+        DarwinKeySymbols as KeySymbols)
 
-elif os.environ.get("XDG_SESSION_TYPE") == "x11" and not doc_build:
-    # Import classes for X11 (typically used on Linux systems).
+elif os.environ.get("XDG_SESSION_TYPE") == "x11":
+    # Import classes for X11.  This is typically used on Unix-like systems.
     # The XDG_SESSION_TYPE environment variable may not be set in some
-    # circumstances, in which case it can be set manually in ~/.profile.
-    from ._x11_base import Typeable, XdoKeySymbols as KeySymbols
+    #  circumstances, in which case it can be set manually in ~/.profile.
+    from ._x11_base import (
+        X11Typeable as Typeable,
+        XdoKeySymbols as KeySymbols
+    )
 
     # Import the keyboard for typing through xdotool.
     from ._x11_xdotool import XdotoolKeyboard as Keyboard
 
-    # libxdo does work and is a bit faster, but doesn't work with Python 3.
-    # Unfortunately python-libxdo also hasn't been updated recently.
+    # The libxdo implementation doesn't work with Python 3, so it is not
+    #  used.
     # from ._x11_libxdo import LibxdoKeyboard as Keyboard
 
 else:
     # No keyboard implementation is available. Dragonfly can function
-    # without a keyboard class, so don't raise an error or log any
-    # messages. Errors/messages will occur later if the keyboard is used.
-    from ._base import (BaseKeyboard as Keyboard, Typeable,
+    #  without a keyboard class, so don't raise an error or log any
+    #  messages.  Error messages will occur later if and when keyboard
+    #  events are sent.
+    from ._base import (BaseKeyboard as Keyboard,
+                        BaseTypeable as Typeable,
                         MockKeySymbols as KeySymbols)
 
 # Initialize a Keyboard instance.

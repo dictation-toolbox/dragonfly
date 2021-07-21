@@ -34,11 +34,11 @@ import win32con
 import win32gui
 import win32process
 
-from ._base import BaseKeyboard, Typeable as BaseTypeable
+from ._base import BaseKeyboard, BaseTypeable, BaseKeySymbols
 from ..sendinput import KeyboardInput, make_input_array, send_input_array
 
 
-class Win32KeySymbols(object):
+class Win32KeySymbols(BaseKeySymbols):
     """ Key symbols for win32. """
 
     # Whitespace and editing keys
@@ -146,7 +146,7 @@ class Win32KeySymbols(object):
     CHAR_VK_MAP.update(UPPERCASE_ALPHABET_MAP)
 
 
-class Typeable(BaseTypeable):
+class Win32Typeable(BaseTypeable):
 
     __slots__ = ("_code", "_modifiers", "_name", "_is_text", "_char")
 
@@ -164,7 +164,7 @@ class Typeable(BaseTypeable):
         #  on the key codes in CHAR_VK_MAP where necessary.
         try:
             self._is_text = False
-            code, modifiers = Keyboard.get_keycode_and_modifiers(
+            code, modifiers = Win32Keyboard.get_keycode_and_modifiers(
                 self._char, char_vk_fallback=hardware_events_required)
         except ValueError:
             if hardware_events_required:
@@ -228,7 +228,7 @@ class Typeable(BaseTypeable):
         return events
 
 
-class Keyboard(BaseKeyboard):
+class Win32Keyboard(BaseKeyboard):
     """Static class wrapper around SendInput."""
 
     shift_code = win32con.VK_SHIFT
@@ -272,12 +272,17 @@ class Keyboard(BaseKeyboard):
         items = []
         for event in events:
             if len(event) == 3:
+                # Pass scancode=0 to press keys via virtual-key codes
+                #  instead of scancodes.
                 keycode, down, timeout = event
                 input_structure = KeyboardInput(keycode, down,
+                                                # scancode=0,
                                                 layout=layout)
             elif len(event) == 4 and event[3]:
                 character, down, timeout = event[:3]
                 input_structure = KeyboardInput(0, down, scancode=character)
+            else:
+                raise ValueError("invalid keyboard event tuple: %r" % event)
             items.append(input_structure)
             if timeout:
                 array = make_input_array(items)
@@ -338,8 +343,8 @@ class Keyboard(BaseKeyboard):
         if isinstance(char, binary_type):
             char = char.decode(getpreferredencoding())
         if is_text:
-            return Typeable(char, is_text=True, char=char)
+            return Win32Typeable(char, is_text=True, char=char)
 
         # Get the key code and modifiers for the Typeable.
         code, modifiers = cls.get_keycode_and_modifiers(char)
-        return Typeable(code, modifiers, name=char, char=char)
+        return Win32Typeable(code, modifiers, name=char, char=char)
