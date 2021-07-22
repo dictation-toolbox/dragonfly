@@ -45,6 +45,41 @@ class KeyboardInput(Structure):
                 ("time", c_ulong),
                 ("dwExtraInfo", POINTER(c_ulong))]
 
+    #  From https://docs.microsoft.com/en-us/windows/desktop/inputdev/about-keyboard-input#extended-key-flag
+    #     The extended keys consist of the ALT and CTRL keys
+    #     on the right-hand side of the keyboard; the INS, DEL, HOME,
+    #     END, PAGE UP, PAGE DOWN, and arrow keys in the clusters to
+    #     the left of the numeric keypad; the NUM LOCK key; the BREAK
+    #     (CTRL+PAUSE) key; the PRINT SCRN key; and the divide (/) and
+    #     ENTER keys in the numeric keypad.
+    #
+    #  It's unclear if the Windows keys are also "extended", so they
+    #  have been included for historical reasons.
+    extended_keys = {
+        win32con.VK_UP,
+        win32con.VK_DOWN,
+        win32con.VK_LEFT,
+        win32con.VK_RIGHT,
+        win32con.VK_HOME,
+        win32con.VK_END,
+        win32con.VK_PRIOR,
+        win32con.VK_NEXT,
+        win32con.VK_INSERT,
+        win32con.VK_DELETE,
+        win32con.VK_NUMLOCK,
+        win32con.VK_RCONTROL,
+        win32con.VK_RMENU,
+        win32con.VK_PAUSE,
+        win32con.VK_SNAPSHOT,
+        win32con.VK_DIVIDE,
+        win32con.VK_LWIN,
+        win32con.VK_RWIN,
+    }
+    soft_keys = {
+        win32con.VK_PAUSE,
+    }
+
+
     def __init__(self, virtual_keycode, down, scancode=None, layout=None):
         """Initialize structure based on key type."""
         flags = 0
@@ -69,8 +104,8 @@ class KeyboardInput(Structure):
 
             # Add the KEYEVENTF_SCANCODE flag if the Win32 MapVirtualKey(Ex)
             #  function returned a translation.  If not, then fallback on
-            #  the specified keycode.
-            if scancode:
+            #  the specified keycode.  This is also done for "soft" keys.
+            if scancode and virtual_keycode not in self.soft_keys:
                 flags |= 8  # KEYEVENTF_SCANCODE
 
                 # Add the KEYEVENTF_EXTENDEDKEY flag, if necessary.
@@ -79,6 +114,12 @@ class KeyboardInput(Structure):
                 #  0xe1.
                 if scancode >> 8 in (0xe0, 0xe1):
                     flags |= win32con.KEYEVENTF_EXTENDEDKEY
+
+            # Always add the KEYEVENTF_EXTENDEDKEY flag for certain
+            #  virtual-keys (see above).
+            if virtual_keycode in self.extended_keys:
+                flags |= win32con.KEYEVENTF_EXTENDEDKEY
+
         if not down:
             flags |= win32con.KEYEVENTF_KEYUP
 
