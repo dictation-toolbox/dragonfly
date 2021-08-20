@@ -160,17 +160,13 @@ class Text(BaseKeyboardAction):
 
     def __init__(self, spec=None, static=False, pause=None,
                  autofmt=False, use_hardware=False):
-        # Use the default pause time if pause is None.
-        self._pause = self._pause_default if pause is None else pause
-
-        # Set other members and call the super constructor.
-        self._autofmt = autofmt
-
         if isinstance(spec, binary_type):
             spec = spec.decode(getpreferredencoding())
-
         BaseKeyboardAction.__init__(self, spec=spec, static=static,
                                     use_hardware=use_hardware)
+        # Set other members.
+        self._autofmt = autofmt
+        self._pause = self._pause_default if pause is None else pause
 
     def _parse_spec(self, spec):
         """Convert the given *spec* to keyboard events."""

@@ -37,6 +37,7 @@ UNICODE_KEYBOARD = False
 HARDWARE_APPS = [
     "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
 ]
+PAUSE_DEFAULT = 0.005
 
 
 def load_configuration():
@@ -48,6 +49,7 @@ def load_configuration():
 
     global UNICODE_KEYBOARD
     global HARDWARE_APPS
+    global PAUSE_DEFAULT
     global _CONFIG_LOADED
 
     home = os.path.expanduser("~")
@@ -63,13 +65,18 @@ def load_configuration():
             f.write(u'[Text]\n')
             f.write(u'hardware_apps = %s\n' % "|".join(HARDWARE_APPS))
             f.write(u'unicode_keyboard = %s\n' % UNICODE_KEYBOARD)
+            f.write(u'pause_default = %f\n' % PAUSE_DEFAULT)
 
     parser = configparser.ConfigParser()
     parser.read(config_path)
     if parser.has_option("Text", "hardware_apps"):
-        HARDWARE_APPS = parser.get("Text", "hardware_apps").lower().split("|")
+        HARDWARE_APPS = (parser.get("Text", "hardware_apps")
+                         .lower().split("|"))
     if parser.has_option("Text", "unicode_keyboard"):
         UNICODE_KEYBOARD = parser.getboolean("Text", "unicode_keyboard")
+    if parser.has_option("Text", "pause_default"):
+        PAUSE_DEFAULT = parser.getfloat("Text", "pause_default")
+        BaseKeyboardAction._pause_default = PAUSE_DEFAULT
 
     _CONFIG_LOADED = True
 
@@ -81,10 +88,15 @@ class BaseKeyboardAction(DynStrActionBase):
     """
 
     _keyboard = Keyboard()
-    _pause_default = 0.005
+    _pause_default = PAUSE_DEFAULT
 
     def __init__(self, spec=None, static=False, use_hardware=False):
         self._use_hardware = use_hardware
+
+        # Load the Windows-only config file if necessary.
+        if not _CONFIG_LOADED and os.name == "nt":
+            load_configuration()
+
         super(BaseKeyboardAction, self).__init__(spec, static)
 
     def require_hardware_events(self):
