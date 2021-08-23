@@ -282,7 +282,7 @@ Key class reference
 
 """
 
-import sys
+import collections
 
 from .action_base           import ActionError
 from .action_base_keyboard  import BaseKeyboardAction
@@ -290,8 +290,8 @@ from .typeables             import typeables
 
 #---------------------------------------------------------------------------
 
-class Key(BaseKeyboardAction):
 
+class Key(BaseKeyboardAction):
     """
         Keystroke emulation action.
 
@@ -331,23 +331,28 @@ class Key(BaseKeyboardAction):
     interval_factor = 0.01
     interval_default = 0.0
 
+    # Keystroke event data type.
+    EventData = collections.namedtuple(
+        "EventData", "keyname "
+                     "direction "
+                     "modifiers "
+                     "inner_pause "
+                     "repeat "
+                     "outer_pause "
+    )
+
     def _parse_spec(self, spec):
         # Iterate through the keystrokes specified in spec, parsing
         #  each individually.
         events = []
-        error_message = None
-        hardware_events_required = self.require_hardware_events()
         for single in spec.split(self._key_separator):
-            key_events, error_message = self._parse_single(
-                single, hardware_events_required
-            )
-            if error_message:
-                break
+            event_data = self._parse_single(single)
+            if not event_data:
+                continue
+            events.append(event_data)
+        return events
 
-            events.extend(key_events)
-        return events, error_message
-
-    def _parse_single(self, spec, hardware_events_required):
+    def _parse_single(self, spec):
         # pylint: disable=R0912,R0914,R0915
         # Suppress warnings about too many branches, variables and
         # statements.
@@ -355,7 +360,7 @@ class Key(BaseKeyboardAction):
         # Remove leading and trailing whitespace.
         spec = spec.strip()
         if not spec:
-            return [], None
+            return None
 
         # Parse modifier prefix.
         index = spec.find(self._modifier_prefix_delimiter)
@@ -409,38 +414,6 @@ class Key(BaseKeyboardAction):
         else:
             raise ActionError("Invalid key spec: %s" % spec)
 
-        # Check if the key name is valid.
-        error_message = ("Keyboard interface cannot type this character: %r"
-                         % keyname)
-        code = typeables.get(keyname)
-        if code is None:
-            # Delegate to the platform keyboard class. Any invalid keys will
-            # cause error messages later than normal, but this allows using
-            # valid key symbols that dragonfly doesn't define.
-            try:
-                code = self._keyboard.get_typeable(keyname)
-                typeables[keyname] = code
-            except ValueError:
-                if hardware_events_required:
-                    # Return an error message to display when this action
-                    # is executed.
-                    return [], error_message
-
-                # If on Windows and if hardware events are not required,
-                # then attempt to use the Unicode keyboard instead.
-                if sys.platform.startswith("win"):
-                    try:
-                        code = self._keyboard.get_typeable(keyname,
-                                                           is_text=True)
-                        typeables[keyname] = code
-                    except ValueError:
-                        return [], error_message
-        else:
-            # Update the Typeable. Return an error message if this fails.
-            # Note: this only currently does anything on Windows.
-            if not code.update(hardware_events_required):
-                return [], error_message
-
         if inner_pause is not None:
             s = inner_pause
             try:
@@ -473,6 +446,43 @@ class Key(BaseKeyboardAction):
                     raise ActionError("Invalid repeat value: %r,"
                                       " should be a positive integer." % s)
 
+        if direction is not None:
+            if modifiers:
+                raise ActionError("Cannot use direction with modifiers.")
+            if inner_pause is not None:
+                raise ActionError("Cannot use direction with inner pause.")
+
+        return self.EventData(keyname, direction, modifiers, inner_pause,
+                              repeat, outer_pause)
+
+    def _execute_events(self, events):
+        # Calculate keyboard events from events (event data).
+        use_hardware = self.require_hardware_events()
+        keyboard_events = []
+        for event_data in events:
+            events_single = self._calc_events_single(event_data,
+                                                     use_hardware)
+            keyboard_events.extend(events_single)
+
+        # Send keyboard events.
+        self._keyboard.send_keyboard_events(keyboard_events)
+        return True
+
+    def _calc_events_single(self, event_data, use_hardware):
+        (keyname, direction, modifiers, inner_pause, repeat,
+         outer_pause) = event_data
+
+        # Get a Typeable object for the key, if possible.
+        typeable = self._get_typeable(event_data.keyname, use_hardware)
+
+        # Raise an error message if a Typeable could not be retrieved.
+        if typeable is None:
+            error_message = ("Keyboard interface cannot type this "
+                             "character: %r (in %r)" %
+                             (keyname, self._spec))
+            raise ActionError(error_message)
+
+        # Calculate keyboard events using the Typeable and event data.
         if direction is None:
             if inner_pause is None:
                 inner_pause = self.interval_default * self.interval_factor
@@ -483,31 +493,16 @@ class Key(BaseKeyboardAction):
                 for m in modifiers:
                     events.extend(m.on_events())
                 for _ in range(repeat - 1):
-                    events.extend(code.events(inner_pause))
-                events.extend(code.events(outer_pause))
+                    events.extend(typeable.events(inner_pause))
+                events.extend(typeable.events(outer_pause))
                 for m in modifiers[-1::-1]:
                     events.extend(m.off_events())
         else:
-            if modifiers:
-                raise ActionError("Cannot use direction with modifiers.")
-            if inner_pause is not None:
-                raise ActionError("Cannot use direction with inner pause.")
             if direction:
-                events = code.on_events(outer_pause)
+                events = typeable.on_events(outer_pause)
             else:
-                events = code.off_events(outer_pause)
-
-        return events, None
-
-    def _execute_events(self, events):
-        events, error_message = events
-
-        # Raise any message about invalid keys.
-        if error_message:
-            raise ActionError(error_message)
-        else:
-            self._keyboard.send_keyboard_events(events)
-        return True
+                events = typeable.off_events(outer_pause)
+        return events
 
     def __str__(self):
         return '[{!r}]'.format(self._spec)

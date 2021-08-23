@@ -118,7 +118,6 @@ Text class reference
 """
 
 from locale import getpreferredencoding
-import sys
 
 from six import binary_type
 
@@ -127,9 +126,9 @@ from ..util.clipboard import Clipboard
 from .action_base import ActionError
 from .action_base_keyboard import BaseKeyboardAction
 from .action_key import Key
-from .typeables import typeables
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
+
 
 class Text(BaseKeyboardAction):
     """
@@ -154,75 +153,35 @@ class Text(BaseKeyboardAction):
        keys.
     """
 
-    class Events(object):
-        def __init__(self,
-                     hardware_events,
-                     hardware_error_message,
-                     unicode_events,
-                     unicode_error_message):
-            self.hardware_events = hardware_events
-            self.hardware_error_message = hardware_error_message
-            self.unicode_events = unicode_events
-            self.unicode_error_message = unicode_error_message
-
     _specials = {
-        "\n": typeables["enter"],
-        "\t": typeables["tab"],
+        "\n": "enter",
+        "\t": "tab",
     }
 
     def __init__(self, spec=None, static=False, pause=None,
                  autofmt=False, use_hardware=False):
-        # Use the default pause time if pause in None.
-        # Use the class's _pause_default value so that Text sub-classes can
-        # easily override it.
-        self._pause = self._pause_default if pause is None else pause
-
-        # Set other members and call the super constructor.
-        self._autofmt = autofmt
-        self._on_windows = sys.platform.startswith("win")
-
         if isinstance(spec, binary_type):
             spec = spec.decode(getpreferredencoding())
-
         BaseKeyboardAction.__init__(self, spec=spec, static=static,
                                     use_hardware=use_hardware)
+        # Set other members.
+        self._autofmt = autofmt
+        self._pause = self._pause_default if pause is None else pause
 
     def _parse_spec(self, spec):
         """Convert the given *spec* to keyboard events."""
-        hardware_events = []
-        unicode_events = []
-        hardware_error_message = None
-        unicode_error_message = None
-
+        key_symbols = []
         for character in spec:
+            # The character is the key symbol, except in special cases.
             if character in self._specials:
-                typeable = self._specials[character]
-                hardware_events.extend(typeable.events(self._pause))
-                unicode_events.extend(typeable.events(self._pause))
+                key_symbol = self._specials[character]
             else:
-                # Add hardware events.
-                try:
-                    typeable = self._keyboard.get_typeable(character)
-                    hardware_events.extend(typeable.events(self._pause))
-                except ValueError:
-                    hardware_error_message = ("Keyboard interface cannot type this"
-                                              " character: %r (in %r)"
-                                              % (character, spec))
+                key_symbol = character
 
-                # Calculate and add Unicode events only if necessary.
-                if not self._on_windows or self._use_hardware:
-                    continue
+            # Add the key symbol to the list.
+            key_symbols.append(key_symbol)
 
-                try:
-                    typeable = self._keyboard.get_typeable(character,
-                                                           is_text=True)
-                    unicode_events.extend(typeable.events(self._pause * 0.5))
-                except ValueError:
-                    unicode_error_message = ("Keyboard interface cannot type "
-                                             "this character: %r (in %r)" %
-                                             (character, spec))
-        return self.Events(hardware_events, hardware_error_message,
-                           unicode_events, unicode_error_message)
+        return key_symbols
 
     def _execute_events(self, events):
         """
@@ -262,17 +221,24 @@ class Text(BaseKeyboardAction):
             suffix = word[index + 4:]
             events = self._parse_spec(prefix + text + suffix)
 
+        # Calculate keyboard events.
+        use_hardware = self.require_hardware_events()
+        keyboard_events = []
+        for key_symbol in events:
+            # Get a Typeable object for each key symbol, if possible.
+            typeable = self._get_typeable(key_symbol, use_hardware)
+
+            # Raise an error message if a Typeable could not be retrieved.
+            if typeable is None:
+                error_message = ("Keyboard interface cannot type this"
+                                 " character: %r" % key_symbol)
+                raise ActionError(error_message)
+
+            # Get keyboard events using the Typeable.
+            keyboard_events.extend(typeable.events(self._pause))
+
         # Send keyboard events.
-        if self.require_hardware_events():
-            error_message = events.hardware_error_message
-            keyboard_events = events.hardware_events
-        else:
-            error_message = events.unicode_error_message
-            keyboard_events = events.unicode_events
-        if error_message:
-            raise ActionError(error_message)
-        else:
-            self._keyboard.send_keyboard_events(keyboard_events)
+        self._keyboard.send_keyboard_events(keyboard_events)
         return True
 
     def __str__(self):

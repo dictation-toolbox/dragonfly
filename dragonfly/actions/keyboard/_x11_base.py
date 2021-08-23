@@ -1,4 +1,4 @@
-# This file is part of Aenea
+# This file was part of Aenea
 #
 # Aenea is free software: you can redistribute it and/or modify it under
 # the terms of version 3 of the GNU Lesser General Public License as
@@ -21,8 +21,8 @@
 
 from locale import getpreferredencoding
 
-from six import PY2
-from ._base import BaseKeyboard, Typeable
+from six import binary_type
+from ._base import BaseKeyboard, BaseTypeable, BaseKeySymbols
 
 
 KEY_TRANSLATION = {
@@ -85,7 +85,13 @@ def _update_key_translation(translation):
     for char in letters + digits:
         translation[chr(char)] = chr(char)
         translation[chr(char).upper()] = chr(char).upper()
+
+
 _update_key_translation(KEY_TRANSLATION)
+
+
+class X11Typeable(BaseTypeable):
+    pass
 
 
 class BaseX11Keyboard(BaseKeyboard):
@@ -94,16 +100,16 @@ class BaseX11Keyboard(BaseKeyboard):
     @classmethod
     def get_typeable(cls, char, is_text=False):
         """ Get a Typeable object. """
-        # Get a key translation if one exists. Otherwise use the character
-        # as the key name.
+        # Get a key translation if one exists.  Otherwise use the character
+        #  as the key name.
         key = KEY_TRANSLATION.get(char, char)
-        if PY2 and isinstance(key, str):
+        if isinstance(key, binary_type):
             key = key.decode(getpreferredencoding())
 
         # Convert single character keys to their Unicode code points.
-        # This allows typing any Unicode character with the Text and Key
-        # actions. It works with both X11 keyboard implementations.
-        if not is_text and len(key) == 1:
+        #  This allows typing any Unicode character with the Text and Key
+        #  actions.  It works with both X11 keyboard implementations.
+        if len(key) == 1:
             # Get the Unicode code point for the character.
             encoding = getpreferredencoding()
             code_point = key.encode("unicode_escape")[2:].decode(encoding)
@@ -114,10 +120,10 @@ class BaseX11Keyboard(BaseKeyboard):
 
             # Create a key name that xdotool will accept (e.g. U20AC).
             key = 'U' + code_point.upper()
-        return Typeable(code=key, name=char, is_text=is_text)
+        return X11Typeable(code=key, name=char, is_text=is_text)
 
 
-class XdoKeySymbols(object):
+class XdoKeySymbols(BaseKeySymbols):
     """ Key symbols for libxdo. """
 
     # Whitespace and editing keys

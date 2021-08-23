@@ -27,10 +27,10 @@
 import io
 import os
 from os.path import basename
-import sys
 
 from .action_base  import DynStrActionBase
 from .keyboard     import Keyboard
+from .typeables    import typeables
 
 _CONFIG_LOADED = False
 UNICODE_KEYBOARD = False
@@ -70,11 +70,13 @@ def load_configuration():
     parser = configparser.ConfigParser()
     parser.read(config_path)
     if parser.has_option("Text", "hardware_apps"):
-        HARDWARE_APPS = parser.get("Text", "hardware_apps").lower().split("|")
+        HARDWARE_APPS = (parser.get("Text", "hardware_apps")
+                         .lower().split("|"))
     if parser.has_option("Text", "unicode_keyboard"):
         UNICODE_KEYBOARD = parser.getboolean("Text", "unicode_keyboard")
     if parser.has_option("Text", "pause_default"):
         PAUSE_DEFAULT = parser.getfloat("Text", "pause_default")
+        BaseKeyboardAction._pause_default = PAUSE_DEFAULT
 
     _CONFIG_LOADED = True
 
@@ -83,31 +85,25 @@ class BaseKeyboardAction(DynStrActionBase):
     """
         Base keystroke emulation action.
 
-        This class isn't meant to be used directly.
-
     """
 
     _keyboard = Keyboard()
     _pause_default = PAUSE_DEFAULT
 
     def __init__(self, spec=None, static=False, use_hardware=False):
-        # Note: these are only used on Windows.
-        self._event_cache = {}
         self._use_hardware = use_hardware
 
-        super(BaseKeyboardAction, self).__init__(spec, static)
+        # Load the Windows-only config file if necessary.
+        if not _CONFIG_LOADED and os.name == "nt":
+            load_configuration()
 
-        # Save events for the current layout if on Windows.
-        if self._events is not None and sys.platform.startswith("win"):
-            layout = self._keyboard.get_current_layout()
-            self._event_cache[layout] = self._events
+        super(BaseKeyboardAction, self).__init__(spec, static)
 
     def require_hardware_events(self):
         """
         Return `True` if the current context requires hardware emulation.
         """
-        # Always use hardware_events for non-Windows platforms.
-        if not sys.platform.startswith("win") or self._use_hardware:
+        if self._use_hardware:
             return True
 
         # Load the keyboard configuration, if necessary.
@@ -123,14 +119,30 @@ class BaseKeyboardAction(DynStrActionBase):
         return ((not UNICODE_KEYBOARD) or
                 (foreground_executable in HARDWARE_APPS))
 
-    def _execute(self, data=None):
-        # Get updated events on Windows for each new keyboard layout
-        # encountered.
-        if sys.platform.startswith("win") and self._static:
-            layout = self._keyboard.get_current_layout()
-            events = self._event_cache.get(layout)
-            if events is None:
-                self._events = self._parse_spec(self._spec)
-                self._event_cache[layout] = self._events
+    def _get_typeable(self, key_symbol, use_hardware):
+        # Use the Typeable object for the symbol, if it exists.
+        typeable = typeables.get(key_symbol)
+        if typeable:
+            # Update the object and return it.
+            typeable.update(use_hardware)
+            return typeable
 
-        return super(BaseKeyboardAction, self)._execute(data)
+        # Otherwise, get a new Typeable for the symbol, if possible.
+        is_text = not use_hardware
+        try:
+            typeable = self._keyboard.get_typeable(key_symbol,
+                                                   is_text=is_text)
+        except ValueError:
+            pass
+
+        # If getting a Typeable failed, then, if it is allowed, try
+        #  again with is_text=True.  On Windows, this will use Unicode
+        #  events instead.
+        if not (typeable or use_hardware):
+            try:
+                typeable = self._keyboard.get_typeable(key_symbol,
+                                                       is_text=True)
+            except ValueError:
+                pass
+
+        return typeable

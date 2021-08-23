@@ -18,48 +18,53 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-""" This file defines the base keyboard interface and Typeables class. """
+""" This file defines the base keyboard interface classes. """
+
+import logging
 
 
-class MockKeySymbols(object):
+class BaseKeySymbols(object):
+    pass
+
+
+class MockKeySymbols(BaseKeySymbols):
     def __getattribute__(self, _):
-        # Always return -1 because no keys can be typed.
+        # No keys can be typed, so return -1.
         return -1
 
 
 class BaseKeyboard(object):
     """ Base keyboard interface. """
 
+    _log = logging.getLogger("keyboard")
+
     @classmethod
     def send_keyboard_events(cls, events):
         """ Send a sequence of keyboard events. """
+        # TODO Add a URL to the docs?
         raise NotImplementedError("Keyboard support is not implemented for "
                                   "this platform or your platform was not "
-                                  "detected correctly. On Linux, the "
-                                  "XDG_SESSION_TYPE environment variable may "
-                                  "not be set correctly in some circumstances, "
-                                  "in which case it can be set manually in "
-                                  "~/.profile.")
+                                  "detected correctly.  Please see the "
+                                  "documentation.")
 
     @classmethod
     def get_typeable(cls, char, is_text=False):
         """ Get a Typeable object. """
-        return Typeable(cls, char, is_text=is_text)
+        return BaseTypeable(cls, char)
 
 
-class Typeable(object):
+class BaseTypeable(object):
     """Container for keypress events."""
 
     __slots__ = ("_code", "_modifiers", "_name", "_is_text")
+
+    _log = logging.getLogger("keyboard")
 
     def __init__(self, code, modifiers=(), name=None, is_text=False):
         """Set keypress information."""
         self._code = code
         self._modifiers = modifiers
         self._name = name
-
-        # Only used on Windows, but kept here for argument compatibility
-        # between platforms.
         self._is_text = is_text
 
     # pylint: disable=no-self-use,unused-argument
@@ -73,7 +78,7 @@ class Typeable(object):
         return True
 
     def __repr__(self):
-        """Return information useful for debugging."""
+        """ Return information useful for debugging. """
         return ("%s(%s)" % (self.__class__.__name__, self._name) +
                 repr(self.events()))
 
