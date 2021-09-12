@@ -27,6 +27,11 @@ cross-platform engine for dragonfly as a competitive alternative to
 commercial offerings, kaldi-active-grammar accepts donations (not
 affiliated with the dragonfly project itself).
 
+Please note that Kaldi Active Grammar is licensed under the GNU Affero
+General Public License v3 (AGPL-3.0-or-later).  This has an effect on
+what Dragonfly can be used to do when used in conjunction with the Kaldi
+engine back-end.
+
 **Sections:**
 
 * `Setup`_

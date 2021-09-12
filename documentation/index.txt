@@ -30,7 +30,7 @@ Dragonfly currently supports the following speech recognition engines:
    work too
  - :ref:`Windows Speech Recognition <RefSapi5Engine>` (WSR), included with
    Microsoft Windows Vista, Windows 7+, and freely available for Windows XP
- - :ref:`Kaldi <RefKaldiEngine>`, open source and multi-platform.
+ - :ref:`Kaldi <RefKaldiEngine>`, open source (AGPL) and multi-platform.
  - :ref:`CMU Pocket Sphinx <RefSphinxEngine>`, open source and multi-
    platform.
 
