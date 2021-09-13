@@ -40,7 +40,7 @@ Dragonfly currently supports the following speech recognition engines:
    similar editions of *Dragon* are supported. Other editions may work too
 -  *Windows Speech Recognition* (WSR), included with Microsoft Windows
    Vista, Windows 7+, and freely available for Windows XP
--  *Kaldi*, open source and multi-platform.
+-  *Kaldi*, open source (AGPL) and multi-platform.
 -  *CMU Pocket Sphinx*, open source and multi-platform.
 
 Documentation and FAQ
