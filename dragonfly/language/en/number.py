@@ -36,7 +36,7 @@ int_0           = MapIntBuilder({
                                })
 int_1_9         = MapIntBuilder({
                                  "one":                 1,
-                                 "(two | too | to)":    2,
+                                 "two":                 2,
                                  "three":               3,
                                  "four":                4,
                                  "five":                5,
