@@ -67,22 +67,19 @@ def _init_engine(args):
 
 
 def _load_cmd_modules(args):
-    # Flatten the file lists.
+    # Retrieve filenames from the arguments.
     files = []
     for lst in args.files:
         files.extend(lst)
 
-    # Load each command module. Errors during loading will be caught and
-    # logged.
+    # Load each specified command module.  Errors during loading will be
+    #  caught and logged.
     return_code = 0
     for f in files:
-        module_ = CommandModule(f.name)
+        module_ = CommandModule(f)
         module_.load()
         if not module_.loaded:
             return_code = 1
-
-        # Also close each file object created by argparse.
-        f.close()
 
     # Return the overall success of module loading.
     return return_code
@@ -274,20 +271,26 @@ def _engine_options_string(string):
     return { key: _smart_cast(value) for (key, value) in options.items() }
 
 
-def _valid_file_or_pattern(string):
-    # Expand glob patterns.
-    file_type = argparse.FileType("r")
+def _filename(string):
+    """ Same as argparse.FileType, but returns the filename. """
+    f = argparse.FileType("r")(string)
+    fname = f.name
+    f.close()
+    return fname
+
+
+def _valid_filename_or_pattern(string):
+    # Expand glob patterns or interpret the string as an existing file path.
     if "?" in string or "*" in string:
         files = glob.glob(string)
-        if not files:
+        if files:
+            result = [_filename(f) for f in files]
+        else:
             msg = "pattern %r did not match any file" % string
             raise argparse.ArgumentTypeError(msg)
-
-        # Return the matching files.
-        return [file_type(f) for f in files]
-
-    # Return a single file if the path exists.
-    return [file_type(string)]
+    else:
+        result = [_filename(string)]
+    return result
 
 
 def _valid_directory_path(string):
@@ -314,7 +317,7 @@ def make_arg_parser():
 
     # Define common arguments.
     cmd_module_files_argument = _build_argument(
-        "files", metavar="file", nargs="*", type=_valid_file_or_pattern,
+        "files", metavar="file", nargs="*", type=_valid_filename_or_pattern,
         help="Command module file(s)."
     )
     engine_options_argument = _build_argument(
