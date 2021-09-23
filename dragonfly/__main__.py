@@ -286,8 +286,7 @@ def _valid_filename_or_pattern(string):
         if files:
             result = [_filename(f) for f in files]
         else:
-            msg = "pattern %r did not match any file" % string
-            raise argparse.ArgumentTypeError(msg)
+            result = [_filename(string)]
     else:
         result = [_filename(string)]
     return result
