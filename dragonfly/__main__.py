@@ -398,7 +398,9 @@ def make_arg_parser():
     # Create the parser for the "load-directory" command.
     parser_load_directory = subparsers.add_parser(
         "load-directory",
-        help="Load and recognize from command module files in a directory."
+        help="Load and recognize from command module files in a directory. "
+             " Only module files starting with an underscore (_*.py) are"
+             " loaded by this command."
     )
     module_dir_argument = _build_argument(
         "module_dir", type=_valid_directory_path,
