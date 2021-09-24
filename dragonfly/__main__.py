@@ -85,6 +85,21 @@ def _load_cmd_modules(args):
     return return_code
 
 
+def _load_cmd_module_dirs(args):
+    # Load command modules from each specified directory.  Errors during
+    #  loading will be caught and logged.
+    recursive = args.recursive
+    return_code = 0
+    for d in args.module_dirs:
+        module_directory = CommandModuleDirectory(d, recursive=recursive)
+        module_directory.load()
+        if not module_directory.loaded:
+            return_code = 1
+
+    # Return the overall success of module loading.
+    return return_code
+
+
 def _on_begin():
     print("Speech start detected.")
 
@@ -218,10 +233,7 @@ def cli_cmd_load_directory(args):
         if args.recursive:
             LOG.info("Loading command modules in sub-directories as "
                      "specified (recursive mode).")
-        directory = CommandModuleDirectory(args.module_dir,
-                                           recursive=args.recursive)
-        directory.load()
-        return_code = 0 if directory.loaded else 1
+        return_code = _load_cmd_module_dirs(args)
 
         # Return early if --no-input was specified.
         if args.no_input:
@@ -294,7 +306,7 @@ def _valid_filename_or_pattern(string):
 
 def _valid_directory_path(string):
     if not os.path.isdir(string):
-        msg = "%r is not a valid directory path" % string
+        msg = "No such directory: %r" % string
         raise argparse.ArgumentTypeError(msg)
     return string
 
@@ -398,13 +410,13 @@ def make_arg_parser():
     # Create the parser for the "load-directory" command.
     parser_load_directory = subparsers.add_parser(
         "load-directory",
-        help="Load and recognize from command module files in a directory. "
-             " Only module files starting with an underscore (_*.py) are"
-             " loaded by this command."
+        help="Load and recognize from command module files in one or more"
+             " directories.  Only module files starting with an underscore"
+             " (_*.py) are loaded by this command."
     )
-    module_dir_argument = _build_argument(
-        "module_dir", type=_valid_directory_path,
-        help="Directory with command module files."
+    module_dirs_argument = _build_argument(
+        "module_dirs", metavar="dir", nargs="+", type=_valid_directory_path,
+        help="One or more command module directories."
     )
     recursive_argument =  _build_argument(
         "-r", "--recursive", default=False, action="store_true",
@@ -413,7 +425,7 @@ def make_arg_parser():
     )
     _add_arguments(
         parser_load_directory,
-        module_dir_argument, recursive_argument, engine_argument,
+        module_dirs_argument, recursive_argument, engine_argument,
         engine_options_argument, language_argument, no_input_argument,
         no_recobs_messages_argument, log_level_argument, quiet_argument
     )
