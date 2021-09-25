@@ -75,14 +75,6 @@ class EngineConfig(object):
     SLEEP_PHRASE = "go to sleep"
     SLEEP_PHRASE_THRESHOLD = 1e-40
 
-    # Configuration for acoustic model training.
-    TRAINING_DATA_DIR = ""
-    TRANSCRIPT_NAME = "training"
-    START_TRAINING_PHRASE = "start training session"
-    START_TRAINING_PHRASE_THRESHOLD = 1e-48
-    END_TRAINING_PHRASE = "end training session"
-    END_TRAINING_PHRASE_THRESHOLD = 1e-45
-
     # Audio input configuration.
     # These values should match the requirements for the acoustic model
     # being used. Default values match the 16 kHz CMU US English models.

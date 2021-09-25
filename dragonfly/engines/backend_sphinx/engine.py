@@ -44,8 +44,6 @@ from dragonfly.engines.backend_sphinx.misc             import (EngineConfig,
 from dragonfly.engines.backend_sphinx.recobs           import SphinxRecObsManager
 from dragonfly.engines.backend_sphinx.recording        import PyAudioRecorder
 from dragonfly.engines.backend_sphinx.timer            import SphinxTimerManager
-from dragonfly.engines.backend_sphinx.training         import (write_training_data,
-                                                               write_transcript_files)
 
 
 class UnknownWordError(Exception):
@@ -92,7 +90,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._recognition_observer_manager = SphinxRecObsManager(self)
         self._keyphrase_thresholds = {}
         self._keyphrase_functions = {}
-        self._training_session_active = False
         self._default_search_result = None
         self._grammar_count = 0
 
@@ -143,13 +140,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             "WAKE_PHRASE_THRESHOLD",
             "SLEEP_PHRASE",
             "SLEEP_PHRASE_THRESHOLD",
-
-            "TRAINING_DATA_DIR",
-            "TRANSCRIPT_NAME",
-            "START_TRAINING_PHRASE",
-            "START_TRAINING_PHRASE_THRESHOLD",
-            "END_TRAINING_PHRASE",
-            "END_TRAINING_PHRASE_THRESHOLD",
 
             "CHANNELS",
             "RATE",
@@ -232,10 +222,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Set the other keyphrases using safe_set_keyphrase().
         safe_set_keyphrase("SLEEP", self.pause_recognition)
-        safe_set_keyphrase("START_TRAINING",
-                           self.start_training_session)
-        safe_set_keyphrase("END_TRAINING",
-                           self.end_training_session)
 
         # Set the PyAudioRecorder instance's config object.
         self._recorder.config = self.config
@@ -259,7 +245,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Reset other variables
         self._cancel_recognition_next_time = False
-        self._training_session_active = False
         self._recognition_paused = False
         self._grammar_count = 0
 
@@ -683,17 +668,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if not processing_occurred:
             self._recognition_observer_manager.notify_failure(results_obj)
 
-        # Write the training data files if necessary.
-        data_dir = self.config.TRAINING_DATA_DIR
-        if not mimicking and data_dir and os.path.isdir(data_dir):
-            # Use the default search's hypothesis if final_speech was nil.
-            if not final_speech:
-                final_speech = speech
-            try:
-                write_training_data(self.config, self._audio_buffers,
-                                    final_speech)
-            except Exception as e:
-                self._log.exception("Failed to write training data: %s" % e)
 
         # Clear audio buffer list because utterance processing has finished.
         self._audio_buffers = []
@@ -1074,65 +1048,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
     def _has_quoted_words_support(self):
         return False
-
-    # ----------------------------------------------------------------------
-    # Training-related methods
-
-    def write_transcript_files(self, fileids_path, transcription_path):
-        """
-        Write .fileids and .transcription files for files in the training
-        data directory and write them to the specified file paths.
-
-        This method will raise an error if the ``TRAINING_DATA_DIR``
-        configuration option is not set to an existing directory.
-
-        :param fileids_path: path to .fileids file to create.
-        :param transcription_path: path to .transcription file to create.
-        :type fileids_path: str
-        :type transcription_path: str
-        :raises: IOError | OSError
-        """
-        write_transcript_files(
-            self.config, fileids_path, transcription_path
-        )
-
-    @property
-    def training_session_active(self):
-        """
-        Whether a training session is in progress.
-
-        :rtype: bool
-        """
-        return self._training_session_active
-
-    def start_training_session(self):
-        """
-        Start the training session. This will stop recognition processing
-        until either :meth:`end_training_session` is called or the end
-        training keyphrase is heard.
-        """
-        data_dir = self.config.TRAINING_DATA_DIR
-        if not data_dir or not os.path.isdir(data_dir):
-            self._log.warning("Training data will not be recorded; '%s' is "
-                              "not a directory" % data_dir)
-
-        if not self._training_session_active:
-            self._log.info("Training session has started. No rule "
-                           "actions will be processed. ")
-            self._log.info("Say '%s' to end the session."
-                           % self.config.END_TRAINING_PHRASE)
-            self._training_session_active = True
-
-    def end_training_session(self):
-        """
-        End the training if one is in progress. This will allow recognition
-        processing once again.
-        """
-        if self._training_session_active:
-            self._log.info("Ending training session.")
-            self._log.info("Rule actions will now be processed normally "
-                           "again.")
-            self._training_session_active = False
 
     # ----------------------------------------------------------------------
     # Recognition loop control methods
