@@ -46,10 +46,13 @@ def _set_logging_level(args):
 
 
 def _init_engine(args):
+    # Retrieve the engine option pairs from the arguments.
+    # TODO Remove multiple engine options per -o arg in version 1.0.0.
+    options = dict(args.engine_options)
+
     try:
-        # Initialize the specified engine, catching and reporting errors.
-        # Pass specified engine options (if any).
-        options = args.engine_options
+        # Initialize the specified engine with options, catching and
+        #  reporting errors.
         engine = get_engine(args.engine, **options)
     except EngineError as e:
         LOG.error(e)
@@ -271,16 +274,29 @@ def _smart_cast(value):
     except:
         return value
 
+
 def _engine_options_string(string):
     if '=' not in string:
-        msg = "%r is not a valid option string" % string
+        msg = "Invalid engine option: %r" % string
         raise argparse.ArgumentTypeError(msg)
 
-    # Return a dictionary of any key/value arguments separated by commas or
-    # spaces. Filter out empty strings.
-    options = dict(sub_string.split('=', maxsplit=1)
-                   for sub_string in re.split('[,\\s]', string) if sub_string)
-    return { key: _smart_cast(value) for (key, value) in options.items() }
+    # Return a list of key/value arguments separated by commas or spaces.
+    # TODO Remove multiple engine options per -o arg in version 1.0.0.
+    options = []
+    for sub_string in re.split('[,\\s]', string):
+        if not sub_string:  # Filter out empty strings.
+            continue
+
+        parts = sub_string.split('=')
+        if len(parts) != 2 or parts[1] == '':
+            msg = "Invalid engine option: %r" % string
+            raise argparse.ArgumentTypeError(msg)
+
+        arg = parts[0]
+        value = _smart_cast(parts[1])
+        options.append((arg, value))
+
+    return options
 
 
 def _filename(string):
@@ -332,7 +348,7 @@ def make_arg_parser():
         help="Command module file(s)."
     )
     engine_options_argument = _build_argument(
-        "-o", "--engine-options", default={}, type=_engine_options_string,
+        "-o", "--engine-options", default=[], type=_engine_options_string,
         help="One or more engine options to be passed to *get_engine()*. "
              "Each option should specify a key word argument and value. "
              "Multiple options should be separated by spaces or commas. "
