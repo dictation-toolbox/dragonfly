@@ -287,9 +287,10 @@ def _engine_options_string(string):
         if not sub_string:  # Filter out empty strings.
             continue
 
+        # There must be one valid engine option per sub-string.
         parts = sub_string.split('=')
-        if len(parts) != 2 or parts[1] == '':
-            msg = "Invalid engine option: %r" % string
+        if len(parts) != 2 or not (parts[0] and parts[1]):
+            msg = "Invalid engine option: %r" % sub_string
             raise argparse.ArgumentTypeError(msg)
 
         arg = parts[0]
