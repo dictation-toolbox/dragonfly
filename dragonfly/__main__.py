@@ -48,7 +48,11 @@ def _set_logging_level(args):
 def _init_engine(args):
     # Retrieve the engine option pairs from the arguments.
     # TODO Remove multiple engine options per -o arg in version 1.0.0.
-    options = dict(args.engine_options)
+    options = {}
+    for argument in args.engine_options:
+        for options_list in argument:
+            for option, value in options_list:
+                options[option] = value
 
     try:
         # Initialize the specified engine with options, catching and
@@ -348,14 +352,18 @@ def make_arg_parser():
         "files", metavar="file", nargs="*", type=_valid_filename_or_pattern,
         help="Command module file(s)."
     )
+
+    # TODO Rename to "--engine-option" in version 1.0.0.
     engine_options_argument = _build_argument(
-        "-o", "--engine-options", default=[], type=_engine_options_string,
+        "-o", "--engine-options", default=[], nargs="+", action="append",
+        type=_engine_options_string,
         help="One or more engine options to be passed to *get_engine()*. "
              "Each option should specify a key word argument and value. "
              "Multiple options should be separated by spaces or commas. "
              "Values are treated as Python literals if possible, "
              "otherwise as strings."
     )
+
     language_argument = _build_argument(
         "--language", default="en",
         help="Speaker language to use. Only applies if using an engine "
