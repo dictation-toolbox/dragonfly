@@ -11,6 +11,26 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Changed
+~~~~~~~
+* Change command-line interface (CLI) to allow using multiple engine options
+  arguments.
+* Change load-directory CLI command to accept more than one directory.
+* Remove English-language alternatives for the integer two.
+* Set the Kaldi engine back-end as unavailable to old Python versions.
+* Set the Kaldi engine option *auto_add_to_user_lexicon* to False by
+  default.
+
+Fixed
+~~~~~
+* Fix a bug that occurs when using non-matching glob patterns as command
+  module files (CLI).
+* Fix a few bugs with the CLI engine options argument.
+
+
 0.32.1_ - 2021-09-06
 --------------------
 
