@@ -171,7 +171,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
             lazy_compilation=self._options['lazy_compilation'],
             alternative_dictation=self._options['alternative_dictation'],
-            **self._options['compiler_init_config'],
+            **self._options['compiler_init_config']
             )
         if self._options['invalidate_cache']:
             self._compiler.fst_cache.invalidate()
