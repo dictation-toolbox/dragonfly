@@ -89,6 +89,14 @@ above might look something like this: ::
     test.color = "white"    # I like light colors.
 
 
+Example command modules
+----------------------------------------------------------------------------
+
+The configuration toolkit is utilized in a number of command modules in the
+*t4ngo/dragonfly-modules* repository, available on GitHub.  See
+:ref:`Related Resources: Command modules <RefCommandModulesList>`.
+
+
 Implementation details
 ----------------------------------------------------------------------------
 
