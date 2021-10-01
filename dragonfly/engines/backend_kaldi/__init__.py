@@ -26,6 +26,8 @@ SR back-end package for Kaldi
 
 import logging
 import struct
+import sys
+
 _log = logging.getLogger("engine.kaldi")
 
 
@@ -42,8 +44,14 @@ def is_engine_available(**kwargs):
         return True
 
     if struct.calcsize("P") == 4:  # 32-bit
-        _log.warning("The python environment is 32-bit. Kaldi requires a "
-                     "64-bit python environment")
+        _log.warning("The Python environment is 32-bit.  Kaldi requires a "
+                     "64-bit python environment.")
+        return False
+
+    if sys.version_info.major < 3 or sys.version_info.minor < 6:
+        _log.warning("This version of Python is not compatible with the "
+                     "Kaldi back-end.  Python version 3.6 or higher is "
+                     "required.")
         return False
 
     # Attempt to import the engine class from the module.
