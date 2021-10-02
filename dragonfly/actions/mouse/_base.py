@@ -21,7 +21,7 @@
 import time
 
 from dragonfly.actions.action_base import ActionError
-from dragonfly.windows import monitors
+from dragonfly.windows.monitor     import monitors
 
 
 #---------------------------------------------------------------------------

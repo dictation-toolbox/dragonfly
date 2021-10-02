@@ -28,8 +28,8 @@ Rule class
 
 import logging
 
-from .context import Context
-from ..error import GrammarError
+from dragonfly.grammar.context  import Context
+from dragonfly.error            import GrammarError
 
 
 class Rule(object):

@@ -1,6 +1,6 @@
 # coding=utf-8
 #
-# This file is part of Aenea
+# This file was part of Aenea
 #
 # Aenea is free software: you can redistribute it and/or modify it under
 # the terms of version 3 of the GNU Lesser General Public License as
@@ -35,11 +35,11 @@ import locale
 import logging
 import os
 
-from six import binary_type
+from six                           import binary_type
 import applescript
 
-from .base_window import BaseWindow
-from .rectangle import Rectangle
+from dragonfly.windows.base_window import BaseWindow
+from dragonfly.windows.rectangle   import Rectangle
 
 
 class DarwinWindow(BaseWindow):

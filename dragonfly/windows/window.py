@@ -18,21 +18,22 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import sys
 import os
+import sys
+
 
 # Windows-specific
 if sys.platform.startswith("win"):
-    from .win32_window import Win32Window as Window
+    from dragonfly.windows.win32_window  import Win32Window as Window
 
 # Linux/X11
 elif os.environ.get("XDG_SESSION_TYPE") == "x11":
-    from .x11_window import X11Window as Window
+    from dragonfly.windows.x11_window    import X11Window as Window
 
 # Mac OS
 elif sys.platform == "darwin":
-    from .darwin_window import DarwinWindow as Window
+    from dragonfly.windows.darwin_window import DarwinWindow as Window
 
 # Unsupported
 else:
-    from .fake_window import FakeWindow as Window
+    from dragonfly.windows.fake_window   import FakeWindow as Window

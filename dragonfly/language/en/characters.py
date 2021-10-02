@@ -24,9 +24,10 @@ Characters in text symbols for the English language.
 
 """
 
-from ...grammar.elements   import (Choice, RuleRef, Repetition, Sequence,
-                                   Alternative, Optional, Compound)
-from ...grammar.rule_base  import Rule
+from dragonfly.grammar.elements   import (Choice, RuleRef, Repetition,
+                                          Sequence, Alternative, Optional,
+                                          Compound)
+from dragonfly.grammar.rule_base  import Rule
 
 
 #---------------------------------------------------------------------------

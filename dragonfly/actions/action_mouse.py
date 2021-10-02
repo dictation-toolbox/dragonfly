@@ -154,15 +154,16 @@ Mouse class reference
 # pylint: disable=R0201
 # Suppress warnings about handler functions defined as Mouse methods.
 
-from .action_base       import DynStrActionBase, ActionError
-from ..windows.window   import Window
-
-from .mouse import (ButtonEvent, PauseEvent, MoveRelativeEvent,
-                    MoveScreenEvent, MoveWindowEvent, PLATFORM_BUTTON_FLAGS,
-                    PLATFORM_WHEEL_FLAGS)
+from dragonfly.actions.action_base import DynStrActionBase, ActionError
+from dragonfly.windows.window      import Window
+from dragonfly.actions.mouse       import (
+    ButtonEvent, PauseEvent, MoveRelativeEvent,
+    MoveScreenEvent, MoveWindowEvent, PLATFORM_BUTTON_FLAGS,
+    PLATFORM_WHEEL_FLAGS
+)
 
 # Imported for backwards-compatibility: these functions used to live here.
-from .mouse import get_cursor_position, set_cursor_position
+from dragonfly.actions.mouse import get_cursor_position, set_cursor_position
 
 
 class Mouse(DynStrActionBase):

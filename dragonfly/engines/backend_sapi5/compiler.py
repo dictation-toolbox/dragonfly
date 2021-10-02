@@ -29,9 +29,9 @@
 
 from win32com.client import constants
 
-from ..base                     import CompilerBase, CompilerError
-from ...grammar.rule_base       import Rule
-from ...grammar.elements_basic  import Literal
+from dragonfly.engines.base            import CompilerBase, CompilerError
+from dragonfly.grammar.rule_base       import Rule
+from dragonfly.grammar.elements_basic  import Literal
 
 
 #---------------------------------------------------------------------------

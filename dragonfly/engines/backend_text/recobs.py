@@ -24,7 +24,7 @@ Recognition observer class for the text input engine
 
 """
 
-from ..base import RecObsManagerBase
+from dragonfly.engines.base import RecObsManagerBase
 
 
 class TextRecobsManager(RecObsManagerBase):

@@ -19,12 +19,12 @@
 #
 
 import locale
-from subprocess import Popen, PIPE
+from subprocess                     import Popen, PIPE
 
-from six import string_types, binary_type
+from six                            import string_types, binary_type
 
-from .base_monitor import BaseMonitor
-from .rectangle import Rectangle
+from dragonfly.windows.base_monitor import BaseMonitor
+from dragonfly.windows.rectangle    import Rectangle
 
 
 #===========================================================================

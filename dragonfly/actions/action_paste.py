@@ -26,11 +26,11 @@ Paste action
 
 import sys
 
-from six import string_types
+from six                           import string_types
 
-from ..actions.action_base import ActionError, DynStrActionBase
-from ..actions.action_key import Key
-from ..windows.clipboard import Clipboard
+from dragonfly.actions.action_base import DynStrActionBase, ActionError
+from dragonfly.actions.action_key  import Key
+from dragonfly.windows.clipboard   import Clipboard
 
 
 #---------------------------------------------------------------------------

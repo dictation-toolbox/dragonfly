@@ -21,10 +21,10 @@
 # pylint: disable=E0401
 # This file imports MacOS-only symbols.
 
-from AppKit import NSScreen
+from AppKit                         import NSScreen
 
-from .base_monitor import BaseMonitor
-from .rectangle import Rectangle
+from dragonfly.windows.base_monitor import BaseMonitor
+from dragonfly.windows.rectangle    import Rectangle
 
 
 #===========================================================================

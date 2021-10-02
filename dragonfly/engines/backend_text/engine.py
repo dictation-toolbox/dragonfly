@@ -23,14 +23,16 @@ import logging
 import sys
 import time
 
-from six import string_types, binary_type
+from six                                    import string_types, binary_type
 
 import dragonfly.grammar.state as state_
-from dragonfly import Window
-
-from .recobs import TextRecobsManager
-from ..base import (EngineBase, MimicFailure, ThreadedTimerManager,
-                    DictationContainerBase, GrammarWrapperBase)
+from dragonfly.engines.base                 import (EngineBase,
+                                                    MimicFailure,
+                                                    ThreadedTimerManager,
+                                                    DictationContainerBase,
+                                                    GrammarWrapperBase)
+from dragonfly.engines.backend_text.recobs  import TextRecobsManager
+from dragonfly.windows.window               import Window
 
 
 def _map_word(word):

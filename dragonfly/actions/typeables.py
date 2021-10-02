@@ -29,7 +29,7 @@
 
 """
 
-from .keyboard import keyboard, Typeable, KeySymbols
+from dragonfly.actions.keyboard import keyboard, Typeable, KeySymbols
 
 
 # --------------------------------------------------------------------------

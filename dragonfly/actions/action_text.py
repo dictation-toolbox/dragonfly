@@ -117,15 +117,15 @@ Text class reference
 
 """
 
-from locale import getpreferredencoding
+from locale                                    import getpreferredencoding
 
-from six import binary_type
+from six                                       import binary_type
 
-from ..engines import get_engine
-from ..util.clipboard import Clipboard
-from .action_base import ActionError
-from .action_base_keyboard import BaseKeyboardAction
-from .action_key import Key
+from dragonfly.actions.action_base             import ActionError
+from dragonfly.actions.action_key              import Key
+from dragonfly.actions.action_base_keyboard    import BaseKeyboardAction
+from dragonfly.engines                         import get_engine
+from dragonfly.windows.clipboard               import Clipboard
 
 #---------------------------------------------------------------------------
 

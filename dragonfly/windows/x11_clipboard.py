@@ -29,15 +29,15 @@ This file implements interfaces to the X selections (clipboards):
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'format' function.
 
-from __future__ import print_function
+from __future__                       import print_function
 
 import locale
-from subprocess import Popen, PIPE
+from subprocess                       import Popen, PIPE
 import sys
 
-from six import integer_types, binary_type
+from six                              import integer_types, binary_type
 
-from .base_clipboard import BaseClipboard
+from dragonfly.windows.base_clipboard import BaseClipboard
 
 
 #===========================================================================

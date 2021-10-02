@@ -20,11 +20,12 @@
 
 import sys
 import unittest
-from six import text_type
 
-from dragonfly        import *
-from ..test           import TestError, RecognitionFailure
-from .element_tester  import ElementTester
+from six                            import text_type
+
+from dragonfly                      import *
+from dragonfly.test                 import TestError, RecognitionFailure
+from dragonfly.test.element_tester  import ElementTester
 
 
 #===========================================================================

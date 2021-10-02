@@ -23,9 +23,9 @@ ContextAction
 '''
 
 
-from .action_base import ActionBase
-from ..grammar.context import Context
-from ..windows import Window
+from dragonfly.actions.action_base import ActionBase
+from dragonfly.grammar.context     import Context
+from dragonfly.windows.window      import Window
 
 
 def _ensure_execution_context(data):
@@ -36,6 +36,7 @@ def _ensure_execution_context(data):
     if '_context' not in data:
         data['_context'] = Window.get_foreground()
     return data
+
 
 class ContextAction(ActionBase):
     '''

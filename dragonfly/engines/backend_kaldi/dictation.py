@@ -25,12 +25,12 @@ Dictation container for the Kaldi engine.
 
 import itertools
 
-from six import text_type
-
-from ...grammar.elements_basic import Dictation as BaseDictation
-from ...grammar.elements_basic import ElementBase, RuleRef, Alternative, ListRef, DictListRef, Repetition
-from ...grammar.list import List, DictList
-from ...grammar.rule_compound import CompoundRule
+from dragonfly.grammar.elements_basic  import Dictation as BaseDictation
+from dragonfly.grammar.elements_basic  import (RuleRef, Alternative,
+                                               ListRef, DictListRef,
+                                               Repetition)
+from dragonfly.grammar.list            import List, DictList
+from dragonfly.grammar.rule_compound   import CompoundRule
 
 
 #---------------------------------------------------------------------------

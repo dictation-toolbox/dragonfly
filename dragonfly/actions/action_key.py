@@ -284,9 +284,9 @@ Key class reference
 
 import collections
 
-from .action_base           import ActionError
-from .action_base_keyboard  import BaseKeyboardAction
-from .typeables             import typeables
+from dragonfly.actions.action_base          import ActionError
+from dragonfly.actions.action_base_keyboard import BaseKeyboardAction
+from dragonfly.actions.typeables            import typeables
 
 #---------------------------------------------------------------------------
 

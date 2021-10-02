@@ -25,13 +25,12 @@
 
 # pylint: disable=too-many-instance-attributes,no-self-use
 
-from locale import getpreferredencoding
+from locale           import getpreferredencoding
+from logging          import getLogger, DEBUG
 
-from logging import getLogger, DEBUG
+from six              import PY2, text_type, binary_type
 
-from six import PY2, text_type, binary_type
-
-from ..error import GrammarError
+from dragonfly.error  import GrammarError
 
 
 class State(object):

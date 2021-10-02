@@ -30,8 +30,7 @@ import logging
 from jsgf import Literal, filter_expansion
 
 import dragonfly.grammar.state as state_
-
-from ..base import GrammarWrapperBase
+from dragonfly.engines.base import GrammarWrapperBase
 
 
 class GrammarWrapper(GrammarWrapperBase):
