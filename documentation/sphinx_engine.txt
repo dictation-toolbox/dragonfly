@@ -85,32 +85,6 @@ models.
   (default: ``2048``).
 
 
-Keyphrase configuration
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The following configuration options control the engine's built-in
-keyphrases:
-
-- ``WAKE_PHRASE`` -- the keyphrase to listen for when in sleep mode
-  (default: ``"wake up"``).
-- ``WAKE_PHRASE_THRESHOLD`` -- threshold value* for the wake keyphrase
-  (default: ``1e-20``).
-- ``SLEEP PHRASE`` -- the keyphrase to listen for to enter sleep mode
-  (default: ``"go to sleep"``).
-- ``SLEEP_PHRASE_THRESHOLD`` -- threshold value* for the sleep keyphrase
-  (default: ``1e-40``).
-- ``START_ASLEEP`` -- boolean value for whether the engine should start in
-  a sleep state (default: ``True``).
-
-\* Threshold values need to be set for each keyphrase. The `CMU Sphinx LM
-tutorial`_ has some advice on keyphrase threshold values.
-
-If your language isn't set to English, all built-in keyphrases will be
-disabled by default if they are not specified in your configuration.
-
-Any keyphrase can be disabled by setting the phrase and threshold values to
-``""`` and ``0`` respectively.
-
 Decoder configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

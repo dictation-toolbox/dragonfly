@@ -61,7 +61,7 @@ def main():
 
     # You can also set any configuration options here instead of using a
     # config.py file. For example:
-    # engine.config.START_ASLEEP = False
+    # engine.config.LANGUAGE = "en"
 
     # Call connect() now that the engine configuration is set.
     engine.connect()

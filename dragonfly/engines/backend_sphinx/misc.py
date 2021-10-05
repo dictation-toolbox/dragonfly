@@ -19,9 +19,7 @@
 #
 
 """
-Miscellaneous classes and functions used by the engine, but placed in
-another file to reduce the number of lines in engine.py.
-
+Miscellaneous classes and functions used by the engine.
 """
 
 import os
@@ -67,13 +65,6 @@ class EngineConfig(object):
 
     # User language for the engine to use.
     LANGUAGE = "en"
-
-    # Configuration for wake/sleep phrases
-    START_ASLEEP = True
-    WAKE_PHRASE = "wake up"
-    WAKE_PHRASE_THRESHOLD = 1e-20
-    SLEEP_PHRASE = "go to sleep"
-    SLEEP_PHRASE_THRESHOLD = 1e-40
 
     # Audio input configuration.
     # These values should match the requirements for the acoustic model
