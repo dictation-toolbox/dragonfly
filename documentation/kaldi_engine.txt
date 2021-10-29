@@ -168,6 +168,7 @@ the ``get_engine()`` function, which passes them to the
     vad_padding_end_ms=200,
     vad_complex_padding_end_ms=600,
     auto_add_to_user_lexicon=True,
+    allow_online_pronunciations=False,
     lazy_compilation=True,
     invalidate_cache=False,
     expected_error_rate_threshold=None,
@@ -266,9 +267,13 @@ The engine can also be configured via the :ref:`command-line interface
   quality.
 
 * ``auto_add_to_user_lexicon`` (``bool``) -- Enables automatically
-  adding unknown words to the `User Lexicon`_. This may make requests to
-  a cloud service, to predict pronunciations, depending on your installed
-  packages.
+  adding unknown words to the `User Lexicon`_. This will only work if you have
+  additional required packages installed. This will only work locally, unless
+  you also enable ``allow_online_pronunciations``.
+
+* ``allow_online_pronunciations`` (``bool``) -- Enables online
+  pronunciation generation for unknown words, if you have also enabled
+  ``auto_add_to_user_lexicon``, and you have the required packages installed.
 
 * ``lazy_compilation`` (``bool``) -- Enables deferred grammar/rule
   compilation, which then allows parallel compilation up to your number

@@ -63,7 +63,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     _name = "kaldi"
     DictationContainer = DictationContainerBase
-    _required_kag_version = "2.1.0"
+    _required_kag_version = "3.0.0"
 
     #-----------------------------------------------------------------------
 
@@ -71,7 +71,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         audio_input_device=None, audio_self_threaded=True, audio_auto_reconnect=True, audio_reconnect_callback=None,
         retain_dir=None, retain_audio=None, retain_metadata=None, retain_approval_func=None,
         vad_aggressiveness=3, vad_padding_start_ms=150, vad_padding_end_ms=200, vad_complex_padding_end_ms=600,
-        auto_add_to_user_lexicon=False, lazy_compilation=True, invalidate_cache=False,
+        auto_add_to_user_lexicon=True, allow_online_pronunciations=False,
+        lazy_compilation=True, invalidate_cache=False,
         expected_error_rate_threshold=None,
         alternative_dictation=None,
         compiler_init_config=None, decoder_init_config=None,
@@ -129,6 +130,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             vad_padding_end_ms = int(vad_padding_end_ms),
             vad_complex_padding_end_ms = int(vad_complex_padding_end_ms),
             auto_add_to_user_lexicon = bool(auto_add_to_user_lexicon),
+            allow_online_pronunciations = bool(allow_online_pronunciations),
             lazy_compilation = bool(lazy_compilation),
             invalidate_cache = bool(invalidate_cache),
             expected_error_rate_threshold = float(expected_error_rate_threshold) if expected_error_rate_threshold is not None else None,
@@ -169,6 +171,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._compiler = KaldiCompiler(self._options['model_dir'], tmp_dir=self._options['tmp_dir'],
             auto_add_to_user_lexicon=self._options['auto_add_to_user_lexicon'],
+            allow_online_pronunciations=self._options['allow_online_pronunciations'],
             lazy_compilation=self._options['lazy_compilation'],
             alternative_dictation=self._options['alternative_dictation'],
             **self._options['compiler_init_config']
