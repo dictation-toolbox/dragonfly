@@ -65,10 +65,8 @@ class MoveEventDelegate(object):
         return set_cursor_position(x, y)
 
 
-# Set MoveEvent's delegate. This allows us to set platform-specific
-# functions for getting and setting the cursor position without having
-# to do a lot of sub-classing for no good reason.
-MoveEvent.delegate = MoveEventDelegate()
+# Provide MoveEvent classes access to the cursor functions via a delegate.
+MoveEvent.delegate = MoveEventDelegate
 
 #---------------------------------------------------------------------------
 # Win32 mouse button and wheel up/down flags.
