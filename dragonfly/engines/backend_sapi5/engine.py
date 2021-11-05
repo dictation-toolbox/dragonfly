@@ -366,17 +366,23 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         win_event_proc = WinEventProcType(callback)
         windll.user32.SetWinEventHook.restype = HANDLE
 
-        [set_hook(win_event_proc, et) for et in
-         {win32con.EVENT_SYSTEM_FOREGROUND,
-          win32con.EVENT_OBJECT_NAMECHANGE, }]
+        events = {win32con.EVENT_SYSTEM_FOREGROUND,
+                  win32con.EVENT_OBJECT_NAMECHANGE}
+        hook_ids = [set_hook(win_event_proc, event) for event in events]
 
         # Recognize speech, call timer functions and handle window change
         # events in a loop. Stop on disconnect().
         self.speak('beginning loop!')
-        while self._recognizer is not None:
-            pythoncom.PumpWaitingMessages()
-            self.call_timer_callback()
-            time.sleep(0.005)
+        try:
+            while self._recognizer is not None:
+                pythoncom.PumpWaitingMessages()
+                self.call_timer_callback()
+                time.sleep(0.005)
+        finally:
+            # Unregister event hooks.
+            for hook_id in hook_ids:
+                windll.user32.UnhookWinEvent(hook_id)
+
 
 #---------------------------------------------------------------------------
 # Make the shared engine available as Sapi5Engine, for backwards
