@@ -122,7 +122,7 @@ Class reference
 
 """
 
-from __future__ import print_function
+from __future__                    import print_function
 
 import locale
 import os
@@ -130,9 +130,9 @@ import shlex
 import subprocess
 import threading
 
-from six import string_types, binary_type
+from six                           import string_types, binary_type
 
-from .action_base import ActionBase
+from dragonfly.actions.action_base import ActionBase
 
 # --------------------------------------------------------------------------
 

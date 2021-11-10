@@ -24,7 +24,7 @@ Recognition state change callbacks
 
 """
 
-from .recobs import RecognitionObserver
+from dragonfly.grammar.recobs import RecognitionObserver
 
 try:
     from inspect import getfullargspec as getargspec

@@ -24,8 +24,8 @@ FocusWindow action
 
 """
 
-from .action_base      import ActionBase, ActionError
-from ..windows  import Window
+from dragonfly.actions.action_base import ActionBase, ActionError
+from dragonfly.windows.window      import Window
 
 
 #---------------------------------------------------------------------------

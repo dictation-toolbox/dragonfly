@@ -31,8 +31,9 @@ from locale import getpreferredencoding
 
 from six import text_type
 
-from ..base import DictationContainerBase
-from .dictation_format import WordFormatter
+from dragonfly.engines.base import DictationContainerBase
+from dragonfly.engines.backend_natlink.dictation_format import \
+    WordFormatter
 
 
 #---------------------------------------------------------------------------

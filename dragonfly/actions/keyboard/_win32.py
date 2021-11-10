@@ -23,19 +23,22 @@
 # pylint: disable=E0401
 # This file imports Win32-only symbols.
 
-from locale import getpreferredencoding
-from struct import unpack
+from locale                           import getpreferredencoding
+from struct                           import unpack
 import time
 
-from six import binary_type, text_type
+from six                              import binary_type, text_type
 
 import win32api
 import win32con
 import win32gui
 import win32process
 
-from ._base import BaseKeyboard, BaseTypeable, BaseKeySymbols
-from ..sendinput import KeyboardInput, make_input_array, send_input_array
+from dragonfly.actions.keyboard._base import (BaseKeyboard, BaseTypeable,
+                                              BaseKeySymbols)
+from dragonfly.actions.sendinput      import (KeyboardInput,
+                                              make_input_array,
+                                              send_input_array)
 
 
 class Win32KeySymbols(BaseKeySymbols):

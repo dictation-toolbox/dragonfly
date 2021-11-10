@@ -32,11 +32,12 @@ Digits, and Number classes.
 
 """
 
-import sys
 import logging
-from ..grammar.rule_base       import Rule
-from ..grammar.elements_basic  import RuleRef
-from ..error                   import DragonflyError
+import sys
+
+from dragonfly.grammar.rule_base       import Rule
+from dragonfly.grammar.elements_basic  import RuleRef
+from dragonfly.error                   import DragonflyError
 
 
 #---------------------------------------------------------------------------
@@ -97,7 +98,7 @@ class LanguageSpecificLoader(object):
 
     def _get_engine_language(self):
         try:
-            from ..engines import get_engine
+            from dragonfly.engines import get_engine
             language = get_engine().language
         except Exception as e:
             self._log.exception("Failed to retrieve speaker language: %s" % e)

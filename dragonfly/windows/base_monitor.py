@@ -20,9 +20,9 @@
 
 import logging
 
-from six import integer_types
+from six                         import integer_types
 
-from .rectangle import Rectangle
+from dragonfly.windows.rectangle import Rectangle
 
 
 #===========================================================================

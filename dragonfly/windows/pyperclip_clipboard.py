@@ -28,10 +28,10 @@ and should work on Windows, Mac OS and Linux-based operating systems.
 
 import os
 
-from six import integer_types
+from six                              import integer_types
 import pyperclip
 
-from .base_clipboard import BaseClipboard
+from dragonfly.windows.base_clipboard import BaseClipboard
 
 
 class PyperclipClipboard(BaseClipboard):

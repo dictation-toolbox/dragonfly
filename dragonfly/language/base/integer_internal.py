@@ -28,9 +28,10 @@ elements.
 
 import copy
 
-from ...grammar.elements  import (Alternative, Sequence, Optional, RuleRef,
-                                  Compound, ListRef, Literal, Impossible)
-from ...grammar.list      import List
+from dragonfly.grammar.elements  import (Alternative, Sequence, Optional,
+                                         RuleRef, Compound, ListRef,
+                                         Literal, Impossible)
+from dragonfly.grammar.list      import List
 
 
 #---------------------------------------------------------------------------

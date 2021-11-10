@@ -24,7 +24,7 @@ Recognition observer class for the Sphinx engine
 
 """
 
-from ..base import RecObsManagerBase
+from dragonfly.engines.base import RecObsManagerBase
 
 
 class SphinxRecObsManager(RecObsManagerBase):

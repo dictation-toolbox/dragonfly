@@ -31,16 +31,16 @@ This file implements an interface to the Windows system clipboard.
 import contextlib
 import logging
 import sys
-import time
 import threading
+import time
 
-from six import integer_types, reraise
+from six                              import integer_types, reraise
 
 import pywintypes
 import win32clipboard
 import win32con
 
-from .base_clipboard import BaseClipboard
+from dragonfly.windows.base_clipboard import BaseClipboard
 
 #===========================================================================
 

@@ -28,9 +28,10 @@ Currently, this interface can be used on macOS (Darwin) or X11.
 
 import time
 
-from pynput.keyboard import Controller, KeyCode, Key
+from pynput.keyboard                  import Controller, KeyCode, Key
 
-from ._base import BaseKeyboard, BaseTypeable, BaseKeySymbols
+from dragonfly.actions.keyboard._base import (BaseKeyboard, BaseTypeable,
+                                              BaseKeySymbols)
 
 
 class PynputTypeable(BaseTypeable):

@@ -47,12 +47,14 @@ Class reference
 ----------------------------------------------------------------------------
 
 """
-from six               import string_types
-from .action_base      import ActionBase, ActionError
-from ..engines         import get_engine
+
+from six                           import string_types
+
+from dragonfly.actions.action_base import ActionBase, ActionError
+from dragonfly.engines             import get_engine
 
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 
 class Mimic(ActionBase):
     """

@@ -24,7 +24,7 @@ Multiplexing interface to the Natlink timer
 
 """
 
-from ..base import TimerManagerBase
+from dragonfly.engines.base import TimerManagerBase
 
 
 #---------------------------------------------------------------------------

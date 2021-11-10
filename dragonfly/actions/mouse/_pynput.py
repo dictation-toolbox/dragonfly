@@ -18,9 +18,9 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from pynput.mouse import Controller, Button
+from pynput.mouse                  import Controller, Button
 
-from ._base import BaseButtonEvent, MoveEvent
+from dragonfly.actions.mouse._base import BaseButtonEvent, MoveEvent
 
 
 # Initialise a pynput mouse controller.

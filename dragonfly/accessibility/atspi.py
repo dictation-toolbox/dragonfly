@@ -7,12 +7,12 @@ TODO: Reduce duplication between this file and ia2.py.
 
 import logging
 import threading
-import traceback
 import time
+import traceback
 
-from six.moves import queue
+from six.moves                import queue
 
-from . import base
+from dragonfly.accessibility  import base
 
 
 class Controller(object):

@@ -22,11 +22,12 @@
 """
 
 import logging
-from six import string_types
 
-from dragonfly              import *
-from .error                 import TestError
-from ..test                 import infrastructure
+from six                   import string_types
+
+from dragonfly             import *
+from dragonfly.test.error  import TestError
+from dragonfly.test        import infrastructure
 
 
 #===========================================================================

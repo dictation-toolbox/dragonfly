@@ -24,13 +24,13 @@ Recognition observer classes
 
 """
 
-import time
 import logging
+import time
 
-from six import integer_types
+from six                        import integer_types
 
-from ..actions.actions  import Playback
-from ..engines          import get_engine
+from dragonfly.actions.actions  import Playback
+from dragonfly.engines          import get_engine
 
 
 #---------------------------------------------------------------------------

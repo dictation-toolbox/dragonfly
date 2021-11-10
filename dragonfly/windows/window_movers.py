@@ -29,8 +29,8 @@ import random
 import threading
 import time
 
-from .point        import Point
-from .rectangle    import Rectangle, unit
+from dragonfly.windows.point     import Point
+from dragonfly.windows.rectangle import Rectangle, unit
 
 
 #===========================================================================

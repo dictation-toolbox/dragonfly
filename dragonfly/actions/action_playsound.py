@@ -75,7 +75,7 @@ Class reference
 # This file imports from optional or Win32-only packages depending on the
 # platform.
 
-from ctypes import CFUNCTYPE, c_char_p, c_int, cdll
+from ctypes                        import CFUNCTYPE, c_char_p, c_int, cdll
 
 import os
 import wave
@@ -88,7 +88,7 @@ try:
 except ImportError:
     pyaudio = None
 
-from .action_base         import ActionBase
+from dragonfly.actions.action_base import ActionBase
 
 
 #---------------------------------------------------------------------------

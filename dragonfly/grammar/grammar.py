@@ -25,9 +25,8 @@
     needs to use dragonfly grammar classes.
 """
 
-
 #===========================================================================
 # Grammar classes.
 
-from .grammar_base        import Grammar
-from .grammar_connection  import ConnectionGrammar
+from dragonfly.grammar.grammar_base        import Grammar
+from dragonfly.grammar.grammar_connection  import ConnectionGrammar

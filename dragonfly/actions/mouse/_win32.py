@@ -27,7 +27,7 @@ import win32con
 
 from dragonfly.actions.sendinput import (MouseInput, make_input_array,
                                          send_input_array)
-from ._base import BaseButtonEvent, MoveEvent
+from dragonfly.actions.mouse._base import BaseButtonEvent, MoveEvent
 
 
 #---------------------------------------------------------------------------

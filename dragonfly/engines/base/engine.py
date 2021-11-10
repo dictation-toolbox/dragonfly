@@ -25,8 +25,8 @@ EngineBase class
 """
 
 import logging
-from .timer import Timer
 
+from dragonfly.engines.base.timer import Timer
 import dragonfly.engines
 
 

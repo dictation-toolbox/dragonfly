@@ -18,24 +18,25 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import sys
 import os
+import sys
+
 
 # Windows
 if sys.platform.startswith("win"):
-    from .win32_monitor import Win32Monitor as Monitor
+    from dragonfly.windows.win32_monitor  import Win32Monitor as Monitor
 
 # Mac OS
 elif sys.platform == "darwin":
-    from .darwin_monitor import DarwinMonitor as Monitor
+    from dragonfly.windows.darwin_monitor import DarwinMonitor as Monitor
 
 # Linux/X11
 elif os.environ.get("XDG_SESSION_TYPE") == "x11":
-    from .x11_monitor import X11Monitor as Monitor
+    from dragonfly.windows.x11_monitor    import X11Monitor as Monitor
 
 # Unsupported
 else:
-    from .base_monitor import FakeMonitor as Monitor
+    from dragonfly.windows.base_monitor   import FakeMonitor as Monitor
 
 
 class MonitorList(object):

@@ -34,20 +34,21 @@ import os.path
 import pywintypes
 import sys
 import time
-from datetime import datetime
-from locale import getpreferredencoding
-from threading import Thread, Event
+from datetime   import datetime
+from locale     import getpreferredencoding
+from threading  import Thread, Event
 
 from six import text_type, binary_type, string_types, PY2
 
-from ..base        import (EngineBase, EngineError, MimicFailure,
-                           GrammarWrapperBase)
-from .compiler     import NatlinkCompiler
-from .dictation    import NatlinkDictationContainer
-from .recobs       import NatlinkRecObsManager
-from .timer        import NatlinkTimerManager
-import dragonfly.grammar.elements as elements_
-import dragonfly.grammar.state as state_
+from dragonfly.grammar       import elements as elements_, state as state_
+from dragonfly.engines.base  import (EngineBase, EngineError, MimicFailure,
+                                    GrammarWrapperBase)
+from dragonfly.engines.backend_natlink.compiler   import NatlinkCompiler
+from dragonfly.engines.backend_natlink.dictation  import \
+    NatlinkDictationContainer
+from dragonfly.engines.backend_natlink.recobs     import \
+    NatlinkRecObsManager
+from dragonfly.engines.backend_natlink.timer      import NatlinkTimerManager
 
 
 # ---------------------------------------------------------------------------

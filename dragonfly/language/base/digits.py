@@ -24,8 +24,9 @@ elements.
 
 """
 
-from ..loader             import language
-from ...grammar.elements  import Alternative, Repetition, Compound, RuleWrap
+from dragonfly.language.loader   import language
+from dragonfly.grammar.elements  import (Alternative, Repetition, Compound,
+                                         RuleWrap)
 
 
 #---------------------------------------------------------------------------

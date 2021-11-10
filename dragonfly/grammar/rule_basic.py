@@ -92,11 +92,11 @@ Class reference
 
 """
 
-from six import string_types
+from six                            import string_types
 
-from .rule_base  import Rule
-from .elements   import ElementBase
-from ..actions.action_base import ActionBase
+from dragonfly.grammar.rule_base    import Rule
+from dragonfly.grammar.elements     import ElementBase
+from dragonfly.actions.action_base  import ActionBase
 
 
 class BasicRule(Rule):
