@@ -28,10 +28,10 @@ Currently, this interface can be used on macOS (Darwin) or X11.
 
 import time
 
-from pynput.keyboard                  import Controller, KeyCode, Key
+from pynput.keyboard                   import Controller, KeyCode, Key
 
-from dragonfly.actions.keyboard._base import (BaseKeyboard, BaseTypeable,
-                                              BaseKeySymbols)
+from dragonfly.actions.keyboard._base  import (BaseKeyboard, BaseTypeable,
+                                               BaseKeySymbols)
 
 
 class PynputTypeable(BaseTypeable):
@@ -228,7 +228,7 @@ class DarwinKeySymbols(BasePynputKeySymbols):
 class PynputKeyboard(BaseKeyboard):
     """Static class wrapper around pynput.keyboard."""
 
-    _controller = Controller()
+    _controller = None
 
     @classmethod
     def send_keyboard_events(cls, events):
@@ -245,6 +245,11 @@ class PynputKeyboard(BaseKeyboard):
                     the keyboard event.
 
         """
+        # Initialize the pynput keyboard controller, if necessary.
+        if cls._controller is None:
+            cls._controller = Controller()
+
+        # Send keyboard events.
         cls._log.debug("Keyboard.send_keyboard_events %r", events)
         for event in events:
             (key, down, timeout) = event
