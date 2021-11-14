@@ -31,15 +31,17 @@ from ._base import (EventBase, PauseEvent, MoveEvent, MoveRelativeEvent,
 
 
 # Import the mouse functions and classes for the current platform.
-if sys.platform.startswith("win"):
-    from ._win32 import (
+# Note: X11 is checked first here because it is possible to use on the other
+#  supported platforms.
+if (os.environ.get("XDG_SESSION_TYPE") == "x11" or
+        sys.platform == "darwin"):
+    from ._pynput import (
         ButtonEvent, get_cursor_position, set_cursor_position,
         PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS
     )
 
-elif (os.environ.get("XDG_SESSION_TYPE") == "x11" or
-        sys.platform == "darwin"):
-    from ._pynput import (
+elif sys.platform.startswith("win"):
+    from ._win32 import (
         ButtonEvent, get_cursor_position, set_cursor_position,
         PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS
     )

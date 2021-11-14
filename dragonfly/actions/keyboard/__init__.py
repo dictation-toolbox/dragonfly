@@ -28,22 +28,9 @@ import sys
 # TODO Implement classes for Wayland (XDG_SESSION_TYPE == "wayland").
 
 # Import the keyboard classes for the current platform.
-if sys.platform.startswith("win"):
-    # Import Win32 classes.
-    from ._win32 import (
-        Win32Keyboard as Keyboard,
-        Win32Typeable as Typeable,
-        Win32KeySymbols as KeySymbols
-    )
-
-elif sys.platform == "darwin":
-    from ._pynput import (
-        PynputKeyboard as Keyboard,
-        PynputTypeable as Typeable,
-        DarwinKeySymbols as KeySymbols
-    )
-
-elif os.environ.get("XDG_SESSION_TYPE") == "x11":
+# Note: X11 is checked first here because it is possible to use on the other
+#  supported platforms.
+if os.environ.get("XDG_SESSION_TYPE") == "x11":
     # Import classes for X11.  This is typically used on Unix-like systems.
     # The XDG_SESSION_TYPE environment variable may not be set in some
     #  circumstances, in which case it can be set manually in ~/.profile.
@@ -58,6 +45,21 @@ elif os.environ.get("XDG_SESSION_TYPE") == "x11":
     # The libxdo implementation doesn't work with Python 3, so it is not
     #  used.
     # from ._x11_libxdo import LibxdoKeyboard as Keyboard
+
+elif sys.platform.startswith("win"):
+    # Import Win32 classes.
+    from ._win32 import (
+        Win32Keyboard as Keyboard,
+        Win32Typeable as Typeable,
+        Win32KeySymbols as KeySymbols
+    )
+
+elif sys.platform == "darwin":
+    from ._pynput import (
+        PynputKeyboard as Keyboard,
+        PynputTypeable as Typeable,
+        DarwinKeySymbols as KeySymbols
+    )
 
 else:
     # No keyboard implementation is available. Dragonfly can function

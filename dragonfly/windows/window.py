@@ -28,11 +28,13 @@ import sys
 
 
 # Import the Window class for the current platform.
-if sys.platform.startswith("win"):
-    from dragonfly.windows.win32_window  import Win32Window as Window
-
-elif os.environ.get("XDG_SESSION_TYPE") == "x11":
+# Note: X11 is checked first here because it is possible to use on the other
+#  supported platforms.
+if os.environ.get("XDG_SESSION_TYPE") == "x11":
     from dragonfly.windows.x11_window    import X11Window as Window
+
+elif sys.platform.startswith("win"):
+    from dragonfly.windows.win32_window  import Win32Window as Window
 
 elif sys.platform == "darwin":
     from dragonfly.windows.darwin_window import DarwinWindow as Window

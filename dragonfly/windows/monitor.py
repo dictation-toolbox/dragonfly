@@ -27,14 +27,16 @@ import sys
 
 
 # Import the Monitor class for the current platform.
-if sys.platform.startswith("win"):
+# Note: X11 is checked first here because it is possible to use on the other
+#  supported platforms.
+if os.environ.get("XDG_SESSION_TYPE") == "x11":
+    from dragonfly.windows.x11_monitor     import X11Monitor as Monitor
+
+elif sys.platform.startswith("win"):
     from dragonfly.windows.win32_monitor   import Win32Monitor as Monitor
 
 elif sys.platform == "darwin":
     from dragonfly.windows.darwin_monitor  import DarwinMonitor as Monitor
-
-elif os.environ.get("XDG_SESSION_TYPE") == "x11":
-    from dragonfly.windows.x11_monitor     import X11Monitor as Monitor
 
 else:
     from dragonfly.windows.base_monitor    import FakeMonitor as Monitor
