@@ -18,22 +18,24 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+"""
+This module initializes the system window control and placement interface
+for the current platform.
+"""
+
 import os
 import sys
 
 
-# Windows-specific
+# Import the Window class for the current platform.
 if sys.platform.startswith("win"):
     from dragonfly.windows.win32_window  import Win32Window as Window
 
-# Linux/X11
 elif os.environ.get("XDG_SESSION_TYPE") == "x11":
     from dragonfly.windows.x11_window    import X11Window as Window
 
-# Mac OS
 elif sys.platform == "darwin":
     from dragonfly.windows.darwin_window import DarwinWindow as Window
 
-# Unsupported
 else:
     from dragonfly.windows.fake_window   import FakeWindow as Window

@@ -1,4 +1,10 @@
-from contextlib import contextmanager
+"""
+This module initializes the accessibility controller for the current
+platform.
+"""
+
+import contextlib
+import os
 import sys
 
 from . import controller
@@ -26,7 +32,7 @@ def get_accessibility_controller():
         controller_instance = controller.AccessibilityController(os_controller)
     return controller_instance
 
-@contextmanager
+@contextlib.contextmanager
 def get_stopping_accessibility_controller():
     """Same as :func:`get_accessibility_controller`, but automatically stops when
     used in a `with` context."""

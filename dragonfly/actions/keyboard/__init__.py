@@ -27,6 +27,7 @@ import sys
 
 # TODO Implement classes for Wayland (XDG_SESSION_TYPE == "wayland").
 
+# Import the keyboard classes for the current platform.
 if sys.platform.startswith("win"):
     # Import Win32 classes.
     from ._win32 import (
@@ -39,7 +40,8 @@ elif sys.platform == "darwin":
     from ._pynput import (
         PynputKeyboard as Keyboard,
         PynputTypeable as Typeable,
-        DarwinKeySymbols as KeySymbols)
+        DarwinKeySymbols as KeySymbols
+    )
 
 elif os.environ.get("XDG_SESSION_TYPE") == "x11":
     # Import classes for X11.  This is typically used on Unix-like systems.
@@ -62,9 +64,11 @@ else:
     #  without a keyboard class, so don't raise an error or log any
     #  messages.  Error messages will occur later if and when keyboard
     #  events are sent.
-    from ._base import (BaseKeyboard as Keyboard,
-                        BaseTypeable as Typeable,
-                        MockKeySymbols as KeySymbols)
+    from ._base import (
+        BaseKeyboard as Keyboard,
+        BaseTypeable as Typeable,
+        MockKeySymbols as KeySymbols
+    )
 
 # Initialize a Keyboard instance.
 keyboard = Keyboard()

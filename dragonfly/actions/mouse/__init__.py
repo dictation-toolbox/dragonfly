@@ -38,7 +38,7 @@ if sys.platform.startswith("win"):
     )
 
 elif (os.environ.get("XDG_SESSION_TYPE") == "x11" or
-      sys.platform == "darwin"):
+        sys.platform == "darwin"):
     from ._pynput import (
         ButtonEvent, get_cursor_position, set_cursor_position,
         PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS
