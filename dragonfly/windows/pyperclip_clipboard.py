@@ -79,7 +79,7 @@ class PyperclipClipboard(BaseClipboard):
         # Determine the supported formats.  Copied file paths may be
         #  available to us on X11.
         supported_formats = [self.format_text, self.format_unicode]
-        if os.environ.get("XDG_SESSION_TYPE") == "x11":
+        if os.environ.get("DISPLAY"):
             supported_formats.append(self.format_hdrop)
 
         # Determine which formats to retrieve.

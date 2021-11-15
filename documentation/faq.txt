@@ -621,13 +621,9 @@ get the following error if you are using `Wayland`_ or something else::
 If you see this message, then you will probably need to `switch to X11`_ or
 use something like `ydotool`_ to have keyboard/mouse input work properly.
 
-If you are using X11 and still see this message, then the
-:code:`XDG_SESSION_TYPE` environment variable checked by Dragonfly
-internally is not set to :code:`x11`. This can happen in some circumstances
-and can be fixed by setting the variable manually, e.g. in your
-:code:`~/.profile` file::
-
-  export XDG_SESSION_TYPE=x11
+If you are using X11 and still see this message, then it means that the
+:code:`DISPLAY` environment variable checked by Dragonfly internally is not
+set.
 
 
 .. _RefFAQUnansweredQuestions:

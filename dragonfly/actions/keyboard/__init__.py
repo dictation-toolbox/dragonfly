@@ -25,15 +25,13 @@ This module initializes the keyboard interface for the current platform.
 import os
 import sys
 
-# TODO Implement classes for Wayland (XDG_SESSION_TYPE == "wayland").
-
 # Import the keyboard classes for the current platform.
 # Note: X11 is checked first here because it is possible to use on the other
 #  supported platforms.
-if os.environ.get("XDG_SESSION_TYPE") == "x11":
+if os.environ.get("DISPLAY"):
     # Import classes for X11.  This is typically used on Unix-like systems.
-    # The XDG_SESSION_TYPE environment variable may not be set in some
-    #  circumstances, in which case it can be set manually in ~/.profile.
+    # The DISPLAY environment variable is normally set in an X11 session.
+    #  If it is not, it may be set manually in ~/.profile or equivalent.
     from ._x11_base import (
         X11Typeable as Typeable,
         XdoKeySymbols as KeySymbols
