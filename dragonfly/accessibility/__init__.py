@@ -11,12 +11,17 @@ from . import controller
 
 from .utils import (CursorPosition, TextQuery)
 
-if sys.platform.startswith("win"):
-    from . import ia2
-    os_controller_class = ia2.Controller
-elif sys.platform.startswith("linux"):
+# Import and set the controller class based on the current platform.
+if os.environ.get("DISPLAY"):
+    # Use the AT-SPI controller on X11.
     from . import atspi
     os_controller_class = atspi.Controller
+
+elif sys.platform.startswith("win"):
+    # Use the IAccessible2 controller on Windows.
+    from . import ia2
+    os_controller_class = ia2.Controller
+
 else:
     os_controller_class = None
 
