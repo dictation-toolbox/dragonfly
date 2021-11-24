@@ -63,7 +63,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     _name = "kaldi"
     DictationContainer = DictationContainerBase
-    _required_kag_version = "3.0.0"
+    # NOTE: Remember to also update setup.py to the same version!
+    _required_kag_version = "3.1.0"
 
     #-----------------------------------------------------------------------
 

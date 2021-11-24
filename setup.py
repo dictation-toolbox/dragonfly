@@ -128,7 +128,8 @@ setup(
                      "pyaudio"
                     ],
           "kaldi": [
-                    "kaldi-active-grammar ~= 3.0.0",
+                    # NOTE: Remember to also update engine.py to the same version!
+                    "kaldi-active-grammar ~= 3.1.0",
                     "sounddevice == 0.3.*",
                     "webrtcvad-wheels == 2.0.*",
                    ],
