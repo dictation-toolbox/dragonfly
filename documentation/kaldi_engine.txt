@@ -329,10 +329,16 @@ splitting up the words or using to similar words, e.g. changing
 ``auto_add_to_user_lexicon=True`` to enable. If an unknown word is
 encountered while loading a grammar, its pronunciation is predicted
 based on its spelling. This uses either a local library, or a free cloud
-service if the library is not installed. The library can be installed
-with ``pip install g2p_en==2.0.0`` but has dependencies that can be
-difficult, so it is recommended to just not install it and instead let
-the cloud be used.
+service if the library is not installed.
+
+The local library (*g2p_en*) can be installed by running the following on
+the command line::
+
+  pip install g2p_en==2.0.0
+
+Note that the dependencies for this library can be difficult to install, in
+which case it is recommended to use the cloud service instead. Set the
+engine parameter ``allow_online_pronunciations=True`` to enable it.
 
 **Manually editing User Lexicon:** You can add a word without specifying
 a pronunciation, and let it be predicted as above, by running at the
