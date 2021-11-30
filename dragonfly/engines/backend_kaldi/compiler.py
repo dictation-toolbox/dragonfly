@@ -65,11 +65,12 @@ MockLiteral = collections.namedtuple('MockLiteral', 'words')
 
 class KaldiCompiler(CompilerBase, KaldiAGCompiler):
 
-    def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, lazy_compilation=None, **kwargs):
+    def __init__(self, model_dir, tmp_dir, auto_add_to_user_lexicon=None, allow_online_pronunciations=None, lazy_compilation=None, **kwargs):
         CompilerBase.__init__(self)
         KaldiAGCompiler.__init__(self, model_dir=model_dir, tmp_dir=tmp_dir, **kwargs)
 
         self.auto_add_to_user_lexicon = bool(auto_add_to_user_lexicon)
+        self.allow_online_pronunciations = bool(allow_online_pronunciations)
         self.lazy_compilation = bool(lazy_compilation)
 
         self.kaldi_rule_by_rule_dict = collections.OrderedDict()  # Rule -> KaldiRule
@@ -115,7 +116,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def handle_oov_word(self, word):
         if self.auto_add_to_user_lexicon:
             try:
-                pronunciations = self.add_word(word, lazy_compilation=True)
+                pronunciations = self.add_word(word, lazy_compilation=True, allow_online_pronunciations=self.allow_online_pronunciations)
             except Exception as e:
                 self._log.exception("%s: exception automatically adding word %r" % (self, word))
             else:

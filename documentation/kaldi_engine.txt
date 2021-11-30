@@ -168,6 +168,7 @@ the ``get_engine()`` function, which passes them to the
     vad_padding_end_ms=200,
     vad_complex_padding_end_ms=600,
     auto_add_to_user_lexicon=True,
+    allow_online_pronunciations=False,
     lazy_compilation=True,
     invalidate_cache=False,
     expected_error_rate_threshold=None,
@@ -266,9 +267,13 @@ The engine can also be configured via the :ref:`command-line interface
   quality.
 
 * ``auto_add_to_user_lexicon`` (``bool``) -- Enables automatically
-  adding unknown words to the `User Lexicon`_. This may make requests to
-  a cloud service, to predict pronunciations, depending on your installed
-  packages.
+  adding unknown words to the `User Lexicon`_. This will only work if you have
+  additional required packages installed. This will only work locally, unless
+  you also enable ``allow_online_pronunciations``.
+
+* ``allow_online_pronunciations`` (``bool``) -- Enables online
+  pronunciation generation for unknown words, if you have also enabled
+  ``auto_add_to_user_lexicon``, and you have the required packages installed.
 
 * ``lazy_compilation`` (``bool``) -- Enables deferred grammar/rule
   compilation, which then allows parallel compilation up to your number
@@ -324,10 +329,16 @@ splitting up the words or using to similar words, e.g. changing
 ``auto_add_to_user_lexicon=True`` to enable. If an unknown word is
 encountered while loading a grammar, its pronunciation is predicted
 based on its spelling. This uses either a local library, or a free cloud
-service if the library is not installed. The library can be installed
-with ``pip install g2p_en==2.0.0`` but has dependencies that can be
-difficult, so it is recommended to just not install it and instead let
-the cloud be used.
+service if the library is not installed.
+
+The local library (*g2p_en*) can be installed by running the following on
+the command line::
+
+  pip install g2p_en==2.0.0
+
+Note that the dependencies for this library can be difficult to install, in
+which case it is recommended to use the cloud service instead. Set the
+engine parameter ``allow_online_pronunciations=True`` to enable it.
 
 **Manually editing User Lexicon:** You can add a word without specifying
 a pronunciation, and let it be predicted as above, by running at the
