@@ -31,12 +31,6 @@ from dragonfly.engines import get_engine
 
 
 class _Timer(object):
-    """
-    This class is **deprecated** and will be removed in a future release.
-
-    Please use the :meth:`engine.create_timer` method instead.
-
-    """
 
     _log = logging.getLogger("timer")
 
@@ -58,8 +52,6 @@ class _Timer(object):
     def __init__(self, interval):
         self.interval = interval
         self.callbacks = []
-        self._log.warning("Dragonfly's _Timer class has been deprecated. "
-                          "Please use engine.create_timer() instead.")
 
     def add_callback(self, function, interval):
         t = get_engine().create_timer(function, interval)

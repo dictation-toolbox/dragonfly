@@ -28,9 +28,9 @@ import io
 import os
 from os.path import basename
 
-from .action_base  import DynStrActionBase
-from .keyboard     import Keyboard
-from .typeables    import typeables
+from dragonfly.actions.action_base import DynStrActionBase
+from dragonfly.actions.keyboard    import Keyboard
+from dragonfly.actions.typeables   import typeables
 
 _CONFIG_LOADED = False
 UNICODE_KEYBOARD = False

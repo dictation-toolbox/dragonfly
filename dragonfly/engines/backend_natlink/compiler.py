@@ -26,12 +26,12 @@
 #---------------------------------------------------------------------------
 
 import struct
-from six import string_types, text_type
-from locale import getpreferredencoding
+from six     import string_types, text_type
+from locale  import getpreferredencoding
 
-from ..base import CompilerBase, CompilerError
+from dragonfly.grammar       import elements as elements_
+from dragonfly.engines.base  import CompilerBase, CompilerError
 
-import dragonfly.grammar.elements as elements_
 
 
 #===========================================================================

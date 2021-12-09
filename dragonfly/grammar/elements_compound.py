@@ -51,10 +51,11 @@ import locale
 import logging
 import re
 
-from six import string_types, binary_type
+from six                               import string_types, binary_type
 
-from dragonfly.grammar.elements_basic import Alternative, ElementBase
-from dragonfly.parsing.parse import spec_parser, CompoundTransformer, ParseError
+from dragonfly.grammar.elements_basic  import Alternative, ElementBase
+from dragonfly.parsing.parse           import (spec_parser, ParseError,
+                                              CompoundTransformer)
 
 #---------------------------------------------------------------------------
 # The Compound class.

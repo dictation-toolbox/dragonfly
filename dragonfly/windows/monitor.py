@@ -18,24 +18,28 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import sys
+"""
+This module initializes the monitor interface for the current platform.
+"""
+
 import os
+import sys
 
-# Windows
-if sys.platform.startswith("win"):
-    from .win32_monitor import Win32Monitor as Monitor
 
-# Mac OS
+# Import the Monitor class for the current platform.
+# Note: X11 is checked first here because it is possible to use on the other
+#  supported platforms.
+if os.environ.get("DISPLAY"):
+    from dragonfly.windows.x11_monitor     import X11Monitor as Monitor
+
+elif sys.platform.startswith("win"):
+    from dragonfly.windows.win32_monitor   import Win32Monitor as Monitor
+
 elif sys.platform == "darwin":
-    from .darwin_monitor import DarwinMonitor as Monitor
+    from dragonfly.windows.darwin_monitor  import DarwinMonitor as Monitor
 
-# Linux/X11
-elif os.environ.get("XDG_SESSION_TYPE") == "x11":
-    from .x11_monitor import X11Monitor as Monitor
-
-# Unsupported
 else:
-    from .base_monitor import FakeMonitor as Monitor
+    from dragonfly.windows.base_monitor    import FakeMonitor as Monitor
 
 
 class MonitorList(object):

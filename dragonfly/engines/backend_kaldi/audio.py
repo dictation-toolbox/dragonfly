@@ -31,7 +31,7 @@ from six.moves import queue, range
 import sounddevice
 import webrtcvad
 
-from ..base import EngineError
+from dragonfly.engines.base import EngineError
 
 _log = logging.getLogger("engine")
 

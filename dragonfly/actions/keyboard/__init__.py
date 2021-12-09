@@ -25,26 +25,13 @@ This module initializes the keyboard interface for the current platform.
 import os
 import sys
 
-# TODO Implement classes for Wayland (XDG_SESSION_TYPE == "wayland").
-
-if sys.platform.startswith("win"):
-    # Import Win32 classes.
-    from ._win32 import (
-        Win32Keyboard as Keyboard,
-        Win32Typeable as Typeable,
-        Win32KeySymbols as KeySymbols
-    )
-
-elif sys.platform == "darwin":
-    from ._pynput import (
-        PynputKeyboard as Keyboard,
-        PynputTypeable as Typeable,
-        DarwinKeySymbols as KeySymbols)
-
-elif os.environ.get("XDG_SESSION_TYPE") == "x11":
+# Import the keyboard classes for the current platform.
+# Note: X11 is checked first here because it is possible to use on the other
+#  supported platforms.
+if os.environ.get("DISPLAY"):
     # Import classes for X11.  This is typically used on Unix-like systems.
-    # The XDG_SESSION_TYPE environment variable may not be set in some
-    #  circumstances, in which case it can be set manually in ~/.profile.
+    # The DISPLAY environment variable is normally set in an X11 session.
+    #  If it is not, it may be set manually in ~/.profile or equivalent.
     from ._x11_base import (
         X11Typeable as Typeable,
         XdoKeySymbols as KeySymbols
@@ -57,14 +44,31 @@ elif os.environ.get("XDG_SESSION_TYPE") == "x11":
     #  used.
     # from ._x11_libxdo import LibxdoKeyboard as Keyboard
 
+elif sys.platform.startswith("win"):
+    # Import Win32 classes.
+    from ._win32 import (
+        Win32Keyboard as Keyboard,
+        Win32Typeable as Typeable,
+        Win32KeySymbols as KeySymbols
+    )
+
+elif sys.platform == "darwin":
+    from ._pynput import (
+        PynputKeyboard as Keyboard,
+        PynputTypeable as Typeable,
+        DarwinKeySymbols as KeySymbols
+    )
+
 else:
     # No keyboard implementation is available. Dragonfly can function
     #  without a keyboard class, so don't raise an error or log any
     #  messages.  Error messages will occur later if and when keyboard
     #  events are sent.
-    from ._base import (BaseKeyboard as Keyboard,
-                        BaseTypeable as Typeable,
-                        MockKeySymbols as KeySymbols)
+    from ._base import (
+        BaseKeyboard as Keyboard,
+        BaseTypeable as Typeable,
+        MockKeySymbols as KeySymbols
+    )
 
 # Initialize a Keyboard instance.
 keyboard = Keyboard()

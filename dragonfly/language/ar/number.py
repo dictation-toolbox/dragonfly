@@ -25,9 +25,11 @@ Arabic (ar) language implementations of Integer and Digits classes
 
 """
 
-from ..base.integer_internal  import (MapIntBuilder, CollectionIntBuilder,
-                                      MagnitudeIntBuilder, IntegerContentBase)
-from ..base.digits_internal   import DigitsContentBase
+from dragonfly.language.base.integer_internal  import (MapIntBuilder,
+                                                       CollectionIntBuilder,
+                                                       MagnitudeIntBuilder,
+                                                       IntegerContentBase)
+from dragonfly.language.base.digits_internal   import DigitsContentBase
 
 
 #---------------------------------------------------------------------------

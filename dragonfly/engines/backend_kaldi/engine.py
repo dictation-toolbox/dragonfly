@@ -24,30 +24,33 @@ Kaldi engine classes
 
 import collections, logging, os, sys, time
 
-from packaging.version import Version
-from six import string_types, print_, reraise
-from six.moves import zip
 import kaldi_active_grammar
-from kaldi_active_grammar       import KaldiError, KaldiRule
+from packaging.version     import Version
+from six                   import string_types, print_, reraise
+from six.moves             import zip
+from kaldi_active_grammar  import KaldiError, KaldiRule
 
-from ..base                     import (EngineBase,
-                                        EngineError,
-                                        MimicFailure,
-                                        DelegateTimerManager,
-                                        DelegateTimerManagerInterface,
-                                        DictationContainerBase,
-                                        GrammarWrapperBase)
-from .audio                     import MicAudio, VADAudio, AudioStore, WavAudio
-from .dictation                 import user_dictation_list, user_dictation_dictlist
-from .recobs                    import KaldiRecObsManager
-from .testing                   import debug_timer
-from dragonfly.grammar.state    import State
-from dragonfly.windows          import Window
+from dragonfly.grammar.state   import State
+from dragonfly.windows.window  import Window
+from dragonfly.engines.base    import (EngineBase,
+                                       EngineError,
+                                       MimicFailure,
+                                       DelegateTimerManager,
+                                       DelegateTimerManagerInterface,
+                                       DictationContainerBase,
+                                       GrammarWrapperBase)
+from dragonfly.engines.backend_kaldi.audio      import (MicAudio, VADAudio,
+                                                        AudioStore,
+                                                        WavAudio)
+from dragonfly.engines.backend_kaldi.dictation  import (user_dictation_list,
+                                                        user_dictation_dictlist)
+from dragonfly.engines.backend_kaldi.recobs     import KaldiRecObsManager
+from dragonfly.engines.backend_kaldi.testing    import debug_timer
 
 # Import the Kaldi compiler class. Suppress metaclass TypeErrors raised
 # during documentation builds caused by mocking KAG.
 try:
-    from .compiler                  import KaldiCompiler
+    from dragonfly.engines.backend_kaldi.compiler import KaldiCompiler
 except TypeError:
     if os.environ.get("SPHINX_BUILD_RUNNING"):
         KaldiCompiler = None

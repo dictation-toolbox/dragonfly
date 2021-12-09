@@ -22,8 +22,9 @@
 """
 
 import unittest
-from .rule_test_grammar     import RuleTestGrammar
-from ..engines              import get_engine
+
+from dragonfly.engines                 import get_engine
+from dragonfly.test.rule_test_grammar  import RuleTestGrammar
 
 
 #===========================================================================

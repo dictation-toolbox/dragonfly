@@ -1,4 +1,4 @@
-# This file is part of Aenea
+# This file was part of Aenea
 #
 # Aenea is free software: you can redistribute it and/or modify it under
 # the terms of version 3 of the GNU Lesser General Public License as
@@ -26,19 +26,19 @@ Window class for X11
 # pylint: disable=W0622
 # Suppress warnings about redefining the built-in 'id' function.
 
-from __future__ import print_function
+from __future__                    import print_function
 
 import locale
 import logging
 import os
-from subprocess import Popen, PIPE
+from subprocess                    import Popen, PIPE
 import sys
 
 import psutil
-from six import binary_type
+from six                           import binary_type
 
-from .base_window import BaseWindow
-from .rectangle import Rectangle
+from dragonfly.windows.base_window import BaseWindow
+from dragonfly.windows.rectangle   import Rectangle
 
 
 class X11Window(BaseWindow):

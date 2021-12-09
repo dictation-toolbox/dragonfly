@@ -24,7 +24,7 @@ elements.
 
 """
 
-from ...grammar.elements  import Alternative, Repetition, Compound
+from dragonfly.grammar.elements  import Alternative, Repetition, Compound
 
 
 #---------------------------------------------------------------------------

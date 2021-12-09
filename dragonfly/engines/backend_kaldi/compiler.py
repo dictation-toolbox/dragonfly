@@ -24,17 +24,17 @@ Compiler classes for Kaldi backend
 
 import collections, types
 
-from .dictation                 import AlternativeDictation, DefaultDictation, UserDictation
-from ..base                     import CompilerBase, CompilerError
-from ...grammar                 import elements as elements_
-
-from kaldi_active_grammar import WFST, KaldiRule
-from kaldi_active_grammar import Compiler as KaldiAGCompiler
-
 import six
-from six import text_type
-from six.moves import map, range
+from kaldi_active_grammar  import WFST, KaldiRule
+from kaldi_active_grammar  import Compiler as KaldiAGCompiler
+from six                   import text_type
+from six.moves             import map, range
 
+from dragonfly.grammar       import elements as elements_
+from dragonfly.engines.base  import CompilerBase, CompilerError
+from dragonfly.engines.backend_kaldi.dictation import (AlternativeDictation,
+                                                       DefaultDictation,
+                                                       UserDictation)
 
 #---------------------------------------------------------------------------
 # Utilities

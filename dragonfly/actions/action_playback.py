@@ -49,9 +49,10 @@ Class reference
 
 """
 
-from time              import sleep
-from .action_base      import ActionBase, ActionError
-from ..engines         import get_engine
+from time                          import sleep
+
+from dragonfly.actions.action_base import ActionBase, ActionError
+from dragonfly.engines             import get_engine
 
 
 #---------------------------------------------------------------------------

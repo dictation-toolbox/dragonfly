@@ -101,8 +101,8 @@ distributions, you can get them by running::
 
   sudo apt install wmctrl xdotool xsel
 
-You may also need to manually set the ``XDG_SESSION_TYPE`` environment
-variable to ``x11``.
+You may also need to manually set the ``DISPLAY`` environment
+variable.
 
 Once the dependencies and model are installed, you're ready to go!
 

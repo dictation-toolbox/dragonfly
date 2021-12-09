@@ -25,14 +25,14 @@ Grammar class
 """
 
 import logging
-from six import string_types
 
-from ..engines         import get_engine
-from .rule_base        import Rule
-from .list             import ListBase
-from .context          import Context
-from ..error           import GrammarError
+from six                          import string_types
 
+from dragonfly.engines            import get_engine
+from dragonfly.grammar.rule_base  import Rule
+from dragonfly.grammar.list       import ListBase
+from dragonfly.grammar.context    import Context
+from dragonfly.error              import GrammarError
 
 # --------------------------------------------------------------------------
 

@@ -24,10 +24,10 @@ elements.
 
 """
 
-from ..loader            import language
-from ...grammar.elements import (Alternative, Sequence, Optional,
-                                 Compound, ListRef, RuleWrap)
-from ...grammar.list     import  List
+from dragonfly.language.loader   import language
+from dragonfly.grammar.elements  import (Alternative, Sequence, Optional,
+                                         Compound, ListRef, RuleWrap)
+from dragonfly.grammar.list      import  List
 
 
 #---------------------------------------------------------------------------

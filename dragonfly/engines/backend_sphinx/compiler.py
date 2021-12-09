@@ -25,10 +25,10 @@ recognition engine.
 
 import jsgf
 import jsgf.ext
-from dragonfly import List, DictList
-import dragonfly.grammar.elements as elements_
 
-from ..base import CompilerBase, CompilerError
+from dragonfly.grammar       import elements as elements_
+from dragonfly.grammar.list  import List, DictList
+from dragonfly.engines.base  import CompilerBase, CompilerError
 
 # noinspection PyUnusedLocal
 

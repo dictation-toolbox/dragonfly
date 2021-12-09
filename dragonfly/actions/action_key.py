@@ -32,8 +32,8 @@ Examples of how to use this class are given in :ref:`RefKeySpecExamples`.
 
 To use this class on X11/Linux, the
 `xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
-installed and the ``XDG_SESSION_TYPE`` environment variable set to ``x11``.
-This class does **not** support typing keys in Wayland sessions.
+installed and the ``DISPLAY`` environment variable set.  This class does
+**not** support typing keys in Wayland sessions.
 
 .. _RefKeySpec:
 
@@ -284,9 +284,9 @@ Key class reference
 
 import collections
 
-from .action_base           import ActionError
-from .action_base_keyboard  import BaseKeyboardAction
-from .typeables             import typeables
+from dragonfly.actions.action_base          import ActionError
+from dragonfly.actions.action_base_keyboard import BaseKeyboardAction
+from dragonfly.actions.typeables            import typeables
 
 #---------------------------------------------------------------------------
 

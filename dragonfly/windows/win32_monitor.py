@@ -26,8 +26,8 @@ import logging
 
 import win32api
 
-from .base_monitor import BaseMonitor
-from .rectangle import Rectangle
+from dragonfly.windows.base_monitor import BaseMonitor
+from dragonfly.windows.rectangle    import Rectangle
 
 # Force the current process to be DPI aware. This will ensure that the
 # resolution is reported properly even when DPI scaling is on. This appears to

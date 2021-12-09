@@ -1,4 +1,4 @@
-# This file is part of Aenea
+# This file was part of Aenea
 #
 # Aenea is free software: you can redistribute it and/or modify it under
 # the terms of version 3 of the GNU Lesser General Public License as
@@ -21,7 +21,7 @@ Heavily modified to allow more dragonfly functionality to work
 regardless of operating system.
 """
 
-from .actions import ActionBase
+from dragonfly.actions.action_base import ActionBase
 
 
 class MockBase(object):

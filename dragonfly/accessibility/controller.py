@@ -1,13 +1,8 @@
-from six import text_type
+from six                      import text_type
 
-from dragonfly import (
-    Key,
-    Mouse,
-    Text,
-)
-
-from . import base
-from . import utils
+from dragonfly.actions        import Key, Mouse, Text
+from dragonfly.accessibility  import base
+from dragonfly.accessibility  import utils
 
 
 class AccessibilityController(object):

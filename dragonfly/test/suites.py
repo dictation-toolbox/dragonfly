@@ -58,7 +58,7 @@ desktop = (
     # Windows
     os.name == "nt" or
     # X11
-    os.environ.get("XDG_SESSION_TYPE") == "x11" or
+    os.environ.get("DISPLAY") or
     # macOS
     sys.platform == "darwin"
 )

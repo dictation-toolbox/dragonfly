@@ -25,11 +25,12 @@ Tools for testing element classes
 """
 
 import logging
-from six import string_types
 
-from dragonfly              import *
-from ..test                 import TestError, RecognitionFailure
-from ..test.infrastructure  import Unique
+from six                            import string_types
+
+from dragonfly                      import *
+from dragonfly.test                 import TestError, RecognitionFailure
+from dragonfly.test.infrastructure  import Unique
 
 
 #===========================================================================

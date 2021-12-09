@@ -4,7 +4,7 @@ Accessibility API
 
 The accessibility API enables text selection and editing more powerful than
 what Dragon provides natively, to a wider range of applications (e.g. Google
-Chrome on Windows and Mozilla Firefox on Windows and Linux). It is currently
+Chrome on Windows and Mozilla Firefox on Windows and X11). It is currently
 in Beta and the API may change at any time.
 
 Windows
@@ -16,10 +16,10 @@ you may also need to register an additional 64-bit IAccessible2 DLL which
 can be obtained `here
 <https://github.com/ThePacielloGroup/aviewer/blob/Develop/package/IAccessible2Proxy64bit.dll>`__.
 
-Linux
+X11 (Linux)
 ----------------------------------------------------------------------------
 
-To use this on Linux, you will need to install the Python library
+To use this on X11, you will need to install the Python library
 `pyatspi <https://github.com/GNOME/pyatspi2>`__.
 You can typically get this from your distribution's package manager. See
 this `stack overflow question
@@ -50,14 +50,10 @@ problems with the accessibility stack::
   cd check-a11y
   ./troubleshoot
 
-Most functionality works properly on Linux, except for a few known issues:
+Most functionality works properly on X11, except for a few known issues:
 
 * Text selection occasionally requires use of the Mouse action due to
-  limitations of the text selection API. The Mouse action is not yet
-  implemented on Linux, so this will sometimes silently fail.
-
-* Firefox has been tested successfully on Ubuntu 18.04 and Debian 10 with
-  default configuration.
+  limitations of the text selection API.
 
 * LibreOffice treats each paragraph as a separate focusable element, so
   movement between paragraphs is not yet supported.

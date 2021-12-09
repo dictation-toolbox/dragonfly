@@ -28,10 +28,10 @@ and should work on Windows, Mac OS and Linux-based operating systems.
 
 import os
 
-from six import integer_types
+from six                              import integer_types
 import pyperclip
 
-from .base_clipboard import BaseClipboard
+from dragonfly.windows.base_clipboard import BaseClipboard
 
 
 class PyperclipClipboard(BaseClipboard):
@@ -79,7 +79,7 @@ class PyperclipClipboard(BaseClipboard):
         # Determine the supported formats.  Copied file paths may be
         #  available to us on X11.
         supported_formats = [self.format_text, self.format_unicode]
-        if os.environ.get("XDG_SESSION_TYPE") == "x11":
+        if os.environ.get("DISPLAY"):
             supported_formats.append(self.format_hdrop)
 
         # Determine which formats to retrieve.

@@ -27,22 +27,24 @@ import locale
 import os
 import wave
 
-from six import binary_type, text_type, string_types, PY2
-from jsgf import RootGrammar, PublicRule, Literal
-from sphinxwrapper import PocketSphinx
+from six            import binary_type, text_type, string_types, PY2
+from jsgf           import RootGrammar, PublicRule, Literal
+from sphinxwrapper  import PocketSphinx
 
-from dragonfly import Window
-from ..base import (EngineBase, EngineError, MimicFailure,
-                    DelegateTimerManagerInterface,
-                    DictationContainerBase)
-from .compiler import SphinxJSGFCompiler
-from .grammar_wrapper import GrammarWrapper
-from .misc import (EngineConfig, WaveRecognitionObserver,
-                   get_decoder_config_object)
-from .recobs import SphinxRecObsManager
-from .recording import PyAudioRecorder
-from .timer import SphinxTimerManager
-from .training import write_training_data, write_transcript_files
+from dragonfly.windows.window                         import Window
+from dragonfly.engines.base                           import (EngineBase, EngineError, MimicFailure,
+                                                              DelegateTimerManagerInterface,
+                                                              DictationContainerBase)
+from dragonfly.engines.backend_sphinx.compiler         import SphinxJSGFCompiler
+from dragonfly.engines.backend_sphinx.grammar_wrapper  import GrammarWrapper
+from dragonfly.engines.backend_sphinx.misc             import (EngineConfig,
+                                                               WaveRecognitionObserver,
+                                                               get_decoder_config_object)
+from dragonfly.engines.backend_sphinx.recobs           import SphinxRecObsManager
+from dragonfly.engines.backend_sphinx.recording        import PyAudioRecorder
+from dragonfly.engines.backend_sphinx.timer            import SphinxTimerManager
+from dragonfly.engines.backend_sphinx.training         import (write_training_data,
+                                                               write_transcript_files)
 
 
 class UnknownWordError(Exception):

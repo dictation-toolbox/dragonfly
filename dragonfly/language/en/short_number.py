@@ -39,9 +39,18 @@ The class works in the same way as :class:`IntegerRef`, by adding the following 
    ShortIntegerRef("name", 0, 1000),
 '''
 
-from ..base.integer_internal  import (MapIntBuilder, CollectionIntBuilder,
-                                      MagnitudeIntBuilder, IntegerContentBase)
-from .number import int_0, int_1_9, int_10_19, int_and_1_99, int_20_90_10, int_100s, int_1000000s
+from dragonfly.language.base.integer_internal  import (CollectionIntBuilder,
+                                                       MagnitudeIntBuilder,
+                                                       IntegerContentBase)
+from dragonfly.language.en.number              import (int_0, int_1_9,
+                                                       int_10_19,
+                                                       int_and_1_99,
+                                                       int_20_90_10,
+                                                       int_100s,
+                                                       int_1000000s)
+
+
+#---------------------------------------------------------------------------
 
 # Twenty five
 int_20_99       = MagnitudeIntBuilder(

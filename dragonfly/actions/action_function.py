@@ -87,7 +87,7 @@ import inspect
 
 import six
 
-from dragonfly.actions.action_base      import ActionBase, ActionError
+from dragonfly.actions.action_base import ActionBase, ActionError
 
 
 #---------------------------------------------------------------------------

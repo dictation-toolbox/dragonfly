@@ -21,7 +21,7 @@
 import time
 
 from dragonfly.actions.action_base import ActionError
-from dragonfly.windows import monitors
+from dragonfly.windows.monitor     import monitors
 
 
 #---------------------------------------------------------------------------
@@ -92,10 +92,9 @@ class EventBase(object):
 
 class MoveEvent(EventBase):
 
-    # Set the event delegate. This allows us to set platform-specific
-    # functions for getting and setting the cursor position without having
-    # to do a lot of sub-classing for no good reason.
-    delegate = MoveEventDelegate()
+    # Set the delegate for getting and setting the cursor position.  Each
+    #  mouse implementation must override this.
+    delegate = MoveEventDelegate
 
     def __init__(self, from_left, horizontal, from_top, vertical):
         self.from_left = from_left

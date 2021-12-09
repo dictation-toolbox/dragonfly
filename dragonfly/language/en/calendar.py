@@ -24,9 +24,10 @@ Date and time elements for the English language
 
 """
 
-from datetime import date, time, timedelta
-from ...grammar.elements  import Alternative, Compound, Choice
-from ..base.integer       import Integer, IntegerRef
+from datetime                         import date, time, timedelta
+
+from dragonfly.grammar.elements       import Alternative, Compound, Choice
+from dragonfly.language.base.integer  import Integer, IntegerRef
 
 
 #---------------------------------------------------------------------------

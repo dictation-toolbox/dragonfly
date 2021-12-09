@@ -30,15 +30,15 @@ Window class for Windows
 # pylint: disable=E0213,E1120,W0212
 # Suppress warnings about _win32gui_func() lambdas and protected access.
 
-from ctypes          import windll, pointer, c_wchar, c_ulong
+from ctypes                        import windll, pointer, c_wchar, c_ulong
 
 import win32api
 import win32con
 import win32gui
 
-from .base_window    import BaseWindow
-from .rectangle      import Rectangle
-from ..actions.action_key import Key
+from dragonfly.windows.base_window import BaseWindow
+from dragonfly.windows.rectangle   import Rectangle
+from dragonfly.actions.action_key  import Key
 
 
 #===========================================================================

@@ -31,27 +31,27 @@ import logging
 import time
 import os.path
 
-from datetime import datetime
-from ctypes import Structure, c_long, c_int, c_uint, pointer
-from six import string_types, integer_types
-
 import pythoncom
+from datetime         import datetime
+from ctypes           import Structure, c_long, c_int, c_uint, pointer
+from ctypes           import windll, WinError, WINFUNCTYPE
+from ctypes.wintypes  import DWORD, HANDLE, HWND, LONG
+
 import win32con
+from six                       import string_types, integer_types
 from win32com.client           import Dispatch, getevents, constants
 from win32com.client.gencache  import EnsureDispatch
-from ctypes import windll, WinError, WINFUNCTYPE
-from ctypes.wintypes import DWORD, HANDLE, HWND, LONG
 
-from ..base                    import (EngineBase, EngineError,
+from dragonfly.grammar.state   import State
+from dragonfly.grammar.recobs  import RecognitionObserver
+from dragonfly.windows.window  import Window
+from dragonfly.engines.base    import (EngineBase, EngineError,
                                        MimicFailure, DelegateTimerManager,
                                        DelegateTimerManagerInterface,
                                        DictationContainerBase,
                                        GrammarWrapperBase)
-from .compiler                 import Sapi5Compiler
-from .recobs                   import Sapi5RecObsManager
-from ...grammar.state          import State
-from ...grammar.recobs         import RecognitionObserver
-from ...windows.window         import Window
+from dragonfly.engines.backend_sapi5.compiler  import Sapi5Compiler
+from dragonfly.engines.backend_sapi5.recobs    import Sapi5RecObsManager
 
 
 #===========================================================================
@@ -366,17 +366,23 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         win_event_proc = WinEventProcType(callback)
         windll.user32.SetWinEventHook.restype = HANDLE
 
-        [set_hook(win_event_proc, et) for et in
-         {win32con.EVENT_SYSTEM_FOREGROUND,
-          win32con.EVENT_OBJECT_NAMECHANGE, }]
+        events = {win32con.EVENT_SYSTEM_FOREGROUND,
+                  win32con.EVENT_OBJECT_NAMECHANGE}
+        hook_ids = [set_hook(win_event_proc, event) for event in events]
 
         # Recognize speech, call timer functions and handle window change
         # events in a loop. Stop on disconnect().
         self.speak('beginning loop!')
-        while self._recognizer is not None:
-            pythoncom.PumpWaitingMessages()
-            self.call_timer_callback()
-            time.sleep(0.005)
+        try:
+            while self._recognizer is not None:
+                pythoncom.PumpWaitingMessages()
+                self.call_timer_callback()
+                time.sleep(0.005)
+        finally:
+            # Unregister event hooks.
+            for hook_id in hook_ids:
+                windll.user32.UnhookWinEvent(hook_id)
+
 
 #---------------------------------------------------------------------------
 # Make the shared engine available as Sapi5Engine, for backwards

@@ -66,11 +66,13 @@ Built-in RPC methods
 
 """
 
-from six import string_types
+from six                              import string_types
 
-from dragonfly.grammar.recobs import RecognitionHistory
-from .. import get_engine, CompoundRule, MappingRule
-from ..engines.base import MimicFailure
+from dragonfly.engines                import get_engine
+from dragonfly.engines.base           import MimicFailure
+from dragonfly.grammar.recobs         import RecognitionHistory
+from dragonfly.grammar.rule_compound  import CompoundRule
+from dragonfly.grammar.rule_mapping   import MappingRule
 
 
 methods = []

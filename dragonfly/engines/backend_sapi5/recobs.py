@@ -24,10 +24,10 @@ Recognition observer class for the SAPI 5 engine
 
 """
 
-from ..base                import RecObsManagerBase
-from ...grammar.grammar    import Grammar
-from ...grammar.rule_base  import Rule
-from ...grammar.elements   import Impossible
+from dragonfly.engines.base       import RecObsManagerBase
+from dragonfly.grammar.grammar    import Grammar
+from dragonfly.grammar.rule_base  import Rule
+from dragonfly.grammar.elements   import Impossible
 
 
 #---------------------------------------------------------------------------

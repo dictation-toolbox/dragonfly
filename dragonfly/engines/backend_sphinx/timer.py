@@ -25,7 +25,7 @@ Multiplexing interface for the CMU Pocket Sphinx engine
 
 """
 
-from ..base import DelegateTimerManager
+from dragonfly.engines.base import DelegateTimerManager
 
 
 class SphinxTimerManager(DelegateTimerManager):

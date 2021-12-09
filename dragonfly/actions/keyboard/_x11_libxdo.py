@@ -24,7 +24,8 @@ import time
 import xdo
 import Xlib.display
 
-from ._x11_base import BaseX11Keyboard, KEY_TRANSLATION
+from dragonfly.actions.keyboard._x11_base import (BaseX11Keyboard,
+                                                  KEY_TRANSLATION)
 
 
 class LibxdoKeyboard(BaseX11Keyboard):

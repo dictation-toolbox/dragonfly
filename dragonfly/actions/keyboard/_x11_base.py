@@ -19,10 +19,12 @@
 
 # pylint: disable=abstract-method
 
-from locale import getpreferredencoding
+from locale                           import getpreferredencoding
 
-from six import binary_type
-from ._base import BaseKeyboard, BaseTypeable, BaseKeySymbols
+from six                              import binary_type
+
+from dragonfly.actions.keyboard._base import (BaseKeyboard, BaseTypeable,
+                                              BaseKeySymbols)
 
 
 KEY_TRANSLATION = {

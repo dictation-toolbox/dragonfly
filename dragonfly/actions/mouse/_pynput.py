@@ -18,23 +18,35 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-from pynput.mouse import Controller, Button
+from pynput.mouse                   import Controller, Button
 
-from ._base import BaseButtonEvent, MoveEvent
+from dragonfly.actions.mouse._base  import BaseButtonEvent, MoveEvent
 
 
-# Initialise a pynput mouse controller.
-_controller = Controller()
+_controller = None
+
+def _init_controller():
+    global _controller
+    if _controller is None:
+        _controller = Controller()
 
 
 #---------------------------------------------------------------------------
 # Functions and event delegate for getting and setting the cursor position.
 
 def get_cursor_position():
+    # Initialize the pynput mouse controller, if necessary.
+    _init_controller()
+
+    # Return the cursor position.
     return _controller.position
 
 
 def set_cursor_position(x, y):
+    # Initialize the pynput mouse controller, if necessary.
+    _init_controller()
+
+    # Set the cursor position.
     _controller.position = (x, y)
     return True
 
@@ -50,10 +62,8 @@ class MoveEventDelegate(object):
         return set_cursor_position(x, y)
 
 
-# Set MoveEvent's delegate. This allows us to set platform-specific
-# functions for getting and setting the cursor position without having
-# to do a lot of sub-classing for no good reason.
-MoveEvent.delegate = MoveEventDelegate()
+# Provide MoveEvent classes access to the cursor functions via a delegate.
+MoveEvent.delegate = MoveEventDelegate
 
 #---------------------------------------------------------------------------
 # Pynput mouse button and wheel up/down flags.
@@ -105,6 +115,10 @@ PLATFORM_WHEEL_FLAGS = {
 class ButtonEvent(BaseButtonEvent):
 
     def execute(self, window):
+        # Initialize the pynput mouse controller, if necessary.
+        _init_controller()
+
+        # Process button events.
         for ((button, event_type), flag) in self._flags:
             # Check if the button is unknown.
             if button is None:

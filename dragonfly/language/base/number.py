@@ -24,9 +24,10 @@ Number language element class
 
 """
 
-from ...grammar.elements  import Alternative, Repetition, Sequence, RuleWrap
-from ..loader             import language
-from .integer             import Integer
+from dragonfly.grammar.elements       import (Alternative, Repetition,
+                                              Sequence, RuleWrap)
+from dragonfly.language.loader        import language
+from dragonfly.language.base.integer  import Integer
 
 
 #---------------------------------------------------------------------------

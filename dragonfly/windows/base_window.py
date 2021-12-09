@@ -28,13 +28,14 @@ Base Window class
 # Suppress warnings about redefining the built-in 'id' function and too many
 # public methods.
 
-from locale import getpreferredencoding
+from locale                          import getpreferredencoding
 
-from six import string_types, integer_types, binary_type
+from six                             import (string_types, integer_types,
+                                             binary_type)
 
-from .monitor import monitors
-from .rectangle import unit
-from .window_movers import window_movers
+from dragonfly.windows.monitor       import monitors
+from dragonfly.windows.rectangle     import unit
+from dragonfly.windows.window_movers import window_movers
 
 #===========================================================================
 

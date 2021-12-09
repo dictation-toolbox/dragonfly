@@ -24,11 +24,9 @@
 
 # pylint: disable=expression-not-assigned
 
-from six import string_types
-
 try:
-    from win32com.client import Dispatch
-    from pywintypes import com_error
+    from win32com.client  import Dispatch
+    from pywintypes       import com_error
 except ImportError as error:
     import sys
     if sys.platform.startswith("win"):
@@ -44,7 +42,9 @@ except ImportError as error:
         def __init__(self, _):
             pass
 
-from .grammar_base import Grammar
+from six                             import string_types
+
+from dragonfly.grammar.grammar_base  import Grammar
 
 
 # ---------------------------------------------------------------------------

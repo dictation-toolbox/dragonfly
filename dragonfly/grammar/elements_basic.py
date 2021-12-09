@@ -83,10 +83,10 @@ import copy
 import itertools
 import logging
 
-from six import integer_types, string_types
+from six                          import integer_types, string_types
 
-from .rule_base  import Rule
-from .list       import ListBase, DictList
+from dragonfly.grammar.rule_base  import Rule
+from dragonfly.grammar.list       import ListBase, DictList
 
 #===========================================================================
 # Element base class.

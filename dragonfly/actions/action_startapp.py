@@ -62,16 +62,16 @@ Class reference
 
 import locale
 import os.path
-from subprocess           import Popen
+from subprocess                           import Popen
 import sys
 import time
 
 import six
 
-from .action_base         import ActionBase, ActionError
-from .action_focuswindow  import FocusWindow
-from .action_waitwindow   import WaitWindow
-from ..windows            import Window
+from dragonfly.actions.action_base        import ActionBase, ActionError
+from dragonfly.actions.action_focuswindow import FocusWindow
+from dragonfly.actions.action_waitwindow  import WaitWindow
+from dragonfly.windows.window             import Window
 
 
 #---------------------------------------------------------------------------

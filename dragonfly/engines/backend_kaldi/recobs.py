@@ -22,7 +22,7 @@
 Recognition observer class for Kaldi backend
 """
 
-from ..base import RecObsManagerBase
+from dragonfly.engines.base import RecObsManagerBase
 
 
 class KaldiRecObsManager(RecObsManagerBase):
