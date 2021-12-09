@@ -11,6 +11,28 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Changed
+~~~~~~~
+* Change Kaldi back-end to enable local-only pronunciation generation by
+  default.
+* Change accessibility sub-package to use AT-SPI if X11 is detected.
+* Give X11 precedence over other platforms in initialization modules.
+* Remove deprecation notices for the dragonfly.timer interface (since it
+  works fine).
+
+Fixed
+~~~~~
+* Fix Kaldi marking of whether retained utterance has dictation.
+* Fix a word pronunciation generation bug with the Kaldi back-end (thanks
+  `@daanzu`_).
+* Fix problems caused by relative import statements in the library by using
+  the absolute form instead.
+* Improve X11 detection by checking the DISPLAY environment variable.
+
+
 0.33.0_ - 2021-10-01
 --------------------
 
