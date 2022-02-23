@@ -480,7 +480,14 @@ class X11Window(BaseWindow):
             return state is not None
 
     def close(self):
-        return self._run_xdotool_command_simple(['windowclose', self.id])
+        # Use wmctrl to gracefully close the window.  If this fails,
+        # fallback on xdotool.
+        try:
+            result = self._run_wmctrl_command_simple(['-ic', self.id])
+        except OSError:
+            result = self._run_xdotool_command_simple(['windowclose',
+                                                       self.id])
+        return result
 
     def set_foreground(self):
         # Restore if minimized.
