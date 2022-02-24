@@ -82,38 +82,37 @@ class X11Window(BaseWindow):
         arguments = [str(arg) for arg in arguments]
         full_command = [command] + arguments
         full_readable_command = ' '.join(full_command)
+        kwargs = dict(stdout=PIPE, stderr=PIPE)
+
+        # Fork the process with setsid() if on a POSIX system.
+        if os.name == 'posix':
+            kwargs.update(dict(preexec_fn=os.setsid))
+
+        # Execute the command with Popen, logging an error and re-raising
+        # the exception on failure.
         cls._log.debug(full_readable_command)
         try:
-            kwargs = dict(stdout=PIPE, stderr=PIPE)
-
-            # Fork the process with setsid() if on a POSIX system such as
-            # Linux.
-            if os.name == 'posix':
-                kwargs.update(dict(preexec_fn=os.setsid))
-
-            # Execute the child process.
             p = Popen(full_command, **kwargs)
             stdout, stderr = p.communicate()
+        except OSError as exception:
+            cls._log.error("Failed to execute command '%s': %s.",
+                           full_readable_command, exception)
+            raise exception
 
-            # Decode output if it is binary.
-            encoding = locale.getpreferredencoding()
-            if isinstance(stdout, binary_type):
-                stdout = stdout.decode(encoding)
-            if isinstance(stderr, binary_type):
-                stderr = stderr.decode(encoding)
+        # Decode output if it is binary.
+        encoding = locale.getpreferredencoding()
+        if isinstance(stdout, binary_type):
+            stdout = stdout.decode(encoding)
+        if isinstance(stderr, binary_type):
+            stderr = stderr.decode(encoding)
 
-            # Print error messages to stderr. Filter BadWindow messages.
-            stderr = stderr.rstrip()
-            if stderr and "BadWindow" not in stderr:
-                print(stderr, file=sys.stderr)
+        # Print error messages to stderr. Filter BadWindow messages.
+        stderr = stderr.rstrip()
+        if stderr and "BadWindow" not in stderr:
+            print(stderr, file=sys.stderr)
 
-            # Return the process output and return code.
-            return stdout.rstrip(), p.returncode
-        except OSError as e:
-            cls._log.error("Failed to execute command '%s': %s. Is "
-                           "%s installed?",
-                           full_readable_command, e, command)
-            raise e
+        # Return the process output and return code.
+        return stdout.rstrip(), p.returncode
 
     @classmethod
     def _run_command_simple(cls, exe, arguments):
