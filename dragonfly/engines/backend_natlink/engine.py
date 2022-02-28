@@ -211,7 +211,7 @@ class NatlinkEngine(EngineBase):
 
         c = NatlinkCompiler()
         (compiled_grammar, rule_names) = c.compile_grammar(grammar)
-        grammar._rule_names = rule_names
+        wrapper.rule_names = rule_names
 
         all_results = (hasattr(grammar, "process_recognition_other")
                        or hasattr(grammar, "process_recognition_failure"))
@@ -423,6 +423,7 @@ class GrammarWrapper(GrammarWrapperBase):
     def __init__(self, grammar, grammar_object, engine, recobs_manager):
         GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.grammar_object = grammar_object
+        self.rule_names = None
 
     def begin_callback(self, module_info):
         executable, title, handle = tuple(map_word(word)
@@ -463,7 +464,7 @@ class GrammarWrapper(GrammarWrapperBase):
         # Iterates through this grammar's rules, attempting
         #  to decode each.  If successful, call that rule's
         #  method for processing the recognition and return.
-        s = state_.State(words_rules, self.grammar._rule_names,
+        s = state_.State(words_rules, self.rule_names,
                          self.engine)
         for r in self.grammar._rules:
             if not (r.active and r.exported): continue
