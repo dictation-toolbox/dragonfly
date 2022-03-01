@@ -26,7 +26,6 @@ import unittest
 from six import string_types, text_type, binary_type
 
 from dragonfly.engines.base.dictation   import DictationContainerBase
-from dragonfly.engines                  import get_engine
 from dragonfly.grammar.elements         import Compound, Dictation
 from dragonfly.test.element_testcase    import ElementTestCase
 from dragonfly.test.element_tester      import ElementTester
@@ -38,11 +37,9 @@ class DictationElementTestCase(ElementTestCase):
     input_output = []
 
     def test_element(self):
-        # Translate all inputs and outputs to the preferred encoding for
-        # recognition so that the tests can run on Windows or Linux.
-        engine = get_engine()
+        # Translate all inputs and outputs to the windows-1252 encoding for
+        # recognition.
         encoding = locale.getpreferredencoding()
-        uppercase_dictation_required = engine.name in ['sphinx', 'text']
 
         def translate(string):
             # Any binary strings in this file will be encoded with
@@ -55,21 +52,6 @@ class DictationElementTestCase(ElementTestCase):
         for i, (input, output) in enumerate(self.input_output):
             new_input = translate(input)
             new_output = translate(output)
-
-            # Also map input dictation words to uppercase if necessary.
-            if uppercase_dictation_required:
-                words = new_input.split()
-                new_input = ' '.join(
-                    [words[0]] + [word.upper() for word in words[1:]]
-                )
-
-                # Manually uppercase the accented characters we use because
-                # upper() doesn't do it for us. There's probably a better
-                # way, but this will do.
-                if isinstance(new_input, binary_type):
-                    new_input = (new_input.replace("\xa9", "\x89")
-                                 .replace("\xb1", "\x91"))
-
             self.input_output[i] = (new_input, new_output)
 
         ElementTestCase.test_element(self)
@@ -87,10 +69,6 @@ class TestNonAsciiDictation(unittest.TestCase):
                            value_func=value_func)
         tester = ElementTester(element)
         words = [u"test", u"touché"]
-        engine = get_engine()
-        uppercase_dictation_required = engine.name in ['sphinx', 'text']
-        if uppercase_dictation_required:
-            words[1] = words[1].upper()
         dictation = tester.recognize(words)
 
         # Verify recognition returned dictation result.
