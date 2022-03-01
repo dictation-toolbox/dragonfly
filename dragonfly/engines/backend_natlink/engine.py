@@ -466,6 +466,7 @@ class GrammarWrapper(GrammarWrapperBase):
         #  method for processing the recognition and return.
         s = state_.State(words_rules, self.rule_names,
                          self.engine)
+        s.dictated_word_guesses = True  # FIXME
         for r in self.grammar._rules:
             if not (r.active and r.exported): continue
             s.initialize_decoding()

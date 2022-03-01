@@ -267,41 +267,16 @@ and dragonfly's :class:`Dictation` functionality.
 Dictation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Mixing free-form dictation with grammar rules is difficult to reproduce with
-the CMU Sphinx engines. It is either dictation or grammar rules, not both.
-For this reason, the CMU Pocket Sphinx SR engine supports speaking free-form
-dictation, but only on its own. Parts of rules that have required
-combinations with :class:`Dictation` and other basic Dragonfly elements such
-as :class:`Literal`, :class:`RuleRef` and :class:`ListRef` will not be
-recognised properly using this SR engine via speaking.
+Mixing free-form dictation with grammar rules is difficult with the CMU
+Sphinx decoders. It is either dictation or grammar rules, not both. For this
+reason, Dragonfly's CMU Pocket Sphinx SR engine supports speaking free-form
+dictation, but only on its own.
 
-You can use the :meth:`engine.mimic` method, the :class:`Mimic` action or
-the :class:`Playback` action to match :class:`Dictation` elements by using
-all uppercase words. For example:
-
-
-..  code:: Python
-
-    from dragonfly import Grammar, CompoundRule, Dictation, get_engine
-
-    engine = get_engine("sphinx")
-    engine.config.START_ASLEEP = False
-
-
-    class MyRule(CompoundRule):
-        spec = "hello <text>"
-        extras = [Dictation("text")]
-        def _process_recognition(self, node, extras):
-            # "world" will be printed in lowercase to be consistent with
-            # normal output from CMU Pocket Sphinx.
-            print(extras["text"])
-
-
-    grammar = Grammar("dictation grammar")
-    grammar.add_rule(MyRule())
-    grammar.load()
-
-    engine.mimic("hello WORLD")
+Parts of rules that have required combinations with :class:`Dictation` and
+other basic Dragonfly elements such as :class:`Literal`, :class:`RuleRef` and
+:class:`ListRef` will not be recognised properly using this SR engine via
+speaking. They can, however, be recognised via the :meth:`engine.mimic`
+method, the :class:`Mimic` action or the :class:`Playback` action.
 
 .. note::
 

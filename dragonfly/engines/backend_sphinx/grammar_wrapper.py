@@ -137,7 +137,7 @@ class GrammarWrapper(GrammarWrapperBase):
     def process_begin(self, executable, title, handle):
         self.grammar.process_begin(executable, title, handle)
 
-    def process_words(self, words):
+    def process_words(self, words, dictated_word_guesses):
         # Return early if the grammar is disabled or if there are no active
         # rules.
         if not (self.grammar.enabled and self.grammar.active_rules):
@@ -177,6 +177,7 @@ class GrammarWrapper(GrammarWrapperBase):
         # If successful, call that rule's method for processing the
         # recognition and return.
         s = state_.State(words_rules, self.grammar.rule_names, self.engine)
+        s.dictated_word_guesses = dictated_word_guesses
         for r in self.grammar.rules:
             if not (r.active and r.exported):
                 continue

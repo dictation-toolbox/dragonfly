@@ -774,20 +774,14 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         return result
 
     @classmethod
-    def _generate_words_rules(cls, words, mimicking, all_dictation):
-        # Convert words to Unicode, treat all uppercase words as dictation
-        # words and other words as grammar words.
-        # Minor note: this won't work for languages without capitalisation.
+    def _get_words_rules(cls, words, rule_id):
+        # Construct and return a sequence of (word, rule_id) 2-tuples.
+        # Convert any binary words to Unicode.
         result = []
         for word in words.split():
             if isinstance(word, binary_type):
                 word = word.decode(locale.getpreferredencoding())
-            if all_dictation or word.isupper() and mimicking:
-                # Convert dictation words to lowercase for consistent
-                # output.
-                result.append((word.lower(), 1000000))
-            else:
-                result.append((word, 0))
+            result.append((word, rule_id))
         return tuple(result)
 
     def _process_hypotheses(self, speech, mimicking):
@@ -807,7 +801,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             return True, keyphrase
 
         # Otherwise do grammar processing.
-        processing_occurred = False
         hypotheses = {}
         wrappers = self._grammar_wrappers.copy().values()
 
@@ -831,7 +824,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # No grammar has been loaded.
         if not wrappers:
-            return processing_occurred, speech
+            return False, speech
 
         # Batch process audio buffers for each active grammar. Store each
         # hypothesis.
@@ -855,32 +848,37 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Get the best hypothesis.
         speech = self._get_best_hypothesis(list(hypotheses.values()))
-        if not speech and not lm_hypothesis:
-            return processing_occurred, speech
 
+        # If we have an hypothesis, filter out irrelevant grammars and
+        # process it with this subset.  Stop on the first grammar that
+        # processes it.
+        # If this is unsuccessful, retry the subset with dictated word
+        # guesses enabled.
+        result = False
         if speech:
-            # Process speech using the first matching grammar.
-            words_rules = self._generate_words_rules(speech, mimicking, False)
-            for wrapper in wrappers:
-                if hypotheses[wrapper.search_name] != speech:
-                    continue
+            wrappers_subset = [wrapper for wrapper in wrappers
+                              if hypotheses[wrapper.search_name] == speech]
+            words_rules = self._get_words_rules(speech, 0)
+            for wrapper in wrappers_subset:
+                result = wrapper.process_words(words_rules, False)
+                if result: break
+            if not result:
+                for wrapper in wrappers_subset:
+                    result = wrapper.process_words(words_rules, True)
+                    if result: break
 
-                processing_occurred = wrapper.process_words(words_rules)
-                if processing_occurred:
-                    break
-
-        if not processing_occurred:
-            # Process grammars using the LM hypothesis as dictation words.
-            dictation_words = self._generate_words_rules(lm_hypothesis, mimicking,
-                                                         True)
+        # If no processing has occurred by this point, try to process each
+        # grammar using the LM hypothesis as dictated words.
+        if not result and lm_hypothesis:
+            dictation_words = self._get_words_rules(lm_hypothesis, 1000000)
             for wrapper in wrappers:
-                processing_occurred = wrapper.process_words(dictation_words)
-                if processing_occurred:
+                result = wrapper.process_words(dictation_words, False)
+                if result:
                     break
 
         # Return whether processing occurred and the final speech hypothesis for
         # post processing.
-        return processing_occurred, speech
+        return result, speech
 
     def process_buffer(self, buf):
         """

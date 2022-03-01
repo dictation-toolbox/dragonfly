@@ -38,11 +38,7 @@ from dragonfly.windows.window               import Window
 def _map_word(word):
     if isinstance(word, binary_type):
         word = word.decode(locale.getpreferredencoding())
-    if word.isupper():
-        # Convert dictation words to lowercase for consistent output.
-        return word.lower(), 1000000
-    else:
-        return word, 0
+    return word, 0
 
 
 class TextInputEngine(EngineBase):
@@ -131,9 +127,7 @@ class TextInputEngine(EngineBase):
 
     @classmethod
     def generate_words_rules(cls, words):
-        # Convert words to Unicode, treat all uppercase words as dictation
-        # words and other words as grammar words.
-        # Minor note: this won't work for languages without capitalisation.
+        # Convert words to Unicode.
         return tuple(map(_map_word, words))
 
     def _do_recognition(self, delay=0):
@@ -181,11 +175,6 @@ class TextInputEngine(EngineBase):
            current foreground window attributes will be used instead for any
            keyword arguments not present.
 
-        .. note::
-
-           Any dictation words should be all uppercase, e.g. "HELLO WORLD".
-           Dictation words not in uppercase will result in the engine
-           **not** decoding and recognizing the command!
         """
         # Handle string input.
         if isinstance(words, string_types):
@@ -229,22 +218,28 @@ class TextInputEngine(EngineBase):
             if wrapper.exclusive:
                 exclusive_count += 1
 
-        # Call process_words() for each grammar wrapper, stopping early if
-        # processing occurred.
-        processing_occurred = False
-        for wrapper in grammar_wrappers:
-            # Skip non-exclusive grammars if there are one or more exclusive
-            # grammars.
-            if exclusive_count > 0 and not wrapper.exclusive:
-                continue
+        # Skip non-exclusive grammars if there are one or more exclusive
+        # grammars.
+        if exclusive_count > 0:
+            grammar_wrappers = [wrapper for wrapper in grammar_wrappers
+                                if wrapper.exclusive]
 
-            # Process the grammar.
-            processing_occurred = wrapper.process_words(words_rules)
-            if processing_occurred:
+        # Call process_words() for each grammar wrapper, stopping on the
+        # first one that processes the mimicked words.
+        result = False
+        for wrapper in grammar_wrappers:
+            result = wrapper.process_words(words_rules, False)
+            if result:
                 break
 
-        # If no processing occurred, then the mimic failed.
-        if not processing_occurred:
+        # If this failed, try again with dictated word guesses.
+        if not result:
+            for wrapper in grammar_wrappers:
+                result = wrapper.process_words(words_rules, True)
+                if result: break
+
+        # If no processing has occurred, then the mimic failed.
+        if not result:
             self._recognition_observer_manager.notify_failure(None)
             raise MimicFailure("No matching rule found for words %r."
                                % (words,))
@@ -289,7 +284,7 @@ class GrammarWrapper(GrammarWrapperBase):
     def process_begin(self, executable, title, handle):
         self.grammar.process_begin(executable, title, handle)
 
-    def process_words(self, words):
+    def process_words(self, words, dictated_word_guesses):
         # Return early if the grammar is disabled or if there are no active
         # rules.
         if not (self.grammar.enabled and self.grammar.active_rules):
@@ -329,6 +324,7 @@ class GrammarWrapper(GrammarWrapperBase):
         # If successful, call that rule's method for processing the
         # recognition and return.
         s = state_.State(words_rules, self.grammar.rule_names, self.engine)
+        s.dictated_word_guesses = dictated_word_guesses
         for r in self.grammar.rules:
             if not (r.active and r.exported):
                 continue

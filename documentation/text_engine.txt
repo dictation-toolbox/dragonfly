@@ -14,11 +14,9 @@ Note that :meth:`dragonfly.engines.get_engine` called without ``"text"``
 will **never** initialise the text-input engine. This is because real speech
 recognition backends should be returned from the function by default.
 
-All dragonfly elements and rule classes should be supported. Use all
-uppercase words to mimic input for :class:`Dictation` elements, e.g.
-`"find SOME TEXT"` to match the dragonfly spec `"find <text>"`.
-`executable`, `title`, and `handle` keyword arguments may optionally be
-passed to :meth:`engine.mimic` to simulate a particular foreground window.
+All dragonfly elements and rule classes should be supported. `executable`,
+`title`, and `handle` keyword arguments may optionally be passed to
+:meth:`engine.mimic` to simulate a particular foreground window.
 
 
 Engine Configuration
