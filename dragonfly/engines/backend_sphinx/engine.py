@@ -371,9 +371,10 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         compiled = wrapper.compile_jsgf()
         self._log.debug(compiled)
 
-        # Raise an error if there are no active public rules.
+        # Nothing further to do; no public rules.
         if "public <root> = " not in compiled:
-            raise EngineError("no public rules found in the grammar")
+            wrapper.set_search = False
+            return
 
         # Set the JSGF search.
         self._decoder.end_utterance()
