@@ -18,14 +18,11 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
-import locale
-import logging
 import sys
 import time
 
-from six                                    import string_types, binary_type
+from six                                    import string_types
 
-import dragonfly.grammar.state as state_
 from dragonfly.engines.base                 import (EngineBase,
                                                     MimicFailure,
                                                     ThreadedTimerManager,
@@ -33,12 +30,6 @@ from dragonfly.engines.base                 import (EngineBase,
                                                     GrammarWrapperBase)
 from dragonfly.engines.backend_text.recobs  import TextRecobsManager
 from dragonfly.windows.window               import Window
-
-
-def _map_word(word):
-    if isinstance(word, binary_type):
-        word = word.decode(locale.getpreferredencoding())
-    return word, 0
 
 
 class TextInputEngine(EngineBase):
@@ -125,11 +116,6 @@ class TextInputEngine(EngineBase):
     # -----------------------------------------------------------------------
     # Miscellaneous methods.
 
-    @classmethod
-    def generate_words_rules(cls, words):
-        # Convert words to Unicode.
-        return tuple(map(_map_word, words))
-
     def _do_recognition(self, delay=0):
         """
         Recognize words from standard input (stdin) in a loop until
@@ -176,12 +162,13 @@ class TextInputEngine(EngineBase):
            keyword arguments not present.
 
         """
-        # Handle string input.
+        # The *words* argument should be a string or iterable.
+        # Words are put into lowercase for consistency.
         if isinstance(words, string_types):
-            words = words.split()
-
-        # Don't allow non-iterable objects.
-        if not iter(words):
+            words = words.lower().split()
+        elif iter(words):
+            words = [w.lower() for w in words]
+        else:
             raise TypeError("%r is not a string or other iterable object"
                             % words)
 
@@ -192,8 +179,8 @@ class TextInputEngine(EngineBase):
         # Notify observers that a recognition has begun.
         self._recognition_observer_manager.notify_begin()
 
-        # Generate the input for process_words.
-        words_rules = self.generate_words_rules(words)
+        # Get a sequence of (word, rule_id) 2-tuples.
+        words_rules = self._get_words_rules(words, 0)
 
         w = Window.get_foreground()
         process_args = {
@@ -206,39 +193,35 @@ class TextInputEngine(EngineBase):
 
         # Call process_begin() for each grammar wrapper. Use a copy of
         # _grammar_wrappers in case it changes.
+        # TODO Determine whether this should really be done for exclusive
+        #  grammars.
         for wrapper in self._grammar_wrappers.copy().values():
             wrapper.process_begin(**process_args)
 
         # Take another copy of _grammar_wrappers to use for processing.
         grammar_wrappers = self._grammar_wrappers.copy().values()
 
-        # Count exclusive grammars.
+        # Filter out inactive grammars.
+        grammar_wrappers = [wrapper for wrapper in grammar_wrappers
+                            if wrapper.grammar_is_active]
+
+        # Include only exclusive grammars if at least one is active.
         exclusive_count = 0
         for wrapper in grammar_wrappers:
-            if wrapper.exclusive:
-                exclusive_count += 1
-
-        # Skip non-exclusive grammars if there are one or more exclusive
-        # grammars.
+            if wrapper.exclusive: exclusive_count += 1
         if exclusive_count > 0:
             grammar_wrappers = [wrapper for wrapper in grammar_wrappers
                                 if wrapper.exclusive]
 
-        # Call process_words() for each grammar wrapper, stopping on the
-        # first one that processes the mimicked words.
+        # Attempt to process the mimicked words, stopping on the first
+        # grammar that processes them.
         result = False
         for wrapper in grammar_wrappers:
-            result = wrapper.process_words(words_rules, False)
-            if result:
-                break
+            rule_names = wrapper.grammar.rule_names
+            result = wrapper.process_results(words_rules, rule_names, None)
+            if result: break
 
-        # If this failed, try again with dictated word guesses.
-        if not result:
-            for wrapper in grammar_wrappers:
-                result = wrapper.process_words(words_rules, True)
-                if result: break
-
-        # If no processing has occurred, then the mimic failed.
+        # If no processing has occurred, then the mimic has failed.
         if not result:
             self._recognition_observer_manager.notify_failure(None)
             raise MimicFailure("No matching rule found for words %r."
@@ -275,82 +258,10 @@ class TextInputEngine(EngineBase):
 
 class GrammarWrapper(GrammarWrapperBase):
 
-    _log = logging.getLogger("engine")
+    # Enable guessing at which words were "dictated" so that this "SR"
+    #  back-end behaves like a real one.
+    _dictated_word_guesses_enabled = True
 
     def __init__(self, grammar, engine, recobs_manager):
         GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.exclusive = False
-
-    def process_begin(self, executable, title, handle):
-        self.grammar.process_begin(executable, title, handle)
-
-    def process_words(self, words, dictated_word_guesses):
-        # Return early if the grammar is disabled or if there are no active
-        # rules.
-        if not (self.grammar.enabled and self.grammar.active_rules):
-            return
-
-        self._log.debug("Grammar %s: received recognition %r."
-                        % (self.grammar.name, words))
-
-        # TODO Make special grammar callbacks work properly.
-        # These special methods are never called for this engine.
-        results_obj = None
-        if words == "other":
-            func = getattr(self.grammar, "process_recognition_other", None)
-            self._process_grammar_callback(func, words=words,
-                                           results=results_obj)
-            return
-        elif words == "reject":
-            func = getattr(self.grammar, "process_recognition_failure",
-                           None)
-            self._process_grammar_callback(func, results=results_obj)
-            return
-
-        # If the words argument was not "other" or "reject", then it is a
-        # sequence of (word, rule_id) 2-tuples.
-        words_rules = tuple(words)
-        words = tuple(word for word, _ in words)
-
-        # Call the grammar's general process_recognition method, if present.
-        func = getattr(self.grammar, "process_recognition", None)
-        if func:
-            if not self._process_grammar_callback(func, words=words,
-                                                  results=results_obj):
-                # Return early if the method didn't return True or equiv.
-                return
-
-        # Iterate through this grammar's rules, attempting to decode each.
-        # If successful, call that rule's method for processing the
-        # recognition and return.
-        s = state_.State(words_rules, self.grammar.rule_names, self.engine)
-        s.dictated_word_guesses = dictated_word_guesses
-        for r in self.grammar.rules:
-            if not (r.active and r.exported):
-                continue
-            s.initialize_decoding()
-            for _ in r.decode(s):
-                if s.finished():
-                    try:
-                        root = s.build_parse_tree()
-
-                        # Notify observers using the manager *before*
-                        # processing.
-                        notify_args = (words, r, root, results_obj)
-                        self.recobs_manager.notify_recognition(
-                            *notify_args
-                        )
-
-                        r.process_recognition(root)
-
-                        self.recobs_manager.notify_post_recognition(
-                            *notify_args
-                        )
-                    except Exception as e:
-                        self._log.exception("Failed to process rule "
-                                            "'%s': %s" % (r.name, e))
-                    return True
-
-        self._log.debug("Grammar %s: failed to decode recognition %r."
-                        % (self.grammar.name, words))
-        return False

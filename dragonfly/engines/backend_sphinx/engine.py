@@ -75,7 +75,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         try:
             import sphinxwrapper, jsgf, pyaudio
-        except ImportError as e:
+        except ImportError:
             raise EngineError("Failed to import Pocket Sphinx engine "
                               "dependencies.")
 
@@ -773,17 +773,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         return result
 
-    @classmethod
-    def _get_words_rules(cls, words, rule_id):
-        # Construct and return a sequence of (word, rule_id) 2-tuples.
-        # Convert any binary words to Unicode.
-        result = []
-        for word in words.split():
-            if isinstance(word, binary_type):
-                word = word.decode(locale.getpreferredencoding())
-            result.append((word, rule_id))
-        return tuple(result)
-
     def _process_hypotheses(self, speech, mimicking):
         """
         Internal method to process speech hypotheses. This should only be called
@@ -804,23 +793,18 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         hypotheses = {}
         wrappers = self._grammar_wrappers.copy().values()
 
-        # Save the LM hypothesis separately because it will almost always be favoured
-        # over grammar hypotheses.
+        # Save the LM hypothesis for later.
         lm_hypothesis = speech
 
-        # Count exclusive grammars.
+        # Filter out inactive grammars.
+        wrappers = [w for w in wrappers if w.grammar_is_active]
+
+        # Include only exclusive grammars if at least one is active.
         exclusive_count = 0
         for wrapper in wrappers:
-            if wrapper.exclusive:
-                exclusive_count += 1
-
-        # Collect each active grammar wrapper.
-        # Only include exclusive grammars if at least one is loaded.
-        if exclusive_count:
-            wrappers = [w for w in wrappers
-                        if w.exclusive and w.grammar_active]
-        else:
-            wrappers = [w for w in wrappers if w.grammar_active]
+            if wrapper.exclusive: exclusive_count += 1
+        if exclusive_count > 0:
+            wrappers = [w for w in wrappers if w.exclusive]
 
         # No grammar has been loaded.
         if not wrappers:
@@ -850,34 +834,34 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         speech = self._get_best_hypothesis(list(hypotheses.values()))
 
         # If we have an hypothesis, filter out irrelevant grammars and
-        # process it with this subset.  Stop on the first grammar that
-        # processes it.
-        # If this is unsuccessful, retry the subset with dictated word
-        # guesses enabled.
+        #  attempt to process it with the resulting subset.  Stop on the
+        #  first grammar that processes the hypothesis.
         result = False
+        decoder_results = None  # FIXME Expose P.S. decoder results
         if speech:
             wrappers_subset = [wrapper for wrapper in wrappers
                               if hypotheses[wrapper.search_name] == speech]
-            words_rules = self._get_words_rules(speech, 0)
+            words_rules = self._get_words_rules(speech.split(), 0)
             for wrapper in wrappers_subset:
-                result = wrapper.process_words(words_rules, False)
+                result = wrapper.process_results(words_rules,
+                                                 wrapper.grammar.rule_names,
+                                                 decoder_results)
                 if result: break
-            if not result:
-                for wrapper in wrappers_subset:
-                    result = wrapper.process_words(words_rules, True)
-                    if result: break
 
-        # If no processing has occurred by this point, try to process each
-        # grammar using the LM hypothesis as dictated words.
+        # If no processing has occurred by this point, try to process a
+        #  grammar using the LM hypothesis instead, if there is one.
         if not result and lm_hypothesis:
-            dictation_words = self._get_words_rules(lm_hypothesis, 1000000)
+            dictation_words = lm_hypothesis.split()
+            words_rules = self._get_words_rules(dictation_words, 1000000)
             for wrapper in wrappers:
-                result = wrapper.process_words(dictation_words, False)
-                if result:
-                    break
+                result = wrapper.process_results(words_rules,
+                                                 wrapper.grammar.rule_names,
+                                                 decoder_results)
+                if result: break
+            speech = lm_hypothesis
 
-        # Return whether processing occurred and the final speech hypothesis for
-        # post processing.
+        # Return whether processing occurred, plus the final speech
+        #  hypothesis for post-processing.
         return result, speech
 
     def process_buffer(self, buf):
@@ -1031,8 +1015,15 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words* """
-        if isinstance(words, (list, tuple)):
-            words = " ".join(words)
+        # The *words* argument should be a string or iterable.
+        # Words are put into lowercase for consistency.
+        if isinstance(words, string_types):
+            words = words.lower()
+        elif iter(words):
+            words = " ".join([w.lower() for w in words])
+        else:
+            raise TypeError("%r is not a string or other iterable object"
+                            % words)
 
         # Fail on empty input.
         if not words:

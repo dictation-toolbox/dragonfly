@@ -24,18 +24,15 @@ GrammarWrapper class for the CMU Pocket Sphinx engine
 
 """
 
-
 import logging
 
-from jsgf import Literal, filter_expansion
-
-import dragonfly.grammar.state as state_
 from dragonfly.engines.base import GrammarWrapperBase
 
 
 class GrammarWrapper(GrammarWrapperBase):
 
-    _log = logging.getLogger("engine")
+    # Enable guessing at the type of a given result word.
+    _dictated_word_guesses_enabled = True
 
     def __init__(self, grammar, engine, recobs_manager, search_name):
         """
@@ -98,25 +95,6 @@ class GrammarWrapper(GrammarWrapperBase):
         return self._jsgf_grammar.compile_as_root_grammar()
 
     @property
-    def grammar_words(self):
-        """
-        Set of all words used in this grammar.
-
-        :returns: set
-        """
-        words = []
-        for rule in self._jsgf_grammar.rules:
-            rule_literals = filter_expansion(
-                rule.expansion, lambda x: isinstance(x, Literal) and x.text,
-                shallow=True
-            )
-            for literal in rule_literals:
-                words.extend(literal.text.split())
-
-        # Return a set of words with no duplicates.
-        return set(words)
-
-    @property
     def search_name(self):
         """
         The name of the Pocket Sphinx search that the engine should use to
@@ -126,70 +104,21 @@ class GrammarWrapper(GrammarWrapperBase):
         """
         return self._search_name
 
-    @property
-    def grammar_active(self):
-        """
-        Whether the grammar is enabled and has any active rules.
-        :rtype: bool
-        """
-        return self.grammar.enabled and any(self.grammar.active_rules)
-
-    def process_begin(self, executable, title, handle):
-        self.grammar.process_begin(executable, title, handle)
-
-    def process_words(self, words, dictated_word_guesses):
-        # Return early if the grammar is disabled or if there are no active
-        # rules.
-        if not (self.grammar.enabled and self.grammar.active_rules):
-            return
-
-        self._log.debug("Grammar %s: received recognition %r."
-                        % (self.grammar.name, words))
-        results_obj = None  # TODO Use PS results object once implemented
-
-        # TODO Make special grammar callbacks work properly.
-        # These special methods are never called for this engine.
-        if words == "other":
-            func = getattr(self.grammar, "process_recognition_other", None)
-            self._process_grammar_callback(func, words=words,
-                                           results=results_obj)
-            return
-        elif words == "reject":
-            func = getattr(self.grammar, "process_recognition_failure",
-                           None)
-            self._process_grammar_callback(func, results=results_obj)
-            return
-
-        # If the words argument was not "other" or "reject", then it is a
-        # sequence of (word, rule_id) 2-tuples.
-        words_rules = tuple(words)
-        words = tuple(word for word, _ in words)
-
-        # Call the grammar's general process_recognition method, if present.
-        func = getattr(self.grammar, "process_recognition", None)
-        if func:
-            if not self._process_grammar_callback(func, words=words,
-                                                  results=results_obj):
-                # Return early if the method didn't return True or equiv.
-                return
-
+    def _decode_grammar_rules(self, state, words, results, *args):
         # Iterate through this grammar's rules, attempting to decode each.
         # If successful, call that rule's method for processing the
         # recognition and return.
-        s = state_.State(words_rules, self.grammar.rule_names, self.engine)
-        s.dictated_word_guesses = dictated_word_guesses
-        for r in self.grammar.rules:
-            if not (r.active and r.exported):
-                continue
-            s.initialize_decoding()
-            for _ in r.decode(s):
-                if s.finished():
-                    # Build the parse tree used to process this rule.
-                    root = s.build_parse_tree()
-
+        for rule in self.grammar.rules:
+            if not (rule.active and rule.exported): continue
+            state.initialize_decoding()
+            for _ in rule.decode(state):
+                if state.finished():
+                    # TODO Use words="other" instead, with a special
+                    # recobs grammar wrapper at index 0.
                     # Notify observers using the manager *before*
                     # processing.
-                    notify_args = (words, r, root, results_obj)
+                    root = state.build_parse_tree()
+                    notify_args = (words, rule, root, results)
                     self.recobs_manager.notify_recognition(
                         *notify_args
                     )
@@ -197,15 +126,12 @@ class GrammarWrapper(GrammarWrapperBase):
                     # Process the rule if not in training mode.
                     if not self.engine.training_session_active:
                         try:
-                            r.process_recognition(root)
-                            self.recobs_manager.notify_post_recognition(
-                                *notify_args
-                            )
+                            rule.process_recognition(root)
                         except Exception as e:
                             self._log.exception("Failed to process rule "
-                                                "'%s': %s" % (r.name, e))
+                                                "'%s': %s" % (rule.name, e))
+                        self.recobs_manager.notify_post_recognition(
+                            *notify_args
+                        )
                     return True
-
-        self._log.debug("Grammar %s: failed to decode recognition %r."
-                        % (self.grammar.name, words))
         return False

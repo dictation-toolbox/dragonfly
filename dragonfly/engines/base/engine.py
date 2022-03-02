@@ -24,7 +24,10 @@ EngineBase class
 
 """
 
+import locale
 import logging
+
+import six
 
 from dragonfly.engines.base.timer import Timer
 import dragonfly.engines
@@ -300,6 +303,17 @@ class EngineBase(object):
             grammar.process_begin(window.executable, window.title,
                                   window.handle)
 
+    @classmethod
+    def _get_words_rules(cls, words, rule_id):
+        # Construct and return a sequence of (word, rule_id) 2-tuples.
+        # Convert any binary words to Unicode.
+        result = []
+        for word in words:
+            if isinstance(word, six.binary_type):
+                word = word.decode(locale.getpreferredencoding())
+            result.append((word, rule_id))
+        return tuple(result)
+
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
         raise NotImplementedError("Engine %s not implemented." % self)
@@ -317,9 +331,10 @@ class EngineBase(object):
         """
         return self._get_language()
 
-    def _get_language_tag(self, language_id):
+    @classmethod
+    def _get_language_tag(cls, language_id):
         # Get a language tag from the Windows language identifier.
-        tags = self._language_tags.get(language_id)
+        tags = cls._language_tags.get(language_id)
         if tags:
             return tags[0]
 
@@ -327,12 +342,12 @@ class EngineBase(object):
         # get the best match by using the primary language identifier.
         # This allows us to match unlisted language variants.
         primary_id = language_id & 0x00ff
-        for language_id2, (tag, _) in self._language_tags.items():
+        for language_id2, (tag, _) in cls._language_tags.items():
             if primary_id == language_id2 & 0x00ff:  # Match found.
                 return tag
 
         # Speaker language wasn't found.
-        self._log.error("Unknown speaker language: 0x%04x" % language_id)
+        cls._log.error("Unknown speaker language: 0x%04x" % language_id)
         raise EngineError("Unknown speaker language: 0x%04x" % language_id)
 
     _language_tags = {
