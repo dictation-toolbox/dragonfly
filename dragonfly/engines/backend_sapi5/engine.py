@@ -42,7 +42,6 @@ from six                       import string_types, integer_types
 from win32com.client           import Dispatch, getevents, constants
 from win32com.client.gencache  import EnsureDispatch
 
-from dragonfly.grammar.state   import State
 from dragonfly.grammar.recobs  import RecognitionObserver
 from dragonfly.windows.window  import Window
 from dragonfly.engines.base    import (EngineBase, EngineError,
@@ -515,6 +514,50 @@ class GrammarWrapper(GrammarWrapperBase):
         self.grammar.process_begin(window.executable, window.title,
                                    window.handle)
 
+    def _retain_audio(self, newResult, results, rule_name):
+        # Only write audio data and metadata if the directory exists.
+        retain_dir = self.engine._retain_dir
+        if retain_dir and not os.path.isdir(retain_dir):
+            self.engine._log.warning(
+                "Audio was not retained because '%s' was not a "
+                "directory" % retain_dir
+            )
+        elif retain_dir:
+            try:
+                file_stream = Dispatch("SAPI.SpFileStream")
+                # Note: application can also retrieve smaller portions
+                # of the audio stream by specifying a starting phrase
+                # element and phrase element length.
+                audio_stream = newResult.Audio()
+
+                # Make sure we have audio data, which we wouldn't from a
+                # mimic or if the retain flag wasn't set above.
+                if audio_stream:
+                    # Write audio data.
+                    file_stream.Format = audio_stream.Format
+                    now = datetime.now()
+                    filename = ("retain_%s.wav"
+                                % now.strftime("%Y-%m-%d_%H-%M-%S_%f"))
+                    wav_path = os.path.join(retain_dir, filename)
+                    flags = constants.SSFMCreateForWrite
+                    file_stream.Open(wav_path, flags)
+                    try:
+                        file_stream.Write(audio_stream.GetData())
+                    finally:
+                        file_stream.Close()
+
+                    # Write metadata
+                    words = ' '.join([r[2] for r in results])
+                    audio_length = int(newResult.Times.Length) / 1e7
+                    tsv_path = os.path.join(retain_dir, "retain.tsv")
+                    with open(tsv_path, "a") as tsv_file:
+                        tsv_file.write('\t'.join([
+                            filename, str(audio_length),
+                            self.grammar.name, rule_name, words
+                        ]) + '\n')
+            except:
+                self.engine._log.exception("Exception retaining audio")
+
     def recognition_callback(self, StreamNumber, StreamPosition,
                              RecognitionType, Result):
         try:
@@ -578,77 +621,12 @@ class GrammarWrapper(GrammarWrapperBase):
             #---------------------------------------------------------------
             # Retain audio
 
-            # Only write audio data and metadata if the directory exists.
-            retain_dir = self.engine._retain_dir
-            if retain_dir and not os.path.isdir(retain_dir):
-                self.engine._log.warning(
-                    "Audio was not retained because '%s' was not a "
-                    "directory" % retain_dir
-                )
-            elif retain_dir:
-                try:
-                    file_stream = Dispatch("SAPI.SpFileStream")
-                    # Note: application can also retrieve smaller portions
-                    # of the audio stream by specifying a starting phrase
-                    # element and phrase element length.
-                    audio_stream = newResult.Audio()
-
-                    # Make sure we have audio data, which we wouldn't from a
-                    # mimic or if the retain flag wasn't set above.
-                    if audio_stream:
-                        # Write audio data.
-                        file_stream.Format = audio_stream.Format
-                        now = datetime.now()
-                        filename = ("retain_%s.wav"
-                                    % now.strftime("%Y-%m-%d_%H-%M-%S_%f"))
-                        wav_path = os.path.join(retain_dir, filename)
-                        flags = constants.SSFMCreateForWrite
-                        file_stream.Open(wav_path, flags)
-                        try:
-                            file_stream.Write(audio_stream.GetData())
-                        finally:
-                            file_stream.Close()
-
-                        # Write metadata
-                        words = ' '.join([r[2] for r in results])
-                        audio_length = int(newResult.Times.Length) / 1e7
-                        tsv_path = os.path.join(retain_dir, "retain.tsv")
-                        with open(tsv_path, "a") as tsv_file:
-                            tsv_file.write('\t'.join([
-                                filename, str(audio_length),
-                                self.grammar.name, rule_name, words
-                            ]) + '\n')
-                except:
-                    self.engine._log.exception("Exception retaining audio")
+            self._retain_audio(results, newResult, rule_name)
 
             #---------------------------------------------------------------
             # Attempt to parse the recognition.
 
-            func = getattr(self.grammar, "process_recognition", None)
-            words = tuple([r[0] for r in results])
-            if func:
-                if not self._process_grammar_callback(func, words=words,
-                                                      results=newResult):
-                    return
-
-            s = State(results, rule_set, self.engine)
-            for r in self.grammar.rules:
-                if not (r.active and r.exported):
-                    continue
-
-                s.initialize_decoding()
-                for result in r.decode(s):
-                    if s.finished():
-                        # Notify recognition observers, then process the
-                        # rule.
-                        root = s.build_parse_tree()
-                        notify_args = (words, r, root, newResult)
-                        self.recobs_manager.notify_recognition(*notify_args)
-                        r.process_recognition(root)
-                        self.recobs_manager.notify_post_recognition(
-                            *notify_args
-                        )
-                        return
+            if self.process_results(results, rule_set, newResult): return
 
         except Exception as e:
             Sapi5Engine._log.error("Grammar %s: exception: %s"
@@ -658,10 +636,8 @@ class GrammarWrapper(GrammarWrapperBase):
         # If this point is reached, then the recognition was not
         #  processed successfully..
 
-        self.engine._log.error("Grammar %s: failed to decode"
-                               " recognition %r."
-                               % (self.grammar._name,
-                                  [r[0] for r in results]))
+        self._log.error("Grammar %s: failed to decode recognition %r."
+                        % (self.grammar._name, [r[0] for r in results]))
 
     def recognition_other_callback(self, StreamNumber, StreamPosition):
         # Note that SAPI 5.3 doesn't offer access to the actual

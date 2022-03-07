@@ -447,7 +447,7 @@ class _Compiler(object):
         return header + definition_data
 
     def _get_rule_names(self):
-        return tuple([None] + self._rules)
+        return tuple(self._rules)
 
     rule_names = property(_get_rule_names,
                 doc="Read-only access to the list of rule names.")

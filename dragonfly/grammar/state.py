@@ -50,6 +50,7 @@ class State(object):
         self._stack = []
         self.initialize_decoding()
         self._previous_index = None
+        self.dictated_word_guesses = False
 
     def __repr__(self):
         if PY2:

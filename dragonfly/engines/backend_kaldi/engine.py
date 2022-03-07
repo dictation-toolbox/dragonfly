@@ -30,7 +30,6 @@ from six                   import string_types, print_, reraise
 from six.moves             import zip
 from kaldi_active_grammar  import KaldiError, KaldiRule
 
-from dragonfly.grammar.state   import State
 from dragonfly.windows.window  import Window
 from dragonfly.engines.base    import (EngineBase,
                                        EngineError,
@@ -612,7 +611,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             if self._log.isEnabledFor(12):
                 try:
                     self._log.log(12, "Alignment (word,time,length): %s", self._decoder.get_word_align(output))
-                except KaldiError as e:
+                except KaldiError:
                     self._log.warning("Exception logging word alignment")
 
         else:
@@ -697,6 +696,20 @@ class GrammarWrapper(GrammarWrapperBase):
     def phrase_start_callback(self, executable, title, handle):
         self.grammar.process_begin(executable, title, handle)
 
+    def _decode_grammar_rules(self, state, words, results, *args):
+        rule = args[0]
+        state.initialize_decoding()
+        for result in rule.decode(state):
+            if state.finished():
+                root = state.build_parse_tree()
+                notify_args = (words, rule, root, results)
+                self.recobs_manager.notify_recognition(*notify_args)
+                with debug_timer(self.engine._log.debug, "rule execution time"):
+                    rule.process_recognition(root)
+                self.recobs_manager.notify_post_recognition(*notify_args)
+                return True
+        return False
+
     def recognition_callback(self, recognition):
         words = recognition.words
         rule = recognition.kaldi_rule.parent_rule
@@ -709,25 +722,8 @@ class GrammarWrapper(GrammarWrapperBase):
             words_rules = tuple((word, 0 if not is_dictation else 1)
                 for (word, is_dictation) in zip(words, words_are_dictation_mask))
 
-            # Attempt to parse the recognition
-            func = getattr(self.grammar, "process_recognition", None)
-            if func:
-                if not self._process_grammar_callback(func, words=words,
-                                                      results=recognition):
-                    # Return early if the method didn't return True or equiv.
-                    return
-
-            state = State(words_rules, rule_names, self.engine)
-            state.initialize_decoding()
-            for result in rule.decode(state):
-                if state.finished():
-                    root = state.build_parse_tree()
-                    notify_args = (words, rule, root, recognition)
-                    self.recobs_manager.notify_recognition(*notify_args)
-                    with debug_timer(self.engine._log.debug, "rule execution time"):
-                        rule.process_recognition(root)
-                    self.recobs_manager.notify_post_recognition(*notify_args)
-                    return
+            # Attempt to process the recognition.
+            if self.process_results(words_rules, rule_names, recognition, rule): return
 
         except Exception as e:
             self.engine._log.error("Grammar %s: exception: %s" % (self.grammar._name, e), exc_info=True)

@@ -1160,18 +1160,32 @@ class Dictation(ElementBase):
         state.decode_attempt(self)
 
         # Check that at least one word has been dictated, otherwise fail.
-        if state.rule() != "dgndictation":
+        dictated_word_guesses = state.dictated_word_guesses
+        rule_name = state.rule()
+        if (not dictated_word_guesses and rule_name != "dgndictation"
+                or rule_name is None):
             state.decode_failure(self)
             return
 
+        # Check if guessing which words are dictated words is necessary.
+        if rule_name == "dgndictation":
+            dictated_word_guesses = False
+
         # Determine how many words have been dictated.
         count = 1
-        while state.rule(count) == "dgndictation":
+        while state.rule(count) == rule_name:
             count += 1
 
         # Yield possible states where the number of dictated words
         # gobbled is decreased by 1 between yields.
-        for i in range(count, 0, -1):
+        # If guessing, be conservative instead and gobble as few of
+        # the next words as possible, since they may not be dictated
+        # words.
+        if not dictated_word_guesses:
+            deltas = range(count, 0, -1)
+        else:
+            deltas = range(1, count + 1, 1)
+        for i in deltas:
             state.next(i)
             state.decode_success(self)
             yield state

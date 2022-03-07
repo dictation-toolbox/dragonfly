@@ -81,7 +81,6 @@ class Grammar(object):
 
         self._rules = []
         self._lists = []
-        self._rule_names = None
         self._loaded = False
         self._enabled = True
         self._in_context = False
