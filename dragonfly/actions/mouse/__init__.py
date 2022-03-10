@@ -34,10 +34,18 @@ from ._base import (EventBase, PauseEvent, MoveEvent, MoveRelativeEvent,
 # Note: X11 is checked first here because it is possible to use on the other
 #  supported platforms.
 if os.environ.get("DISPLAY"):
-    from ._xdotool import (
-        ButtonEvent, get_cursor_position, set_cursor_position,
-        PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS
-    )
+    try:
+        # Prefer pynput over xdotool since it supports horizontal scrolling
+        #  and the extra mouse buttons.
+        from ._pynput import (
+            ButtonEvent, get_cursor_position, set_cursor_position,
+            PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS
+        )
+    except ImportError:
+        from ._xdotool import (
+            ButtonEvent, get_cursor_position, set_cursor_position,
+            PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS
+        )
 
 elif sys.platform.startswith("win"):
     from ._win32 import (
