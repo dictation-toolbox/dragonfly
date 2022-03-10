@@ -146,6 +146,25 @@ Mouse button-hold or button-release action:
    Specifies how long to pause *after* clicking the button; same as above.
 
 
+Mouse across platforms
+............................................................................
+
+Please note that there are some platforms which do not support emulating
+every mouse button listed above.  If an unsupported mouse button (*keyname*)
+is specified and the :class:`Mouse` action executed, an error is raised. For
+instance, scrolling the mouse wheel horizontally (e.g. *wheelleft*) is not,
+by default, a supported operation on X11::
+
+   ValueError: Unsupported scroll event: wheelleft
+
+Fortunately, this particular problem can be fixed by installing the *pynput*
+library::
+
+   pip install pynput
+
+On MacOS, however, Dragonfly cannot be used to scroll horizontally.
+
+
 Mouse class reference
 ............................................................................
 
