@@ -156,7 +156,7 @@ class ButtonEvent(BaseButtonEvent):
             if isinstance(button, str):
                 event_type_s = "button" if event_type == 0 else "scroll"
                 raise ValueError("Unsupported %s event: %s"
-                                 % event_type_s, button)
+                                 % (event_type_s, button))
 
             # Handle click events.
             if event_type == 0:
