@@ -31,6 +31,7 @@ from six            import binary_type, text_type, string_types, PY2
 from jsgf           import RootGrammar, PublicRule, Literal
 from sphinxwrapper  import PocketSphinx
 
+import dragonfly.engines
 from dragonfly.windows.window                         import Window
 from dragonfly.engines.base                           import (EngineBase, EngineError, MimicFailure,
                                                               DelegateTimerManagerInterface,
@@ -1065,11 +1066,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                                    % phrase)
 
     def speak(self, text):
-        """"""
-        self._log.warning("text-to-speech is not implemented for this "
-                          "engine.")
-        self._log.warning("Printing text instead.")
-        print(text)
+        """ Speak the given *text* using text-to-speech. """
+        dragonfly.engines.get_speaker().speak(text)
 
     def _get_language(self):
         return self.config.LANGUAGE

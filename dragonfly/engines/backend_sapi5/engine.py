@@ -49,6 +49,7 @@ from dragonfly.engines.base    import (EngineBase, EngineError,
                                        DelegateTimerManagerInterface,
                                        DictationContainerBase,
                                        GrammarWrapperBase)
+from dragonfly.engines.backend_sapi5.speaker   import Sapi5Speaker
 from dragonfly.engines.backend_sapi5.compiler  import Sapi5Compiler
 from dragonfly.engines.backend_sapi5.recobs    import Sapi5RecObsManager
 
@@ -110,9 +111,8 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         EnsureDispatch(self.recognizer_dispatch_name)
         EnsureDispatch("SAPI.SpVoice")
         self._recognizer  = None
-        self._speaker     = None
         self._compiler    = None
-
+        self._speaker     = None
         self._recognition_observer_manager = Sapi5RecObsManager(self)
         self._timer_manager = DelegateTimerManager(0.02, self)
 
@@ -125,7 +125,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
     def connect(self):
         """ Connect to back-end SR engine. """
         self._recognizer  = Dispatch(self.recognizer_dispatch_name)
-        self._speaker     = Dispatch("SAPI.SpVoice")
+        self._speaker     = Sapi5Speaker()
         self._compiler    = Sapi5Compiler()
 
     def disconnect(self):
@@ -303,7 +303,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
-        self._speaker.Speak(text)
+        self._speaker.speak(text)
 
     def _get_language(self):
         if not self._recognizer:

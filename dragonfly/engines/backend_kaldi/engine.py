@@ -30,6 +30,7 @@ from six                   import string_types, print_, reraise
 from six.moves             import zip
 from kaldi_active_grammar  import KaldiError, KaldiRule
 
+import dragonfly.engines
 from dragonfly.windows.window  import Window
 from dragonfly.engines.base    import (EngineBase,
                                        EngineError,
@@ -320,9 +321,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
-        # FIXME
-        self._log.warning("Text-to-speech is not implemented for this engine; printing text instead.")
-        print_(text)
+        dragonfly.engines.get_speaker().speak(text)
 
     def _get_language(self):
         return "en"

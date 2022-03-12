@@ -21,15 +21,16 @@
 import sys
 import time
 
-from six                                    import string_types
+from six                                     import string_types
 
-from dragonfly.engines.base                 import (EngineBase,
-                                                    MimicFailure,
-                                                    ThreadedTimerManager,
-                                                    DictationContainerBase,
-                                                    GrammarWrapperBase)
-from dragonfly.engines.backend_text.recobs  import TextRecobsManager
-from dragonfly.windows.window               import Window
+import dragonfly.engines
+from dragonfly.engines.base                  import (EngineBase,
+                                                     MimicFailure,
+                                                     ThreadedTimerManager,
+                                                     DictationContainerBase,
+                                                     GrammarWrapperBase)
+from dragonfly.engines.backend_text.recobs   import TextRecobsManager
+from dragonfly.windows.window                import Window
 
 
 class TextInputEngine(EngineBase):
@@ -228,10 +229,8 @@ class TextInputEngine(EngineBase):
                                % (words,))
 
     def speak(self, text):
-        self._log.warning("text-to-speech is not implemented for this "
-                          "engine.")
-        self._log.warning("Printing text instead.")
-        print(text)
+        """ Speak the given *text* using text-to-speech. """
+        dragonfly.engines.get_speaker().speak(text)
 
     @property
     def language(self):

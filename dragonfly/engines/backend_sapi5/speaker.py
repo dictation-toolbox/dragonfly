@@ -1,6 +1,6 @@
 #
 # This file is part of Dragonfly.
-# (c) Copyright 2007, 2008 by Christo Butcher
+# (c) Copyright 2021 by Dane Finlay
 # Licensed under the LGPL.
 #
 #   Dragonfly is free software: you can redistribute it and/or modify it
@@ -18,13 +18,27 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+"""
+SAPI 5 text-to-speech class
+============================================================================
 
-from .engine           import EngineBase, EngineError, MimicFailure
-from .compiler         import CompilerBase, CompilerError
-from .dictation        import DictationContainerBase
-from .grammar_wrapper  import GrammarWrapperBase
-from .recobs           import RecObsManagerBase
-from .speaker          import SpeakerBase
-from .timer            import (TimerManagerBase, ThreadedTimerManager,
-                               DelegateTimerManager,
-                               DelegateTimerManagerInterface)
+"""
+
+from win32com.client            import Dispatch
+from win32com.client.gencache   import EnsureDispatch
+
+from dragonfly.engines.base.speaker import SpeakerBase
+
+#---------------------------------------------------------------------------
+
+class Sapi5Speaker(SpeakerBase):
+
+    _name = "sapi5"
+
+    def __init__(self):
+        EnsureDispatch("SAPI.SpVoice")
+        self._spvoice = Dispatch("SAPI.SpVoice")
+        self._register()
+
+    def speak(self, text):
+        self._spvoice.Speak(text)
