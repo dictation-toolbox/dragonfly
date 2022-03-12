@@ -35,7 +35,7 @@ _speakers_by_name = {}
 
 _sapi5_names = ("sapi5shared", "sapi5inproc", "sapi5")
 _valid_engine_names = ("natlink", "kaldi", "sphinx", "text") + _sapi5_names
-_valid_speaker_names = ("natlink", "text") + _sapi5_names
+_valid_speaker_names = ("natlink", "text", "espeak", "flite") + _sapi5_names
 
 
 
@@ -286,6 +286,32 @@ def get_speaker(name=None):
                 speaker = NatlinkSpeaker()
         except Exception as e:
             message = ("Exception while initializing natlink speaker:"
+                       " %s" % (e,))
+            log.warning(message)
+            if name:
+                raise EngineError(message)
+
+    if not speaker and name in (None, "espeak"):
+        # Check if eSpeak is available.
+        try:
+            from .base.speaker_stdin import EspeakSpeaker
+            if EspeakSpeaker.is_available():
+                speaker = EspeakSpeaker()
+        except Exception as e:
+            message = ("Exception while initializing eSpeak speaker:"
+                       " %s" % (e,))
+            log.warning(message)
+            if name:
+                raise EngineError(message)
+
+    if not speaker and name in (None, "flite"):
+        # Check if CMU Flite is available.
+        try:
+            from .base.speaker_stdin import FliteSpeaker
+            if FliteSpeaker.is_available():
+                speaker = FliteSpeaker()
+        except Exception as e:
+            message = ("Exception while initializing Flite speaker:"
                        " %s" % (e,))
             log.warning(message)
             if name:
