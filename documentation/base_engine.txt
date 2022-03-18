@@ -10,8 +10,8 @@ Base engine classes
 EngineBase class
 ----------------------------------------------------------------------------
 
-The :class:`dragonfly.engines.engine_base.EngineBase` class forms the base
-class for this specific speech recognition engine classes.  It defines
+The :class:`dragonfly.engines.base.EngineBase` class forms the base
+class for the specific speech recognition engine classes.  It defines
 the stubs required and performs some of the logic necessary for
 Dragonfly to be able to interact with a speech recognition engine.
 

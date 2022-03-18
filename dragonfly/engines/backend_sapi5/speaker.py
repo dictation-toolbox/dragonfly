@@ -32,6 +32,13 @@ from dragonfly.engines.base.speaker import SpeakerBase
 #---------------------------------------------------------------------------
 
 class Sapi5Speaker(SpeakerBase):
+    """
+    This speaker class uses the SAPI 5 text-to-speech functionality.  It is
+    available on Microsoft Windows Vista and above.
+
+    It has no specific requirements other than the pywin32 library, which is
+    required to use Dragonfly on Microsoft Windows.
+    """
 
     _name = "sapi5"
 

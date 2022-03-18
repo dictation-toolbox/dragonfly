@@ -29,7 +29,11 @@ from dragonfly.engines.base.speaker import SpeakerBase
 #---------------------------------------------------------------------------
 
 class TextSpeaker(SpeakerBase):
-    """ Speaker class that prints specified text to *stdout*. """
+    """
+    This speaker class is used as a fallback when no real speaker
+    implementation is available.  Specified text is written to *stdout*,
+    i.e., it is printed to the console.
+    """
 
     _name = "text"
 

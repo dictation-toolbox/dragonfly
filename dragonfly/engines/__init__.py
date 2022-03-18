@@ -248,7 +248,45 @@ def register_engine_init(engine):
 
 def get_speaker(name=None):
     """
-        Get the speaker (text-to-speech) implementation.
+        Get the text-to-speech (speaker) implementation.
+
+        This function will initialize and return a speaker instance instance
+        of the available speaker back-end.  If one has already been
+        initialized, it will be returned instead.
+
+        If no specific speaker back-end is requested and no speaker has
+        already been initialized, this function will initialize and return
+        an instance of the first available back-end in the following order:
+
+         =======================   =========================================
+         TTS speaker back-end      Speaker name string(s)
+         =======================   =========================================
+         1. SAPI 5                 ``"sapi5"``
+         2. Dragon/Natlink         ``"natlink"``
+         3. eSpeak                 ``"espeak"``
+         4. CMU Flite              ``"flite"``
+         5. Text (stdout)          ``"text"``
+         =======================   =========================================
+
+        The first two speaker back-ends are only available on Microsoft
+        Windows.  The second requires that Dragon NaturallySpeaking and
+        Natlink are installed on the system.
+
+        The third and fourth back-ends, eSpeak and CMU Flite, may be used on
+        most platforms.  These require that the appropriate command-line
+        programs are installed on the system.
+
+        The last back-end (text) is used as a fallback when no real speaker
+        implementation is available.  This back-end writes input text to
+        stdout, i.e., prints text to the console.
+
+        **Arguments**:
+
+        :param name: optional human-readable name of the speaker to return.
+        :type name: str
+        :rtype: SpeakerBase
+        :returns: speaker instance
+        :raises: EngineError
     """
     global _default_speaker, _speakers_by_name
     log = logging.getLogger("speaker")

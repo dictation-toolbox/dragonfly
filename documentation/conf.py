@@ -91,6 +91,7 @@ mock_modules = {
     "numpy",
     "pyperclip",
     "regex",
+    "natlink"
 }
 
 for module_name in mock_modules:

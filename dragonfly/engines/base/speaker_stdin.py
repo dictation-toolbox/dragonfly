@@ -19,7 +19,7 @@
 #
 
 """
-eSpeakSpeaker and FliteSpeaker classes
+Stdin Speaker classes
 ============================================================================
 
 """
@@ -45,6 +45,7 @@ class StdinSpeakerBase(SpeakerBase):
         raise NotImplementedError("Virtual method not implemented.")
 
     def speak(self, text):
+        """ Speak the given *text* using text-to-speech. """
         if len(self._read_stdin_command) == 0:
             raise NotImplementedError("Virtual method not implemented.")
 
@@ -74,6 +75,12 @@ class StdinSpeakerBase(SpeakerBase):
 #---------------------------------------------------------------------------
 
 class EspeakSpeaker(StdinSpeakerBase):
+    """
+    This speaker class uses eSpeak to synthesize specified text into speech.
+
+    The ``espeak`` command-line program must be installed in order to use
+    this implementation.  eSpeak is available on most platforms.
+    """
 
     _name = "espeak"
     _read_stdin_command = ["espeak", "--stdin"]
@@ -95,6 +102,13 @@ class EspeakSpeaker(StdinSpeakerBase):
 #---------------------------------------------------------------------------
 
 class FliteSpeaker(StdinSpeakerBase):
+    """
+    This speaker class uses CMU Flite to synthesize specified text into
+    speech.
+
+    The ``flite`` command-line program must be installed in order to use
+    this implementation.  CMU Flite is available on most platforms.
+    """
 
     _name = "flite"
     _read_stdin_command = ["flite"]

@@ -42,7 +42,7 @@ class SpeakerBase(object):
 
     @property
     def name(self):
-        """ The human-readable name of this engine. """
+        """ The human-readable name of this speaker. """
         return self._name
 
     def speak(self, text):
