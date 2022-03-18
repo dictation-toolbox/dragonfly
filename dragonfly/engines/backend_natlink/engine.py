@@ -38,11 +38,12 @@ from datetime   import datetime
 from locale     import getpreferredencoding
 from threading  import Thread, Event
 
-from six import text_type, binary_type, string_types, PY2
+from six        import text_type, binary_type, string_types, PY2
 
 
 from dragonfly.engines.base  import (EngineBase, EngineError, MimicFailure,
                                     GrammarWrapperBase)
+from dragonfly.engines.backend_natlink.speaker    import NatlinkSpeaker
 from dragonfly.engines.backend_natlink.compiler   import NatlinkCompiler
 from dragonfly.engines.backend_natlink.dictation  import \
     NatlinkDictationContainer
@@ -140,6 +141,7 @@ class NatlinkEngine(EngineBase):
         self._timer_manager = NatlinkTimerManager(0.02, self)
         self._timer_thread = None
         self._retain_dir = None
+        self._speaker = NatlinkSpeaker()
         try:
             self.set_retain_directory(retain_dir)
         except EngineError as err:
@@ -351,16 +353,7 @@ class NatlinkEngine(EngineBase):
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
-        # Store the current mic state.
-        mic_state = self.natlink.getMicState()
-
-        # Say the text.
-        self.natlink.execScript('TTSPlayString "%s"' % text)
-
-        # Restore the previous mic state if necessary.
-        # This is to have consistent behaviour for each version of Dragon.
-        if mic_state != self.natlink.getMicState():
-            self.natlink.setMicState(mic_state)
+        self._speaker.speak(text)
 
     def _get_language(self):
         # Get a Windows language identifier from Dragon.

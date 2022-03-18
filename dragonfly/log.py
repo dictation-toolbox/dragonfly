@@ -72,6 +72,7 @@ default_levels = {
                   "engine":               (_info, _info),
                   "engine.compiler":      (_warning, _info),
                   "engine.timer":         (_warning, _info),
+                  "speaker":              (_info, _info),
                   "grammar":              (_warning, _critical),
                   "grammar.load":         (_warning, _info),
                   "grammar.begin":        (_info, _info),

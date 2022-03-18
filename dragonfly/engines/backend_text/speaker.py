@@ -1,6 +1,6 @@
 #
 # This file is part of Dragonfly.
-# (c) Copyright 2007, 2008 by Christo Butcher
+# (c) Copyright 2022 by Dane Finlay
 # Licensed under the LGPL.
 #
 #   Dragonfly is free software: you can redistribute it and/or modify it
@@ -18,13 +18,29 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+"""
+TextSpeaker class
+============================================================================
 
-from .engine           import EngineBase, EngineError, MimicFailure
-from .compiler         import CompilerBase, CompilerError
-from .dictation        import DictationContainerBase
-from .grammar_wrapper  import GrammarWrapperBase
-from .recobs           import RecObsManagerBase
-from .speaker          import SpeakerBase
-from .timer            import (TimerManagerBase, ThreadedTimerManager,
-                               DelegateTimerManager,
-                               DelegateTimerManagerInterface)
+"""
+
+from dragonfly.engines.base.speaker import SpeakerBase
+
+#---------------------------------------------------------------------------
+
+class TextSpeaker(SpeakerBase):
+    """
+    This speaker class is used as a fallback when no real speaker
+    implementation is available.  Specified text is written to *stdout*,
+    i.e., it is printed to the console.
+    """
+
+    _name = "text"
+
+    def __init__(self):
+        self._register()
+
+    def speak(self, text):
+        self._log.warning("No text-to-speech is available, printing"
+                          " specified text.")
+        print(text)

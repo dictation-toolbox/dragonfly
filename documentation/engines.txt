@@ -8,6 +8,10 @@ Dragonfly supports multiple speech recognition engines as its backend.
 The *engines* sub-package implements the interface code for each
 supported engine.
 
+Also contained within this sub-package are a number of text-to-speech
+implementations.  These can be used independently of the speech recognition
+engines via the ``get_speaker()`` function.
+
 
 Main SR engine back-end interface
 ----------------------------------------------------------------------------
@@ -28,3 +32,14 @@ Engine back-ends
     kaldi_engine
     sphinx_engine
     text_engine
+
+Text-to-speech (speaker) back-ends
+----------------------------------------------------------------------------
+
+For more information on the available text-to-speech implementations, see
+the following sections:
+
+.. toctree::
+    :maxdepth: 2
+
+    speakers
