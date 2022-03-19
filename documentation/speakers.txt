@@ -1,0 +1,55 @@
+
+.. _RefSpeakers:
+
+Text-to-speech (speaker) back-ends
+============================================================================
+
+.. contents:: Contents
+   :local:
+
+
+SpeakerBase text-to-speech class
+----------------------------------------------------------------------------
+
+The :class:`dragonfly.engines.engine.base.SpeakerBase` class forms the base
+class for the specific text-to-speech (speaker) classes.  It defines the
+stubs required and performs some of the logic necessary for Dragonfly to be
+able to interact with a text-to-speech engine.
+
+.. autoclass:: dragonfly.engines.base.SpeakerBase
+   :members:
+
+
+SAPI 5 text-to-speech class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_sapi5.speaker.Sapi5Speaker
+   :members: speak, name
+
+
+Natlink and DNS text-to-speech class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_natlink.speaker.NatlinkSpeaker
+   :members: speak, name
+
+
+eSpeak text-to-speech class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.base.speaker_stdin.EspeakSpeaker
+   :members: speak, name
+
+
+CMU Flite text-to-speech class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.base.speaker_stdin.FliteSpeaker
+   :members: speak, name
+
+
+Text fallback class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_text.speaker.TextSpeaker
+   :members: speak, name
