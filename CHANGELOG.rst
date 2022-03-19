@@ -11,6 +11,32 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+* Add get_speaker() function for retrieving the specified or default
+  text-to-speech (speaker) implementation.
+* Add eSpeak and CMU Flite text-to-speech implementations.
+
+Changed
+~~~~~~~
+* Detach text-to-speech functionality from the Natlink and SAPI 5 engine
+  back-ends and make it available via the get_speaker() function.
+* Change Kaldi, CMU Pocket Sphinx and text-input engine back-ends to use the
+  default or specified text-to-speech implementation for engine.speak().
+* Use xdotool for mouse functions on X11 if pynput is not installed.
+* Remove the pynput requirement on Linux.
+* Remove the requirement to upper-case mimicked dictated words with some
+  engine back-ends.
+
+Fixed
+~~~~~
+* Fix incorrect handling of inactive grammars by CMU Pocket Sphinx back-end.
+* Remove dictation element limitation effecting most engine back-ends.
+
+
 0.34.1_ - 2022-02-24
 --------------------
 
