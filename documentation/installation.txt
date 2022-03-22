@@ -30,11 +30,13 @@ To be able to use the dragonfly, you will need the following:
    for Linux/X11 users)* -- usually available from your system's package
    manager.
 
-**Note on Python 2.7**: Python version 2.7 (32-bit) is required if using the
-Natlink engine back-end, at least for the moment.  Support for this version
-is not maintained for the other engine back-ends and will be **dropped
-completely** in the first *MAJOR* release following stable Natlink support
-for Python 3.
+**Note on Python 2**: Python version 2.7 (32-bit) is required if using the
+Natlink SR engine, at least for the moment.  With the exception of the Kaldi
+engine, Python 2 support has been retained for the whole library.  Other
+than the fact that this support is currently required for the Natlink
+engine, this has been done because the library has always supported this
+version of Python and because retaining said support is, at present, neither
+difficult nor detrimental to the library's support for Python version 3.
 
 **Note for Linux users**: Dragonfly is only fully functional in an X11
 session.  You may also need to manually set the ``DISPLAY`` environment

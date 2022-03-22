@@ -106,22 +106,30 @@ the two versions.
 How can I use older Dragonfly scripts with Dragonfly2?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Older dragonfly scripts are mostly written with Python 2.x in mind. Python
-version 2.7 has reached the end of its life as of January 2020 (see
-`Python 2.7 EOL`_). For complicated reasons, Dragonfly's Python 3.x support
-has come a bit later than most other active projects. You will need to
-convert older Python 2.x code, to use it with Python 3.x. There are a few
-ways to convert older code:
+This version of Dragonfly has been written with backwards-compatibility in
+mind.  Older Dragonfly scripts, many of which were written with Python
+version 2 in mind, will either work perfectly without any changes or will
+after minor changes.
 
-* `2to3`_ - command-line program that reads Python 2.x source code and
-  applies a series of fixers to transform it into valid Python 3.x code.
-* `python-modernize`_ - a command-line program that uses *2to3* to make
-  Python 2 code compatible with Python 3.
+Although Python version 2.7 reached the end of its life in January 2020,
+Dragonfly has, for the most part, retained support for it.  This has been
+done because the library has always supported Python 2 and because retaining
+this support is, at present, neither difficult nor detrimental to the
+library's support for Python version 3.  The Kaldi engine back-end is the
+one (optional) component of Dragonfly that requires Python version 3.
+
+To use older Python 2 code with Python 3, it first needs to be converted.
+The following two command-line programs may be used to this end:
+
+* `2to3`_ - reads Python 2 source code and applies a series of fixers to
+  transform it into valid Python 3 code.
+* `python-modernize`_ - uses *2to3* to make Python 2 code compatible with
+  Python 3.
 
 You may be interested in the `Python 2-3 code porting guide`_ if you prefer
 to do things manually.
 
-A number of older dragonfly command modules also include the following code:
+A number of older Dragonfly command modules also include the following code:
 
 .. code-block:: python
 
@@ -365,9 +373,9 @@ error messages not mentioned in the FAQ, then see the
 How do I fix "No handlers could be found for logger X" error messages?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This error is specific to Python 2.x. It isn't a Dragonfly error, but as
-many users still use Python 2.7, it is listed here. This is the most common
-example of the error: ::
+This error is specific to Python 2. It isn't a Dragonfly error, but as many
+Dragonfly users still use Python 2, it is listed here.  This is the most
+common example of the error: ::
 
   No handlers could be found for logger "action"
 
@@ -659,7 +667,6 @@ touch:
 .. _Matrix channel: https://app.element.io/#/room/#dictation-toolbox_dragonfly:gitter.im
 .. _Natlink Troubleshooting page: https://qh.antenna.nl/unimacro/installation/installforpython27/problemswithinstallation.html
 .. _Python 2-3 code porting guide: https://docs.python.org/3/howto/pyporting.html
-.. _Python 2.7 EOL: https://www.python.org/dev/peps/pep-0373/
 .. _Security Considerations for Assistive Technologies: https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-securityoverview
 .. _Setting the default DPI awareness for a process: https://docs.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
 .. _User Account Control: https://en.wikipedia.org/wiki/User_Account_Control
