@@ -621,13 +621,13 @@ The :code:`Window` class also requires the `wmctrl`_ program::
 
   sudo apt install wmctrl
 
-The keyboard/mouse input classes will only work in an X11 session. You will
-get the following error if you are using `Wayland`_ or something else::
+The keyboard and mouse input classes on Linux (or similar) systems will only
+work in an X11 session.  The following error will occur if these classes are
+used under `Wayland`_::
 
   NotImplementedError: Keyboard support is not implemented for this platform!
 
-If you see this message, then you will probably need to `switch to X11`_ or
-use something like `ydotool`_ to have keyboard/mouse input work properly.
+Wayland users are recommended to `switch to X11`_.
 
 If you are using X11 and still see this message, then it means that the
 :code:`DISPLAY` environment variable checked by Dragonfly internally is not
@@ -682,4 +682,3 @@ touch:
 .. _switch to X11: https://askubuntu.com/questions/961304/how-do-you-switch-from-wayland-back-to-xorg-in-ubuntu-17-10
 .. _wmctrl: https://www.freedesktop.org/wiki/Software/wmctrl/
 .. _xdotool: https://www.semicomplete.com/projects/xdotool
-.. _ydotool: https://github.com/ReimuNotMoe/ydotool

@@ -32,8 +32,11 @@ Examples of how to use this class are given in :ref:`RefKeySpecExamples`.
 
 To use this class on X11/Linux, the
 `xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
-installed and the ``DISPLAY`` environment variable set.  This class does
-**not** support typing keys in Wayland sessions.
+installed and the ``DISPLAY`` environment variable set.
+
+Please note that, for technical reasons, Dragonfly does not support sending
+keystroke events this way in Wayland sessions. The Wayland user is therefore
+recommended to switch to X11.
 
 .. _RefKeySpec:
 
@@ -249,7 +252,7 @@ directly, e.g. with ``Key('U20AC')``.
 Unlike on Windows, the :class:`Key` action is able to use modifiers with
 Unicode characters on X11.
 
-This class does **not** support typing keys in Wayland sessions.
+As stated earlier, sending keystroke events is not supported under Wayland.
 
 
 Example X11 key actions

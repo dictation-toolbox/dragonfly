@@ -31,10 +31,13 @@ on Windows, Mac OS and with X11 (e.g. on Linux).
 
 To use this class on X11/Linux, the
 `xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
-installed and the ``DISPLAY`` environment variable set.  This class does
-**not** support typing text in Wayland sessions.
+installed and the ``DISPLAY`` environment variable set.
 
-It differs from the :class:`Key` action in that :class:`Text` is used for
+Please note that, for technical reasons, Dragonfly does not support sending
+keystroke events this way in Wayland sessions. The Wayland user is therefore
+recommended to switch to X11.
+
+The :class:`Text` action differs from :class:`Key` in that it is used for
 typing literal text, while :class:`dragonfly.actions.action_key.Key`
 emulates pressing keys on the keyboard.  An example of this is that the
 arrow-keys are not part of a text and so cannot be typed using the

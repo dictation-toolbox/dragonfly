@@ -149,6 +149,10 @@ Mouse button-hold or button-release action:
 Mouse across platforms
 ............................................................................
 
+To use this class on X11/Linux, the
+`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program should
+be installed and the ``DISPLAY`` environment variable set.
+
 Please note that there are some platforms which do not support emulating
 every mouse button listed above.  If an unsupported mouse button (*keyname*)
 is specified and the :class:`Mouse` action executed, an error is raised. For
@@ -163,6 +167,10 @@ library::
    pip install pynput
 
 On MacOS, however, Dragonfly cannot be used to scroll horizontally.
+
+For technical reasons, Dragonfly does not support sending mouse events this
+way in Wayland sessions. The Wayland user is therefore recommended to switch
+to X11.
 
 
 Mouse class reference

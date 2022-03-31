@@ -41,8 +41,8 @@ difficult nor detrimental to the library's support for Python version 3.
 **Note for Linux users**: Dragonfly is only fully functional in an X11
 session.  You may also need to manually set the ``DISPLAY`` environment
 variable.  Input action classes, application contexts and the ``Window``
-class will **not** be functional under Wayland.  It is recommended that
-Wayland users switch to X11.
+class will **not** be functional under Wayland.  It is therefore recommended
+that the Wayland user switch to X11.
 
 
 Installation of Dragonfly
