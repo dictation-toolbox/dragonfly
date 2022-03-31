@@ -414,9 +414,8 @@ Python to crash. For example, Python will crash if the `pywin32`_
 :ref:`command-line interface <RefCLI>` or an external module loader script
 (see `Dragonfly issue #205`_).
 
-Dragonfly's :ref:`Remote Procedure Call (RPC) sub-package <RefRPC>` can be
-used to write external GUI programs/components with Dragonfly speech
-recognition engine integration without the above concerns.
+Use of inter-process communication (IPC) is recommended to side-step this
+issue.
 
 
 Why isn't multi-threaded code working when using Natlink?

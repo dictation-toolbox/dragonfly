@@ -43,7 +43,6 @@ common_names = [
     "test_log",
     "test_parser",
     "test_lark_parser",
-    "test_rpc",
     "test_timer",
     "test_window",
     "documentation/test_action_base_doctest.txt",

@@ -97,7 +97,6 @@ setup(
                         "pyperclip >= 1.7.0",
                         "enum34;python_version<'3.4'",
                         "regex",
-                        "decorator",
                         "lark-parser == 0.8.*",
 
                         # Windows-only dependencies.
@@ -113,11 +112,6 @@ setup(
                         "pynput >= 1.4.2;platform_system=='Darwin'",
                         "pyobjc >= 5.2;platform_system=='Darwin'",
                         "py-applescript == 1.0.0;platform_system=='Darwin'",
-
-                        # RPC requirements
-                        "json-rpc",
-                        "Werkzeug",
-                        "requests",
                        ],
 
       extras_require={

@@ -65,15 +65,6 @@ mock_modules = {
     "AppKit",
     "applescript",
 
-    # Modules required by dragonfly.rpc
-    "decorator",
-    "jsonrpc",
-    "jsonrpc.dispatcher",
-    "jsonrpc.manager",
-    "werkzeug",
-    "werkzeug.serving",
-    "werkzeug.wrappers",
-
     # Modules required by Kaldi engine
     "kaldi_active_grammar",
     "sounddevice",
