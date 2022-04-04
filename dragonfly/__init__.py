@@ -66,11 +66,7 @@ if sys.platform.startswith("win"):
                                 make_input_array, send_input_array)
 
 #---------------------------------------------------------------------------
-
-if sys.platform.startswith("win"):
-    from .windows.clipboard import Clipboard
-else:
-    from .util              import Clipboard
+from .windows.clipboard import Clipboard
 
 #---------------------------------------------------------------------------
 
