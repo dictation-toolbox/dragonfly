@@ -39,7 +39,10 @@ elif sys.platform.startswith("win"):
     from dragonfly.windows.win32_clipboard      import (Win32Clipboard as
                                                         Clipboard,
                                                         win32_clipboard_ctx)
-
-else:
+elif sys.platform == "darwin":
     from dragonfly.windows.pyperclip_clipboard  import \
         PyperclipClipboard as Clipboard
+
+else:
+    from dragonfly.windows.base_clipboard       import (BaseClipboard as
+                                                        Clipboard)
