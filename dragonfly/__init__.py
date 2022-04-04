@@ -78,8 +78,3 @@ from .windows           import Window, Monitor, monitors
 from .language          import (Integer, IntegerRef, ShortIntegerRef,
                                 Digits, DigitsRef,
                                 Number, NumberRef)
-
-#---------------------------------------------------------------------------
-from .accessibility     import (CursorPosition, TextQuery,
-                                get_accessibility_controller,
-                                get_stopping_accessibility_controller)

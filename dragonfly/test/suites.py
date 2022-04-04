@@ -35,7 +35,6 @@ setup_log()
 # ==========================================================================
 
 common_names = [
-    "test_accessibility",
     "test_actions",
     "test_contexts",
     "test_basic_rule",
@@ -52,7 +51,7 @@ common_names = [
     "documentation/test_recobs_doctest.txt",
 ]
 
-# Run clipboard tests if on a desktop system.
+# Include clipboard tests if on a desktop system.
 desktop = (
     # Windows
     os.name == "nt" or
@@ -63,6 +62,13 @@ desktop = (
 )
 if desktop:
     common_names.insert(2, "test_clipboard")
+
+# Include accessibility tests if dragonfly.accessibility is available.
+try:
+    import dragonfly.accessibility
+    common_names.insert(0, "test_accessibility")
+except ImportError:
+    pass
 
 # Define spoken language test files. All of them work with the natlink and
 # text engines. The English tests should work with sapi5 and sphinx by

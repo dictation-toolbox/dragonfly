@@ -95,8 +95,6 @@ setup(
                         "packaging >= 19.0",
                         "six",
                         "pyperclip >= 1.7.0",
-                        "enum34;python_version<'3.4'",
-                        "regex",
                         "lark-parser == 0.8.*",
 
                         # Windows-only dependencies.
@@ -115,6 +113,10 @@ setup(
                        ],
 
       extras_require={
+          "accessibility": [
+              "enum34;python_version<'3.4'",
+              "regex",
+          ],
           "sphinx": [
                      "sphinxwrapper >= 1.2.0",
                      "pyjsgf >= 1.7.0",

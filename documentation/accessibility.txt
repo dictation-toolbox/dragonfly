@@ -1,3 +1,4 @@
+.. _RefAccessibility:
 
 Accessibility API
 ============================================================================
@@ -6,6 +7,11 @@ The accessibility API enables text selection and editing more powerful than
 what Dragon provides natively, to a wider range of applications (e.g. Google
 Chrome on Windows and Mozilla Firefox on Windows and X11). It is currently
 in Beta and the API may change at any time.
+
+The base requirements for the API may be installed by running the following
+command::
+
+  pip install 'dragonfly2[accessibility]'
 
 Windows
 ----------------------------------------------------------------------------
