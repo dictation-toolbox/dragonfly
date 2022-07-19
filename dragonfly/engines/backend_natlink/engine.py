@@ -223,6 +223,10 @@ class NatlinkEngine(EngineBase):
         hypothesis = False
 
         attempt_connect = False
+
+        # Return early if the grammar has no rules.
+        if not rule_names: return wrapper
+
         try:
             grammar_object.load(compiled_grammar, all_results, hypothesis)
         except self.natlink.NatError as e:
@@ -246,6 +250,9 @@ class NatlinkEngine(EngineBase):
                 raise EngineError("Failed to load grammar %s: %s."
                                   % (grammar, e))
 
+        # Grammar has been loaded.
+        wrapper.loaded = True
+
         # Apply the threading fix if it hasn't been applied yet.
         self.apply_threading_fix()
 
@@ -256,7 +263,9 @@ class NatlinkEngine(EngineBase):
         """ Unload the given *grammar* from natlink. """
         try:
             grammar_object = wrapper.grammar_object
-            grammar_object.unload()
+            if wrapper.loaded:
+                grammar_object.unload()
+                wrapper.loaded = False
             grammar_object.setBeginCallback(None)
             grammar_object.setResultsCallback(None)
             grammar_object.setHypothesisCallback(None)
@@ -433,6 +442,7 @@ class GrammarWrapper(GrammarWrapperBase):
     def __init__(self, grammar, grammar_object, engine, recobs_manager):
         GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.grammar_object = grammar_object
+        self.loaded = False
         self.rule_names = None
 
     def begin_callback(self, module_info):
