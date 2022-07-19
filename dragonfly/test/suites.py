@@ -79,21 +79,33 @@ language_names = [
     "test_language_nl_number",
 ]
 
-# Use different test names depending on the DNS version. Fallback on v11 if
-# the version is unknown.
-try:
-    import natlinkstatus
-    dns_version = int(natlinkstatus.NatlinkStatus().getDNSVersion())
-except:
-    # Couldn't get the DNS version for whatever reason.
-    dns_version = None
-
+# Define Natlink test names.
 natlink_names = common_names + language_names + [
     "test_compiler_natlink",
     "test_dictation",
     "test_engine_natlink",
 ]
 
+# Import the `natlinkstatus' module.  The module is in a different place in
+#  newer versions of Natlink.
+try:
+    import natlinkstatus
+except ImportError:
+    try:
+        from natlinkcore import natlinkstatus
+    except:
+        natlinkstatus = None
+
+# If `natlinkstatus' was found it, use it to check the DNS version.
+if natlinkstatus:
+    try:
+        dns_version = int(natlinkstatus.NatlinkStatus().getDNSVersion())
+    except:
+        # Couldn't get the DNS version for whatever reason.
+        dns_version = None
+
+# Add the appropriate DNS word formatting doctest to the `natlink_names'
+#  list, assuming v11 if the DNS version was indeterminable.
 if dns_version and dns_version <= 10:
     natlink_names += ["documentation/test_word_formatting_v10_doctest.txt"]
 else:

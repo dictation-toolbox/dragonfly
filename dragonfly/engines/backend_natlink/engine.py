@@ -391,7 +391,10 @@ class NatlinkEngine(EngineBase):
             try:
                 import natlinkstatus
             except ImportError:
-                natlinkstatus = None
+                try:
+                    from natlinkcore import natlinkstatus
+                except ImportError:
+                    natlinkstatus = None
             running_via_natspeak = (
                 sys.executable.endswith("natspeak.exe") and
                 natlinkstatus is not None
