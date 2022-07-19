@@ -40,7 +40,6 @@ from threading  import Thread, Event
 
 from six        import text_type, binary_type, string_types, PY2
 
-
 from dragonfly.engines.base  import (EngineBase, EngineError, MimicFailure,
                                     GrammarWrapperBase)
 from dragonfly.engines.backend_natlink.speaker    import NatlinkSpeaker
@@ -147,6 +146,10 @@ class NatlinkEngine(EngineBase):
         except EngineError as err:
             self._retain_dir = None
             self._log.error(err)
+
+        # Note: The default value of this variable will be overwritten when
+        #  speech is first detected.
+        self._last_window_handle = 0
 
     def apply_threading_fix(self):
         """
@@ -282,8 +285,15 @@ class NatlinkEngine(EngineBase):
         wrapper = self._get_grammar_wrapper(grammar)
         if not wrapper:
             return
+
+        # Activate the rule.
+        # Note: The rule is only activated for the current window, but this
+        #  should not be a problem.
         grammar_object = wrapper.grammar_object
-        grammar_object.activate(rule.name, 0)
+        try:
+            grammar_object.activate(rule.name, self._last_window_handle)
+        except self.natlink.BadWindow:
+            pass
 
     def deactivate_rule(self, rule, grammar):
         self._log.debug("Deactivating rule %s in grammar %s." % (rule.name, grammar.name))
@@ -428,6 +438,7 @@ class GrammarWrapper(GrammarWrapperBase):
     def begin_callback(self, module_info):
         executable, title, handle = tuple(map_word(word)
                                           for word in module_info)
+        self.engine._last_window_handle = handle
         self.grammar.process_begin(executable, title, handle)
 
     def _decode_grammar_rules(self, state, words, results, *args):
