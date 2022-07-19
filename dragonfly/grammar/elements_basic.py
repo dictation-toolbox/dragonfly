@@ -453,13 +453,13 @@ class Optional(ElementBase):
         """
             The *value* of a :class:`Optional` is the value of its child,
             if the child did match the recognition.  Otherwise the
-            *value* is *None*.
+            *value* is *None* (default).
 
         """
         if node.children:
             return node.children[0].value()
         else:
-            return None
+            return self.default
 
 
 #---------------------------------------------------------------------------
