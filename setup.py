@@ -94,9 +94,6 @@ setup(
                         "setuptools >= 40.0.0",
                         "packaging >= 19.0",
                         "six",
-                        "enum34;python_version<'3.4'",
-                        "regex",
-                        "decorator",
                         "lark-parser == 0.8.*",
 
                         # Windows-only dependencies.
@@ -113,14 +110,13 @@ setup(
                         "pyobjc >= 5.2;platform_system=='Darwin'",
                         "py-applescript == 1.0.0;platform_system=='Darwin'",
                         "pyperclip >= 1.7.0;platform_system=='Darwin'",
-
-                        # RPC requirements
-                        "json-rpc",
-                        "Werkzeug",
-                        "requests",
                        ],
 
       extras_require={
+          "accessibility": [
+                            "enum34;python_version<'3.4'",
+                            "regex",
+                           ],
           "sphinx": [
                      "sphinxwrapper >= 1.2.0",
                      "pyjsgf >= 1.7.0",

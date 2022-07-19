@@ -46,10 +46,10 @@ def _set_logging_level(args):
 
 
 def _init_engine(args):
-    # Retrieve the engine option pairs from the arguments.
-    # TODO Remove multiple engine options per -o arg in version 1.0.0.
+    # Retrieve the engine option pairs from the arguments.  The retrieval
+    #  of engine options is complex because multiple arguments are allowed.
     options = {}
-    for argument in args.engine_options:
+    for argument in args.engine_option:
         for options_list in argument:
             for option, value in options_list:
                 options[option] = value
@@ -272,35 +272,41 @@ def _add_arguments(parser, *arguments):
 
 
 def _smart_cast(value):
-    """ Attempts to convert given str to a more precise type based on Python literals. """
+    """
+    Attempts to convert given str to a more precise type based on Python
+    literals.
+    """
     try:
         return ast.literal_eval(value)
     except:
         return value
 
 
-def _engine_options_string(string):
+def _engine_option_string(string):
     if '=' not in string:
         msg = "Invalid engine option: %r" % string
         raise argparse.ArgumentTypeError(msg)
 
     # Return a list of key/value arguments separated by commas or spaces.
-    # TODO Remove multiple engine options per -o arg in version 1.0.0.
     options = []
-    for sub_string in re.split('[,\\s]', string):
-        if not sub_string:  # Filter out empty strings.
-            continue
+    sub_strings = [
+        s for s in re.split('[,\\s]', string)
+        if len(s) > 0  # Filter out empty strings.
+    ]
+    if len(sub_strings) > 1:
+        msg = "Invalid engine option: %r" % string
+        raise argparse.ArgumentTypeError(msg)
 
-        # There must be one valid engine option per sub-string.
-        parts = sub_string.split('=')
-        if len(parts) != 2 or not (parts[0] and parts[1]):
-            msg = "Invalid engine option: %r" % sub_string
-            raise argparse.ArgumentTypeError(msg)
+    # There must be one valid engine option.
+    sub_string = sub_strings[0]
+    parts = sub_strings[0].split('=')
+    if len(parts) != 2 or not (parts[0] and parts[1]):
+        msg = "Invalid engine option: %r" % sub_string
+        raise argparse.ArgumentTypeError(msg)
 
-        arg = parts[0]
-        value = _smart_cast(parts[1])
-        options.append((arg, value))
-
+    arg = parts[0]
+    value = _smart_cast(parts[1])
+    options.append((arg, value))
     return options
 
 
@@ -352,18 +358,15 @@ def make_arg_parser():
         "files", metavar="file", nargs="*", type=_valid_filename_or_pattern,
         help="Command module file(s)."
     )
-
-    # TODO Rename to "--engine-option" in version 1.0.0.
-    engine_options_argument = _build_argument(
-        "-o", "--engine-options", default=[], nargs="+", action="append",
-        type=_engine_options_string,
+    engine_option_argument = _build_argument(
+        "-o", "--engine-option", default=[], nargs="+", action="append",
+        type=_engine_option_string,
         help="One or more engine options to be passed to *get_engine()*. "
              "Each option should specify a key word argument and value. "
              "Multiple options should be separated by spaces or commas. "
              "Values are treated as Python literals if possible, "
              "otherwise as strings."
     )
-
     language_argument = _build_argument(
         "--language", default="en",
         help="Speaker language to use. Only applies if using an engine "
@@ -404,7 +407,7 @@ def make_arg_parser():
     )
     _add_arguments(
         parser_test,
-        cmd_module_files_argument, engine_argument, engine_options_argument,
+        cmd_module_files_argument, engine_argument, engine_option_argument,
         language_argument, no_input_argument, delay_argument,
         log_level_argument, quiet_argument
     )
@@ -427,7 +430,7 @@ def make_arg_parser():
     )
     _add_arguments(
         parser_load,
-        cmd_module_files_argument, engine_argument, engine_options_argument,
+        cmd_module_files_argument, engine_argument, engine_option_argument,
         language_argument, no_input_argument, no_recobs_messages_argument,
         log_level_argument, quiet_argument
     )
@@ -451,7 +454,7 @@ def make_arg_parser():
     _add_arguments(
         parser_load_directory,
         module_dirs_argument, recursive_argument, engine_argument,
-        engine_options_argument, language_argument, no_input_argument,
+        engine_option_argument, language_argument, no_input_argument,
         no_recobs_messages_argument, log_level_argument, quiet_argument
     )
 

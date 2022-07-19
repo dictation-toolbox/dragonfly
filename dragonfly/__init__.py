@@ -66,11 +66,7 @@ if sys.platform.startswith("win"):
                                 make_input_array, send_input_array)
 
 #---------------------------------------------------------------------------
-
-if sys.platform.startswith("win"):
-    from .windows.clipboard import Clipboard
-else:
-    from .util              import Clipboard
+from .windows.clipboard import Clipboard
 
 #---------------------------------------------------------------------------
 
@@ -82,10 +78,3 @@ from .windows           import Window, Monitor, monitors
 from .language          import (Integer, IntegerRef, ShortIntegerRef,
                                 Digits, DigitsRef,
                                 Number, NumberRef)
-
-#---------------------------------------------------------------------------
-from .accessibility     import (CursorPosition, TextQuery,
-                                get_accessibility_controller,
-                                get_stopping_accessibility_controller)
-
-from .rpc               import RPCServer, send_rpc_request

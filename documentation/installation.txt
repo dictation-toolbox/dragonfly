@@ -96,3 +96,11 @@ documented separately:
 * :ref:`RefKaldiEngine`
 * :ref:`RefSphinxEngine`
 * :ref:`RefTextEngine`
+
+Installation for optional features
+----------------------------------------------------------------------------
+
+Some features of Dragonfly are optional and have requirements which must be
+installed separately.  Included in this category are the following:
+
+* :ref:`RefAccessibility`

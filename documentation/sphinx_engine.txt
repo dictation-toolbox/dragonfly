@@ -70,9 +70,8 @@ English (``"en"``) by default.
 Audio configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Audio configuration options used to record from the microphone, validate
-input wave files in and write wave files if the training data directory is
-set.
+Audio configuration options are used to record from the microphone and to
+validate input wave files.
 
 These options must match the requirements for the acoustic model being used.
 The default values match the requirements for the 16kHz CMU US English
@@ -85,41 +84,6 @@ models.
 - ``FRAMES_PER_BUFFER`` -- frames per recorded audio buffer
   (default: ``2048``).
 
-
-Keyphrase configuration
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The following configuration options control the engine's built-in
-keyphrases:
-
-- ``WAKE_PHRASE`` -- the keyphrase to listen for when in sleep mode
-  (default: ``"wake up"``).
-- ``WAKE_PHRASE_THRESHOLD`` -- threshold value* for the wake keyphrase
-  (default: ``1e-20``).
-- ``SLEEP PHRASE`` -- the keyphrase to listen for to enter sleep mode
-  (default: ``"go to sleep"``).
-- ``SLEEP_PHRASE_THRESHOLD`` -- threshold value* for the sleep keyphrase
-  (default: ``1e-40``).
-- ``START_ASLEEP`` -- boolean value for whether the engine should start in
-  a sleep state (default: ``True``).
-- ``START_TRAINING_PHRASE`` -- keyphrase to listen for to start a training
-  session where no processing occurs
-  (default: ``"start training session"``).
-- ``START_TRAINING_PHRASE_THRESHOLD`` -- threshold value* for the start
-  training keyphrase (default: ``1e-48``).
-- ``END_TRAINING_PHRASE`` -- keyphrase to listen for to end a training
-  session if one is in progress (default: ``"end training session"``).
-- ``END_TRAINING_PHRASE_THRESHOLD`` -- threshold value* for the end training
-  keyphrase (default: ``1e-45``).
-
-\* Threshold values need to be set for each keyphrase. The `CMU Sphinx LM
-tutorial`_ has some advice on keyphrase threshold values.
-
-If your language isn't set to English, all built-in keyphrases will be
-disabled by default if they are not specified in your configuration.
-
-Any keyphrase can be disabled by setting the phrase and threshold values to
-``""`` and ``0`` respectively.
 
 Decoder configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -187,26 +151,6 @@ use the same language or language variant. See the `CMU Sphinx wiki`_ for
 a more detailed explanation of these components.
 
 
-Training configuration
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The engine can save *.wav* and *.txt* training files into a directory for
-later use. The following are the configuration options associated with this
-functionality:
-
-- ``TRAINING_DATA_DIR`` -- directory to save training files into
-  (default: ``""``).
-- ``TRANSCRIPT_NAME`` -- common name of files saved into the training data
-  directory (default: ``"training"``).
-
-Set ``TRAINING_DATA_DIR`` to a valid directory path to enable recording of
-*.txt* and *.wav* files. If the path is a relative path, it will be
-interpreted as relative to the module loader's directory.
-
-The engine will **not** attempt to make the directory for you as it did in
-previous versions of *dragonfly*.
-
-
 Engine API
 ----------------------------------------------------------------------------
 
@@ -224,38 +168,12 @@ CMU Pocket Sphinx can have some trouble recognising what was said
 accurately. To remedy this, you may need to adapt the acoustic model that
 Pocket Sphinx is using. This is similar to how Dragon sometimes requires
 training. The CMU Sphinx `adaption tutorial`_ covers this topic. There is
-also a `YouTube video on model adaption`_.
+also this `YouTube video on model adaption`_ and the `SphinxTrainingHelper`_
+bash script.
 
 Adapting your model may not be necessary; there might be other issues with
 your setup. There is more information on tuning the recognition accuracy in
 the CMU Sphinx `tuning tutorial`_.
-
-The engine can record what you say into *.wav* and *.txt* files if the
-``TRAINING_DATA_DIR`` configuration option mentioned above is set to an
-existing directory. To get files compatible with the Sphinx accoustic model
-adaption process, you can use the :meth:`write_transcript_files` engine
-method.
-
-Mismatched words may use the engine decoder's default search, typically a
-language model search.
-
-There are built-in key phrases for starting and ending training sessions
-where no grammar rule processing will occur. Key phrases will still be
-processed. See the ``START_TRAINING_PHRASE`` and ``END_TRAINING_PHRASE``
-engine configuration options. One use case for the training mode is training
-potentially destructive commands or commands that take a long time to
-execute their actions.
-
-To use the training files, you will need to correct any incorrect phrases in
-the *.transcription* or *.txt* files. You can then use the
-`SphinxTrainingHelper`_ bash script to adapt your model. This script makes
-the process considerably easier, although you may still encounter problems.
-You should be able to play the wave files using most media players (e.g.
-VLC, Windows Media Player, aplay) if you need to.
-
-You will want to remove the training files after a successful adaption. This
-must be done manually for the moment.
-
 
 Limitations
 ----------------------------------------------------------------------------

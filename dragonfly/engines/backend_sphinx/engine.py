@@ -44,8 +44,6 @@ from dragonfly.engines.backend_sphinx.misc             import (EngineConfig,
 from dragonfly.engines.backend_sphinx.recobs           import SphinxRecObsManager
 from dragonfly.engines.backend_sphinx.recording        import PyAudioRecorder
 from dragonfly.engines.backend_sphinx.timer            import SphinxTimerManager
-from dragonfly.engines.backend_sphinx.training         import (write_training_data,
-                                                               write_transcript_files)
 
 
 class UnknownWordError(Exception):
@@ -92,7 +90,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._recognition_observer_manager = SphinxRecObsManager(self)
         self._keyphrase_thresholds = {}
         self._keyphrase_functions = {}
-        self._training_session_active = False
         self._default_search_result = None
         self._grammar_count = 0
 
@@ -100,14 +97,13 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._timer_manager = SphinxTimerManager(0.02, self)
 
         # Set up keyphrase search names and valid search names for grammars.
-        self._keyphrase_search_names = ["_key_phrases", "_wake_phrase"]
+        self._keyphrase_search_names = ["_key_phrases"]
         self._valid_searches = set()
 
         # Recognising loop members.
         self._recorder = PyAudioRecorder(self.config)
         self._cancel_recognition_next_time = False
         self._recognising = False
-        self._recognition_paused = False
 
     @property
     def config(self):
@@ -138,19 +134,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         options = [
             "LANGUAGE",
 
-            "START_ASLEEP",
-            "WAKE_PHRASE",
-            "WAKE_PHRASE_THRESHOLD",
-            "SLEEP_PHRASE",
-            "SLEEP_PHRASE_THRESHOLD",
-
-            "TRAINING_DATA_DIR",
-            "TRANSCRIPT_NAME",
-            "START_TRAINING_PHRASE",
-            "START_TRAINING_PHRASE_THRESHOLD",
-            "END_TRAINING_PHRASE",
-            "END_TRAINING_PHRASE_THRESHOLD",
-
             "CHANNELS",
             "RATE",
             "SAMPLE_WIDTH",
@@ -163,11 +146,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                 continue
 
             default_value = getattr(EngineConfig, option)
-            if "PHRASE" in option:
-                # Disable missing phrases by default if using a language
-                # other than English.
-                if not engine_config.LANGUAGE.startswith("en"):
-                    default_value = "" if option.endswith("PHRASE") else 0.0
             setattr(engine_config, option, default_value)
 
     def connect(self):
@@ -202,48 +180,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._decoder.hypothesis_callback = hypothesis
         self._decoder.speech_start_callback = speech_start
 
-        # Set up built-in keyphrases if they set. Catch and log any
-        # UnknownWordErrors because all keyphrases are optional.
-        def get_phrase_values(name):
-            phrase_attr = name + "_PHRASE"
-            threshold_attr = name + "_PHRASE_THRESHOLD"
-            return (getattr(self.config, phrase_attr, ""),
-                    getattr(self.config, threshold_attr, 0))
-
-        def safe_set_keyphrase(name, func):
-            phrase, threshold = get_phrase_values(name)
-            if phrase and threshold:
-                try:
-                    self.set_keyphrase(phrase, threshold, func)
-                except UnknownWordError as e:
-                    self._log.error(e)
-
-        # Set the wake phrase using set_kws_list directly because it uses a
-        # different search.
-        wake_phrase, wake_threshold = get_phrase_values("WAKE")
-        if wake_phrase and wake_threshold:
-            try:
-                self._validate_words(wake_phrase.split(), "keyphrase")
-                self._decoder.set_kws_list("_wake_phrase", {
-                    wake_phrase: wake_threshold
-                })
-            except UnknownWordError as e:
-                self._log.error(e)
-
-        # Set the other keyphrases using safe_set_keyphrase().
-        safe_set_keyphrase("SLEEP", self.pause_recognition)
-        safe_set_keyphrase("START_TRAINING",
-                           self.start_training_session)
-        safe_set_keyphrase("END_TRAINING",
-                           self.end_training_session)
-
         # Set the PyAudioRecorder instance's config object.
         self._recorder.config = self.config
-
-        # Start in sleep mode if requested.
-        if self.config.START_ASLEEP:
-            self.pause_recognition()
-            self._log.warning("Starting in sleep mode as requested.")
 
     def _free_engine_resources(self):
         """
@@ -259,8 +197,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Reset other variables
         self._cancel_recognition_next_time = False
-        self._training_session_active = False
-        self._recognition_paused = False
         self._grammar_count = 0
 
         # Clear dictionaries and sets
@@ -455,19 +391,9 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._decoder.set_kws_list("_key_phrases", self._keyphrase_thresholds)
 
     def _set_default_search(self):
-        # Change the active search to the one used for processing speech as
-        # it is heard.
-        swap_to_wake_search = (
-            self.recognition_paused and self.config.WAKE_PHRASE and
-            self.config.WAKE_PHRASE_THRESHOLD
-        )
-
         # Ensure we're not processing.
         self._decoder.end_utterance()
-        if swap_to_wake_search:
-            self._decoder.active_search = "_wake_phrase"
-        else:
-            self._decoder.active_search = self._default_search_name
+        self._decoder.active_search = self._default_search_name
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar* and return a wrapper. """
@@ -683,17 +609,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if not processing_occurred:
             self._recognition_observer_manager.notify_failure(results_obj)
 
-        # Write the training data files if necessary.
-        data_dir = self.config.TRAINING_DATA_DIR
-        if not mimicking and data_dir and os.path.isdir(data_dir):
-            # Use the default search's hypothesis if final_speech was nil.
-            if not final_speech:
-                final_speech = speech
-            try:
-                write_training_data(self.config, self._audio_buffers,
-                                    final_speech)
-            except Exception as e:
-                self._log.exception("Failed to write training data: %s" % e)
 
         # Clear audio buffer list because utterance processing has finished.
         self._audio_buffers = []
@@ -907,9 +822,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if the file doesn't exist, if it can't be read or if the WAV header
         values do not match those in the engine configuration.
 
-        If recognition is paused (sleep mode), this method will call
-        :meth:`resume_recognition`.
-
         The wave file must use the same sample width, sample rate and number
         of channels that the acoustic model uses.
 
@@ -941,10 +853,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             self.config.RATE,
             self.config.FRAMES_PER_BUFFER
         )
-
-        # Make sure recognition is not paused.
-        if self.recognition_paused:
-            self.resume_recognition(notify=False)
 
         # Open the wave file. Use contextlib to make sure that the file is
         # closed whether errors are raised or not.
@@ -994,10 +902,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         Start recognising from the default recording device until
         :meth:`disconnect` is called.
 
-        Recognition can be paused and resumed using either the sleep/wake
-        key phrases or by calling :meth:`pause_recognition` or
-        :meth:`resume_recognition`.
-
         To configure audio input settings, modify the engine's ``CHANNELS``,
         ``RATE``, ``SAMPLE_WIDTH`` and/or ``FRAMES_PER_BUFFER``
         configuration options.
@@ -1031,10 +935,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if not words:
             raise MimicFailure("Invalid mimic input %r" % words)
 
-        if self.recognition_paused and words == self.config.WAKE_PHRASE:
-            self.resume_recognition()
-            return
-
         # Pretend that Sphinx has started processing speech
         self._speech_start_callback(True)
 
@@ -1054,12 +954,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._speech_start_callback(True)
 
         # Process phrases as if they were spoken
-        wake_phrase = self.config.WAKE_PHRASE
         for phrase in phrases:
-            if self.recognition_paused and phrase == wake_phrase:
-                self.resume_recognition()
-                continue
-
             result = self._hypothesis_callback(phrase, True)
             if not result:
                 raise MimicFailure("No matching rule found for words %s."
@@ -1076,145 +971,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         return False
 
     # ----------------------------------------------------------------------
-    # Training-related methods
-
-    def write_transcript_files(self, fileids_path, transcription_path):
-        """
-        Write .fileids and .transcription files for files in the training
-        data directory and write them to the specified file paths.
-
-        This method will raise an error if the ``TRAINING_DATA_DIR``
-        configuration option is not set to an existing directory.
-
-        :param fileids_path: path to .fileids file to create.
-        :param transcription_path: path to .transcription file to create.
-        :type fileids_path: str
-        :type transcription_path: str
-        :raises: IOError | OSError
-        """
-        write_transcript_files(
-            self.config, fileids_path, transcription_path
-        )
-
-    @property
-    def training_session_active(self):
-        """
-        Whether a training session is in progress.
-
-        :rtype: bool
-        """
-        return self._training_session_active
-
-    def start_training_session(self):
-        """
-        Start the training session. This will stop recognition processing
-        until either :meth:`end_training_session` is called or the end
-        training keyphrase is heard.
-        """
-        data_dir = self.config.TRAINING_DATA_DIR
-        if not data_dir or not os.path.isdir(data_dir):
-            self._log.warning("Training data will not be recorded; '%s' is "
-                              "not a directory" % data_dir)
-
-        if not self._training_session_active:
-            self._log.info("Training session has started. No rule "
-                           "actions will be processed. ")
-            self._log.info("Say '%s' to end the session."
-                           % self.config.END_TRAINING_PHRASE)
-            self._training_session_active = True
-
-    def end_training_session(self):
-        """
-        End the training if one is in progress. This will allow recognition
-        processing once again.
-        """
-        if self._training_session_active:
-            self._log.info("Ending training session.")
-            self._log.info("Rule actions will now be processed normally "
-                           "again.")
-            self._training_session_active = False
-
-    # ----------------------------------------------------------------------
     # Recognition loop control methods
     # Stopping recognition loop is done using disconnect()
-
-    @property
-    def recognition_paused(self):
-        """
-        Whether the engine is waiting for the wake phrase to be heard or for
-        :meth:`resume_recognition` to be called.
-
-        :rtype: bool
-        """
-        return self._recognition_paused
-
-    def pause_recognition(self):
-        """
-        Pause recognition and wait for :meth:`resume_recognition` to be
-        called or for the wake keyphrase to be spoken.
-        """
-        if not self._decoder:
-            return
-
-        self._recognition_paused = True
-
-        # Switch to the wake keyphrase search if a wake keyphrase has been
-        # set.
-        self._set_default_search()
-        if not self.config.WAKE_PHRASE:
-            self._log.warning("No wake phrase has been set.")
-            self._log.warning("Use engine.resume_recognition() to wake up.")
-
-        # Define temporary callback for the decoder.
-        def hypothesis(hyp):
-            # Clear any recorded audio buffers.
-            self._recorder.clear_buffers()
-            s = hyp.hypstr if hyp else None
-
-            # Resume recognition if s is the wake keyphrase.
-            if s and s.strip() == self.config.WAKE_PHRASE.strip():
-                self.resume_recognition()
-            elif self.config.WAKE_PHRASE:
-                self._log.debug("Didn't hear %s" % self.config.WAKE_PHRASE)
-
-            # Clear audio buffers
-            self._audio_buffers = []
-
-        # Override decoder hypothesis callback.
-        self._decoder.hypothesis_callback = hypothesis
-
-    def resume_recognition(self, notify=True):
-        """
-        Resume listening for grammar rules and key phrases.
-        """
-        if not self._decoder:
-            return
-
-        self._recognition_paused = False
-
-        # Notify observers about recognition resume.
-        keyphrase = self.config.WAKE_PHRASE
-        words = tuple(keyphrase.strip().split())
-        results_obj = None  # TODO Use PS results object once implemented
-        if words and notify:
-            manager = self._recognition_observer_manager
-            arguments = (words, None, None, results_obj)
-            manager.notify_recognition(*arguments)
-            manager.notify_post_recognition(*arguments)
-
-        # Restore the callbacks to normal
-        def hypothesis(hyp):
-            # Set default search result.
-            self._default_search_result = hyp
-
-            # Set speech to the hypothesis string or None if there isn't one
-            speech = hyp.hypstr if hyp else None
-            return self._hypothesis_callback(speech, False)
-
-        self._decoder.hypothesis_callback = hypothesis
-
-        # Switch to the default search.
-        self._set_default_search()
 
     def cancel_recognition(self):
         """

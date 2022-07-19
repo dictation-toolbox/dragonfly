@@ -20,10 +20,7 @@ def main():
     args.file.close()
 
     # Set up the engine.
-    # process_wave() handles START_ASLEEP = True (default), but a warning
-    # message will be logged. We can suppress that here.
     engine = get_engine("sphinx")
-    engine.config.START_ASLEEP = False
 
     # Voice activity detection config values may need to be adjusted to
     # recognise speech. Do this by changing the decoder's config.

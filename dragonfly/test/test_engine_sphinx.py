@@ -77,12 +77,6 @@ class SphinxEngineCase(unittest.TestCase):
         self.engine = get_engine("sphinx")
 
         # Ensure the relevant configuration values are used.
-        self.engine.config.TRAINING_DATA_DIR = ""
-        self.engine.config.START_ASLEEP = False
-        self.engine.config.WAKE_PHRASE = "wake up"
-        self.engine.config.SLEEP_PHRASE = "go to sleep"
-        self.engine.config.START_TRAINING_PHRASE = "start training session"
-        self.engine.config.END_TRAINING_PHRASE = "end training session"
         self.engine.config.LANGUAGE = "en"
 
         # Map for test functions
@@ -97,7 +91,6 @@ class SphinxEngineCase(unittest.TestCase):
 
     def tearDown(self):
         self.test_map.clear()
-        self.engine.resume_recognition()
         self.test_recobs.unregister()
         self.engine.disconnect()
 
@@ -186,24 +179,9 @@ class EngineTests(SphinxEngineCase):
 
     def test_engine_config(self):
         """ Verify that engine configuration is validated correctly. """
-        # Use START_ASLEEP=True for this test.
-        self.engine.config.START_ASLEEP = True
         options = [
             "DECODER_CONFIG",
             "LANGUAGE",
-
-            "START_ASLEEP",
-            "WAKE_PHRASE",
-            "WAKE_PHRASE_THRESHOLD",
-            "SLEEP_PHRASE",
-            "SLEEP_PHRASE_THRESHOLD",
-
-            "TRAINING_DATA_DIR",
-            "TRANSCRIPT_NAME",
-            "START_TRAINING_PHRASE",
-            "START_TRAINING_PHRASE_THRESHOLD",
-            "END_TRAINING_PHRASE",
-            "END_TRAINING_PHRASE_THRESHOLD",
 
             "CHANNELS",
             "RATE",
@@ -235,51 +213,6 @@ class EngineTests(SphinxEngineCase):
                                  getattr(original_config, name),
                                  "%s did not match" % name)
 
-    def test_pause_resume_recognition(self):
-        """ Verify that pause/resume recognition functionality works. """
-
-        grammar = RuleTestGrammar("test1")
-        grammar.add_rule(CompoundRule(name="r1", spec="hello world"))
-
-        def assert_recognize_succeeds():
-            results = grammar.recognize_node("hello world").words()
-            assert results == ["hello", "world"]
-
-        # Enter sleep mode.
-        self.engine.pause_recognition()
-        self.assertTrue(self.engine.recognition_paused)
-
-        # Mimicking hello world should succeed when recognition is
-        # paused, but it will not succeed when actually speaking.
-        assert_recognize_succeeds()
-
-        # Check that recognition still succeeds when recognition is
-        # resumed again.
-        self.engine.resume_recognition()
-        self.assertFalse(self.engine.recognition_paused)
-        assert_recognize_succeeds()
-
-        # Test that mimicking wake and sleep phrases also works
-        # correctly.
-        self.assert_mimic_success("go to sleep")
-        self.assertTrue(self.engine.recognition_paused)
-        self.assert_mimic_success("wake up")
-        self.assertFalse(self.engine.recognition_paused)
-
-    def test_start_asleep(self):
-        """ Verify that the START_ASLEEP config option works. """
-        # config.START_ASLEEP is False for the tests by default, so test
-        # that first.
-        self.assertFalse(self.engine.recognition_paused)
-        self.assert_mimic_success("go to sleep")
-
-        # Now set it to True, restart the engine and test again.
-        self.engine.config.START_ASLEEP = True
-        self.engine.disconnect()
-        self.engine.connect()
-        self.assertTrue(self.engine.recognition_paused)
-        self.assert_mimic_success("wake up")
-
     def test_keyphrases_and_recobs(self):
         """ Verify that observers are notified of keyphrase events. """
         test1 = self.get_test_function()
@@ -302,11 +235,6 @@ class EngineTests(SphinxEngineCase):
         # was notified.
         assert_success()
 
-        # Test that both key phrases can be mimicked in sleep mode.
-        self.engine.pause_recognition()
-        assert_success()
-        self.engine.resume_recognition()
-
         # Test that removed key phrases no longer match
         self.engine.unset_keyphrase("hello world")
         self.assert_mimic_failure("hello world")
@@ -323,35 +251,6 @@ class EngineTests(SphinxEngineCase):
         from dragonfly.engines.backend_sphinx.engine import UnknownWordError
         self.assertRaises(UnknownWordError, self.engine.set_keyphrase,
                           "notaword", 1e-20, lambda: None)
-
-    def test_built_in_keyphrase_unknown_words(self):
-        """ Verify that errors are logged for built-in keyphrases with unknown words.
-        """
-        # Test invalid built-in keyphrases.
-        self.engine.config.WAKE_PHRASE = "wake up unknownword"
-        self.engine.config.SLEEP_PHRASE = "aninvalid sleepphrase"
-        self.engine.config.START_TRAINING_PHRASE = "another invalidphrase"
-        self.engine.config.END_TRAINING_PHRASE = "end trainingsession"
-
-        # Restart the engine manually to verify that errors are logged for
-        # the keyphrases on connect().
-        handler = MockLoggingHandler()
-        self.log.addHandler(handler)
-        try:
-            self.engine.disconnect()
-            self.engine.connect()
-        finally:
-            self.log.removeHandler(handler)
-
-        # Check the logged messages. Each of the unknown words in all four
-        # built-in keyphrases should be listed in separate messages.
-        errors = handler.messages["error"]
-        self.assertEqual(len(errors), 4)
-        self.assertIn("unknownword", errors[0])
-        self.assertIn("aninvalid", errors[1])
-        self.assertIn("sleepphrase", errors[1])
-        self.assertIn("invalidphrase", errors[2])
-        self.assertIn("trainingsession", errors[3])
 
     def test_unknown_grammar_words(self):
         """ Verify that warnings are logged for grammars with unknown words.
@@ -401,37 +300,6 @@ class EngineTests(SphinxEngineCase):
             grammar.load()
             self.assert_mimic_success("test rule")
             self.assert_mimic_success("test list")
-        finally:
-            grammar.unload()
-
-    def test_training_session(self):
-        """ Verify that no recognition processing occurs when training. """
-        # Set up a rule to "train".
-        test = self.get_test_function()
-
-        class TestRule(CompoundRule):
-            spec = "test training"
-            _process_recognition = test
-
-        # Create and load a grammar with the rule.
-        grammar = Grammar("test")
-        grammar.add_rule(TestRule())
-        grammar.load()
-        try:
-            # Start a training session.
-            self.engine.start_training_session()
-
-            # Test that mimic succeeds, no processing occurs, and the
-            # observer is still notified of events.
-            self.assert_mimic_success("test training")
-            self.assert_test_function_called(test, 0)
-            self.assert_recobs_result(False, (u"test", u"training"))
-
-            # End the session and test again.
-            self.engine.end_training_session()
-            self.assert_mimic_success("test training")
-            self.assert_test_function_called(test, 1)
-            self.assert_recobs_result(False, (u"test", u"training"))
         finally:
             grammar.unload()
 

@@ -33,14 +33,6 @@ def update_list():
         lst.append(item)
 
 
-def write_transcripts():
-    engine = get_engine()
-    if engine.name == "sphinx":
-        engine.write_transcript_files(
-            "training.fileids", "training.transcription"
-        )
-
-
 # Define a function for typing multiple numbers.
 def type_numbers(numbers):
     Text("".join(map(str, numbers))).execute()
@@ -62,9 +54,6 @@ class ExampleRule(MappingRule):
 
         # Command to type numbers, e.g. 'type one two three'.
         "type <numbers>": Function(type_numbers),
-
-        # Write transcript files used for training models.
-        "(make|write) transcripts": Function(write_transcripts),
     }
 
     extras = [

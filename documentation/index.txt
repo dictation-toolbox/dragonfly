@@ -137,7 +137,6 @@ Besides this page, the following documentation is also available:
     accessibility
     cli
     logging
-    rpc
     config
     ccr
     project

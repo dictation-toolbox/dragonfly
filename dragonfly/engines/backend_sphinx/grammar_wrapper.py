@@ -123,15 +123,14 @@ class GrammarWrapper(GrammarWrapperBase):
                         *notify_args
                     )
 
-                    # Process the rule if not in training mode.
-                    if not self.engine.training_session_active:
-                        try:
-                            rule.process_recognition(root)
-                        except Exception as e:
-                            self._log.exception("Failed to process rule "
-                                                "'%s': %s" % (rule.name, e))
-                        self.recobs_manager.notify_post_recognition(
-                            *notify_args
-                        )
+                    # Process the rule.
+                    try:
+                        rule.process_recognition(root)
+                    except Exception as e:
+                        self._log.exception("Failed to process rule "
+                                            "'%s': %s" % (rule.name, e))
+                    self.recobs_manager.notify_post_recognition(
+                        *notify_args
+                    )
                     return True
         return False
