@@ -26,25 +26,28 @@ import logging
 
 import win32api
 
-from dragonfly.windows.base_monitor import BaseMonitor
-from dragonfly.windows.rectangle    import Rectangle
+from dragonfly.windows.base_monitor  import BaseMonitor
+from dragonfly.windows.rectangle     import Rectangle
 
-# Force the current process to be DPI aware. This will ensure that the
-# resolution is reported properly even when DPI scaling is on. This appears to
-# be set to PROCESS_SYSTEM_DPI_AWARE when running embedded in Dragon, which
-# provides awareness of the DPI when the application starts, but not when it
-# changes. Unfortunately, this cannot be changed (presumably it is declared in a
-# manifest). When running from the command line, however, the default is
-# PROCESS_DPI_UNAWARE and can be adjusted here.
+# Attempt to set the current process as DPI aware.  If sucessful, this will
+#  ensure that the resolution is reported properly when DPI scaling is on.
+#
+# Note: Dragon itself sets the awareness to PROCESS_SYSTEM_DPI_AWARE, which
+#  provides awareness of the DPI when the application starts, but not when
+#  it changes.  Unfortunately, this cannot be changed.  When running from
+#  the command line, however, the default is PROCESS_DPI_UNAWARE and can be
+#  adjusted here.
+#
 try:
     log = logging.getLogger("monitor.init")
     value = 2  # PROCESS_PER_MONITOR_DPI_AWARE
     hresult = ctypes.windll.shcore.SetProcessDpiAwareness(value)
-    if hresult == -2147024809:  # E_INVALIDARG
+    hresult &= 0xffffffff
+    if hresult == 0x80070057:  # E_INVALIDARG
         log.warning("DPI awareness could not be set; "
                     "SetProcessDpiAwareness() received an invalid "
                     "argument: %d", value)
-    elif hresult == -2147024891:  # E_ACCESSDENIED
+    elif hresult == 0x80070005:  # E_ACCESSDENIED
         log.warning("DPI awareness could not be set; it has been set "
                     "already.")
 except OSError:
@@ -73,7 +76,8 @@ class Win32Monitor(BaseMonitor):
 
             # Create a rectangle object representing the monitor's
             # dimensions and relative position.
-            top_left_x, top_left_y, bottom_right_x, bottom_right_y = rectangle
+            top_left_x, top_left_y, bottom_right_x, bottom_right_y = \
+                rectangle
             dx = bottom_right_x - top_left_x
             dy = bottom_right_y - top_left_y
             rectangle = Rectangle(top_left_x, top_left_y, dx, dy)
