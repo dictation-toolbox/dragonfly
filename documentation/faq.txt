@@ -590,19 +590,8 @@ alternative solutions:
     `AutoHotkey`_ (AHK) is an automation scripting language for Windows. One
     of its many features allows running AHK code with UI Access. See the
     relevant `AutoHotkey FAQ on UAC`_ for how to set this up and use it.
-
     Using this, you can define hotkeys for interacting with administrative
-    windows. This can help if you are able to use a keyboard, even if only
-    for a short time. Unfortunately, Dragonfly's actions won't be able to
-    trigger these hotkeys since the AHK code will be running in elevated
-    mode. One way around this is to run a local web server in your AHK
-    script, perhaps using `AHKhttp`_ or something similar. Then you can send
-    HTTP requests to the server to run your AHK code.
-
-    If you do use the local web server approach mentioned, it is very
-    important to ensure that requests received by the server are properly
-    authorized so that only your Python code has (indirect) UI access
-    (see `Web API security`_).
+    windows.
 
 
 Why aren't Dragonfly's input actions working on my Linux system?
