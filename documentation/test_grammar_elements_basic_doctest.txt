@@ -37,6 +37,21 @@ Usage::
     >>> test_literal.recognize("goodbye")
     RecognitionFailure
 
+Literal with non-ASCII characters::
+
+    >>> # We do not test the confusing Python 3 "bytes" type here.
+    >>> string = "touch\xe9"
+    >>> literal = Literal(string)
+    >>> test_literal = ElementTester(literal)
+    >>> test_literal.recognize(string)
+    u'touch\xe9'
+
+    >>> string = u"touch\xe9"
+    >>> literal = Literal(string)
+    >>> test_literal = ElementTester(literal)
+    >>> test_literal.recognize(string)
+    u'touch\xe9'
+
 Quoted words usage::
 
     >>> # Quoted words are not joined in the 'words' property.

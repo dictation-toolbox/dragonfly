@@ -97,12 +97,13 @@ except ImportError:
         natlinkstatus = None
 
 # If `natlinkstatus' was found it, use it to check the DNS version.
+dns_version = None
 if natlinkstatus:
     try:
         dns_version = int(natlinkstatus.NatlinkStatus().getDNSVersion())
     except:
         # Couldn't get the DNS version for whatever reason.
-        dns_version = None
+        pass
 
 # Add the appropriate DNS word formatting doctest to the `natlink_names'
 #  list, assuming v11 if the DNS version was indeterminable.

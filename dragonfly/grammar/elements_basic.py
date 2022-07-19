@@ -81,9 +81,10 @@ usage examples:
 
 import copy
 import itertools
+import locale
 import logging
 
-from six                          import integer_types, string_types
+import six
 
 from dragonfly.grammar.rule_base  import Rule
 from dragonfly.grammar.list       import ListBase, DictList
@@ -599,8 +600,8 @@ class Repetition(Sequence):
         if not isinstance(child, ElementBase):
             raise TypeError("Child of %s object must be an"
                             " ElementBase instance." % self)
-        assert isinstance(min, integer_types)
-        assert max is None or isinstance(max, integer_types)
+        assert isinstance(min, six.integer_types)
+        assert max is None or isinstance(max, six.integer_types)
         assert max is None or min < max, "min must be less than max"
 
         self._child = child
@@ -745,7 +746,11 @@ class Literal(ElementBase):
         ElementBase.__init__(self, name, default=default)
         self._value = value
 
-        if not isinstance(text, string_types):
+        # Decode binary text before using it.
+        if isinstance(text, six.binary_type):
+            text = text.decode(locale.getpreferredencoding())
+
+        if not isinstance(text, six.string_types):
             raise TypeError("Text of %s object must be a"
                             " string." % self)
 
