@@ -115,7 +115,8 @@ setup(
       extras_require={
           "accessibility": [
                             "enum34;python_version<'3.4'",
-                            "regex",
+                            "regex<2022.1.18;python_version<='2.7'",
+                            "regex;python_version>'2.7'",
                            ],
           "sphinx": [
                      "sphinxwrapper >= 1.2.0",
