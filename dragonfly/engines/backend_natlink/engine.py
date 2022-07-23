@@ -147,10 +147,6 @@ class NatlinkEngine(EngineBase):
             self._retain_dir = None
             self._log.error(err)
 
-        # Note: The default value of this variable will be overwritten when
-        #  speech is first detected.
-        self._last_window_handle = 0
-
     def apply_threading_fix(self):
         """
         Start a thread and engine timer internally to allow Python threads
@@ -292,25 +288,14 @@ class NatlinkEngine(EngineBase):
     def activate_rule(self, rule, grammar):
         self._log.debug("Activating rule %s in grammar %s." % (rule.name, grammar.name))
         wrapper = self._get_grammar_wrapper(grammar)
-        if not wrapper:
-            return
-
-        # Activate the rule.
-        # Note: The rule is only activated for the current window, but this
-        #  should not be a problem.
-        grammar_object = wrapper.grammar_object
-        try:
-            grammar_object.activate(rule.name, self._last_window_handle)
-        except self.natlink.BadWindow:
-            pass
+        if not wrapper: return
+        wrapper.activate_rule(rule.name)
 
     def deactivate_rule(self, rule, grammar):
         self._log.debug("Deactivating rule %s in grammar %s." % (rule.name, grammar.name))
         wrapper = self._get_grammar_wrapper(grammar)
-        if not wrapper:
-            return
-        grammar_object = wrapper.grammar_object
-        grammar_object.deactivate(rule.name)
+        if not wrapper: return
+        wrapper.deactivate_rule(rule.name)
 
     def update_list(self, lst, grammar):
         wrapper = self._get_grammar_wrapper(grammar)
@@ -443,13 +428,53 @@ class GrammarWrapper(GrammarWrapperBase):
         GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.grammar_object = grammar_object
         self.loaded = False
+        self.beginning = False
         self.rule_names = None
+        self.active_rules_set = set()
+        self._current_window_handle = 0
+        self._last_window_handle = 0
 
     def begin_callback(self, module_info):
         executable, title, handle = tuple(map_word(word)
                                           for word in module_info)
-        self.engine._last_window_handle = handle
-        self.grammar.process_begin(executable, title, handle)
+        self._current_window_handle = handle
+
+        # Handle grammar context and rule activation.
+        # Note: The latter is done to handle some edges cases.
+        try:
+            self.beginning = True
+            self.grammar.process_begin(executable, title, handle)
+        finally:
+            self.beginning = False
+        for rule_name in self.active_rules_set:
+            self.activate_rule(rule_name)
+
+        self._last_window_handle = handle
+
+    def activate_rule(self, rule_name):
+        self.active_rules_set.add(rule_name)
+
+        # Rule activation is delayed this call originated from
+        #  process_begin().
+        if self.beginning: return
+
+        grammar_object = self.grammar_object
+        handle1 = self._last_window_handle
+        handle2 = self._current_window_handle
+
+        # Activate the rule for the current window, deactivating it first if
+        #  the window has changed.
+        if handle1 != handle2:
+            grammar_object.deactivate(rule_name)
+        try:
+            grammar_object.activate(rule_name, handle2)
+        except self.natlink.BadWindow:
+            grammar_object.deactivate(rule_name)
+
+    def deactivate_rule(self, rule_name):
+        self.active_rules_set.remove(rule_name)
+        grammar_object = self.grammar_object
+        grammar_object.deactivate(rule_name)
 
     def _decode_grammar_rules(self, state, words, results, *args):
         # Iterate through this grammar's rules, attempting to decode each.

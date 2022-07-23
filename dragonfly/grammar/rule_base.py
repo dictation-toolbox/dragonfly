@@ -221,9 +221,8 @@ class Rule(object):
                 if self._active:
                     self.deactivate()
         else:
-            # Always instruct the engine to activate non-contextual rules.
-            #  This is necessary for the DNS back-end only.
-            self.activate()
+            if not self._active:
+                self.activate()
             self._process_begin()
 
     def activate(self, force=False):
