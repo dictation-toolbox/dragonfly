@@ -48,10 +48,9 @@ arrow-keys are not part of a text and so cannot be typed using the
 Windows Unicode Keyboard Support
 ............................................................................
 
-The :class:`Text` action can be used to type arbitrary Unicode characters
-using the `relevant Windows API <https://docs.microsoft.com/en-us/windows/desktop/api/winuser/ns-winuser-tagkeybdinput#remarks>`__.
-This is disabled by default because it ignores the up/down status of
-modifier keys (e.g. ctrl).
+The :class:`Text` action may be used to type arbitrary Unicode characters on
+Windows.  This is disabled by default because it ignores the up/down status
+of modifier keys (e.g. ctrl).
 
 It can be enabled by changing the ``unicode_keyboard`` setting in
 `~/.dragonfly2-speech/settings.cfg` to ``True``::
