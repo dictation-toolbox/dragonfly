@@ -15,10 +15,10 @@ Dragonfly and Natlink support Dragon versions up to 15 (latest). The
 *Individual* editions of *Dragon* are recommended, although other editions
 such as *Home* will also work.
 
-Python version 2.7 (32-bit) is required to use this engine back-end, at
-least for the moment.  Support for this version is not maintained for the
-other engine back-ends and will be **dropped completely** in the first
-*MAJOR* release following stable Natlink support for Python 3.
+Python version 2.7 (32-bit) is required to use this engine back-end.  This
+is because, at the time of writing (September '22), Natlink does not have
+stable support for Python version 3.  Dragonfly will continue to retain
+support for Python version 2.7 regardless, since it is not difficult.
 
 Once Natlink is up and running, Dragonfly command-modules can be
 treated as any other Natlink macro files.  Natlink automatically

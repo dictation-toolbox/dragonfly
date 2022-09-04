@@ -103,7 +103,7 @@ See the :ref:`changelog <RefChangelog>` for the full list of changes between
 the two versions.
 
 
-How can I use older Dragonfly scripts with Dragonfly2?
+How can I use older Dragonfly scripts written for Python 2.7?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This version of Dragonfly has been written with backwards-compatibility in
@@ -118,16 +118,16 @@ this support is, at present, neither difficult nor detrimental to the
 library's support for Python version 3.  The Kaldi engine back-end is the
 one (optional) component of Dragonfly that requires Python version 3.
 
-To use older Python 2 code with Python 3, it first needs to be converted.
-The following two command-line programs may be used to this end:
+If the reader must use Python 3, then the Python 2 code typically needs to
+be converted.  The following two command-line programs may be used to this
+end:
 
 * `2to3`_ - reads Python 2 source code and applies a series of fixers to
   transform it into valid Python 3 code.
 * `python-modernize`_ - uses *2to3* to make Python 2 code compatible with
   Python 3.
 
-You may be interested in the `Python 2-3 code porting guide`_ if you prefer
-to do things manually.
+The `Python 2-3 code porting guide`_ may also be of interest.
 
 A number of older Dragonfly command modules also include the following code:
 
@@ -139,9 +139,8 @@ A number of older Dragonfly command modules also include the following code:
    except ImportError:
        pass
 
-Since the distribution name has been changed to *dragonfly2*, you will need
-to either replace :code:`dragonfly` with :code:`dragonfly2` or remove code
-like this altogether.
+Since the distribution name has been changed to *dragonfly2*,
+:code:`dragonfly` will need to be replaced with :code:`dragonfly2`.
 
 
 Where are some good resources on learning Python?
