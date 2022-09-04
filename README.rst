@@ -185,11 +185,12 @@ dependencies, then you may need to upgrade pip with the following command:
     pip install --upgrade pip
 
 
-SR engine back-ends
+Speech recognition engine back-ends
 ----------------------------------------------------------------------------
 
-Each Dragonfly speech recognition engine back-end and its requirements are
-documented separately:
+Installation instructions, requirements and API references for each
+Dragonfly speech recognition engine are documented separately on the
+following pages:
 
 * `Natlink and DNS engine
   <http://dragonfly2.readthedocs.org/en/latest/natlink_engine.html>`_
