@@ -246,9 +246,6 @@ class NatlinkEngine(EngineBase):
                 raise EngineError("Failed to load grammar %s: %s."
                                   % (grammar, e))
 
-        # Grammar has been loaded.
-        wrapper.loaded = True
-
         # Apply the threading fix if it hasn't been applied yet.
         self.apply_threading_fix()
 
@@ -259,9 +256,6 @@ class NatlinkEngine(EngineBase):
         """ Unload the given *grammar* from natlink. """
         try:
             grammar_object = wrapper.grammar_object
-            if wrapper.loaded:
-                grammar_object.unload()
-                wrapper.loaded = False
             grammar_object.setBeginCallback(None)
             grammar_object.setResultsCallback(None)
             grammar_object.setHypothesisCallback(None)
@@ -427,49 +421,43 @@ class GrammarWrapper(GrammarWrapperBase):
     def __init__(self, grammar, grammar_object, engine, recobs_manager):
         GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
         self.grammar_object = grammar_object
-        self.loaded = False
-        self.beginning = False
         self.rule_names = None
         self.active_rules_set = set()
-        self._current_window_handle = 0
-        self._last_window_handle = 0
+        self.hwnd = 0
+        self.beginning = False
 
     def begin_callback(self, module_info):
+        self.beginning = True
         executable, title, handle = tuple(map_word(word)
                                           for word in module_info)
-        self._current_window_handle = handle
+        self.hwnd = handle
 
-        # Handle grammar context and rule activation.
-        # Note: The latter is done to handle some edges cases.
+        # Run the grammar's process_begin() method.
         try:
-            self.beginning = True
             self.grammar.process_begin(executable, title, handle)
-        finally:
-            self.beginning = False
+        except:
+            message = "Exception occurred during process_begin() call."
+            self._log.exception(message)
+
+        # Activate each rule.  This is done separately to guarantee that
+        #  grammar rules are active for the current window.
+        self.beginning = False
         for rule_name in self.active_rules_set:
             self.activate_rule(rule_name)
-
-        self._last_window_handle = handle
 
     def activate_rule(self, rule_name):
         self.active_rules_set.add(rule_name)
 
-        # Rule activation is delayed this call originated from
-        #  process_begin().
+        # Rule activation is delayed
         if self.beginning: return
 
+        # Activate the rule for the current window.
         grammar_object = self.grammar_object
-        handle1 = self._last_window_handle
-        handle2 = self._current_window_handle
-
-        # Activate the rule for the current window, deactivating it first if
-        #  the window has changed.
-        if handle1 != handle2:
-            grammar_object.deactivate(rule_name)
         try:
-            grammar_object.activate(rule_name, handle2)
-        except self.natlink.BadWindow:
+            grammar_object.activate(rule_name, self.hwnd)
+        except self.natlink.NatError:
             grammar_object.deactivate(rule_name)
+            grammar_object.activate(rule_name, self.hwnd)
 
     def deactivate_rule(self, rule_name):
         self.active_rules_set.remove(rule_name)
