@@ -48,7 +48,7 @@ try:
                  "SetProcessDpiAwareness() received an invalid "
                  "argument: %d", value)
     elif hresult == 0x80070005:  # E_ACCESSDENIED
-        log.info("DPI awareness could not be set; it has been set ")
+        log.info("DPI awareness could not be set; it has been set "
                  "already.")
 except OSError:
     # Do nothing if SetProcessDpiAwareness() could not be called.
