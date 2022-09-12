@@ -5,7 +5,7 @@ Natlink and DNS engine back-end
 
 Dragonfly uses Natlink to communicate with Dragon.  The latest versions of
 Natlink are available from `SourceForge
-<https://sourceforge.net/projects/natlink/files/natlink/natlinktest4.1/>`__.
+<https://sourceforge.net/projects/natlink/files/natlink/natlink4.2/>`__.
 All versions in the 4.X range should work with Dragonfly.  Please see the
 `Natlink install instructions
 <https://qh.antenna.nl/unimacro/installation/index.html>`__ on
@@ -29,12 +29,15 @@ optional user directory.  Common locations are:
  * ``C:\Program Files\NatLink\MacroSystem``
  * ``My Documents\Natlink``
 
-At least one of these should be present after installing
-Natlink.  That is the place where you should put Dragonfly
-command-modules so that Natlink will load them.  Don't forget to
-turn the microphone off and on again after placing a new
-command-modules in the Natlink directory, because otherwise
-Natlink does not immediately see the new file.
+At least one of these, or the custom user directory, should be present
+after installing and configuring Natlink.  That is the place where you
+should put Dragonfly command-modules so that Natlink will load them.
+Command-modules should be Python source files starting with an underscore,
+e.g. *_notepad_example.py*.
+
+Don't forget to turn the microphone off and on again after placing new
+command-modules in the Natlink directory, because otherwise Natlink does
+not immediately see the new file.
 
 
 Engine Configuration
