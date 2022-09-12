@@ -44,12 +44,12 @@ try:
     hresult = ctypes.windll.shcore.SetProcessDpiAwareness(value)
     hresult &= 0xffffffff
     if hresult == 0x80070057:  # E_INVALIDARG
-        log.warning("DPI awareness could not be set; "
-                    "SetProcessDpiAwareness() received an invalid "
-                    "argument: %d", value)
+        log.info("DPI awareness could not be set; "
+                 "SetProcessDpiAwareness() received an invalid "
+                 "argument: %d", value)
     elif hresult == 0x80070005:  # E_ACCESSDENIED
-        log.warning("DPI awareness could not be set; it has been set "
-                    "already.")
+        log.info("DPI awareness could not be set; it has been set ")
+                 "already.")
 except OSError:
     # Do nothing if SetProcessDpiAwareness() could not be called.
     pass
