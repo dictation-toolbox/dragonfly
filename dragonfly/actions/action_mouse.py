@@ -146,31 +146,31 @@ Mouse button-hold or button-release action:
    Specifies how long to pause *after* clicking the button; same as above.
 
 
-Mouse across platforms
+Mouse caveats
 ............................................................................
-
-To use this class on X11/Linux, the
-`xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program should
-be installed and the ``DISPLAY`` environment variable set.
 
 Please note that there are some platforms which do not support emulating
 every mouse button listed above.  If an unsupported mouse button (*keyname*)
-is specified and the :class:`Mouse` action executed, an error is raised. For
-instance, scrolling the mouse wheel horizontally (e.g. *wheelleft*) is not,
-by default, a supported operation on X11::
+is specified and the :class:`Mouse` action executed, an error is raised::
 
-   ValueError: Unsupported scroll event: wheelleft
+   ValueError: Unsupported mouse button event: four
 
-Fortunately, this particular problem can be fixed by installing the *pynput*
-library::
+On MacOS, double-click and triple-click can only be simulated via *repeat*::
 
-   pip install pynput
+   # Perform a double-click.
+   Mouse("left:2").execute()
 
-On MacOS, however, Dragonfly cannot be used to scroll horizontally.
+   # Perform a triple-click.
+   Mouse("left:3").execute()
 
-For technical reasons, Dragonfly does not support sending mouse events this
-way in Wayland sessions. The Wayland user is therefore recommended to switch
-to X11.
+   # The following commented Mouse actions, for double-click and
+   #  triple-click respectively, will not work properly on macOS:
+   #Mouse("left, left").execute()
+   #Mouse("left, left, left").execute()
+
+For technical reasons, Dragonfly cannot support simulation of mouse events
+in Wayland sessions.  Wayland users are therefore recommended to switch to
+X11, Windows or macOS.
 
 
 Mouse class reference

@@ -155,7 +155,7 @@ class ButtonEvent(BaseButtonEvent):
             # Raise an error for unsupported buttons.
             if isinstance(button, str):
                 event_type_s = "button" if event_type == 0 else "scroll"
-                raise ValueError("Unsupported %s event: %s"
+                raise ValueError("Unsupported mouse %s event: %s"
                                  % (event_type_s, button))
 
             # Handle click events.
