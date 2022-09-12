@@ -104,9 +104,10 @@ setup(
                         # "python-libxdo;platform_system=='Linux'",
                         # "Xlib;platform_system=='Linux'",
                         "psutil >= 5.5.1;platform_system=='Linux'",
+                        "pynput >= 1.7.6;platform_system=='Linux'",
 
                         # Mac OS dependencies.
-                        "pynput >= 1.4.2;platform_system=='Darwin'",
+                        "pynput >= 1.7.6;platform_system=='Darwin'",
                         "pyobjc >= 5.2;platform_system=='Darwin'",
                         "py-applescript == 1.0.0;platform_system=='Darwin'",
                         "pyperclip >= 1.7.0;platform_system=='Darwin'",
