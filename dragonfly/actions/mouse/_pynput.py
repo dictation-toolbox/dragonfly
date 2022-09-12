@@ -96,15 +96,15 @@ PLATFORM_BUTTON_FLAGS = {
 }
 
 PLATFORM_WHEEL_FLAGS = {
-    # ((button, event_type), scroll_count)
-    "wheelup": ((get_button("scroll_up"), 1), 3),
-    "stepup": ((get_button("scroll_up"), 1), 1),
-    "wheeldown": ((get_button("scroll_down"), 1), 3),
-    "stepdown": ((get_button("scroll_down"), 1), 1),
-    "wheelright": ((get_button("scroll_right"), 1), 3),
-    "stepright": ((get_button("scroll_right"), 1), 1),
-    "wheelleft": ((get_button("scroll_left"), 1), 3),
-    "stepleft": ((get_button("scroll_left"), 1), 1),
+    # button  ->  ((button, event_type), step_count)
+    "wheelup":    (("stepup",    2),  3),
+    "stepup":     (("stepup",    2),  1),
+    "wheeldown":  (("stepdown",  2), -3),
+    "stepdown":   (("stepdown",  2), -1),
+    "wheelright": (("stepright", 2),  3),
+    "stepright":  (("stepright", 2),  1),
+    "wheelleft":  (("stepleft",  2), -3),
+    "stepleft":   (("stepleft",  2), -1),
 }
 
 
@@ -118,17 +118,57 @@ class ButtonEvent(BaseButtonEvent):
         # Initialize the pynput mouse controller, if necessary.
         _init_controller()
 
-        # Process button events.
-        for ((button, event_type), flag) in self._flags:
-            # Check if the button is unknown.
+        # Pre-process event flags.
+        # - Raise an error if an unsupported event is found.
+        # - Combine down/up events so that the `click' function may be used
+        #    where appropriate.
+        events = []
+        if len(self._flags) > 0: events.append(self._flags[0])
+        for event in self._flags[1:]:
+            ((button, event_type), flag) = event
             if button is None:
-                event_type_s = "button" if event_type == 0 else "scroll"
-                raise ValueError("Unsupported %s event" % event_type_s)
+                message = "Unsupported mouse %s event"
+                if event_type == 0: message = message % "scroll"
+                else:               message = message % "button"
+                raise ValueError(message)
 
-            if event_type == 0:  # Button press event
-                if flag:
+            # Is this event compatible with the last one-to-two events?
+            # Note: Button events are joined like this because the *pynput*
+            #  `click' controller method must be used for double/triple
+            #  clicking on macOS.
+            prev_event = events.pop()
+            ((prev_button, prev_event_type), prev_flag) = prev_event
+            if (prev_button == button and prev_flag and not flag and
+                    prev_event_type == event_type == 0):
+                event = ((button, 1), 1)
+                if len(events) > 0:
+                    # Join successive click events.
+                    prev_event = events.pop()
+                    ((prev_button, prev_event_type), prev_flag) = prev_event
+                    if prev_button == button and prev_event_type == 1:
+                        event = ((button, 1), prev_flag + 1)
+                    else:
+                        events.append(prev_event)
+            else:
+                events.append(prev_event)
+
+            events.append(event)
+
+        # Process mouse events.
+        for event in events:
+            ((button, event_type), flag) = event
+            # Button press events.
+            if event_type == 0:
+                if flag == 1:
                     _controller.press(button)
                 else:
                     _controller.release(button)
-            elif event_type == 1:  # Scroll event
+            elif event_type == 1:
                 _controller.click(button, flag)
+
+            # Scroll events.
+            elif event_type == 2:
+                if button == "stepup" or button == "stepdown":
+                    _controller.scroll(0, flag)
+                else:
+                    _controller.scroll(flag, 0)
