@@ -1,19 +1,32 @@
 # -*- coding: utf-8 -*-
 #
 
+import ctypes
 import sys
 import os
 import os.path
 import re
 
+
+#---------------------------------------------------------------------------
+# Put the root directory of the repository onto the module search path so
+#  that dragonfly may be imported.
 directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, directory)
+
+
+#---------------------------------------------------------------------------
+# Enable logging if building with Python version 2.7.
+if sys.version_info.major == 2:
+    import logging
+    logging.basicConfig()
+
 
 #---------------------------------------------------------------------------
 # Set an environment variable so that dragonfly can check if a sphinx build
 # is running.
 
-os.environ["SPHINX_BUILD_RUNNING"] = "1"
+os.environ["SPHINX_DOC_BUILD"] = "1"
 
 
 #---------------------------------------------------------------------------
@@ -28,8 +41,8 @@ print("Version:", version, "-- Release:", release)
 
 
 #---------------------------------------------------------------------------
-# Mock libraries that are only available on some platforms or with optional
-# dependencies installed.
+# Mock Python modules that are only available on some platforms or if
+#  optional dependencies are installed.
 
 from mock import MagicMock
 
@@ -39,52 +52,74 @@ class Mock(MagicMock):
         return MagicMock()
 
 
+# Define modules that should always be mocked prior to building the
+#  documentation.
 mock_modules = {
-    # Modules required on Windows
-    "ctypes.wintypes",
-    "pythoncom",
-    "pywintypes",
-    "win32api",
-    "win32clipboard",
-    "win32com",
-    "win32com.client",
-    "win32com.client.gencache",
-    "win32com.gen_py",
-    "win32com.shell",
-    "win32con",
-    "win32event",
-    "win32file",
-    "win32gui",
-    "winsound",
-    "winxpgui",
-
-    # Modules required on Linux
-    "psutil",
-
-    # Modules required on macOS
-    "AppKit",
-    "applescript",
-
-    # Modules required by Kaldi engine
+    # Modules required by Kaldi engine.
     "kaldi_active_grammar",
     "sounddevice",
     "webrtcvad",
 
-    # Modules required by Sphinx engine
+    # Modules required by Sphinx engine.
     "jsgf",
     "jsgf.ext",
     "pocketsphinx",
     "pyaudio",
     "sphinxwrapper",
 
-    # Other
-    "ctypes",
+    # Other.
     "numpy",
+    "pynput",
+    "pynput.keyboard",
+    "pynput.mouse",
     "pyperclip",
     "regex",
-    "natlink"
 }
 
+
+# If this is not Windows, include modules required when running on that
+#  platform.
+if sys.platform != "win32":
+    mock_modules.update({ "ctypes.wintypes", "natlink" })
+
+    # Mock Windows-specific symbols from ctypes.
+    ctypes.windll = Mock()
+    ctypes.WinError = Mock()
+    ctypes.WINFUNCTYPE = Mock()
+
+
+# Include pywin32 modules, if necessary.
+try:
+    import win32api
+except:
+    mock_modules.update({
+        "pythoncom",
+        "pywintypes",
+        "win32api",
+        "win32clipboard",
+        "win32com",
+        "win32com.client",
+        "win32com.client.gencache",
+        "win32com.gen_py",
+        "win32com.shell",
+        "win32con",
+        "win32event",
+        "win32file",
+        "win32gui",
+        "win32process",
+        "winsound",
+        "winxpgui",
+    })
+
+# Do the same for Linux
+if not sys.platform.startswith("linux"):
+    mock_modules.update({ "psutil" })
+
+# and macOS.
+if sys.platform != "darwin":
+    mock_modules.update({ "AppKit", "applescript" })
+
+# Finally, mock the necessary Python modules.
 for module_name in mock_modules:
     sys.modules[module_name] = Mock()
 
