@@ -151,14 +151,12 @@ altogether.
 If you are installing this on Linux, you will also need to install the
 `wmctrl <https://www.freedesktop.org/wiki/Software/wmctrl/>`__, `xdotool
 <https://www.semicomplete.com/projects/xdotool/>`__ and `xsel
-<http://www.vergenet.net/~conrad/software/xsel/>`__ programs. You may
-also need to manually set the ``XDG_SESSION_TYPE`` environment variable to
-``x11``.
+<http://www.vergenet.net/~conrad/software/xsel/>`__ programs.
 
-Please note that Dragonfly is only fully functional in an X11 session on
-Linux. Input action classes, application contexts and the ``Window`` class
-will **not** be functional under Wayland. It is recommended that Wayland
-users switch to X11.
+Please note that, on Linux, Dragonfly is only fully functional in an X11
+session.  Input action classes, application contexts and the ``Window``
+class will **not** be functional under Wayland. It is recommended that
+Wayland users switch to X11, Windows or macOS.
 
 If you have dragonfly installed under the original *dragonfly*
 distribution name, you'll need to remove the old version using:
