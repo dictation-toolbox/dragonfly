@@ -1,0 +1,109 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "dragonfly2"
+authors = [{name = "Christo Butcher", email = "dist.dragonfly@twizzy.biz"}]
+maintainers=[{name="Dane Finlay", email= "dane@danefinlay.net"}]
+
+readme = "README.rst"
+description="Speech recognition extension library"
+version="0.35.1"
+requires-python = ">=2.7"
+license = {file="LICENSE.txt"}
+
+ classifiers=[
+                   "Development Status :: 4 - Beta",
+                   "Environment :: Win32 (MS Windows)",
+                   "Environment :: X11 Applications",
+                   "Environment :: MacOS X",
+                   "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+                   "Intended Audience :: Developers",
+                   "Operating System :: Microsoft :: Windows",
+                   "Operating System :: POSIX",
+                   "Operating System :: MacOS",
+                   "Programming Language :: Python :: 2.7",
+                   "Programming Language :: Python :: 3.4",
+                   "Programming Language :: Python :: 3.5",
+                   "Programming Language :: Python :: 3.6",
+                   "Programming Language :: Python :: 3.7",
+                   "Programming Language :: Python :: Implementation :: CPython",
+                   "Topic :: Multimedia :: Sound/Audio :: Speech",
+                   "Topic :: Software Development :: Libraries :: Python Modules",
+                  ]
+
+dependencies=[
+
+#         these were required for setuptools.  not for flit.  
+#        "packaging >= 19.0",
+#        "six",
+#        "lark-parser == 0.8.*",
+
+        # Windows-only dependencies.
+        "pywin32;platform_system=='Windows'",
+
+        # Linux dependencies.
+        # "python-libxdo;platform_system=='Linux'",
+        # "Xlib;platform_system=='Linux'",
+        "psutil >= 5.5.1;platform_system=='posix'",
+        "pynput >= 1.7.6;platform_system=='posix'",
+
+        # Mac OS dependencies.
+        "pyobjc >= 5.2;platform_system=='Darwin'",
+        "py-applescript == 1.0.0;platform_system=='Darwin'",
+        ]
+[tool.flit.module]
+name = "dragonfly"
+[project.scripts]
+
+[tool.flit.sdist]
+include = ["documentation"]
+exclude = ["documentation/*.html"]
+
+
+[project.urls]
+Home = "https://github.com/dictation-toolbox/dragonfly/"
+Documentation="https://dragonfly2.readthedocs.io/en/latest/"
+Source="https://github.com/dictation-toolbox/dragonfly/"
+
+[project.optional-dependencies]
+accessibility= [
+                "comtypes;platform_system='Windows'",
+                "enum34;python_version<'3.4'",
+                "regex<2022.1.18;python_version<='2.7'",
+                "regex;python_version>'2.7'",
+                ]
+
+#note pytest 6 requires python3.
+test= ["pytest>=6.0"]
+
+#if you really want to test python 2.7, use pip install python27_test
+python27_test = ["pytest == 3.9.*"]
+doc=["sphinx"]
+
+
+#this has to do with speech recognition package  https://pypi.org/project/pocketsphinx/, not the documentation tool. 
+sphinx= [
+        "swig",
+        "sphinxwrapper >= 1.2.0",
+        "pyjsgf >= 1.7.0",
+        "pyaudio",
+#        "packaging >= 19.0",
+#        "six",
+#        "lark-parser == 0.8.*",
+        ]
+kaldi= [
+        # NOTE: Remember to also update engine.py to the same version!
+        "kaldi-active-grammar ~= 3.1.0",
+        "sounddevice == 0.3.*",
+        "webrtcvad-wheels == 2.0.*",
+        ]
+natlink=["natlinkcore"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ""
+python_file="main_test.py"
+
+# commented for now [tool.sphinx-pyproject]

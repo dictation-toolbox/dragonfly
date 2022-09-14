@@ -141,6 +141,7 @@ pip:
 
     pip install dragonfly2
 
+
 The distribution name has been changed to *dragonfly2* in order to
 upload releases to PyPI.org, but everything can still be imported using
 *dragonfly*. If you use any grammar modules that include something like
@@ -175,7 +176,7 @@ directory:
 
 .. code:: shell
 
-    python setup.py install
+    pip install -e .
 
 If pip fails to install *dragonfly2* or any of its required or extra
 dependencies, then you may need to upgrade pip with the following command:
@@ -183,6 +184,19 @@ dependencies, then you may need to upgrade pip with the following command:
 .. code:: shell
 
     pip install --upgrade pip
+
+Run the tests from the project root, install the test extras:
+
+.. code:: shell
+
+    pip install .[test]
+
+The run the tests:
+
+.. code:: shell
+
+    pytest
+
 
 
 Speech recognition engine back-ends

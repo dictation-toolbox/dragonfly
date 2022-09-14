@@ -5,11 +5,12 @@ python:
   - "3.7"
   - "3.8"
   - "3.9"
+  - "3.10"
 
 install:
   - pip install .
-  - pip install -r test_requirements.txt
+  - pip install .[test]
 
 script:
   # Run the default test suite.
-  - python setup.py test
+  - pytest
