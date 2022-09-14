@@ -52,7 +52,7 @@ from dragonfly.engines.backend_kaldi.testing    import debug_timer
 try:
     from dragonfly.engines.backend_kaldi.compiler import KaldiCompiler
 except TypeError:
-    if os.environ.get("SPHINX_BUILD_RUNNING"):
+    if os.environ.get("SPHINX_DOC_BUILD"):
         KaldiCompiler = None
     else:
         reraise(*sys.exc_info())
