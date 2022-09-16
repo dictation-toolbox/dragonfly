@@ -84,7 +84,7 @@ setup(
       author           = "Christo Butcher",
       author_email     = "dist.dragonfly@twizzy.biz",
       maintainer       = "Dane Finlay",
-      maintainer_email = "Danesprite@posteo.net",
+      maintainer_email = "dane@danefinlay.net",
       license          = "LICENSE.txt",
       url              = "https://github.com/dictation-toolbox/dragonfly",
       zip_safe         = False,  # To unzip documentation files.
@@ -97,24 +97,23 @@ setup(
                         "lark-parser == 0.8.*",
 
                         # Windows-only dependencies.
-                        "comtypes;platform_system=='Windows'",
                         "pywin32;platform_system=='Windows'",
 
-                        # Linux dependencies.
-                        # "python-libxdo;platform_system=='Linux'",
-                        # "Xlib;platform_system=='Linux'",
-                        "psutil >= 5.5.1;platform_system=='Linux'",
-                        "pynput >= 1.7.6;platform_system=='Linux'",
+                        # Common POSIX dependencies.
+                        # "python-libxdo;os_name=='posix'",
+                        # "Xlib;os_name=='posix'",
+                        "psutil >= 5.5.1;os_name=='posix'",
+                        "pyperclip >= 1.7.0;os_name=='posix'",
+                        "pynput >= 1.7.6;os_name=='posix'",
 
                         # Mac OS dependencies.
-                        "pynput >= 1.7.6;platform_system=='Darwin'",
                         "pyobjc >= 5.2;platform_system=='Darwin'",
                         "py-applescript == 1.0.0;platform_system=='Darwin'",
-                        "pyperclip >= 1.7.0;platform_system=='Darwin'",
                        ],
 
       extras_require={
           "accessibility": [
+                            "comtypes;platform_system=='Windows'",
                             "enum34;python_version<'3.4'",
                             "regex<2022.1.18;python_version<='2.7'",
                             "regex;python_version>'2.7'",
