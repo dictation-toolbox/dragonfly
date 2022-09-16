@@ -25,10 +25,13 @@ This module initializes the keyboard interface for the current platform.
 import os
 import sys
 
+from dragonfly._platform_checks import IS_X11
+
+
 # Import the keyboard classes for the current platform.
 # Note: X11 is checked first here because it is possible to use on the other
 #  supported platforms.
-if os.environ.get("DISPLAY"):
+if IS_X11:
     # Import classes for X11.  This is typically used on Unix-like systems.
     # The DISPLAY environment variable is normally set in an X11 session.
     #  If it is not, it may be set manually in ~/.profile or equivalent.
@@ -44,7 +47,7 @@ if os.environ.get("DISPLAY"):
     #  used.
     # from ._x11_libxdo import LibxdoKeyboard as Keyboard
 
-elif sys.platform.startswith("win"):
+elif sys.platform == "win32":
     # Import Win32 classes.
     from ._win32 import (
         Win32Keyboard as Keyboard,

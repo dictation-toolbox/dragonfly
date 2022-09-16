@@ -12,7 +12,11 @@ from . import controller
 from .utils import (CursorPosition, TextQuery)
 
 # Import and set the controller class based on the current platform.
-if os.environ.get("DISPLAY"):
+# Note: dragonfly._platform_checks is not used here in an effort to keep the
+#  accessibility sub-package modular.
+#  Please see the module docstring of utils.py.
+#
+if ":" in os.environ.get("DISPLAY", ""):
     # Use the AT-SPI controller on X11.
     from . import atspi
     os_controller_class = atspi.Controller

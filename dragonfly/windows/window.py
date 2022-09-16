@@ -26,14 +26,16 @@ for the current platform.
 import os
 import sys
 
+from dragonfly._platform_checks import IS_X11
+
 
 # Import the Window class for the current platform.
 # Note: X11 is checked first here because it is possible to use on the other
 #  supported platforms.
-if os.environ.get("DISPLAY"):
+if IS_X11:
     from dragonfly.windows.x11_window    import X11Window as Window
 
-elif sys.platform.startswith("win"):
+elif sys.platform == "win32":
     from dragonfly.windows.win32_window  import Win32Window as Window
 
 elif sys.platform == "darwin":

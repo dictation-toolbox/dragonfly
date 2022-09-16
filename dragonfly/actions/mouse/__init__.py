@@ -25,6 +25,8 @@ This module initializes the mouse interface for the current platform.
 import os
 import sys
 
+from dragonfly._platform_checks import IS_X11
+
 # Import mouse events common to each platform.
 from ._base import (EventBase, PauseEvent, MoveEvent, MoveRelativeEvent,
                     MoveScreenEvent, MoveWindowEvent)
@@ -33,7 +35,7 @@ from ._base import (EventBase, PauseEvent, MoveEvent, MoveRelativeEvent,
 # Import the mouse functions and classes for the current platform.
 # Note: X11 is checked first here because it is possible to use on the other
 #  supported platforms.
-if os.environ.get("DISPLAY"):
+if IS_X11:
     try:
         # Prefer pynput over xdotool since it supports horizontal scrolling
         #  and the extra mouse buttons.
@@ -47,7 +49,7 @@ if os.environ.get("DISPLAY"):
             PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS
         )
 
-elif sys.platform.startswith("win"):
+elif sys.platform == "win32":
     from ._win32 import (
         ButtonEvent, get_cursor_position, set_cursor_position,
         PLATFORM_BUTTON_FLAGS, PLATFORM_WHEEL_FLAGS

@@ -24,8 +24,9 @@ import sys
 
 import pytest
 
-from dragonfly.log import setup_log
-from dragonfly import get_engine
+from dragonfly                   import get_engine
+from dragonfly.log               import setup_log
+from dragonfly._platform_checks  import IS_X11
 
 # Setup logging.
 _log = logging.getLogger("dfly.test")
@@ -51,16 +52,8 @@ common_names = [
     "documentation/test_recobs_doctest.txt",
 ]
 
-# Include clipboard tests if on a desktop system.
-desktop = (
-    # Windows
-    os.name == "nt" or
-    # X11
-    os.environ.get("DISPLAY") or
-    # macOS
-    sys.platform == "darwin"
-)
-if desktop:
+# Include clipboard tests if on a desktop system: Windows/X11/macOS.
+if os.name == "nt" or IS_X11 or sys.platform == "darwin":
     common_names.insert(2, "test_clipboard")
 
 # Include accessibility tests if dragonfly.accessibility is available.
