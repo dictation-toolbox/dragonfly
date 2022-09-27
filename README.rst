@@ -210,8 +210,6 @@ The related resources page of Dragonfly's documentation has a section on
 modules <http://dragonfly2.readthedocs.org/en/latest/related_resources.html#command-modules>`__
 which lists various sources.
 
-.. |Build Status| image:: https://travis-ci.org/dictation-toolbox/dragonfly.svg?branch=master
-   :target: https://travis-ci.org/dictation-toolbox/dragonfly
 .. |Docs Status| image:: https://readthedocs.org/projects/dragonfly2/badge/?version=latest&style=flat
    :target: https://dragonfly2.readthedocs.io
 .. |Join Gitter chat| image:: https://badges.gitter.im/Join%20Chat.svg
