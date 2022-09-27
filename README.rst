@@ -1,7 +1,6 @@
 Dragonfly
 =========
 
-|Build Status|
 |Docs Status|
 |Join Gitter chat|
 |Join Matrix chat|
