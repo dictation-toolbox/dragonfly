@@ -57,7 +57,7 @@ Follow the following steps to run the test suite for the DNS backend:
     .. code:: shell
 
         cd <dir>
-        pip install -r test_requirements.txt
+        pip install '.[test]'
 
  #. Run the tests with the following command:
 
@@ -96,7 +96,7 @@ Follow the following steps to run the test suite for the WSR backend:
     .. code:: shell
 
         cd <dir>
-        pip install -r test_requirements.txt
+        pip install '.[test]'
 
  #. Run the tests with the following command:
 
@@ -132,8 +132,8 @@ Follow the following steps to run the test suite for the Kaldi backend:
     .. code:: shell
 
         cd <dir>
-        pip install -e '.[kaldi]'
-        pip install -r test_requirements.txt
+        pip install '.[test]'
+        pip install '.[kaldi]'
 
  #. Run the tests with the following command:
 
@@ -154,9 +154,8 @@ Follow the following steps to run the test suite for the Sphinx backend:
     .. code:: shell
 
         cd <dir>
-        pip install -e '.[sphinx]'
-        pip install -r test_requirements.txt
-
+        pip install '.[test]'
+        pip install '.[sphinx]'
 
  #. Run the tests with the following command:
 
@@ -176,7 +175,7 @@ Follow the following steps to run the test suite for the "text" backend:
     .. code:: shell
 
         cd <dir>
-        pip install -r test_requirements.txt
+        pip install '.[test]'
 
  #. Run the tests with the following commands:
 

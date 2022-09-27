@@ -112,6 +112,9 @@ setup(
                        ],
 
       extras_require={
+          "test": [
+                   "pytest == 3.9.*",
+                  ],
           "accessibility": [
                             "comtypes;platform_system=='Windows'",
                             "enum34;python_version<'3.4'",
