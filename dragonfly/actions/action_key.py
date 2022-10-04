@@ -27,16 +27,12 @@ Key action
 
 This section describes the :class:`Key` action object.  This
 type of action is used for sending keystrokes to the foreground
-application.  This works on Windows, Mac OS and with X11 (e.g. on Linux).
-Examples of how to use this class are given in :ref:`RefKeySpecExamples`.
+application.  Examples of how to use this class are given in
+:ref:`RefKeySpecExamples`.
 
 To use this class on X11/Linux, the
 `xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
 installed and the ``DISPLAY`` environment variable set.
-
-Please note that, for technical reasons, Dragonfly does not support sending
-keystroke events this way in Wayland sessions. The Wayland user is therefore
-recommended to switch to X11.
 
 .. _RefKeySpec:
 
@@ -190,93 +186,69 @@ with the *l* key: ::
     Key("w-l").execute()
 
 
-Windows key support
+.. _RefUnicodeCharacterKeystrokesKey:
+
+Unicode Character Keystrokes (Key)
 ............................................................................
 
-Keyboard events sent by :class:`Key` actions on Windows are calculated using
-the current foreground window's keyboard layout. The class will fallback on
-Unicode events for keys not typeable with the current layout.
+The :class:`Key` action may be used on Windows and X11 (Linux) to type most
+Unicode characters (code points).  This feature is not available on macOS.
 
-The :class:`Key` action can be used to type arbitrary Unicode characters on
-Windows using the `relevant Windows API
-<https://docs.microsoft.com/en-us/windows/desktop/api/winuser/ns-winuser-tagkeybdinput#remarks>`__.
-This is disabled by default because it ignores the up/down status of
-modifier keys (e.g. ctrl).
+On Windows, this feature is disabled by default because keystrokes emulated
+in this fashion ignore modifier key state entirely and because some
+applications do not accept the keystrokes at all.  On X11, this feature is
+always on, since there are no caveats.
 
-It can be enabled by changing the ``unicode_keyboard`` setting in
-`~/.dragonfly2-speech/settings.cfg` to ``True``: ::
+To enable this feature on Windows, run the following code, or add it into
+one of your command modules:
 
-    unicode_keyboard = True
+.. code:: python
 
-The ``use_hardware`` parameter can be set to ``True`` if you need to
-selectively require hardware events for a :class:`Key` action: ::
+   from dragonfly.actions.keyboard import Keyboard
+   Keyboard.unicode_keyboard = True
 
-    # Passing use_hardware=True will guarantee that Ctrl+C is always
-    # pressed, regardless of the layout. See below.
-    Key("c-c", use_hardware=True).execute()
+Dragonfly maintains a list of Windows applications that do not accept
+Unicode keyboard events.  If the Unicode keyboard is enabled and the
+foreground application matches a name in this list, hardware emulation is
+used instead.
 
-If the Unicode keyboard is not enabled or the ``use_hardware`` parameter is
-``True``, then no keys will be typed and an error will be logged for
-untypeable keys: ::
+To add application names to this list, do the following:
 
-   action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'μ'
+.. code:: python
 
-Keys in ranges 0-9, a-z and A-Z are always typeable. If keys in these ranges
-cannot be typed using the current keyboard layout, then the equivalent key
-will be used instead. For example, the following code will result in the 'я'
-key being pressed when using the main Cyrillic keyboard layout: ::
+   from dragonfly.actions.keyboard import Keyboard
+   Keyboard.hardware_apps.append("notepad.exe")
 
-   # This is equivalent to Key(u"я, Я, c-я").
-   Key("z, Z, c-z", use_hardware=True).execute()
+Keys in ranges 0-9, a-z and A-Z are always typeable.  If keys in these
+ranges are not typeable with the current keyboard layout, then the
+equivalent key will be used instead.  For example, if the standard Russian
+keyboard layout is active, the following code will result in the 'я' key
+being pressed while the :kbd:`Control` key is held: ::
 
-Unlike the :class:`Text` action, individual :class:`Key` actions can send
-both hardware *and* Unicode events. So the following example will work if
-the Unicode keyboard is enabled: ::
+   Key("c-z").execute()
 
-    # Type 'σμ' and then press Ctrl+Z.
-    Key(u"σ, μ, c-z").execute()
+The ``unicode_keyboard`` option and the ``use_hardware`` parameter are only
+used on Windows.  They have no effect on other platforms.
 
 
-X11 key support
+X11 keys
 ............................................................................
 
-The :class:`Key` action can be used to type arbitrary keys and Unicode
-characters on X11/Linux. It is not limited to the key names listed above,
-although all of them will work too.
+On X11, as noted above, the :class:`Key` action may be used to type most
+Unicode characters.  The code point may also be used to specify keys on this
+platform.  For example, the character ``'€'`` is typed by the following
+action: ::
 
-Unicode characters are supported on X11 by passing their Unicode code point
-to the keyboard implementation. For example, the character ``'€'`` is
-converted to ``'U20AC'``. The Unicode code point can also be passed
-directly, e.g. with ``Key('U20AC')``.
+    Key("U20AC").execute()
 
-Unlike on Windows, the :class:`Key` action is able to use modifiers with
-Unicode characters on X11.
-
-As stated earlier, sending keystroke events is not supported under Wayland.
-
-
-Example X11 key actions
-----------------------------------------------------------------------------
-
-In addition to the examples in the previous section, the following example
-will work on X11/Linux.
-
-The following code will type 'σμ' into the foreground application and then
-press ctrl+z: ::
-
-    Key("σ,μ,c-z").execute()
-
-The following code will press 'µ' while holding control and alt: ::
-
-    Key("ca-μ").execute()
-
-The following code will press the browser refresh multimedia key: ::
+There are many more keys that can be typed with the :class:`Key` action
+on this platform.  For example, the browser refresh multimedia key: ::
 
     Key("XF86Refresh").execute()
 
-Although this key is not defined in dragonfly's typeables list, it still
-works because it is passed directly to xdotool. X11 (Xorg) multimedia keys
-can be found online: `XF86 keyboard symbols
+This key is not defined in Dragonfly's typeables list.  It works because it
+is passed directly to xdotool.  A list of X11 (Xorg) keys like this can be
+found online: `XF86 keyboard symbols
 <https://wiki.linuxquestions.org/wiki/XF86_keyboard_symbols>`__.
 
 
@@ -312,12 +284,7 @@ class Key(BaseKeyboardAction):
 
         This class emulates keyboard activity by sending keystrokes to the
         foreground application.  It does this using Dragonfly's keyboard
-        interface for the current platform.  The implementation for Windows
-        uses the ``sendinput()`` Win32 API function.  The implementation
-        for Mac OS uses
-        `pynput <https://pynput.readthedocs.io/en/latest/>`__. The
-        implementation for X11/Linux uses `xdotool
-        <https://www.semicomplete.com/projects/xdotool/>`__.
+        interface for the current platform.
 
     """
 
@@ -335,13 +302,13 @@ class Key(BaseKeyboardAction):
     interval_default = 0.0
 
     # Keystroke event data type.
-    EventData = collections.namedtuple(
-        "EventData", "keyname "
-                     "direction "
-                     "modifiers "
-                     "inner_pause "
-                     "repeat "
-                     "outer_pause "
+    _EventData = collections.namedtuple(
+        "_EventData", "keyname "
+                      "direction "
+                      "modifiers "
+                      "inner_pause "
+                      "repeat "
+                      "outer_pause "
     )
 
     def _parse_spec(self, spec):
@@ -455,8 +422,8 @@ class Key(BaseKeyboardAction):
             if inner_pause is not None:
                 raise ActionError("Cannot use direction with inner pause.")
 
-        return self.EventData(keyname, direction, modifiers, inner_pause,
-                              repeat, outer_pause)
+        return self._EventData(keyname, direction, modifiers, inner_pause,
+                               repeat, outer_pause)
 
     def _execute_events(self, events):
         # Calculate keyboard events from events (event data).

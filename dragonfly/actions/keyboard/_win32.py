@@ -23,22 +23,22 @@
 # pylint: disable=E0401
 # This file imports Win32-only symbols.
 
-from locale                           import getpreferredencoding
-from struct                           import unpack
+import locale
+import os
+import struct
 import time
 
-from six                              import binary_type, text_type
-
+import six
 import win32api
 import win32con
 import win32gui
 import win32process
 
-from dragonfly.actions.keyboard._base import (BaseKeyboard, BaseTypeable,
-                                              BaseKeySymbols)
-from dragonfly.actions.sendinput      import (KeyboardInput,
-                                              make_input_array,
-                                              send_input_array)
+from dragonfly.actions.keyboard._base  import (BaseKeyboard, BaseTypeable,
+                                               BaseKeySymbols)
+from dragonfly.actions.sendinput       import (KeyboardInput,
+                                               make_input_array,
+                                               send_input_array)
 
 
 class Win32KeySymbols(BaseKeySymbols):
@@ -184,7 +184,7 @@ class Win32Typeable(BaseTypeable):
 
     def _unicode_events(self, down, timeout):
         character = self._code
-        if not isinstance(character, text_type):
+        if not isinstance(character, six.text_type):
             raise TypeError("cannot create Unicode events for character: %r"
                             % character)
 
@@ -192,7 +192,7 @@ class Win32Typeable(BaseTypeable):
         events = []
         byte_stream = character.encode("utf-16-le")
         format_string = "<" + str(len(byte_stream) // 2) + "H"
-        for short in unpack(format_string, byte_stream):
+        for short in struct.unpack(format_string, byte_stream):
             if down is True or down is False:
                 events.extend([(short, down, timeout, True)])
             else:  # both for events()
@@ -238,6 +238,14 @@ class Win32Keyboard(BaseKeyboard):
     ctrl_code = win32con.VK_CONTROL
     alt_code = win32con.VK_MENU
 
+    #: Allow the keyboard to type Unicode characters.
+    unicode_keyboard = False
+
+    #: The list of applications which always require hardware events.
+    hardware_apps = [
+        "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
+    ]
+
     @classmethod
     def get_current_layout(cls):
         # Get the current window's keyboard layout.
@@ -245,6 +253,15 @@ class Win32Keyboard(BaseKeyboard):
             win32gui.GetForegroundWindow()
         )[0]
         return win32api.GetKeyboardLayout(thread_id)
+
+    @classmethod
+    def require_hardware_events(cls):
+        # Return true if the current context requires hardware emulation.
+        from dragonfly.windows import Window
+        foreground_executable = os.path.basename(Window.get_foreground()
+                                                 .executable.lower())
+        return ((not cls.unicode_keyboard) or
+                (foreground_executable in cls.hardware_apps))
 
     @classmethod
     def send_keyboard_events(cls, events):
@@ -309,9 +326,9 @@ class Win32Keyboard(BaseKeyboard):
         # Fallback on the keycode in CHAR_VK_MAP, if applicable.
         #  Note: char_vk_fallback=False is used when typing these characters
         #  with the Unicode keyboard.
-        if (char_vk_fallback and code == -1 and
-                char in Win32KeySymbols.CHAR_VK_MAP):
-            code = Win32KeySymbols.CHAR_VK_MAP[char]
+        char_vk_map = Win32KeySymbols.CHAR_VK_MAP
+        if (char_vk_fallback and code == -1 and char in char_vk_map):
+            code = char_vk_map[char]
 
         if code == -1:
             raise ValueError("Unknown char: %r" % char)
@@ -343,8 +360,8 @@ class Win32Keyboard(BaseKeyboard):
 
     @classmethod
     def get_typeable(cls, char, is_text=False):
-        if isinstance(char, binary_type):
-            char = char.decode(getpreferredencoding())
+        if isinstance(char, six.binary_type):
+            char = char.decode(locale.getpreferredencoding())
         if is_text:
             return Win32Typeable(char, is_text=True, char=char)
 

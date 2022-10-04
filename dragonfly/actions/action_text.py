@@ -25,93 +25,28 @@
 Text action
 ============================================================================
 
-This section describes the :class:`Text` action object. This type of
-action is used for typing text into the foreground application.  This works
-on Windows, Mac OS and with X11 (e.g. on Linux).
+This section describes the :class:`Text` action object.  This type of action
+is used for typing text into the foreground window.
 
-To use this class on X11/Linux, the
+To use this action on X11 (Linux), the
 `xdotool <https://www.semicomplete.com/projects/xdotool/>`__ program must be
 installed and the ``DISPLAY`` environment variable set.
 
-Please note that, for technical reasons, Dragonfly does not support sending
-keystroke events this way in Wayland sessions. The Wayland user is therefore
-recommended to switch to X11.
-
 The :class:`Text` action differs from :class:`Key` in that it is used for
-typing literal text, while :class:`dragonfly.actions.action_key.Key`
-emulates pressing keys on the keyboard.  An example of this is that the
-arrow-keys are not part of a text and so cannot be typed using the
-:class:`Text` action, but can be sent by the
-:class:`dragonfly.actions.action_key.Key` action.
+typing literal text, while :class:`Key` emulates pressing keys on the
+keyboard.  An example of this is that the arrow-keys are not part of a text
+and so cannot be typed using the :class:`Text` action, but can be sent by
+the :class:`Key` action.
 
 
-Windows Unicode Keyboard Support
+Unicode Character Keystrokes (Text)
 ............................................................................
 
-The :class:`Text` action may be used to type arbitrary Unicode characters on
-Windows.  This is disabled by default because it ignores the up/down status
-of modifier keys (e.g. ctrl).
+The :class:`Text` action may be used on Windows and X11 (Linux) to type most
+Unicode characters (code points).  This feature is not available on macOS.
 
-It can be enabled by changing the ``unicode_keyboard`` setting in
-`~/.dragonfly2-speech/settings.cfg` to ``True``::
-
-    unicode_keyboard = True
-
-If you need to simulate typing arbitrary Unicode characters *and* have
-*individual* :class:`Text` actions respect modifier keys normally for normal
-characters, set the configuration as above and use the ``use_hardware``
-parameter for :class:`Text` as follows:
-
-.. code:: python
-
-   action = Text("σμ") + Key("ctrl:down") + Text("]", use_hardware=True) + Key("ctrl:up")
-   action.execute()
-
-Some applications require hardware emulation versus Unicode keyboard
-emulation. If you use such applications, add their executable names to the
-``hardware_apps`` list in the configuration file mentioned above to make
-dragonfly always use hardware emulation for them.
-
-If hardware emulation is required, then the action will use the keyboard
-layout of the foreground window when calculating keyboard events. If any of
-the specified characters are not typeable using the current window's
-keyboard layout, then an error will be logged and no keys will be typed::
-
-    action.exec (ERROR): Execution failed: Keyboard interface cannot type this character: 'μ'
-
-Keys in ranges 0-9, a-z and A-Z are always typeable. If keys in these ranges
-cannot be typed using the current keyboard layout, then the equivalent key
-will be used instead. For example, the following code will result in the 'я'
-key being pressed when using the main Cyrillic keyboard layout: ::
-
-   # This is equivalent to Text(u"яЯ").
-   Text("zZ").execute()
-
-These settings and parameters have no effect on other platforms.
-
-
-X11/Linux Unicode Keyboard Support
-............................................................................
-
-The :class:`Text` action can also type arbitrary Unicode characters on X11.
-This works regardless of the ``use_hardware`` parameter or
-``unicode_keyboard`` setting.
-
-Unlike on Windows, modifier keys will be respected by :class:`Text` actions
-on X11. As such, the previous Windows example will work and can even be
-simplified a little:
-
-.. code:: python
-
-   action = Text("σμ") + Key("ctrl:down") + Text("]") + Key("ctrl:up")
-   action.execute()
-
-
-It can also be done with one :class:`Key` action:
-
-.. code:: python
-
-   Key("σ,μ,c-]").execute()
+Please see :ref:`RefUnicodeCharacterKeystrokesKey` for documentation on this
+subject.  Most of it applies to :class:`Text` action objects too.
 
 
 Text class reference
@@ -119,15 +54,14 @@ Text class reference
 
 """
 
-from locale                                    import getpreferredencoding
+import locale
+import six
 
-from six                                       import binary_type
-
-from dragonfly.actions.action_base             import ActionError
-from dragonfly.actions.action_key              import Key
-from dragonfly.actions.action_base_keyboard    import BaseKeyboardAction
-from dragonfly.engines                         import get_engine
-from dragonfly.windows.clipboard               import Clipboard
+from dragonfly.actions.action_base           import ActionError
+from dragonfly.actions.action_key            import Key
+from dragonfly.actions.action_base_keyboard  import BaseKeyboardAction
+from dragonfly.engines                       import get_engine
+from dragonfly.windows.clipboard             import Clipboard
 
 #---------------------------------------------------------------------------
 
@@ -155,6 +89,9 @@ class Text(BaseKeyboardAction):
        keys.
     """
 
+    #: Default time to pause between keystrokes.
+    _pause_default =  0.005
+
     _specials = {
         "\n": "enter",
         "\t": "tab",
@@ -162,8 +99,8 @@ class Text(BaseKeyboardAction):
 
     def __init__(self, spec=None, static=False, pause=None,
                  autofmt=False, use_hardware=False):
-        if isinstance(spec, binary_type):
-            spec = spec.decode(getpreferredencoding())
+        if isinstance(spec, six.binary_type):
+            spec = spec.decode(locale.getpreferredencoding())
         BaseKeyboardAction.__init__(self, spec=spec, static=static,
                                     use_hardware=use_hardware)
         # Set other members.
