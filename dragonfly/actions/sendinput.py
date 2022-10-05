@@ -173,7 +173,8 @@ def make_input_array(inputs):
 
 def send_input_array(input_array):
     length = len(input_array)
-    assert length >= 0
+    if length == 0: return
+
     size = sizeof(input_array[0])
     ptr = pointer(input_array)
 
