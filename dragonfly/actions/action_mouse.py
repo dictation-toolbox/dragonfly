@@ -149,13 +149,15 @@ Mouse button-hold or button-release action:
 Mouse caveats
 ............................................................................
 
-Please note that there are some platforms which do not support emulating
-every mouse button listed above.  If an unsupported mouse button (*keyname*)
-is specified and the :class:`Mouse` action executed, an error is raised::
+Please note that some of the *keynames* listed above will not work on every
+platform.  If one or more of the *keynames* specified for a :class:`Mouse`
+action are unsupported on the current platform, an error will be raised upon
+execution of the action: ::
 
    ValueError: Unsupported mouse button event: four
 
-On MacOS, double-click and triple-click can only be simulated via *repeat*::
+On MacOS, double-click and triple-click can only be simulated via
+*repeat*: ::
 
    # Perform a double-click.
    Mouse("left:2").execute()
@@ -167,10 +169,6 @@ On MacOS, double-click and triple-click can only be simulated via *repeat*::
    #  triple-click respectively, will not work properly on macOS:
    #Mouse("left, left").execute()
    #Mouse("left, left, left").execute()
-
-For technical reasons, Dragonfly cannot support simulation of mouse events
-in Wayland sessions.  Wayland users are therefore recommended to switch to
-X11, Windows or macOS.
 
 
 Mouse class reference
