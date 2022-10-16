@@ -29,16 +29,14 @@ from dragonfly._platform_checks import IS_X11
 
 
 # Import the Monitor class for the current platform.
-# Note: X11 is checked first here because it is possible to use on the other
-#  supported platforms.
-if IS_X11:
-    from dragonfly.windows.x11_monitor     import X11Monitor as Monitor
-
-elif sys.platform == "win32":
+if sys.platform == "win32":
     from dragonfly.windows.win32_monitor   import Win32Monitor as Monitor
 
 elif sys.platform == "darwin":
     from dragonfly.windows.darwin_monitor  import DarwinMonitor as Monitor
+
+elif IS_X11:
+    from dragonfly.windows.x11_monitor     import X11Monitor as Monitor
 
 else:
     from dragonfly.windows.base_monitor    import FakeMonitor as Monitor

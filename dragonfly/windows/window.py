@@ -30,16 +30,14 @@ from dragonfly._platform_checks import IS_X11
 
 
 # Import the Window class for the current platform.
-# Note: X11 is checked first here because it is possible to use on the other
-#  supported platforms.
-if IS_X11:
-    from dragonfly.windows.x11_window    import X11Window as Window
-
-elif sys.platform == "win32":
+if sys.platform == "win32":
     from dragonfly.windows.win32_window  import Win32Window as Window
 
 elif sys.platform == "darwin":
     from dragonfly.windows.darwin_window import DarwinWindow as Window
+
+elif IS_X11:
+    from dragonfly.windows.x11_window    import X11Window as Window
 
 else:
     from dragonfly.windows.fake_window   import FakeWindow as Window

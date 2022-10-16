@@ -30,19 +30,17 @@ from dragonfly.windows.base_clipboard           import BaseClipboard
 
 
 # Import the clipboard classes and functions for the current platform.
-# Note: X11 is checked first here because it is possible to use on the other
-#  supported platforms.
-if IS_X11:
-    from dragonfly.windows.x11_clipboard        import \
-        XselClipboard as Clipboard
-
-elif sys.platform == "win32":
+if sys.platform == "win32":
     from dragonfly.windows.win32_clipboard      import \
         Win32Clipboard as Clipboard, win32_clipboard_ctx
 
 elif sys.platform == "darwin":
     from dragonfly.windows.pyperclip_clipboard  import \
         PyperclipClipboard as Clipboard
+
+elif IS_X11:
+    from dragonfly.windows.x11_clipboard        import \
+        XselClipboard as Clipboard
 
 else:
     from dragonfly.windows.base_clipboard       import \
