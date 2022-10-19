@@ -132,6 +132,13 @@ setup(
                     "sounddevice == 0.3.*",
                     "webrtcvad-wheels == 2.0.*",
                    ],
+          "playsound": [
+                        "sounddevice == 0.3.*;os_name=='posix'",
+                        "soundfile == 0.11.*;os_name=='posix'",
+
+                        # Required for the way we use the above.
+                        "numpy;os_name=='posix'",
+                       ],
       },
 
       cmdclass={
