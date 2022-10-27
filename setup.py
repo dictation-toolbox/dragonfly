@@ -134,10 +134,6 @@ setup(
                    ],
           "playsound": [
                         "sounddevice == 0.3.*;os_name=='posix'",
-                        "soundfile == 0.11.*;os_name=='posix'",
-
-                        # Required for the way we use the above.
-                        "numpy;os_name=='posix'",
                        ],
       },
 

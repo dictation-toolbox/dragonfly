@@ -23,7 +23,7 @@ PlaySound action
 ============================================================================
 
 This section describes the :class:`PlaySound` action object.  This
-type of action is used to play sounds or sound files.
+type of action is used to play system sounds or wave files.
 
 
 Example PlaySound uses
@@ -58,15 +58,16 @@ PlaySound on macOS and Linux
 ----------------------------------------------------------------------------
 
 On macOS and Linux, the :class:`PlaySound` action object uses the
-`sounddevice <https://python-sounddevice.readthedocs.io/>`__ and
-`soundfile <https://python-soundfile.readthedocs.io/>`__ packages to
-play specified wave files.  The *numpy* package may also need to be
-installed.  These dependencies may be installed by running the
-following command: ::
+`sounddevice <https://python-sounddevice.readthedocs.io/>`__ package
+to play specified wave files.  This package may be installed by
+running the following command: ::
 
     $ pip install 'dragonfly2[playsound]'
 
 The *name* parameter is an alias for *file* on these platforms.
+
+On these platforms, an error message will be shown if an invalid file
+path is specified.
 
 
 Class reference
@@ -75,6 +76,7 @@ Class reference
 """
 
 import os
+import wave
 
 from dragonfly.actions.action_base import ActionBase
 
@@ -92,12 +94,36 @@ else:
         if not name:
             return
 
-        import sounddevice as sd
-        import soundfile as sf
+        import sounddevice
 
-        data, fs = sf.read(name)
-        sd.play(data, fs)
-        sd.wait()
+        # Open the specified file as a wave file.
+        wf = wave.open(name, 'rb')
+        try:
+            # Get params.
+            channels = wf.getnchannels()
+            framerate = wf.getframerate()
+            format = {
+                1: 'int8',
+                2: 'int16',
+                3: 'int24',
+                4: 'float32'
+            }[wf.getsampwidth()]
+
+            # Play the file through the default playback device.
+            blocksize = 1024
+            stream = sounddevice.RawOutputStream(
+                channels=channels,
+                samplerate=framerate,
+                dtype=format,
+                blocksize=blocksize
+            )
+            with stream:
+                data = wf.readframes(blocksize)
+                while len(data):
+                    stream.write(data)
+                    data = wf.readframes(blocksize)
+        finally:
+            wf.close()
 
 
 #---------------------------------------------------------------------------
