@@ -69,8 +69,8 @@ normally look something like this: ::
     # *Use* phase.
     # The configuration values can now be accessed through the
     #  configuration object as follows.
-    print "The color of life is", config.test.color
-    print "You must eat an %s every day" % config.test.fruit
+    print("The color of life is %s" % config.test.color)
+    print("You must eat an %s every day" % config.test.fruit)
 
 The configuration defined above is basically complete.  Every
 configuration item has a default value and can be accessed by
@@ -79,22 +79,51 @@ of these settings, he can do so in an external configuration file
 without modifying the main program code.
 
 This external configuration file is interpreted as Python code.
-This gives its author powerful tools for determining the desired
-configuration settings.  However, it will usually consist merely
-of variable assignments. The configuration file for the program
-above might look something like this: ::
+It may be generated with :meth:`Config.generate_config_file`: ::
 
-    # Test section
+    # *Generate* an external configuration file for the program above.
+    # By default, this writes configuration settings to a file with
+    #  the same name as the main program, but with the extension ".py"
+    #  replaced by ".txt".
+    #
+    # If the file already exists, it will be  overwritten.  As such,
+    #  if this method is present in a program, it will usually be
+    #  invoked once and then commented out.
+    config.generate_config_file()
+
+External configuration files give grammar authors powerful tools for
+determining the desired configuration settings.  However, they will
+usually consist merely of variable assignments.  The configuration
+file for the program above might look something like this: ::
+
+    #
+    # Dragonfly config for Example configuration
+    #
+
+    #--- Test section ------------------------------------------------------
+
+    # Must eat fruit.
+    # Default: 'apple'
     test.fruit = "banana"   # Bananas have more potassium.
+
+    # The color of life.
+    # Default: 'blue'
     test.color = "white"    # I like light colors.
+
+The output contains the configuration name (*Example configuration*),
+followed by a single section (*Test section*) and its two items
+(*fruit* and *color*), which have been given custom values.
+
+This separation of program data from program logic makes the
+configuration toolkit suitable for documenting voice commands.
 
 
 Example command modules
 ----------------------------------------------------------------------------
 
-The configuration toolkit is utilized in a number of command modules in the
-*t4ngo/dragonfly-modules* repository, available on GitHub.  See
-:ref:`Related Resources: Command modules <RefCommandModulesList>`.
+The configuration toolkit is utilized in a number of command modules
+in the *t4ngo/dragonfly-modules* repository, available on GitHub.
+See :ref:`Related Resources: Command modules <RefCommandModulesList>`.
 
 
 Implementation details
@@ -281,7 +310,7 @@ class Config(object):
 
         return namespace
 
-    _comment_indent = " "*20
+    _comment_indent = ""
     _comment_wrapper = textwrap.TextWrapper(
                                    width=70,
                                    break_long_words=False,
@@ -313,11 +342,11 @@ class Config(object):
                 "path":     path,
                }
         lines = []
-        lines.append("%(path)s = %(value)r" % data)
         if item.doc:
             header = "%(doc)s" % data
             lines.extend(self._comment_wrapper.wrap(header))
             lines.extend(self._comment_wrapper.wrap("Default: %(default)r" % data))
+        lines.append("%(path)s = %(value)r" % data)
         lines.append("")
         return lines
 
