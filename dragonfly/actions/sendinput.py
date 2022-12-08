@@ -77,6 +77,8 @@ class KeyboardInput(Structure):
     }
     soft_keys = {
         win32con.VK_PAUSE,
+        win32con.VK_SNAPSHOT,
+        win32con.VK_NUMLOCK,
     }
 
 
