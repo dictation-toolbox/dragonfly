@@ -298,10 +298,8 @@ The engine can also be configured via the :ref:`command-line interface
 Cross-platform
 ----------------------------------------------------------------------------
 
-Although Kaldi & this dragonfly engine implementation can run on
-multiple platforms, including on architectures other than x86, not all
-other dragonfly components are currently fully cross-platform. This is
-an area ongoing work.
+This Dragonfly engine implementation, and Kaldi itself, can run
+on multiple platforms, including architectures other than x86.
 
 
 User Lexicon
@@ -540,6 +538,8 @@ the code::
 
 Examples::
 
+  from dragonfly.engines.backend_kaldi.dictation import AlternativeDictation, DefaultDictation
+
   element = AlternativeDictation("text")                    # alternative dictation
   element = DefaultDictation("text")                        # no alternative dictation
   element = AlternativeDictation("text", alternative=False) # no alternative dictation
@@ -620,18 +620,6 @@ environment, training these models currently requires using a GPU for an
 extended period. This may be a case where providing a service for
 training is more feasible.
 
-
-Text-to-speech
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This isn't a limitation of Kaldi; text-to-speech is not a project goal
-for them, although as the natlink and WSR engines both support
-text-to-speech, there might as well be some suggestions if this
-functionality is desired, perhaps utilized by a custom dragonfly action.
-The Jasper project contains `a number of Python interface classes
-<https://github.com/jasperproject/jasper-client/blob/master/client/tts.py>`_
-to popular open source text-to-speech software such as *eSpeak*,
-*Festival* and *CMU Flite*.
 
 
 Engine API
