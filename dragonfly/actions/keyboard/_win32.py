@@ -39,6 +39,7 @@ from dragonfly.actions.keyboard._base  import (BaseKeyboard, BaseTypeable,
 from dragonfly.actions.sendinput       import (KeyboardInput,
                                                make_input_array,
                                                send_input_array)
+from dragonfly.actions.natlinkinput    import send_input_array_natlink
 
 
 class Win32KeySymbols(BaseKeySymbols):
@@ -246,6 +247,9 @@ class Win32Keyboard(BaseKeyboard):
         "tvnviewer.exe", "vncviewer.exe", "mstsc.exe", "virtualbox.exe"
     ]
 
+    #: Use Natlink to send keyboard events, if possible.
+    try_natlink = False
+
     @classmethod
     def get_current_layout(cls):
         # Get the current window's keyboard layout.
@@ -287,13 +291,14 @@ class Win32Keyboard(BaseKeyboard):
                     at a window or control that accepts Unicode text.
         """
         layout = cls.get_current_layout()
+        try_natlink = cls.try_natlink
 
         # Process and send keyboard events.
         items = []
         for event in events:
             if len(event) == 3:
-                # Pass scancode=0 to press keys via virtual-key codes
-                #  instead of scancodes.
+                # scancode=0 may be given below to send keystrokes as
+                #  virtual-keys instead of scancodes.
                 keycode, down, timeout = event
                 input_structure = KeyboardInput(keycode, down,
                                                 # scancode=0,
@@ -307,11 +312,15 @@ class Win32Keyboard(BaseKeyboard):
             if timeout:
                 array = make_input_array(items)
                 items = []
-                send_input_array(array)
+                # Try using Natlink to send input, if appropriate.
+                #  Otherwise, use SendInput.
+                if not (try_natlink and send_input_array_natlink(array)):
+                    send_input_array(array)
                 time.sleep(timeout)
         if items:
             array = make_input_array(items)
-            send_input_array(array)
+            if not (try_natlink and send_input_array_natlink(array)):
+                send_input_array(array)
             if timeout: time.sleep(timeout)
 
     @classmethod

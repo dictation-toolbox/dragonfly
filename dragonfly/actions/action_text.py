@@ -49,6 +49,17 @@ Please see :ref:`RefUnicodeCharacterKeystrokesKey` for documentation on this
 subject.  Most of it applies to :class:`Text` action objects too.
 
 
+Using Natlink for keyboard input on Windows (Text)
+............................................................................
+
+On Windows, the :class:`Key` action object may be configured to send events
+via Natlink.  This allows one to make use of Dragon NaturallySpeaking's
+ability to control applications running in elevated mode, i.e.,
+administrative applications.
+
+Please see :ref:`RefNatlinkKeyboardInput` for documentation on this subject.
+
+
 Text class reference
 ............................................................................
 

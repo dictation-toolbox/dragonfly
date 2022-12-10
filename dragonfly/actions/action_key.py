@@ -199,8 +199,8 @@ in this fashion ignore modifier key state entirely and because some
 applications do not accept the keystrokes at all.  On X11, this feature is
 always on, since there are no caveats.
 
-To enable this feature on Windows, run the following code, or add it into
-one of your command modules:
+To enable this feature globally on Windows, run the following code, or add
+it into one of your command modules:
 
 .. code:: python
 
@@ -229,6 +229,41 @@ being pressed while the :kbd:`Control` key is held: ::
 
 The ``unicode_keyboard`` option and the ``use_hardware`` parameter are only
 used on Windows.  They have no effect on other platforms.
+
+
+.. _RefNatlinkKeyboardInput:
+
+Using Natlink for keyboard input on Windows (Key)
+............................................................................
+
+On Windows, the :class:`Key` action object may be configured to send events
+via Natlink.  This allows one to make use of Dragon NaturallySpeaking's
+ability to control applications running in elevated mode, i.e.,
+administrative applications.
+
+This feature is disabled by default, primarily because modifier keys are not
+always held down when simulated this way.  To (globally) enable the feature
+anyway, run the following code, or add it into one of your command
+modules: ::
+
+   from dragonfly.actions.keyboard import Keyboard
+   Keyboard.try_natlink = True
+
+In order for this to work, Natlink must be available and Dragon
+NaturallySpeaking must be running.  Dragonfly will fallback on the default
+keyboard implementation for Windows if it is unable to send input via
+Natlink.
+
+The following keyboard events cannot be sent via Natlink and will always be
+sent normally:
+
+ * Unicode character keystrokes (if enabled)
+
+As noted above, modifier keys are not always held down when simulated via
+Natlink.
+
+This feature may be enabled for mouse input events too.  See
+:ref:`RefNatlinkMouseInput`.
 
 
 X11 keys

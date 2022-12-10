@@ -21,13 +21,15 @@
 # pylint: disable=E0401
 # This file imports Win32-only symbols.
 
-from ctypes import windll, pointer, c_long, c_ulong, Structure
+from ctypes                          import (windll, pointer, c_long,
+                                             c_ulong, Structure)
 
 import win32con
 
-from dragonfly.actions.sendinput import (MouseInput, make_input_array,
-                                         send_input_array)
-from dragonfly.actions.mouse._base import BaseButtonEvent, MoveEvent
+from dragonfly.actions.sendinput     import (MouseInput, make_input_array,
+                                             send_input_array)
+from dragonfly.actions.natlinkinput  import send_input_array_natlink
+from dragonfly.actions.mouse._base   import BaseButtonEvent, MoveEvent
 
 
 #---------------------------------------------------------------------------
@@ -104,6 +106,9 @@ PLATFORM_WHEEL_FLAGS = {
 
 class ButtonEvent(BaseButtonEvent):
 
+    #: Use Natlink to send mouse events, if possible.
+    try_natlink = False
+
     def execute(self, window):
         # Ensure that the primary mouse button is the *left* button before
         #  sending events.
@@ -114,7 +119,11 @@ class ButtonEvent(BaseButtonEvent):
             inputs = [MouseInput(0, 0, flag[1], flag[0], 0, zero)
                       for flag in self._flags]
             array = make_input_array(inputs)
-            send_input_array(array)
+
+            # Try using Natlink to send input, if appropriate.  Otherwise,
+            #  use SendInput.
+            if not (self.try_natlink and send_input_array_natlink(array)):
+                send_input_array(array)
         finally:
             # Swap the primary mouse button back if it was previously set
             #  to *right*.

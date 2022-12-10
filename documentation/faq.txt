@@ -486,6 +486,20 @@ It is not normally possible to interact with applications running in
 elevated mode.  The recommended way to do so is to use Dragon's built-in
 commands, which can interact with such applications.
 
+The :code:`Key`, :code:`Text` and :code:`Mouse` action classes may be
+configured to send input events via Natlink to Dragon.  To enable this
+feature, run the following code, or add it into one of your command modules:
+
+  .. code-block:: python
+
+     # Enable sending keyboard events via Natlink to Dragon.
+     from dragonfly.actions.keyboard import Keyboard
+     Keyboard.try_natlink = True
+
+     # Enable sending mouse events via Natlink to Dragon.
+     from dragonfly.actions.mouse import ButtonEvent
+     ButtonEvent.try_natlink = True
+
 If you are not using Dragon, or if you want to use your own commands instead
 of the built-ins, try running the appropriate command-module loader script
 in `dragonfly/examples`_ as the administrator.
