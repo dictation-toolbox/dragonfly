@@ -26,7 +26,7 @@ Dragonfly contains its own powerful framework for defining and executing
 actions. It includes actions for text input and key-stroke simulation. This
 framework is cross-platform, working on Windows, macOS and Linux (X11 only).
 See the `actions sub-package documentation
-<https://dragonfly2.readthedocs.io/en/latest/actions.html>`__
+<https://dragonfly.readthedocs.io/en/latest/actions.html>`__
 for more information, including code examples.
 
 This project is a fork of the original
@@ -46,15 +46,16 @@ Documentation and FAQ
 ----------------------------------------------------------------------------
 
 Dragonfly's documentation is available online at `Read the
-Docs <http://dragonfly2.readthedocs.org/en/latest/>`__. The changes in
+Docs <http://dragonfly.readthedocs.org/en/latest/>`__. The changes in
 each release are listed in the project's `changelog
 <https://github.com/dictation-toolbox/dragonfly/blob/master/CHANGELOG.rst>`__.
 Dragonfly's FAQ is available in the documentation `here
-<https://dragonfly2.readthedocs.io/en/latest/faq.html>`__.
+<https://dragonfly.readthedocs.io/en/latest/faq.html>`__.
 There are also a number of Dragonfly-related questions on `Stackoverflow
 <http://stackoverflow.com/questions/tagged/python-dragonfly>`_, although
 many of them are related to issues resolved in the latest version of
 Dragonfly.
+
 
 CompoundRule Usage example
 ----------------------------------------------------------------------------
@@ -83,6 +84,7 @@ directory or Natlink user directory, load it and then say *do something
 computer*. If the speech recognition engine recognized the command, then
 ``Voice command spoken.`` will be printed in the Natlink messages window.
 If you're not using Dragon, then it will be printed into the console window.
+
 
 MappingRule usage example
 ----------------------------------------------------------------------------
@@ -128,7 +130,8 @@ cause the control and S keys to be pressed.
 
 The example aboves don't show any of Dragonfly's exciting features, such as
 dynamic speech elements. To learn more about these, please take a look at
-`Dragonfly's online docs <http://dragonfly2.readthedocs.org/en/latest/>`__.
+`Dragonfly's online docs <http://dragonfly.readthedocs.org/en/latest/>`__.
+
 
 Installation
 ----------------------------------------------------------------------------
@@ -190,15 +193,15 @@ Dragonfly speech recognition engine are documented separately on the
 following pages:
 
 * `Natlink and DNS engine
-  <http://dragonfly2.readthedocs.org/en/latest/natlink_engine.html>`_
+  <http://dragonfly.readthedocs.org/en/latest/natlink_engine.html>`_
 * `SAPI 5 and WSR engine
-  <http://dragonfly2.readthedocs.org/en/latest/sapi5_engine.html>`_
+  <http://dragonfly.readthedocs.org/en/latest/sapi5_engine.html>`_
 * `Kaldi engine
-  <http://dragonfly2.readthedocs.org/en/latest/kaldi_engine.html>`_
+  <http://dragonfly.readthedocs.org/en/latest/kaldi_engine.html>`_
 * `CMU Pocket Sphinx engine
-  <http://dragonfly2.readthedocs.org/en/latest/sphinx_engine.html>`_
+  <http://dragonfly.readthedocs.org/en/latest/sphinx_engine.html>`_
 * `Text-input engine
-  <http://dragonfly2.readthedocs.org/en/latest/text_engine.html>`_
+  <http://dragonfly.readthedocs.org/en/latest/text_engine.html>`_
 
 
 Existing command modules
@@ -206,11 +209,11 @@ Existing command modules
 
 The related resources page of Dragonfly's documentation has a section on
 `command
-modules <http://dragonfly2.readthedocs.org/en/latest/related_resources.html#command-modules>`__
+modules <http://dragonfly.readthedocs.org/en/latest/related_resources.html#command-modules>`__
 which lists various sources.
 
-.. |Docs Status| image:: https://readthedocs.org/projects/dragonfly2/badge/?version=latest&style=flat
-   :target: https://dragonfly2.readthedocs.io
+.. |Docs Status| image:: https://readthedocs.org/projects/dragonfly/badge/?version=latest&style=flat
+   :target: https://dragonfly.readthedocs.io
 .. |Join Gitter chat| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/dictation-toolbox/dragonfly
 .. |Join Matrix chat| image:: https://img.shields.io/matrix/dragonfly2:matrix.org.svg?label=%5Bmatrix%5D

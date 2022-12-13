@@ -35,7 +35,7 @@ Dragonfly currently supports the following speech recognition engines:
    platform.
 
 Dragonfly's documentation is available online at
-`Read the Docs <http://dragonfly2.readthedocs.org/en/latest/>`_.
+`Read the Docs <http://dragonfly.readthedocs.org/en/latest/>`_.
 Dragonfly's FAQ is available in the documentation :ref:`here <RefFAQ>`.
 There are also a number of Dragonfly-related questions on `Stackoverflow
 <http://stackoverflow.com/questions/tagged/python-dragonfly>`_, although
