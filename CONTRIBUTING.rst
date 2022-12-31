@@ -1,13 +1,12 @@
 Contributing
 ============
 
-There are many ways to contribute to dragonfly and the project would
-certainly benefit from more contributions.
+There are many ways to contribute to Dragonfly.  They are documented in this file.
 
 Reporting bugs/other issues
 ---------------------------
 
-If you come across bugs or other issues with dragonfly, you can open a new
+If you come across bugs or other issues with Dragonfly, you can open a new
 issue in the `issue tracker`_.
 
 If the issue is a bug, make sure you describe what you expected to happen
@@ -24,7 +23,7 @@ can create a `pull request`_ to merge your changes with the master branch.
 Documentation changes
 ---------------------
 
-There are parts of dragonfly that are undocumented as well as, undoubtedly,
+There are parts of Dragonfly that are undocumented as well as, undoubtedly,
 documented functionality which is poorly explained, out of date or
 incorrect. If you notice problems with the documentation, you can open a
 new issue in the `issue tracker`_.
