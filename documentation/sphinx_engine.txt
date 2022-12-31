@@ -277,8 +277,6 @@ to popular open source text-to-speech software such as `eSpeak`_,
 .. _adaption tutorial: https://cmusphinx.github.io/wiki/tutorialadapt/
 .. _dragonfly/examples/sphinx_module_loader.py: https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/sphinx_module_loader.py
 .. _eSpeak: http://espeak.sourceforge.net/
-.. _Pocket Sphinx config_macro.h:
-https://github.com/cmusphinx/pocketsphinx/blob/master/src/config_macro.h
+.. _Pocket Sphinx config_macro.h: https://github.com/cmusphinx/pocketsphinx/blob/master/src/config_macro.h
 .. _ps_add_word: https://cmusphinx.github.io/doc/pocketsphinx/pocketsphinx_8h.html#a5f3c4fcdbef34915c4e785ac9a1c6005
-.. _sphinxbase/fe.h: https://github.com/cmusphinx/sphinxbase/blob/master/include/sphinxbase/fe.h
 .. _tuning tutorial: https://cmusphinx.github.io/wiki/tutorialtuning/
