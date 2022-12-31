@@ -78,7 +78,7 @@ def read(*names):
 
 
 setup(
-      name             = "dragonfly2",
+      name             = "dragonfly",
       version          = release,
       description      = "Speech recognition extension library",
       author           = "Christo Butcher",

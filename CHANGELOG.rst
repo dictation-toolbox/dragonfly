@@ -11,9 +11,10 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+`1.0.0-rc1`_  - 2022-12-31
+--------------------------
 
-Unreleased_
------------
+This is the first release candidate for Dragonfly version 1.0.0.
 
 Added
 ~~~~~
@@ -1275,7 +1276,8 @@ This release is the first in the Git version control system.
 
 
 .. Release links.
-.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/0.35.0...HEAD
+.. _Unreleased:  https://github.com/dictation-toolbox/dragonfly/compare/1.0.0-rc1...HEAD
+.. _1.0.0-rc1:   https://github.com/dictation-toolbox/dragonfly/compare/0.35.0...1.0.0-rc1
 .. _0.35.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.34.1...0.35.0
 .. _0.34.1:      https://github.com/dictation-toolbox/dragonfly/compare/0.34.0...0.34.1
 .. _0.34.0:      https://github.com/dictation-toolbox/dragonfly/compare/0.33.0...0.34.0
