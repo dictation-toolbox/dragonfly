@@ -70,7 +70,7 @@ Release
 
     #.  Check whether documentation was built automatically, and if not
         trigger it:
-        https://readthedocs.org/builds/dragonfly2/
+        https://readthedocs.org/builds/dragonfly/
 
 #.  Upload to PyPI server
 

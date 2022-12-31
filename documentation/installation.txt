@@ -47,26 +47,12 @@ that the Wayland user switch to X11.
 
 Installation of Dragonfly
 ----------------------------------------------------------------------------
-Dragonfly is a Python package. It can be installed as *dragonfly2* using
+Dragonfly is a Python package. It can be installed as *dragonfly* using
 pip:
 
 .. code:: shell
 
-    pip install dragonfly2
-
-The distribution name has been changed to *dragonfly2* in order to
-upload releases to PyPI.org, but everything can still be imported using
-*dragonfly*. If you use any grammar modules that include something like
-:code:`pkg_resources.require("dragonfly >= 0.6.5")`, you will need to either
-replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
-altogether.
-
-If you have dragonfly installed under the original *dragonfly*
-distribution name, you'll need to remove the old version using:
-
-.. code:: shell
-
-    pip uninstall dragonfly
+    pip install dragonfly
 
 Dragonfly can also be installed by cloning this repository or
 downloading it from `the releases
@@ -77,7 +63,7 @@ the following (or similar) command in the project's root directory:
 
     python setup.py install
 
-If pip fails to install *dragonfly2* or any of its required or extra
+If pip fails to install *dragonfly* or any of its required or extra
 dependencies, then you may need to upgrade pip with the following command:
 
 .. code:: shell

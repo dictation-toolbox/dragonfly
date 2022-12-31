@@ -48,7 +48,7 @@ Setup
 
 Want to get started **quickly & easily on Windows**? A self-contained,
 portable, batteries-included (python & libraries & model) distribution
-of kaldi-active-grammar + dragonfly2 is available at the
+of kaldi-active-grammar + dragonfly is available at the
 `kaldi-active-grammar project releases page
 <https://github.com/daanzu/kaldi-active-grammar/releases>`_.
 Otherwise...
@@ -74,13 +74,13 @@ your microphone. Do this by running ``usermod -a -G audio
 account_name_here``.
 
 Installing the correct versions of the Python dependencies can be most
-easily done by installing the ``kaldi`` sub-package of ``dragonfly2``
+easily done by installing the ``kaldi`` sub-package of ``dragonfly``
 using::
 
-  pip install 'dragonfly2[kaldi]'
+  pip install 'dragonfly[kaldi]'
 
-If you are installing to *develop* dragonfly2, use the following instead
-(from your dragonfly2 git repository)::
+If you are installing to *develop* dragonfly, use the following instead
+(from your dragonfly git repository)::
 
   pip install -e '.[kaldi]'
 
@@ -139,7 +139,7 @@ Updating To A New Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When updating to a new version of dragonfly, you should always rerun
-``pip install 'dragonfly2[kaldi]'`` (or ``pip install '.[kaldi]'``, etc.) to
+``pip install 'dragonfly[kaldi]'`` (or ``pip install '.[kaldi]'``, etc.) to
 make sure you get the required version of kaldi_active_grammar.
 
 

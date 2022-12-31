@@ -136,19 +136,12 @@ dynamic speech elements. To learn more about these, please take a look at
 Installation
 ----------------------------------------------------------------------------
 
-Dragonfly is a Python package. It can be installed as *dragonfly2* using
+Dragonfly is a Python package. It can be installed as *dragonfly* using
 pip:
 
 .. code:: shell
 
-    pip install dragonfly2
-
-The distribution name has been changed to *dragonfly2* in order to
-upload releases to PyPI.org, but everything can still be imported using
-*dragonfly*. If you use any grammar modules that include something like
-:code:`pkg_resources.require("dragonfly >= 0.6.5")`, you will need to either
-replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
-altogether.
+    pip install dragonfly
 
 If you are installing this on Linux, you will also need to install the
 `wmctrl <https://www.freedesktop.org/wiki/Software/wmctrl/>`__, `xdotool
@@ -160,13 +153,6 @@ session.  Input action classes, application contexts and the ``Window``
 class will **not** be functional under Wayland. It is recommended that
 Wayland users switch to X11, Windows or macOS.
 
-If you have dragonfly installed under the original *dragonfly*
-distribution name, you'll need to remove the old version using:
-
-.. code:: shell
-
-    pip uninstall dragonfly
-
 Dragonfly can also be installed by cloning this repository or
 downloading it from `the releases
 page <https://github.com/dictation-toolbox/dragonfly/releases>`__ and
@@ -177,7 +163,7 @@ directory:
 
     python setup.py install
 
-If pip fails to install *dragonfly2* or any of its required or extra
+If pip fails to install *dragonfly* or any of its required or extra
 dependencies, then you may need to upgrade pip with the following command:
 
 .. code:: shell
