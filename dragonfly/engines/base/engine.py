@@ -74,6 +74,9 @@ class EngineBase(object):
         self._grammar_wrappers = {}
         self._recognition_observer_manager = None
 
+        # Recognizing quoted words (literals) is not supported by default.
+        self._has_quoted_words_support = False
+
 #    def __del__(self):
 #        try:
 #            try:
@@ -334,17 +337,16 @@ class EngineBase(object):
     @classmethod
     def _get_language_tag(cls, language_id):
         # Get a language tag from the Windows language identifier.
-        tags = cls._language_tags.get(language_id)
-        if tags:
-            return tags[0]
+        language_tags = cls._language_tags
+        tags = language_tags.get(language_id)
+        if tags: return tags[0]
 
-        # The _language_tags dictionary didn't contain the language, so
-        # get the best match by using the primary language identifier.
-        # This allows us to match unlisted language variants.
+        # The dictionary didn't contain the language, so try to get a match
+        #  using the primary language identifier instead.  This allows us to
+        #  match unlisted language variants.
         primary_id = language_id & 0x00ff
-        for language_id2, (tag, _) in cls._language_tags.items():
-            if primary_id == language_id2 & 0x00ff:  # Match found.
-                return tag
+        for language_id2, (tag, _) in language_tags.items():
+            if primary_id == language_id2 & 0x00ff:  return tag
 
         # Speaker language wasn't found.
         cls._log.error("Unknown speaker language: 0x%04x" % language_id)
@@ -380,7 +382,4 @@ class EngineBase(object):
 
         :rtype: bool
         """
-        return self._has_quoted_words_support()
-
-    def _has_quoted_words_support(self):
-        raise NotImplementedError("Engine %s not implemented." % self)
+        return self._has_quoted_words_support

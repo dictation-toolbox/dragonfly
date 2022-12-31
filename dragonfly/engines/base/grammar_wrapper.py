@@ -39,8 +39,8 @@ class GrammarWrapperBase(object):
 
     _log = logging.getLogger("engine")
 
-    # Change to True for SR back-ends which have trouble differentiating
-    # command and dictation words.
+    # Change to True for back-ends which have trouble differentiating
+    #  command and dictation words.
     _dictated_word_guesses_enabled = False
 
     def __init__(self, grammar, engine, recobs_manager):

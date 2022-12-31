@@ -121,7 +121,10 @@ engine_tests_dict = {
 
     "kaldi": [
         "test_engine_kaldi",
-        # "test_language_en_number",
+        "test_language_en_number",
+
+        # Note: Kaldi cannot handle the special characters in this file.
+        "test_dictation",
     ] + common_names,
 
     "text": [
@@ -131,14 +134,6 @@ engine_tests_dict = {
 
     "natlink": natlink_names,
 }
-
-
-# Exclude doctests that don't work with specific engines.
-recobs_doctest = "documentation/test_recobs_doctest.txt"
-lists_doctest = "documentation/test_grammar_list_doctest.txt"
-engine_tests_dict['sapi5'].remove(recobs_doctest)
-# engine_tests_dict['kaldi'].remove(recobs_doctest)
-# engine_tests_dict['kaldi'].remove(lists_doctest)
 
 
 # Add aliases of 'sapi5'.

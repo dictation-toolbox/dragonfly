@@ -9,10 +9,6 @@ the Kaldi engine. It scans the directory it's in and loads any ``_*.py`` it
 finds.
 """
 
-
-# TODO Have a simple GUI for pausing, resuming, cancelling and stopping
-# recognition, etc
-
 from __future__ import print_function
 
 import logging
@@ -160,6 +156,9 @@ def main():
         engine.do_recognition(on_begin, on_recognition, on_failure)
     except KeyboardInterrupt:
         pass
+
+    # Disconnect from the engine, freeing its resources.
+    engine.disconnect()
 
 
 if __name__ == "__main__":

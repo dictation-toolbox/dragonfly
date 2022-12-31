@@ -166,9 +166,9 @@ class TextInputEngine(EngineBase):
         # The *words* argument should be a string or iterable.
         # Words are put into lowercase for consistency.
         if isinstance(words, string_types):
-            words = words.lower().split()
+            words = words.split()
         elif iter(words):
-            words = [w.lower() for w in words]
+            words = [w for w in words]
         else:
             raise TypeError("%r is not a string or other iterable object"
                             % words)
@@ -251,14 +251,11 @@ class TextInputEngine(EngineBase):
 
         self._language = value
 
-    def _has_quoted_words_support(self):
-        return False
-
 
 class GrammarWrapper(GrammarWrapperBase):
 
-    # Enable guessing at which words were "dictated" so that this "SR"
-    #  back-end behaves like a real one.
+    # Enable guessing at which words were "dictated" so this back-end
+    #  behaves like a real one.
     _dictated_word_guesses_enabled = True
 
     def __init__(self, grammar, engine, recobs_manager):

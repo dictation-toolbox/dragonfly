@@ -64,7 +64,7 @@ mock_modules = {
     "jsgf",
     "jsgf.ext",
     "pocketsphinx",
-    "pyaudio",
+    "sounddevice",
     "sphinxwrapper",
 
     # Other.

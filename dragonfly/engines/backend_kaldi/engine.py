@@ -326,9 +326,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     def _get_language(self):
         return "en"
 
-    def _has_quoted_words_support(self):
-        return False
-
     def prepare_for_recognition(self):
         """ Can be called optionally before ``do_recognition()`` to speed up its starting of active recognition. """
         if self._in_phrase:

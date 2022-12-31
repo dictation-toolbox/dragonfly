@@ -133,8 +133,7 @@ class SphinxEngineCase(unittest.TestCase):
         """
         Reset the test_map values for all test functions.
         """
-        for key in self.test_map.keys():
-            self.test_map[key] = 0
+        for key in self.test_map.keys(): self.test_map[key] = 0
 
     # ---------------------------------------------------------------------
     # Methods for asserting recognition success or failure.
@@ -145,12 +144,13 @@ class SphinxEngineCase(unittest.TestCase):
         strings.
         """
         try:
-            self.engine.mimic_phrases(*phrases)
+            for phrase in phrases: self.engine.mimic(phrases)
         except MimicFailure:
             self.fail("MimicFailure caught")
 
     def assert_mimic_failure(self, *phrases):
-        self.assertRaises(MimicFailure, self.engine.mimic_phrases, *phrases)
+        for phrase in phrases:
+            self.assertRaises(MimicFailure, self.engine.mimic, phrase)
 
     def assert_recobs_result(self, waiting, words):
         self.assertEqual(self.test_recobs.waiting, waiting)
@@ -186,7 +186,7 @@ class EngineTests(SphinxEngineCase):
             "CHANNELS",
             "RATE",
             "SAMPLE_WIDTH",
-            "FRAMES_PER_BUFFER",
+            "BUFFER_SIZE",
         ]
 
         class TestConfig(object):

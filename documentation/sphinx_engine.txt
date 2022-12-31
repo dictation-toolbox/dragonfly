@@ -14,7 +14,7 @@ Setup
 
 There are three Pocket Sphinx engine dependencies:
 
-- `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_
+- `sounddevice <https://python-sounddevice.readthedocs.io>`_
 - `pyjsgf <https://github.com/Danesprite/pyjsgf>`_
 - `sphinxwrapper <https://github.com/Danesprite/sphinxwrapper>`_
 
@@ -127,12 +127,13 @@ The following is the default decoder configuration:
 
 
 There does not appear to be much documentation on these options outside of
-the `pocketsphinx/cmdln_macro.h`_ and `sphinxbase/fe.h`_ header files.
-If this is incorrect or has changed, feel free to suggest an edit.
+the `Pocket Sphinx config_macro.h`_ header file.
 
-The easiest way of seeing the available decoder options as well as their
-default values is to run the ``pocketsphinx_continuous`` command with no
-arguments.
+The easiest way of seeing the available decoder options and their default
+values is to initialise a decoder and read the log output ::
+
+    from sphinxwrapper import PocketSphinx
+    PocketSphinx()
 
 
 Changing Models and Dictionaries
@@ -276,7 +277,8 @@ to popular open source text-to-speech software such as `eSpeak`_,
 .. _adaption tutorial: https://cmusphinx.github.io/wiki/tutorialadapt/
 .. _dragonfly/examples/sphinx_module_loader.py: https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/sphinx_module_loader.py
 .. _eSpeak: http://espeak.sourceforge.net/
-.. _pocketsphinx/cmdln_macro.h: https://github.com/cmusphinx/pocketsphinx/blob/master/include/cmdln_macro.h
+.. _Pocket Sphinx config_macro.h:
+https://github.com/cmusphinx/pocketsphinx/blob/master/src/config_macro.h
 .. _ps_add_word: https://cmusphinx.github.io/doc/pocketsphinx/pocketsphinx_8h.html#a5f3c4fcdbef34915c4e785ac9a1c6005
 .. _sphinxbase/fe.h: https://github.com/cmusphinx/sphinxbase/blob/master/include/sphinxbase/fe.h
 .. _tuning tutorial: https://cmusphinx.github.io/wiki/tutorialtuning/

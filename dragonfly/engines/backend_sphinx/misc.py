@@ -1,6 +1,6 @@
 #
 # This file is part of Dragonfly.
-# (c) Copyright 2007, 2008 by Christo Butcher
+# (c) Copyright 2019-2022 by Dane Finlay
 # Licensed under the LGPL.
 #
 #   Dragonfly is free software: you can redistribute it and/or modify it
@@ -71,8 +71,9 @@ class EngineConfig(object):
     # being used. Default values match the 16 kHz CMU US English models.
     CHANNELS = 1              # one channel (mono)
     SAMPLE_WIDTH = 2          # Sample width of 2 bytes/16 bits
+    FORMAT = 'int16'
     RATE = 16000              # 16kHz sample rate
-    FRAMES_PER_BUFFER = 2048  # frames per audio buffer
+    BUFFER_SIZE = 1024        # Audio buffer size
 
 
 class WaveRecognitionObserver(RecognitionObserver):

@@ -92,6 +92,9 @@ def main():
     except KeyboardInterrupt:
         pass
 
+    # Disconnect from the engine, freeing its resources.
+    engine.disconnect()
+
 
 if __name__ == "__main__":
     main()

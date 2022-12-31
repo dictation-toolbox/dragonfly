@@ -320,9 +320,6 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         else:
             return "en"
 
-    def _has_quoted_words_support(self):
-        return False
-
     def _do_recognition(self):
         """
             Recognize speech in a loop.

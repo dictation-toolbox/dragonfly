@@ -42,7 +42,7 @@ from dragonfly.engines.backend_sphinx.misc             import (EngineConfig,
                                                                WaveRecognitionObserver,
                                                                get_decoder_config_object)
 from dragonfly.engines.backend_sphinx.recobs           import SphinxRecObsManager
-from dragonfly.engines.backend_sphinx.recording        import PyAudioRecorder
+from dragonfly.engines.backend_sphinx.recording        import AudioRecorder
 from dragonfly.engines.backend_sphinx.timer            import SphinxTimerManager
 
 
@@ -73,7 +73,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         DelegateTimerManagerInterface.__init__(self)
 
         try:
-            import sphinxwrapper, jsgf, pyaudio
+            import sphinxwrapper, jsgf, sounddevice
         except ImportError:
             raise EngineError("Failed to import Pocket Sphinx engine "
                               "dependencies.")
@@ -100,10 +100,10 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._keyphrase_search_names = ["_key_phrases"]
         self._valid_searches = set()
 
-        # Recognising loop members.
-        self._recorder = PyAudioRecorder(self.config)
-        self._cancel_recognition_next_time = False
-        self._recognising = False
+        # Recognition loop members.
+        self._recorder = AudioRecorder(self.config)
+        self._doing_recognition = False
+        self._deferred_disconnect = False
 
     @property
     def config(self):
@@ -137,7 +137,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             "CHANNELS",
             "RATE",
             "SAMPLE_WIDTH",
-            "FRAMES_PER_BUFFER",
+            "BUFFER_SIZE",
         ]
 
         # Get default values and set them they are missing.
@@ -180,7 +180,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._decoder.hypothesis_callback = hypothesis
         self._decoder.speech_start_callback = speech_start
 
-        # Set the PyAudioRecorder instance's config object.
+        # Set the AudioRecorder instance's config object.
         self._recorder.config = self.config
 
     def _free_engine_resources(self):
@@ -188,18 +188,18 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         Internal method for freeing the resources used by the engine.
         """
         # Stop the audio recorder if it is running.
-        self._recognising = False
         self._recorder.stop()
 
         # Free the decoder and clear audio buffers.
         self._decoder = None
         self._audio_buffers = []
 
-        # Reset other variables
-        self._cancel_recognition_next_time = False
+        # Reset other variables.
+        self._doing_recognition = False
+        self._deferred_disconnect = False
         self._grammar_count = 0
 
-        # Clear dictionaries and sets
+        # Clear dictionaries and sets.
         self._grammar_wrappers.clear()
         self._valid_searches.clear()
         self._keyphrase_thresholds.clear()
@@ -213,16 +213,13 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         This method effectively unloads all loaded grammars and key
         phrases.
         """
-        # Free resources if the decoder isn't currently being used to
-        # recognise, otherwise stop the recognising loop, which will free
-        # the resources safely.
-        if not self.recognising:
-            self._free_engine_resources()
-        else:
-            self._recognising = False
-            self._recorder.stop()
+        # If the engine is currently recognising, instruct it to free engine
+        #  resources in the next iteration of the recognition loop.
+        #  Otherwise, free engine resources now.
+        if self._doing_recognition: self._deferred_disconnect = True
+        else:                       self._free_engine_resources()
 
-    # -----------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     # Multiplexing timer methods.
 
     def create_timer(self, callback, interval, repeating=True):
@@ -230,17 +227,16 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         Create and return a timer using the specified callback and repeat
         interval.
 
-        **Note**: Timers will not run unless the engine is recognising
-        audio. Normal threads can be used instead with no downsides.
-        """
-        if not self.recognising:
-            self._log.warning("Timers will not run unless the engine is "
-                              "recognising audio.")
+        .. note::
 
+           Timers will not run unless the engine is recognising audio in a
+           loop.
+
+        """
         return super(SphinxEngine, self).create_timer(callback, interval,
                                                       repeating)
 
-    # -----------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     # Methods for working with grammars.
 
     def check_valid_word(self, word):
@@ -358,8 +354,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         :type func: callable
         :raises: UnknownWordError
         """
-        # Check that all words in the keyphrase are in the pronunciation dictionary.
-        # This can raise an UnknownWordError.
+        # Check that all words in the keyphrase are in the pronunciation
+        #  dictionary.  This can raise an UnknownWordError.
         self._validate_words(keyphrase.split(), "keyphrase")
 
         # Check that the threshold is a float.
@@ -381,8 +377,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         :param keyphrase: keyphrase to remove.
         :type keyphrase: str
         """
-        # Remove parameters from the relevant dictionaries. Don't raise an error
-        # if there is no such keyphrase.
+        # Remove parameters from the relevant dictionaries.  Do not raise an
+        #  error if there is no such keyphrase.
         self._keyphrase_thresholds.pop(keyphrase, None)
         self._keyphrase_functions.pop(keyphrase, None)
 
@@ -479,7 +475,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         wrapper.exclusive = exclusive
 
-    # -----------------------------------------------------------------------
+    #------------------------------------------------------------------------
     # Miscellaneous methods.
 
     @property
@@ -492,19 +488,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         :rtype: bool
         """
         return self._recorder.recording or self._recognising
-
-    @property
-    def default_search_result(self):
-        """
-        The last hypothesis object of the default search.
-
-        This does not currently reach recognition observers because it is
-        intended to be used for dictation results, which are currently
-        disabled. Nevertheless this object can be useful sometimes.
-
-        :returns: Sphinx Hypothesis object | None
-        """
-        return self._default_search_result
 
     @property
     def _default_search_name(self):
@@ -539,7 +522,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Store the current search name.
         original = self._decoder.active_search
 
-        # Note that there is no need to validate words in this case because
+        # Note: There is no need to validate words in this case because
         # each literal in the _temp grammar came from a Pocket Sphinx
         # hypothesis.
         self._decoder.end_utterance()
@@ -554,7 +537,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         result = hyp.hypstr if hyp else None
 
         # Switch back to the previous search.
-        self._decoder.end_utterance()  # just in case
+        self._decoder.end_utterance()
         self._decoder.active_search = original
         self._decoder.unset_search("_temp")
         return result
@@ -569,19 +552,20 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         }
 
         # Call process_begin for all grammars so that any out of context
-        # grammar will not be used.
+        #  grammar will not be used.
         for wrapper in self._grammar_wrappers.copy().values():
             wrapper.process_begin(**window_info)
 
         if not mimicking:
-            # Trim excess audio buffers from the start of the list. Keep a maximum 1
-            # second of silence before speech start was detected. This should help
-            # increase the performance of batch reprocessing later.
-            chunk = self.config.FRAMES_PER_BUFFER
+            # For performance reasons, trim excess audio buffers from the
+            #  start of the list.   Keep a maximum of one second of silence
+            #  before speech start was detected.
+            chunk = self.config.BUFFER_SIZE
             rate = self.config.RATE
             seconds = 1
             n_buffers = int(rate / chunk * seconds)
-            self._audio_buffers = self._audio_buffers[-1 * n_buffers:]
+            while len(self._audio_buffers) > n_buffers + 1:
+                self._audio_buffers.pop(0)
 
         # Notify observers
         self._recognition_observer_manager.notify_begin()
@@ -608,7 +592,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         results_obj = None  # TODO Use PS results object once implemented
         if not processing_occurred:
             self._recognition_observer_manager.notify_failure(results_obj)
-
 
         # Clear audio buffer list because utterance processing has finished.
         self._audio_buffers = []
@@ -794,33 +777,23 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if not self._decoder:
             return
 
-        # Cancel current recognition if it has been requested.
-        if self._cancel_recognition_next_time:
-            self._decoder.end_utterance()
-            self._audio_buffers = []
-            self._cancel_recognition_next_time = False
-
-        # Keep a list of buffers for possible reprocessing using different Pocket
-        # Sphinx searches later.
+        # Keep a list of buffers for possible reprocessing later on.
         self._audio_buffers.append(buf)
 
-        # Call the timer callback if it is set.
+        # Call the timer callback.
         self.call_timer_callback()
 
-        # Process audio.
-        try:
-            self._recognising = True
-            self._decoder.process_audio(buf)
-        finally:
-            self._recognising = False
+        # Process the audio buffer.
+        self._decoder.process_audio(buf)
 
     def process_wave_file(self, path):
         """
-        Recognise speech from a wave file and return the recognition results.
+        Recognise speech from a wave file and return the recognition
+        results.
 
         This method checks that the wave file is valid. It raises an error
-        if the file doesn't exist, if it can't be read or if the WAV header
-        values do not match those in the engine configuration.
+        if the file doesn't exist, if it can't be read or if the relevant
+        WAV header parameters do not match those in the engine configuration.
 
         The wave file must use the same sample width, sample rate and number
         of channels that the acoustic model uses.
@@ -838,20 +811,17 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if not self._decoder:
             self.connect()
 
-        # This method's implementation has been adapted from the PyAudio
-        # play wave example:
-        # http://people.csail.mit.edu/hubert/pyaudio/#play-wave-example
-
         # Check that path is a valid file.
         if not os.path.isfile(path):
-            raise IOError("'%s' is not a file. Please use a different file path.")
+            raise IOError("%r is not a file. Please use a different file"
+                          " path." % (path,))
 
         # Get required audio configuration from the engine config.
         channels, sample_width, rate, chunk = (
             self.config.CHANNELS,
             self.config.SAMPLE_WIDTH,
             self.config.RATE,
-            self.config.FRAMES_PER_BUFFER
+            self.config.BUFFER_SIZE
         )
 
         # Open the wave file. Use contextlib to make sure that the file is
@@ -876,7 +846,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                 raise ValueError(message)
 
             # Use process_buffer to process each buffer.
-            for _ in range(0, int(wf.getnframes() / chunk) + 1):
+            for x in range(0, int(wf.getnframes() / chunk) + 1):
                 data = wf.readframes(chunk)
                 if not data:
                     break
@@ -888,14 +858,10 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                     yield obs.words
                     obs.words = ""
 
-        # Log warnings if speech start or end weren't detected.
+        # Log a warning if speech start or end weren't detected.
         if not obs.complete:
-            self._log.warning("Speech start/end wasn't detected in the wave "
-                              "file!")
-            self._log.warning("Perhaps the Sphinx '-vad_prespeech' value "
-                              "should be higher?")
-            self._log.warning("Or maybe '-vad_startspeech' or "
-                              "'-vad_postspeech' should be lower?")
+            self._log.warning("Speech start/end wasn't detected in the wave"
+                              " file!  Try changing -vad_* decoder params.")
 
     def _do_recognition(self):
         """
@@ -903,21 +869,28 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         :meth:`disconnect` is called.
 
         To configure audio input settings, modify the engine's ``CHANNELS``,
-        ``RATE``, ``SAMPLE_WIDTH`` and/or ``FRAMES_PER_BUFFER``
+        ``RATE``, ``SAMPLE_WIDTH`` and/or ``BUFFER_SIZE``
         configuration options.
         """
         if not self._decoder:
             self.connect()
 
-        # Start recognising in a loop.
-        self._recorder.start()
-        self._cancel_recognition_next_time = False
-        while self.recognising:
-            for buf in self._recorder.get_buffers():
-                self.process_buffer(buf)
+        # Start recognising from the microphone in a loop.
+        # If disconnect is called while this loop is running, free engine
+        #  resources and stop.
+        try:
+            recorder = self._recorder
+            recorder.start()
+            self._doing_recognition = True
+            while self._doing_recognition:
+                for buf in recorder.get_buffers():
+                    self.process_buffer(buf)
 
-        # Free engine resources after recognition has stopped.
-        self._free_engine_resources()
+                    if self._deferred_disconnect:
+                        self._free_engine_resources()
+                        break
+        finally:
+            self._doing_recognition = False
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words* """
@@ -944,39 +917,9 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             raise MimicFailure("No matching rule found for words %s."
                                % words)
 
-    def mimic_phrases(self, *phrases):
-        """
-        Mimic a recognition of the given *phrases*.
-
-        This method accepts variable phrases instead of a list of words.
-        """
-        # Pretend that Sphinx has started processing speech
-        self._speech_start_callback(True)
-
-        # Process phrases as if they were spoken
-        for phrase in phrases:
-            result = self._hypothesis_callback(phrase, True)
-            if not result:
-                raise MimicFailure("No matching rule found for words %s."
-                                   % phrase)
-
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
         dragonfly.engines.get_speaker().speak(text)
 
     def _get_language(self):
         return self.config.LANGUAGE
-
-    def _has_quoted_words_support(self):
-        return False
-
-    # ----------------------------------------------------------------------
-    # Recognition loop control methods
-    # Stopping recognition loop is done using disconnect()
-
-    def cancel_recognition(self):
-        """
-        If a recognition was in progress, cancel it before processing the
-        next audio buffer.
-        """
-        self._cancel_recognition_next_time = True

@@ -122,9 +122,9 @@ setup(
                             "regex;python_version>'2.7'",
                            ],
           "sphinx": [
-                     "sphinxwrapper >= 1.2.0",
+                     "sounddevice == 0.3.*",
+                     "sphinxwrapper >= 1.3.0",
                      "pyjsgf >= 1.7.0",
-                     "pyaudio"
                     ],
           "kaldi": [
                     # NOTE: Remember to also update engine.py to the same version!

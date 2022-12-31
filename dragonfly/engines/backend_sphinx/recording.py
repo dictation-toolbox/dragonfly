@@ -1,6 +1,6 @@
 #
 # This file is part of Dragonfly.
-# (c) Copyright 2007, 2008 by Christo Butcher
+# (c) Copyright 2017-2022 by Dane Finlay
 # Licensed under the LGPL.
 #
 #   Dragonfly is free software: you can redistribute it and/or modify it
@@ -25,12 +25,12 @@ Classes for recording audio to recognise.
 import threading
 import time
 
-import pyaudio
+import sounddevice
 
 
-class PyAudioRecorder(object):
+class AudioRecorder(object):
     """
-    Class for recording audio from a pyaudio input stream.
+    Class for recording audio from an input stream.
 
     This class records on another thread to minimise dropped frames.
     """
@@ -38,10 +38,10 @@ class PyAudioRecorder(object):
     def __init__(self, config, read_interval=0.05):
         self.config = config
         self.read_interval = read_interval
-        self._recording = False
         self._thread = None
         self._buffers = []
         self._condition = threading.Condition()
+        self._stop_event = threading.Event()
         self._lock = threading.RLock()
 
     @property
@@ -51,7 +51,7 @@ class PyAudioRecorder(object):
 
         :rtype: bool
         """
-        return self._recording
+        return not self._stop_event.isSet()
 
     def start(self):
         """
@@ -61,7 +61,7 @@ class PyAudioRecorder(object):
         Audio buffers can be accessed with :meth:`get_buffers`.
         """
         if not self._thread:
-            self._recording = True
+            self._stop_event.clear()
             self._thread = threading.Thread(target=self._record)
             self._thread.setDaemon(True)
             self._thread.start()
@@ -93,13 +93,15 @@ class PyAudioRecorder(object):
         Clear the internal buffer list.
         """
         with self._lock:
-            self._buffers = []
+            while len(self._buffers) > 0: self._buffers.pop(0)
 
     def stop(self):
         """
         Stop recording audio.
         """
-        self._recording = False
+        self._stop_event.set()
+
+        # Try to make this call synchronous.
         if self._thread:
             self._thread.join(5)
             if not self._thread.is_alive():
@@ -108,25 +110,25 @@ class PyAudioRecorder(object):
     def _record(self):
         # Start recording audio on the current thread until stop() is
         # called.
-        p = pyaudio.PyAudio()
-        channels, rate = self.config.CHANNELS, self.config.RATE
-        frames_per_buffer = self.config.FRAMES_PER_BUFFER
-        pa_format = pyaudio.get_format_from_width(self.config.SAMPLE_WIDTH)
-        stream = p.open(input=True, format=pa_format, channels=channels,
-                        rate=rate, frames_per_buffer=frames_per_buffer)
+        buffer_size = self.config.BUFFER_SIZE
+        stream = sounddevice.RawInputStream(
+            dtype=self.config.FORMAT,
+            channels=self.config.CHANNELS,
+            samplerate=self.config.RATE,
+            blocksize=buffer_size // 2,
+        )
+        stream.start()
+        try:
+            while not self._stop_event.isSet():
+                with self._condition:
+                    data, _ = stream.read(buffer_size // 2)
+                    self._buffers.append(data)
 
-        # Start recognising in a loop
-        stream.start_stream()
-        while self._recording:
-            with self._condition:
-                self._buffers.append(stream.read(frames_per_buffer))
+                    # Notify waiting threads (if any).
+                    self._condition.notifyAll()
 
-                # Notify waiting threads (if any).
-                self._condition.notifyAll()
-
-            # This improves the performance; we don't need to process as
-            # much audio as the device can read.
-            time.sleep(self.read_interval)
-
-        stream.close()
-        p.terminate()
+                # This improves the performance; we don't need to
+                #  process as much audio as the device can read.
+                time.sleep(self.read_interval)
+        finally:
+            stream.close()
