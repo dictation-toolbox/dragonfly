@@ -11,6 +11,44 @@ Note: this project had no release versions between 0.6.6b1_ and
 0.7.0_. Notable changes made between these versions are documented in the
 commit history and will be placed under headings in this file over time.
 
+
+Unreleased_
+-----------
+
+Added
+~~~~~
+- Add an optional feature that allows key and mouse events to be sent to the
+  foreground window via Natlink.
+
+Changed
+~~~~~~~
+- Change Dragonfly to stop checking for X11 on Windows and macOS.
+- Change the Natlink engine to give preference to user grammars over global
+  commands.
+- Make the *dragonfly.accessibility* sub-package dependencies optional.
+- Replace *~/.dragonfly2-speech/settings.cfg* config file with keyboard
+  class attributes.
+- Set the log level of Windows DPI awareness messages to 'info'.
+
+Fixed
+~~~~~
+- Fix a bug with the Natlink engine where empty grammars cannot be loaded and
+  unloaded.
+- Fix an encoding-related error in the Literal element class.
+- Fix an error in the Optional element class.
+- Fix a macOS-specific bug with the Mouse action class that prevents double
+  clicking, triple clicking and scrolling on that platform.
+- Fix problems with the *dragonfly.accessibility* regex requirement.
+- Make the Natlink engine back-end work with newer versions of Natlink.
+
+Removed
+~~~~~~~
+- Remove *dragonfly.rpc* sub-package.
+- Remove multiple engine options per "-o" CLI argument.
+- Remove the sphinx engine's built-in microphone asleep feature and training
+  mode.
+
+
 0.35.0_ - 2022-03-19
 --------------------
 
