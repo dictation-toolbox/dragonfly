@@ -332,6 +332,7 @@ class Key(BaseKeyboardAction):
         'c': typeables["control"],
         's': typeables["shift"],
         'w': typeables["win"],
+        'm': typeables["command"]
         }
     interval_factor = 0.01
     interval_default = 0.0

@@ -282,12 +282,14 @@ typeables.update({
     "control":          Typeable(code=key_symbols.CONTROL, name='control'),
     "ctrl":             Typeable(code=key_symbols.CONTROL, name='ctrl'),
     "alt":              Typeable(code=key_symbols.ALT, name='alt'),
+    "command":          Typeable(code=key_symbols.COMMAND, name='command'),
 
     # Right modifier keys
     "rshift":           Typeable(code=key_symbols.RSHIFT, name='rshift'),
     "rcontrol":         Typeable(code=key_symbols.RCONTROL, name='rcontrol'),
     "rctrl":            Typeable(code=key_symbols.RCONTROL, name='rctrl'),
     "ralt":             Typeable(code=key_symbols.RALT, name='ralt'),
+    "rcommand":         Typeable(code=key_symbols.RCOMMAND, name='rcommand'),
 
     # Special keys
     "escape":           Typeable(code=key_symbols.ESCAPE, name='escape'),
