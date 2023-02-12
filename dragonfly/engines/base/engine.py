@@ -274,12 +274,6 @@ class EngineBase(object):
         """
         raise NotImplementedError("Engine %s not implemented." % self)
 
-    #: Alias of :meth:`do_recognition` left in for backwards-compatibility
-    recognize_forever = do_recognition
-
-    #: Alias of :meth:`do_recognition` left in for backwards-compatibility
-    recognise_forever = do_recognition
-
     def process_grammars_context(self, window=None):
         """
             Enable/disable grammars & rules based on their current contexts.

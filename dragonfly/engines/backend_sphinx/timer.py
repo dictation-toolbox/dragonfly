@@ -37,7 +37,7 @@ class SphinxTimerManager(DelegateTimerManager):
 
     - :meth:`process_buffer`
     - :meth:`process_wave_file`
-    - :meth:`recognise_forever`
+    - :meth:`do_recognition`
 
     Timer functions will run whether or not recognition is paused
     (i.e. in sleep mode).
