@@ -88,16 +88,13 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._audio_buffers = []
         self.compiler = SphinxJSGFCompiler(self)
         self._recognition_observer_manager = SphinxRecObsManager(self)
-        self._keyphrase_thresholds = {}
-        self._keyphrase_functions = {}
         self._default_search_result = None
         self._grammar_count = 0
 
         # Timer-related members.
         self._timer_manager = SphinxTimerManager(0.02, self)
 
-        # Set up keyphrase search names and valid search names for grammars.
-        self._keyphrase_search_names = ["_key_phrases"]
+        # Set up valid search names for grammars.
         self._valid_searches = set()
 
         # Recognition loop members.
@@ -202,16 +199,13 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Clear dictionaries and sets.
         self._grammar_wrappers.clear()
         self._valid_searches.clear()
-        self._keyphrase_thresholds.clear()
-        self._keyphrase_functions.clear()
 
     def disconnect(self):
         """
         Deallocate the CMU Sphinx decoder and any other resources used by
         it.
 
-        This method effectively unloads all loaded grammars and key
-        phrases.
+        This method effectively unloads all loaded grammars.
         """
         # If the engine is currently recognising, instruct it to free engine
         #  resources in the next iteration of the recognition loop.
@@ -337,54 +331,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Change to the default search to avoid possible segmentation faults
         # from Pocket Sphinx which crash Python.
         self._set_default_search()
-
-    # TODO Add optional context parameter
-    def set_keyphrase(self, keyphrase, threshold, func):
-        """
-        Add a keyphrase to listen for.
-
-        Key phrases take precedence over grammars as they are processed first.
-        They cannot be set for specific contexts (yet).
-
-        :param keyphrase: keyphrase to add.
-        :param threshold: keyphrase threshold value to use.
-        :param func: function or method to call when the keyphrase is heard.
-        :type keyphrase: str
-        :type threshold: float
-        :type func: callable
-        :raises: UnknownWordError
-        """
-        # Check that all words in the keyphrase are in the pronunciation
-        #  dictionary.  This can raise an UnknownWordError.
-        self._validate_words(keyphrase.split(), "keyphrase")
-
-        # Check that the threshold is a float.
-        if not isinstance(threshold, float):
-            raise TypeError("threshold must be a float, not %s" % threshold)
-
-        # Add parameters to the relevant dictionaries.
-        self._keyphrase_thresholds[keyphrase] = threshold
-        self._keyphrase_functions[keyphrase] = func
-
-        # Set the keyphrase search (again)
-        self._decoder.end_utterance()
-        self._decoder.set_kws_list("_key_phrases", self._keyphrase_thresholds)
-
-    def unset_keyphrase(self, keyphrase):
-        """
-        Remove a set keyphrase so that the engine no longer listens for it.
-
-        :param keyphrase: keyphrase to remove.
-        :type keyphrase: str
-        """
-        # Remove parameters from the relevant dictionaries.  Do not raise an
-        #  error if there is no such keyphrase.
-        self._keyphrase_thresholds.pop(keyphrase, None)
-        self._keyphrase_functions.pop(keyphrase, None)
-
-        # Set the keyphrase search (again)
-        self._decoder.end_utterance()
-        self._decoder.set_kws_list("_key_phrases", self._keyphrase_thresholds)
 
     def _set_default_search(self):
         # Ensure we're not processing.
@@ -603,76 +549,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # by mimic.
         return processing_occurred
 
-    def _process_key_phrases(self, speech, mimicking):
-        """
-        Processing key phrase searches and return the matched keyphrase
-        (if any).
-
-        :type speech: str
-        :param mimicking: whether to treat speech as mimicked speech.
-        :rtype: str
-        """
-        # Return if speech is empty/null or if there are no key phrases set.
-        if not (speech and self._keyphrase_thresholds):
-            return ""  # no matches
-
-        if not mimicking:
-            # Reprocess using the key phrases search
-            self._decoder.end_utterance()
-            self._decoder.active_search = "_key_phrases"
-            hyp = self._decoder.batch_process(self._audio_buffers,
-                                              use_callbacks=False)
-
-            # Get the hypothesis string.
-            speech = hyp.hypstr if hyp else ""
-
-            # Restore search to the default search.
-            self._set_default_search()
-
-            # Return if no key phrase matched.
-            if not speech:
-                return ""
-
-            # Handle multiple matching key phrases. This appears to be a
-            # quirk of how Pocket Sphinx 'kws' searches work. Get the best
-            # match instead if this is the case.
-            recognised_phrases = speech.split("  ")
-            if len(recognised_phrases) > 1:
-                # Remove trailing space from the last phrase.
-                recognised_phrases[len(recognised_phrases) - 1].rstrip()
-                speech = self._get_best_hypothesis(recognised_phrases)
-            else:
-                speech = speech.rstrip()  # remove trailing whitespace.
-
-        # Notify observers if a keyphrase was matched.
-        results_obj = None  # TODO Use PS results object once implemented
-        result = speech if speech in self._keyphrase_functions else ""
-        words = tuple(result.split())
-        if words:
-            self._recognition_observer_manager.notify_recognition(
-                words, None, None, results_obj
-            )
-
-        # Call the registered function if there was a match and the function
-        # is callable.
-        func = self._keyphrase_functions.get(speech, None)
-        if callable(func):
-            try:
-                func()
-            except Exception as e:
-                self._log.exception(
-                    "Exception caught when executing the function for "
-                    "keyphrase '%s': %s" % (speech, e)
-                )
-
-        # Notify observers after calling the keyphrase function.
-        if words:
-            self._recognition_observer_manager.notify_post_recognition(
-                words, None, None, results_obj
-            )
-
-        return result
-
     def _process_hypotheses(self, speech, mimicking):
         """
         Internal method to process speech hypotheses. This should only be called
@@ -683,13 +559,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         :param mimicking: whether to treat speech as mimicked speech.
         :rtype: tuple
         """
-        # Check key phrases search first.
-        keyphrase = self._process_key_phrases(speech, mimicking)
-        if keyphrase:
-            # Keyphrase search matched.
-            return True, keyphrase
-
-        # Otherwise do grammar processing.
+        # Do grammar processing.
         hypotheses = {}
         wrappers = self._grammar_wrappers.copy().values()
 

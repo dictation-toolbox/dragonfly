@@ -94,14 +94,14 @@ class SphinxEngineCase(unittest.TestCase):
         self.test_recobs.unregister()
         self.engine.disconnect()
 
-    # ---------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     # Methods for control-flow assertion.
 
     def get_test_function(self):
         """
-        Create and return a test function used for testing whether
-        key phrases or rules are processed correctly, insofar as they reach
-        the correct processing method/function.
+        Create and return a test function used for testing whether rules are
+        processed correctly, insofar as they reach the correct processing
+        method/function.
 
         Note that returned test functions accept variable arguments.
         :return: callable
@@ -212,45 +212,6 @@ class EngineTests(SphinxEngineCase):
                 self.assertEqual(getattr(TestConfig, name),
                                  getattr(original_config, name),
                                  "%s did not match" % name)
-
-    def test_keyphrases_and_recobs(self):
-        """ Verify that observers are notified of keyphrase events. """
-        test1 = self.get_test_function()
-        test2 = self.get_test_function()
-
-        # Register two key phrases
-        self.engine.set_keyphrase("hello world", 1e-20, test1)
-        self.engine.set_keyphrase("testing testing", 1e-30, test2)
-
-        def assert_success():
-            self.assert_mimic_success("hello world")
-            self.assert_recobs_result(False, (u"hello", u"world"))
-            self.assert_test_function_called(test1, 1)
-            self.assert_mimic_success("testing testing")
-            self.assert_recobs_result(False, (u"testing", u"testing"))
-            self.assert_test_function_called(test2, 1)
-            self.reset_test_functions()
-
-        # Test that both key phrases can be mimicked and that the observer
-        # was notified.
-        assert_success()
-
-        # Test that removed key phrases no longer match
-        self.engine.unset_keyphrase("hello world")
-        self.assert_mimic_failure("hello world")
-        self.assert_recobs_result(False, False)
-        self.assert_test_function_called(test1, 0)
-        self.engine.unset_keyphrase("testing testing")
-        self.assert_mimic_failure("testing testing")
-        self.assert_recobs_result(False, False)
-        self.assert_test_function_called(test1, 0)
-
-    def test_set_keyphrase_unknown_words(self):
-        """ Verify that setting a keyphrase with an unknown word raises an error.
-        """
-        from dragonfly.engines.backend_sphinx.engine import UnknownWordError
-        self.assertRaises(UnknownWordError, self.engine.set_keyphrase,
-                          "notaword", 1e-20, lambda: None)
 
     def test_unknown_grammar_words(self):
         """ Verify that warnings are logged for grammars with unknown words.

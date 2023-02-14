@@ -207,21 +207,17 @@ Unknown words
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 CMU Pocket Sphinx uses pronunciation dictionaries to lookup phonetic
-representations for words in grammars, language models and key phrases in
-order to recognise them. If you use words in your grammars and/or key
-phrases that are *not* in the dictionary, a message similar to the
-following will be printed:
+representations for words in grammars, language models in order to recognize
+them.  If you use words in your grammars that are *not* in the dictionary, a
+message similar to the following will be printed:
 
   *grammar 'name' used words not found in the pronunciation dictionary: 
   notaword*
 
-If you get a message like this, try changing the words in your grammars/key
-phrases by splitting up the words or using to similar words,
-e.g. changing "natlink" to "nat link".
+If you get a message like this, try changing the words in your grammars by
+splitting up the words or using to similar words, e.g. changing "natlink" to
+"nat link".  You may also try to add words to the pronunciation dictionary.
 
-I hope to eventually have words and phoneme strings dynamically added to the
-current dictionary and language model using the Pocket Sphinx `ps_add_word`_
-function (from Python of course).
 
 .. _RefSphinxSpokenLanguageSupport:
 
