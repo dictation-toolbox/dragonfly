@@ -125,6 +125,7 @@ class NatlinkEngine(EngineBase):
         :type retain_dir: str|None
         """
         EngineBase.__init__(self)
+        self._has_quoted_words_support = True
 
         self.natlink = None
         try:
@@ -361,9 +362,6 @@ class NatlinkEngine(EngineBase):
 
         # Lookup and return the language tag.
         return self._get_language_tag(language)
-
-    def _has_quoted_words_support(self):
-        return True
 
     def set_retain_directory(self, retain_dir):
         """
