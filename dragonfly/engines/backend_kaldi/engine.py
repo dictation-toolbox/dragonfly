@@ -239,8 +239,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         self._log.info("Loading grammar %s" % grammar.name)
         kaldi_rule_by_rule_dict = self._compiler.compile_grammar(grammar, self)
-        wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self,
-                                 self._recognition_observer_manager)
+        wrapper = GrammarWrapper(grammar, kaldi_rule_by_rule_dict, self)
 
         def load():
             for (rule, kaldi_rule) in kaldi_rule_by_rule_dict.items():
@@ -306,7 +305,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         except Exception as e:
             raise MimicFailure("Invalid mimic input %r: %s." % (words, e))
 
-        self._recognition_observer_manager.notify_begin()
         kaldi_rules_activity = self._compute_kaldi_rules_activity()
         self.prepare_for_recognition()  # Redundant?
 
@@ -383,7 +381,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                 elif block is not None:
                     if not self._in_phrase:
                         # Start of phrase
-                        self._recognition_observer_manager.notify_begin()
                         with debug_timer(self._log.debug, "computing activity"):
                             kaldi_rules_activity = self._compute_kaldi_rules_activity()
                         self._in_phrase = True
@@ -673,7 +670,7 @@ class Recognition(object):
         if confidence is not None: self.confidence = confidence
         self.mimic = mimic
         self.acceptable = False
-        self.engine._recognition_observer_manager.notify_failure(results=self)
+        self.engine.dispatch_recognition_failure(results=self)
         self.finalized = True
 
 
@@ -681,9 +678,8 @@ class Recognition(object):
 
 class GrammarWrapper(GrammarWrapperBase):
 
-    def __init__(self, grammar, kaldi_rule_by_rule_dict, engine,
-                 recobs_manager):
-        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
+    def __init__(self, grammar, kaldi_rule_by_rule_dict, engine):
+        GrammarWrapperBase.__init__(self, grammar, engine)
         self.kaldi_rule_by_rule_dict = kaldi_rule_by_rule_dict
 
         self.active = True
@@ -692,19 +688,33 @@ class GrammarWrapper(GrammarWrapperBase):
     def phrase_start_callback(self, executable, title, handle):
         self.grammar.process_begin(executable, title, handle)
 
-    def _decode_grammar_rules(self, state, words, results, *args):
+    def _process_grammar_rules(self, state, words, results, dispatch_other, *args):
         rule = args[0]
         state.initialize_decoding()
         for result in rule.decode(state):
             if state.finished():
-                root = state.build_parse_tree()
-                notify_args = (words, rule, root, results)
-                self.recobs_manager.notify_recognition(*notify_args)
-                with debug_timer(self.engine._log.debug, "rule execution time"):
-                    rule.process_recognition(root)
-                self.recobs_manager.notify_post_recognition(*notify_args)
+                self._process_final_rule(state, words, results, dispatch_other, rule, *args)
                 return True
         return False
+
+    def _process_final_rule(self, state, words, results, dispatch_other,
+                            rule, *args):
+        # Dispatch results to other grammars, if appropriate.
+        if dispatch_other:
+            self.engine.dispatch_recognition_other(self.grammar, words, results)
+
+        # Call the grammar's general process_recognition method, if it is present.
+        #  Stop if it returns False.
+        stop = self.recognition_process_callback(words, results) is False
+        if stop: return
+
+        # Process the recognition.
+        try:
+            root = state.build_parse_tree()
+            with debug_timer(self.engine._log.debug, "rule execution time"):
+                rule.process_recognition(root)
+        except Exception as e:
+            self._log.exception("Failed to process rule %r: %s", rule.name, e)
 
     def recognition_callback(self, recognition):
         words = recognition.words
@@ -719,24 +729,10 @@ class GrammarWrapper(GrammarWrapperBase):
                 for (word, is_dictation) in zip(words, words_are_dictation_mask))
 
             # Attempt to process the recognition.
-            if self.process_results(words_rules, rule_names, recognition, rule): return
+            if self.process_results(words_rules, rule_names, recognition, True, rule): return
 
         except Exception as e:
             self.engine._log.error("Grammar %s: exception: %s" % (self.grammar._name, e), exc_info=True)
 
         # If this point is reached, then the recognition was not processed successfully
         self.engine._log.error("Grammar %s: failed to decode rule %s recognition %r." % (self.grammar._name, rule.name, words))
-
-    # FIXME
-    # def recognition_other_callback(self, StreamNumber, StreamPosition):
-    #         func = getattr(self.grammar, "process_recognition_other", None)
-    #         if func:
-    #             func(words=False)
-    #         return
-
-    # FIXME
-    # def recognition_failure_callback(self, StreamNumber, StreamPosition, Result):
-    #         func = getattr(self.grammar, "process_recognition_failure", None)
-    #         if func:
-    #             func()
-    #         return

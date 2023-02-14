@@ -29,17 +29,19 @@ import logging
 from dragonfly.engines.base import GrammarWrapperBase
 
 
+#---------------------------------------------------------------------------
+
 class GrammarWrapper(GrammarWrapperBase):
 
     # Enable guessing at the type of a given result word.
-    _dictated_word_guesses_enabled = True
+    _dictated_word_guesses_enabled = False
 
-    def __init__(self, grammar, engine, recobs_manager, search_name):
+    def __init__(self, grammar, engine, search_name):
         """
         :type grammar: Grammar
         :type engine: SphinxEngine
         """
-        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
+        GrammarWrapperBase.__init__(self, grammar, engine)
         self.set_search = True
         self._search_name = search_name
         self.exclusive = False
@@ -104,33 +106,16 @@ class GrammarWrapper(GrammarWrapperBase):
         """
         return self._search_name
 
-    def _decode_grammar_rules(self, state, words, results, *args):
-        # Iterate through this grammar's rules, attempting to decode each.
-        # If successful, call that rule's method for processing the
-        # recognition and return.
-        for rule in self.grammar.rules:
-            if not (rule.active and rule.exported): continue
-            state.initialize_decoding()
-            for _ in rule.decode(state):
-                if state.finished():
-                    # TODO Use words="other" instead, with a special
-                    # recobs grammar wrapper at index 0.
-                    # Notify observers using the manager *before*
-                    # processing.
-                    root = state.build_parse_tree()
-                    notify_args = (words, rule, root, results)
-                    self.recobs_manager.notify_recognition(
-                        *notify_args
-                    )
+    def set_dictated_word_guesses(self, value):
+        self._dictated_word_guesses_enabled = value
 
-                    # Process the rule.
-                    try:
-                        rule.process_recognition(root)
-                    except Exception as e:
-                        self._log.exception("Failed to process rule "
-                                            "'%s': %s" % (rule.name, e))
-                    self.recobs_manager.notify_post_recognition(
-                        *notify_args
-                    )
-                    return True
-        return False
+    def _process_final_rule(self, state, words, results, dispatch_other,
+                            rule, *args):
+        # Recognition successful!  Set the results data.
+        results.type = args[0]
+        results.rule = rule
+        results.grammar = self.grammar
+
+        # Call the base class method.
+        GrammarWrapperBase._process_final_rule(self, state, words, results,
+                                               dispatch_other, rule, *args)

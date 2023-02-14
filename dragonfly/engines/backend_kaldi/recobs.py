@@ -1,6 +1,6 @@
 ﻿#
 # This file is part of Dragonfly.
-# (c) Copyright 2018 by Dane Finlay
+# (c) Copyright 2018-2023 by Dane Finlay
 # Licensed under the LGPL.
 #
 #   Dragonfly is free software: you can redistribute it and/or modify it
@@ -19,23 +19,59 @@
 #
 
 """
-Recognition observer class for Kaldi backend
+Recognition observer class for the Kaldi engine back-end
+============================================================================
+
 """
 
-from dragonfly.engines.base import RecObsManagerBase
+from dragonfly.engines.base       import RecObsManagerBase
+from dragonfly.grammar.grammar    import Grammar
+from dragonfly.grammar.rule_base  import Rule
+from dragonfly.grammar.elements   import Impossible
 
+
+#---------------------------------------------------------------------------
 
 class KaldiRecObsManager(RecObsManagerBase):
-    """
-    This class's methods are called by the engine directly, rather than through a
-    grammar.
-    """
+
     def __init__(self, engine):
         RecObsManagerBase.__init__(self, engine)
+        self._grammar = None
 
-    # The following methods must be implemented by RecObsManagers.
     def _activate(self):
-        pass
+        if not self._grammar:
+            self._grammar = KaldiRecObsGrammar(self)
+        self._grammar.load()
 
     def _deactivate(self):
-        pass
+        if self._grammar:
+            self._grammar.unload()
+
+
+#---------------------------------------------------------------------------
+
+class KaldiRecObsGrammar(Grammar):
+
+    def __init__(self, manager):
+        self._manager = manager
+        name = "_recobs_grammar"
+        Grammar.__init__(self, name, description=None, context=None)
+
+        rule = Rule(element=Impossible(), exported=True)
+        self.add_rule(rule)
+
+    #-----------------------------------------------------------------------
+    # Callback methods for handling utterances and recognitions.
+
+    def process_begin(self, executable, title, handle):
+        self._manager.notify_begin()
+
+    def process_recognition(self, words):
+        raise RuntimeError("Recognition observer received an unexpected"
+                           " recognition: %s" % (words,))
+
+    def process_recognition_other(self, words, results):
+        self._manager.notify_recognition(words, results)
+
+    def process_recognition_failure(self, results):
+        self._manager.notify_failure(results)

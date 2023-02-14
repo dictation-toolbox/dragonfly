@@ -51,3 +51,12 @@ Engine API
 
 .. autoclass:: dragonfly.engines.backend_text.engine.TextInputEngine
    :members:
+
+
+.. _RefTextEngineResultsClass:
+
+Text Recognition Results Class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.engines.backend_text.engine.Results
+   :members:

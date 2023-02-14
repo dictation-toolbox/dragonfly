@@ -93,12 +93,7 @@ class WaveRecognitionObserver(RecognitionObserver):
 
     def on_failure(self):
         self.complete = True
-
-        # Use the default search result on failure.
-        hyp = self.engine.default_search_result
-        if hyp:
-            # print(hyp.prob)
-            self.words = hyp.hypstr
+        self.words = ""
 
     def __enter__(self):
         self.register()

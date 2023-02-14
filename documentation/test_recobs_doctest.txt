@@ -31,8 +31,6 @@ when its callback methods are called::
     ...         print("on_failure()")
     ...     def on_end(self):
     ...         print("on_end()")
-    ...     def on_post_recognition(self, words, rule):
-    ...         print("on_post_recognition(): %r from %r" % (words, rule))
     ...
     >>> recobs_demo = RecognitionObserverDemo()
     >>> recobs_demo.register()
@@ -41,7 +39,6 @@ when its callback methods are called::
     on_begin()
     on_recognition(): (u'hello', u'world')
     on_end()
-    on_post_recognition(): (u'hello', u'world') from _ElementTestRule(rule)
     u'hello world'
     >>> test_lit.recognize("hello universe")
     on_begin()
@@ -183,14 +180,10 @@ Register recognition callback functions::
     >>> def on_end():
     ...     print("on_end()")
     ...
-    >>> def on_post_recognition(words, rule):
-    ...     print("on_post_recognition(): %r from %r" % (words, rule))
-    ...
     >>> on_begin_obs = register_beginning_callback(on_begin)
     >>> on_success_obs = register_recognition_callback(on_recognition)
     >>> on_failure_obs = register_failure_callback(on_failure)
     >>> on_end_obs = register_ending_callback(on_end)
-    >>> on_post_recognition_obs = register_post_recognition_callback(on_post_recognition)
 
 Callback functions are called during recognitions::
 
@@ -199,7 +192,6 @@ Callback functions are called during recognitions::
     on_begin()
     on_recognition(): (u'hello', u'world')
     on_end()
-    on_post_recognition(): (u'hello', u'world') from _ElementTestRule(rule)
     u'hello world'
     >>> test_lit.recognize("hello universe")
     on_begin()
@@ -214,4 +206,3 @@ each function::
     >>> on_success_obs.unregister()
     >>> on_failure_obs.unregister()
     >>> on_end_obs.unregister()
-    >>> on_post_recognition_obs.unregister()

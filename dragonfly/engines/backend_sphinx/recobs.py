@@ -19,41 +19,58 @@
 #
 
 """
-Recognition observer class for the Sphinx engine
+Recognition observer class for the CMU Pocket Sphinx engine back-end
 ============================================================================
 
 """
 
-from dragonfly.engines.base import RecObsManagerBase
+from dragonfly.engines.base       import RecObsManagerBase
+from dragonfly.grammar.grammar    import Grammar
+from dragonfly.grammar.rule_base  import Rule
+from dragonfly.grammar.elements   import Impossible
 
+
+#---------------------------------------------------------------------------
 
 class SphinxRecObsManager(RecObsManagerBase):
-    """
-    This class's methods are called by the engine directly, rather than
-    through a grammar.
-    """
     def __init__(self, engine):
         RecObsManagerBase.__init__(self, engine)
+        self._grammar = None
 
-    # The following methods must be implemented by RecObsManagers.
     def _activate(self):
-        pass
+        if not self._grammar:
+            self._grammar = SphinxRecObsGrammar(self)
+        self._grammar.load()
 
     def _deactivate(self):
-        pass
+        if self._grammar:
+            self._grammar.unload()
 
-    def notify_next_rule_part(self, words):
-        """
-        Notify observers that the next part of a rule has been spoken.
 
-        This is for rules involving Dictation elements that must be spoken
-        in sequence.
-        """
-        for observer in self._observers:
-            try:
-                if hasattr(observer, "on_next_rule_part"):
-                    observer.on_next_rule_part(words)
-            except Exception as e:
-                self._log.exception("Exception during on_next_rule_part()"
-                                    " method of recognition observer %s: %s"
-                                    % (observer, e))
+#---------------------------------------------------------------------------
+
+class SphinxRecObsGrammar(Grammar):
+
+    def __init__(self, manager):
+        self._manager = manager
+        name = "_recobs_grammar"
+        Grammar.__init__(self, name, description=None, context=None)
+
+        rule = Rule(element=Impossible(), exported=True)
+        self.add_rule(rule)
+
+    #-----------------------------------------------------------------------
+    # Callback methods for handling utterances and recognitions.
+
+    def process_begin(self, executable, title, handle):
+        self._manager.notify_begin()
+
+    def process_recognition(self, words):
+        raise RuntimeError("Recognition observer received an unexpected"
+                           " recognition: %s" % (words,))
+
+    def process_recognition_other(self, words, results):
+        self._manager.notify_recognition(words, results)
+
+    def process_recognition_failure(self, results):
+        self._manager.notify_failure(results)

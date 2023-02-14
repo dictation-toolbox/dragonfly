@@ -1,6 +1,6 @@
 ﻿#
 # This file is part of Dragonfly.
-# (c) Copyright 2007, 2008 by Christo Butcher
+# (c) Copyright 2017-2023 by Dane Finlay
 # Licensed under the LGPL.
 #
 #   Dragonfly is free software: you can redistribute it and/or modify it
@@ -30,6 +30,7 @@ import wave
 from six            import binary_type, text_type, string_types, PY2
 from jsgf           import RootGrammar, PublicRule, Literal
 from sphinxwrapper  import PocketSphinx
+from pocketsphinx   import Hypothesis
 
 import dragonfly.engines
 from dragonfly.windows.window                         import Window
@@ -46,6 +47,8 @@ from dragonfly.engines.backend_sphinx.recording        import AudioRecorder
 from dragonfly.engines.backend_sphinx.timer            import SphinxTimerManager
 
 
+#---------------------------------------------------------------------------
+
 class UnknownWordError(Exception):
     pass
 
@@ -61,6 +64,8 @@ def _map_to_str(text, encoding=locale.getpreferredencoding()):
         text = text.decode(encoding)
     return text
 
+
+#---------------------------------------------------------------------------
 
 class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
     """ Speech recognition engine back-end for CMU Pocket Sphinx. """
@@ -83,24 +88,20 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._config = None
         self.config = EngineConfig
 
-        # Set other variables
+        # Initialize members.
         self._decoder = None
         self._audio_buffers = []
+        self._grammar_count = 0
+        self._null_hypothesis = Hypothesis("", 0, 0)
+        self._default_search_name = "_default"
+        self._valid_searches = {"_default"}
         self.compiler = SphinxJSGFCompiler(self)
         self._recognition_observer_manager = SphinxRecObsManager(self)
-        self._default_search_result = None
-        self._grammar_count = 0
-
-        # Timer-related members.
         self._timer_manager = SphinxTimerManager(0.02, self)
-
-        # Set up valid search names for grammars.
-        self._valid_searches = set()
-
-        # Recognition loop members.
         self._recorder = AudioRecorder(self.config)
         self._doing_recognition = False
         self._deferred_disconnect = False
+        self._mimicking = False
 
     @property
     def config(self):
@@ -157,22 +158,17 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Initialise a new decoder with the given configuration
         decoder_config = self._config.DECODER_CONFIG
         self._decoder = PocketSphinx(decoder_config)
-        self._valid_searches.add(self._default_search_name)
 
-        # Set up callback function wrappers
+        # Set up callback function wrappers.
         def hypothesis(hyp):
-            # Set default search result.
-            self._default_search_result = hyp
+            # Ensure that an Hypothesis object is used.
+            if hyp is None: hyp = self._null_hypothesis
 
-            # Set speech to the hypothesis string or None if there isn't one
-            speech = hyp.hypstr if hyp else None
-            return self._hypothesis_callback(speech, False)
+            # Call the engine's hypothesis method.
+            return self._hypothesis_callback(hyp)
 
         def speech_start():
-            # Reset the default search result and call the engine's callback
-            # method.
-            self._default_search_result = None
-            return self._speech_start_callback(False)
+            return self._speech_start_callback()
 
         self._decoder.hypothesis_callback = hypothesis
         self._decoder.speech_start_callback = speech_start
@@ -187,18 +183,18 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Stop the audio recorder if it is running.
         self._recorder.stop()
 
-        # Free the decoder and clear audio buffers.
-        self._decoder = None
-        self._audio_buffers = []
+        # Clear audio buffers.
+        while len(self._audio_buffers) > 0:
+            self._audio_buffers.pop(0)
 
-        # Reset other variables.
+        # Reset variables.
+        self._grammar_count = 0
         self._doing_recognition = False
         self._deferred_disconnect = False
-        self._grammar_count = 0
+        self._mimicking = False
 
-        # Clear dictionaries and sets.
-        self._grammar_wrappers.clear()
-        self._valid_searches.clear()
+        # Deallocate the decoder.
+        self._decoder = None
 
     def disconnect(self):
         """
@@ -264,9 +260,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
     def _build_grammar_wrapper(self, grammar):
         search_name = "%d" % self._grammar_count
         self._grammar_count += 1
-        return GrammarWrapper(grammar, self,
-                              self._recognition_observer_manager,
-                              search_name)
+        return GrammarWrapper(grammar, self, search_name)
 
     def _set_grammar(self, wrapper, activate, partial=False):
         if not wrapper:
@@ -314,27 +308,23 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
     def _unset_search(self, name):
         # Unset a Pocket Sphinx search with the given name.
-        # Don't unset the default or keyphrase searches.
-        default_search = self._default_search_name
-        reserved = [default_search] + self._keyphrase_search_names
-        if name in reserved:
+        # Do NOT unset the default search; this will cause a segfault!
+        if name == self._default_search_name:
             return
 
-        # Unset the Pocket Sphinx search.
+        # Unset the Pocket Sphinx decoder search.
         if name in self._valid_searches:
-            # Unset the decoder search.
             self._decoder.unset_search(name)
-
-            # Remove the search from the valid searches set.
             self._valid_searches.remove(name)
 
-        # Change to the default search to avoid possible segmentation faults
-        # from Pocket Sphinx which crash Python.
+        # Switch back to the always-available default search.
         self._set_default_search()
 
     def _set_default_search(self):
         # Ensure we're not processing.
         self._decoder.end_utterance()
+
+        # Set the default search.
         self._decoder.active_search = self._default_search_name
 
     def _load_grammar(self, grammar):
@@ -422,7 +412,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         wrapper.exclusive = exclusive
 
     #------------------------------------------------------------------------
-    # Miscellaneous methods.
+    # Recognition methods.
 
     @property
     def recognising(self):
@@ -433,62 +423,61 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         :rtype: bool
         """
-        return self._recorder.recording or self._recognising
-
-    @property
-    def _default_search_name(self):
-        # The name of the Pocket Sphinx search used for processing speech as
-        # it is heard.
-        return "_default"
+        return self._recorder.recording or self._doing_recognition
 
     def _get_best_hypothesis(self, hypotheses):
         """
-        Take a list of speech hypotheses and return the most likely one.
+        Take a list of hypotheses and return the most likely one.
 
-        :type hypotheses: iterable
-        :return: str | None
+        If there was no most likely hypothesis, a null hypothesis is
+        returned.
+
+        :param hypotheses: iterable
+        :return: Hypothesis object
         """
         # Get all distinct, non-null hypotheses.
-        distinct = tuple([h for h in set(hypotheses) if bool(h)])
-        if not distinct:
-            return None
-        elif len(distinct) == 1:
-            return distinct[0]  # only one choice
+        hypotheses = {hyp.hypstr: hyp for hyp in hypotheses
+                      if len(hyp.hypstr) > 0}
 
-        # Decide between non-null hypotheses using a Pocket Sphinx search with
-        # each hypothesis as a grammar rule.
+        # Return early if zero or one distinct hypotheses exist.
+        if   len(hypotheses) == 0: return self._null_hypothesis
+        elif len(hypotheses) == 1: return hypotheses.popitem()[1]
+
+        # Decide between non-null hypotheses using a Pocket Sphinx search
+        #  with each hypothesis as a grammar rule.
+        # Note: There is no need to validate words here because each literal
+        #  comes from a Pocket Sphinx hypothesis.
         grammar = RootGrammar()
         grammar.language_name = self.language
-        for i, hypothesis in enumerate(distinct):
-            grammar.add_rule(PublicRule("rule%d" % i, Literal(hypothesis)))
-
-        compiled = grammar.compile_grammar()
-        name = "_temp"
+        i = 0
+        for _, hypothesis in hypotheses.items():
+            text = hypothesis.hypstr
+            grammar.add_rule(PublicRule("rule%d" % i, Literal(text)))
+            i += 1
+        compiled_jsgf = grammar.compile_grammar()
 
         # Store the current search name.
-        original = self._decoder.active_search
+        prior_search_name = self._decoder.active_search
 
-        # Note: There is no need to validate words in this case because
-        # each literal in the _temp grammar came from a Pocket Sphinx
-        # hypothesis.
+        # Set a temporary JSGF search and reprocess the audio.  We should
+        #  get a hypothesis.  If we don't, use a null hypothesis.
         self._decoder.end_utterance()
-        self._decoder.set_jsgf_string(name, _map_to_str(compiled))
-        self._decoder.active_search = name
+        self._decoder.set_jsgf_string("_temp", _map_to_str(compiled_jsgf))
+        self._decoder.active_search = "_temp"
+        hyp = self._decoder.batch_process(self._audio_buffers,
+                                          use_callbacks=False)
+        if not hyp: hyp = self._null_hypothesis
 
-        # Do the processing.
-        hyp = self._decoder.batch_process(
-            self._audio_buffers,
-            use_callbacks=False
-        )
-        result = hyp.hypstr if hyp else None
-
-        # Switch back to the previous search.
+        # Switch back to the previous search and deallocate the temporary
+        #  one.
         self._decoder.end_utterance()
-        self._decoder.active_search = original
+        self._decoder.active_search = prior_search_name
         self._decoder.unset_search("_temp")
-        return result
 
-    def _speech_start_callback(self, mimicking):
+        # Return the appropriate hypothesis.
+        return hypotheses.get(hyp.hypstr, self._null_hypothesis)
+
+    def _speech_start_callback(self):
         # Get context info.
         fg_window = Window.get_foreground()
         window_info = {
@@ -497,14 +486,15 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             "handle": fg_window.handle,
         }
 
-        # Call process_begin for all grammars so that any out of context
-        #  grammar will not be used.
+        # Call process_begin for all grammars.
+        # Note: copy() is used here because process_begin() may load or
+        #  unload grammars.
         for wrapper in self._grammar_wrappers.copy().values():
-            wrapper.process_begin(**window_info)
+            wrapper.begin_callback(**window_info)
 
-        if not mimicking:
+        if not self._mimicking:
             # For performance reasons, trim excess audio buffers from the
-            #  start of the list.   Keep a maximum of one second of silence
+            #  start of the list.  Keep a maximum of one second of silence
             #  before speech start was detected.
             chunk = self.config.BUFFER_SIZE
             rate = self.config.RATE
@@ -513,126 +503,120 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             while len(self._audio_buffers) > n_buffers + 1:
                 self._audio_buffers.pop(0)
 
-        # Notify observers
-        self._recognition_observer_manager.notify_begin()
-
-    def _hypothesis_callback(self, speech, mimicking):
+    def _hypothesis_callback(self, hyp):
         """
-        Internal Pocket Sphinx hypothesis callback method. Calls _process_hypothesis
-        and does post-processing afterwards.
-        :param speech: speech hypothesis
-        :type speech: str | None
-        :param mimicking:  whether to treat speech as mimicked speech.
+        Internal Pocket Sphinx hypothesis callback method.
+
+        :param hyp: speech hypothesis
         :rtype: bool
         """
         # Clear any recorded audio buffers.
         self._recorder.clear_buffers()
 
-        # Process speech. We should get back a boolean for whether processing
-        # occurred as well as the final speech hypothesis.
-        processing_occurred, final_speech = self._process_hypotheses(
-            speech, mimicking
-        )
-
-        # Notify observers of failure.
-        results_obj = None  # TODO Use PS results object once implemented
-        if not processing_occurred:
-            self._recognition_observer_manager.notify_failure(results_obj)
+        # Process the hypothesis.
+        processing_occurred = self._process_hypotheses(hyp)
 
         # Clear audio buffer list because utterance processing has finished.
-        self._audio_buffers = []
+        while len(self._audio_buffers) > 0:
+            self._audio_buffers.pop(0)
 
         # Ensure that the correct search is used.
         self._set_default_search()
 
-        # Return whether processing occurred in case this method was called
-        # by mimic.
+        # Return whether processing occurred, in case this method was called
+        #  by mimic().
         return processing_occurred
 
-    def _process_hypotheses(self, speech, mimicking):
+    def _process_hypotheses(self, hyp):
         """
-        Internal method to process speech hypotheses. This should only be called
-        from 'SphinxEngine._hypothesis_callback' because that method does important
-        post processing.
+        Internal method to process speech hypotheses.
 
-        :param speech: speech
-        :param mimicking: whether to treat speech as mimicked speech.
-        :rtype: tuple
+        :param hyp: initial speech hypothesis
+        :returns: whether processing occurred
         """
-        # Do grammar processing.
-        hypotheses = {}
-        wrappers = self._grammar_wrappers.copy().values()
-
-        # Save the LM hypothesis for later.
-        lm_hypothesis = speech
-
-        # Filter out inactive grammars.
-        wrappers = [w for w in wrappers if w.grammar_is_active]
-
-        # Include only exclusive grammars if at least one is active.
+        # Create a list of active grammars to process.
+        # Include only active exclusive grammars if at least one is active.
+        wrappers = []
         exclusive_count = 0
-        for wrapper in wrappers:
+        for wrapper in self._grammar_wrappers.values():
+            if wrapper.grammar_is_active: wrappers.append(wrapper)
             if wrapper.exclusive: exclusive_count += 1
         if exclusive_count > 0:
             wrappers = [w for w in wrappers if w.exclusive]
 
         # No grammar has been loaded.
-        if not wrappers:
-            return False, speech
+        if not wrappers: return False
 
-        # Batch process audio buffers for each active grammar. Store each
-        # hypothesis.
+        # Save the given hypothesis for later.  We assume it is the language
+        #  model hypothesis.  It can also be a MimickedHypothesis object.
+        lm_hypothesis = hyp
+
+        # Get the hypothesis for each active grammar.
+        # If this is a regular recognition, switch to each gramar search and
+        #  re-process the audio to obtain a closer match.  Otherwise, use
+        #  the mimicked words for each grammar's hypothesis.
+        hypotheses = {}
         for wrapper in wrappers:
-            if mimicking:
-                # Just use 'speech' for everything if mimicking.
-                hyp = speech
-            else:
-                # Switch to the search for this grammar and re-process the
-                # audio.
+            if not self._mimicking:
                 self._set_grammar(wrapper, True)
-                hyp = self._decoder.batch_process(
-                    self._audio_buffers,
-                    use_callbacks=False
-                )
-                if hyp:
-                    hyp = hyp.hypstr
+                hyp = self._decoder.batch_process(self._audio_buffers,
+                                                  use_callbacks=False)
+                if not hyp: hyp = self._null_hypothesis
 
-            # Set the hypothesis in the dictionary.
             hypotheses[wrapper.search_name] = hyp
 
         # Get the best hypothesis.
-        speech = self._get_best_hypothesis(list(hypotheses.values()))
+        hyp = self._get_best_hypothesis(hypotheses.values())
 
-        # If we have an hypothesis, filter out irrelevant grammars and
-        #  attempt to process it with the resulting subset.  Stop on the
-        #  first grammar that processes the hypothesis.
+        # Initialize a Results object with information about this
+        #  recognition.
+        # Note: We take a copy of the audio buffer list because it is
+        #  emptied after each recognition.
+        if self._mimicking:
+            audio_buffers = []
+            type = "MimicFailure"
+        else:
+            audio_buffers = [buf for buf in self._audio_buffers]
+            type = "Noise"
+        results = Results(hyp, type, audio_buffers)
+
+        # If we have a non-null hypothesis, attempt to process it with the
+        #  relevant grammars.  Stop on the first grammar that processes the
+        #  hypothesis.
+        words = results.words()
         result = False
-        decoder_results = None  # FIXME Expose P.S. decoder results
-        if speech:
-            wrappers_subset = [wrapper for wrapper in wrappers
-                              if hypotheses[wrapper.search_name] == speech]
-            words_rules = self._get_words_rules(speech.split(), 0)
-            for wrapper in wrappers_subset:
-                result = wrapper.process_results(words_rules,
-                                                 wrapper.grammar.rule_names,
-                                                 decoder_results)
+        if words:
+            words_rules = self._get_words_rules(words, 0)
+            for wrapper in wrappers:
+                if hypotheses[wrapper.search_name].hypstr != hyp.hypstr:
+                    continue
+                rule_names = wrapper.grammar.rule_names
+                result = wrapper.process_results(words_rules, rule_names,
+                                                 results, True, "Grammar")
                 if result: break
 
         # If no processing has occurred by this point, try to process a
         #  grammar using the LM hypothesis instead, if there is one.
-        if not result and lm_hypothesis:
-            dictation_words = lm_hypothesis.split()
-            words_rules = self._get_words_rules(dictation_words, 1000000)
+        # Note: This is supposed to work for mimicked recognitions, too.
+        if not result and lm_hypothesis.hypstr:
+            results.hypothesis = lm_hypothesis
+            words = results.words()
+            words_rules = self._get_words_rules(words, 1000000)
             for wrapper in wrappers:
-                result = wrapper.process_results(words_rules,
-                                                 wrapper.grammar.rule_names,
-                                                 decoder_results)
+                # Allow the LM hypothesis to match *Dictation* elements.
+                wrapper.set_dictated_word_guesses(True)
+                rule_names = wrapper.grammar.rule_names
+                result = wrapper.process_results(words_rules, rule_names,
+                                                 results, True,
+                                                 "LanguageModel")
+                wrapper.set_dictated_word_guesses(False)
                 if result: break
-            speech = lm_hypothesis
 
-        # Return whether processing occurred, plus the final speech
-        #  hypothesis for post-processing.
-        return result, speech
+        # If no processing has occurred, this is a recognition failure.
+        if not result: self.dispatch_recognition_failure(results)
+
+        # Return whether processing occurred.
+        return result
 
     def process_buffer(self, buf):
         """
@@ -748,28 +732,28 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Start recognising from the microphone in a loop.
         # If disconnect is called while this loop is running, free engine
         #  resources and stop.
+        recorder = self._recorder
+        recorder.start()
         try:
-            recorder = self._recorder
-            recorder.start()
             self._doing_recognition = True
             while self._doing_recognition:
                 for buf in recorder.get_buffers():
                     self.process_buffer(buf)
-
                     if self._deferred_disconnect:
                         self._free_engine_resources()
                         break
         finally:
             self._doing_recognition = False
+            self._recorder.stop()
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words* """
         # The *words* argument should be a string or iterable.
         # Words are put into lowercase for consistency.
         if isinstance(words, string_types):
-            words = words.lower()
+            text = words.lower()
         elif iter(words):
-            words = " ".join([w.lower() for w in words])
+            text = " ".join([w.lower() for w in words])
         else:
             raise TypeError("%r is not a string or other iterable object"
                             % words)
@@ -778,14 +762,21 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if not words:
             raise MimicFailure("Invalid mimic input %r" % words)
 
-        # Pretend that Sphinx has started processing speech
-        self._speech_start_callback(True)
+        # Process the words as if they were spoken.
+        self._mimicking = True
+        try:
+            self._speech_start_callback()
+            hyp = MimickedHypothesis(text, 0, 0)
+            result = self._hypothesis_callback(hyp)
+        finally:
+            self._mimicking = False
 
-        # Process the words as if they were spoken
-        result = self._hypothesis_callback(words, True)
         if not result:
             raise MimicFailure("No matching rule found for words %s."
                                % words)
+
+    #-----------------------------------------------------------------------
+    # Miscellaneous methods.
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
@@ -793,3 +784,62 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
     def _get_language(self):
         return self.config.LANGUAGE
+
+
+#---------------------------------------------------------------------------
+
+
+class MimickedHypothesis(object):
+
+    # Note: This class is necessary only because the *pocketsphinx*
+    #  Hypothesis class does not accept Unicode hypothesis strings.
+
+    def __init__(self, hypstr, best_score, prob):
+        self.hypstr = hypstr
+        self.best_score = best_score
+        self.prob = prob
+
+
+class Results(object):
+    """ CMU Pocket Sphinx recognition results class. """
+
+    def __init__(self, hypothesis, type, audio_buffers):
+        self._hypothesis = hypothesis
+        self._type = type
+        self._audio_buffers = audio_buffers
+        self._grammar = None
+        self._rule = None
+
+    def words(self):
+        """ Get the words for this recognition. """
+        return self._hypothesis.hypstr.split()
+
+    def _set_hypothesis(self, hypothesis):
+        assert isinstance(hypothesis, (Hypothesis, MimickedHypothesis))
+        self._hypothesis = hypothesis
+
+    hypothesis = property(lambda self: self._hypothesis, _set_hypothesis,
+                          doc="The final hypothesis for this recognition.")
+
+    def _set_type(self, type):
+        self._type = type
+
+    recognition_type = property(lambda self: self._type, _set_type,
+                                doc="The type of this recognition.")
+
+    def _set_grammar(self, grammar):
+        self._grammar = grammar
+
+    grammar = property(lambda self: self._grammar, _set_grammar,
+                       doc="The grammar which processed this recognition,"
+                           " if any.")
+
+    def _set_rule(self, rule):
+        self._rule = rule
+
+    rule = property(lambda self: self._rule, _set_rule,
+                    doc="The rule that matched this recognition, if any.")
+
+
+    audio_buffers = property(lambda self: self._audio_buffers,
+                             doc="The audio for this recognition, if any.")

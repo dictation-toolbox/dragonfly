@@ -110,24 +110,6 @@ class RecognitionObserver(object):
         :type results: :ref:`engine-specific type<RefGrammarCallbackResultsTypes>`
         """
 
-    def on_post_recognition(self, words, rule, node, results):
-        """
-        Method called when speech successfully decoded to a grammar rule or
-        to dictation.
-
-        This is called *after* grammar rule processing (i.e.
-        ``Rule.process_recognition()``).
-
-        :param words: recognized words
-        :type words: tuple
-        :param rule: *optional* recognized rule
-        :type rule: Rule
-        :param node: *optional* parse tree node
-        :type node: Node
-        :param results: *optional* engine recognition results object
-        :type results: :ref:`engine-specific type<RefGrammarCallbackResultsTypes>`
-        """
-
 
 #---------------------------------------------------------------------------
 

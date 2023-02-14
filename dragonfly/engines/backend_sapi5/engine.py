@@ -146,11 +146,15 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         # Create recognition context, compile grammar, and create
         #  the grammar wrapper object for managing this grammar.
         context = self._recognizer.CreateRecoContext()
+
+        # TODO Once audio retention is made modular, this block will need
+        #  to be exposed as an engine option "retain_audio".  Otherwise,
+        #  as I understand it, audio retention won't work.
         if self._retain_dir:
             context.RetainedAudio = constants.SRAORetainAudio
+
         handle = self._compiler.compile_grammar(grammar, context)
-        wrapper = GrammarWrapper(grammar, handle, context, self,
-                                 self._recognition_observer_manager)
+        wrapper = GrammarWrapper(grammar, handle, context, self)
 
         handle.State = constants.SGSEnabled
         for rule in grammar.rules:
@@ -489,8 +493,8 @@ def collection_iter(collection):
 
 class GrammarWrapper(GrammarWrapperBase):
 
-    def __init__(self, grammar, handle, context, engine, recobs_manager):
-        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
+    def __init__(self, grammar, handle, context, engine):
+        GrammarWrapperBase.__init__(self, grammar, engine)
         self.handle = handle
         self.context = context
         self.state_before_exclusive = handle.State
@@ -501,8 +505,12 @@ class GrammarWrapper(GrammarWrapperBase):
         c = ContextEvents(context)
         c.OnPhraseStart = self.phrase_start_callback
         c.OnRecognition = self.recognition_callback
-        if hasattr(grammar, "process_recognition_other"):
-            c.OnRecognitionForOtherContext = self.recognition_other_callback
+
+        # OnRecognitionForOtherContext is disabled because the recognition
+        #  results given to it are not useful.
+        #if hasattr(grammar, "process_recognition_other"):
+        #    c.OnRecognitionForOtherContext = self.recognition_other_callback
+
         if hasattr(grammar, "process_recognition_failure"):
             c.OnFalseRecognition = self.recognition_failure_callback
 
@@ -511,6 +519,7 @@ class GrammarWrapper(GrammarWrapperBase):
         self.grammar.process_begin(window.executable, window.title,
                                    window.handle)
 
+    # FIXME Extract to an example command module using "process_recognition_other".
     def _retain_audio(self, newResult, results, rule_name):
         # Only write audio data and metadata if the directory exists.
         retain_dir = self.engine._retain_dir
@@ -623,7 +632,8 @@ class GrammarWrapper(GrammarWrapperBase):
             #---------------------------------------------------------------
             # Attempt to parse the recognition.
 
-            if self.process_results(results, rule_set, newResult): return
+            if self.process_results(results, rule_set, newResult, True):
+                return
 
         except Exception as e:
             Sapi5Engine._log.error("Grammar %s: exception: %s"
@@ -631,17 +641,10 @@ class GrammarWrapper(GrammarWrapperBase):
 
         #-------------------------------------------------------------------
         # If this point is reached, then the recognition was not
-        #  processed successfully..
+        #  processed successfully.
 
-        self._log.error("Grammar %s: failed to decode recognition %r."
-                        % (self.grammar._name, [r[0] for r in results]))
-
-    def recognition_other_callback(self, StreamNumber, StreamPosition):
-        # Note that SAPI 5.3 doesn't offer access to the actual
-        #  recognition contents during a
-        #  OnRecognitionForOtherContext event.
-        func = getattr(self.grammar, "process_recognition_other", None)
-        self._process_grammar_callback(func, words=False, results=None)
+        self._log.error("Grammar %s: failed to decode recognition %r.",
+                        self.grammar._name, [r[0] for r in results])
 
     def recognition_failure_callback(self, StreamNumber, StreamPosition,
                                      Result):

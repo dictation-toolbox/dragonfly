@@ -29,9 +29,11 @@ from dragonfly.engines.base                  import (EngineBase,
                                                      ThreadedTimerManager,
                                                      DictationContainerBase,
                                                      GrammarWrapperBase)
-from dragonfly.engines.backend_text.recobs   import TextRecobsManager
+from dragonfly.engines.backend_text.recobs   import TextRecObsManager
 from dragonfly.windows.window                import Window
 
+
+#---------------------------------------------------------------------------
 
 class TextInputEngine(EngineBase):
     """Text-input Engine class. """
@@ -39,13 +41,13 @@ class TextInputEngine(EngineBase):
     _name = "text"
     DictationContainer = DictationContainerBase
 
-    # -----------------------------------------------------------------------
+    #-----------------------------------------------------------------------
 
     def __init__(self):
         EngineBase.__init__(self)
         self._language = "en"
         self._connected = False
-        self._recognition_observer_manager = TextRecobsManager(self)
+        self._recognition_observer_manager = TextRecObsManager(self)
         self._timer_manager = ThreadedTimerManager(0.02, self)
 
     def connect(self):
@@ -74,8 +76,7 @@ class TextInputEngine(EngineBase):
     # Methods for working with grammars.
 
     def _build_grammar_wrapper(self, grammar):
-        return GrammarWrapper(grammar, self,
-                              self._recognition_observer_manager)
+        return GrammarWrapper(grammar, self)
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar* and return a wrapper. """
@@ -177,56 +178,63 @@ class TextInputEngine(EngineBase):
         if not words:
             raise MimicFailure("Invalid mimic input %r" % words)
 
-        # Notify observers that a recognition has begun.
-        self._recognition_observer_manager.notify_begin()
+        # Process the words as if they were spoken.  Pass along keyword
+        #  arguments appropriately.
+        self._emulate_start_speech(**kwargs)
+        result = self._process_words(words)
+        if not result:
+            raise MimicFailure("No matching rule found for words %s."
+                               % words)
 
-        # Get a sequence of (word, rule_id) 2-tuples.
-        words_rules = self._get_words_rules(words, 0)
-
+    def _emulate_start_speech(self, **kwargs):
+        # Get foreground window attributes.
         w = Window.get_foreground()
-        process_args = {
+        window_info = {
             "executable": w.executable,
             "title": w.title,
             "handle": w.handle,
         }
-        # Allows optional passing of window attributes to mimic
-        process_args.update(kwargs)
 
-        # Call process_begin() for each grammar wrapper. Use a copy of
-        # _grammar_wrappers in case it changes.
-        # TODO Determine whether this should really be done for exclusive
-        #  grammars.
+        # Update *window_info* with keyword arguments passed to mimic().
+        window_info.update(kwargs)
+
+        # Call process_begin() for each grammar wrapper.
+        # Note: A copy of_grammar_wrappers is used in case it changes.
         for wrapper in self._grammar_wrappers.copy().values():
-            wrapper.process_begin(**process_args)
+            wrapper.begin_callback(**window_info)
 
-        # Take another copy of _grammar_wrappers to use for processing.
-        grammar_wrappers = self._grammar_wrappers.copy().values()
+    def _process_words(self, words):
+        # Get a sequence of (word, rule_id) 2-tuples.
+        words_rules = self._get_words_rules(words, 0)
 
-        # Filter out inactive grammars.
-        grammar_wrappers = [wrapper for wrapper in grammar_wrappers
-                            if wrapper.grammar_is_active]
-
-        # Include only exclusive grammars if at least one is active.
+        # Create a list of active grammars to process.
+        # Include only active exclusive grammars if at least one is active.
+        wrappers = []
         exclusive_count = 0
-        for wrapper in grammar_wrappers:
+        for wrapper in self._grammar_wrappers.values():
+            if wrapper.grammar_is_active: wrappers.append(wrapper)
             if wrapper.exclusive: exclusive_count += 1
         if exclusive_count > 0:
-            grammar_wrappers = [wrapper for wrapper in grammar_wrappers
-                                if wrapper.exclusive]
+            wrappers = [w for w in wrappers if w.exclusive]
 
-        # Attempt to process the mimicked words, stopping on the first
-        # grammar that processes them.
+        # Initialize a *Results* object with information about this
+        #  recognition.
+        results = Results(words, False)
+
+        # Attempt to process the words with the relevant grammars, stopping
+        #  on the first one that processes them.
         result = False
-        for wrapper in grammar_wrappers:
+        for wrapper in wrappers:
             rule_names = wrapper.grammar.rule_names
-            result = wrapper.process_results(words_rules, rule_names, None)
+            result = wrapper.process_results(words_rules, rule_names,
+                                             results, True)
             if result: break
 
-        # If no processing has occurred, then the mimic has failed.
-        if not result:
-            self._recognition_observer_manager.notify_failure(None)
-            raise MimicFailure("No matching rule found for words %r."
-                               % (words,))
+        # If no processing has occurred, this is a recognition failure.
+        if not result: self.dispatch_recognition_failure(results)
+
+        # Return whether processing occurred.
+        return result
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
@@ -252,12 +260,67 @@ class TextInputEngine(EngineBase):
         self._language = value
 
 
+#---------------------------------------------------------------------------
+
 class GrammarWrapper(GrammarWrapperBase):
 
     # Enable guessing at which words were "dictated" so this back-end
     #  behaves like a real one.
     _dictated_word_guesses_enabled = True
 
-    def __init__(self, grammar, engine, recobs_manager):
-        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
+    def __init__(self, grammar, engine):
+        GrammarWrapperBase.__init__(self, grammar, engine)
         self.exclusive = False
+    def _process_final_rule(self, state, words, results, dispatch_other,
+                            rule, *args):
+        # Recognition successful!  Set the results data.
+        results.success = True
+        results.rule = rule
+        results.grammar = self.grammar
+
+        # Call the base class method.
+        GrammarWrapperBase._process_final_rule(self, state, words, results,
+                                               dispatch_other, rule, *args)
+
+
+#---------------------------------------------------------------------------
+
+class Results(object):
+    """ Text-input engine recognition results class. """
+
+    def __init__(self, words, success):
+        if isinstance(words, string_types):
+            words = words.split()
+        elif iter(words):
+            words = [w for w in words]
+        else:
+            raise TypeError("%r is not a string or other iterable object"
+                            % words)
+        self._words = tuple(words)
+        self._success = success
+        self._grammar = None
+        self._rule = None
+
+    def words(self):
+        """ Get the words for this recognition. """
+        return self._words
+
+    def _set_success(self, success):
+        self._success = success
+
+    recognition_success = property(lambda self: self._success, _set_success,
+                                   doc="Whether this recognition has been"
+                                       " processed successfully.")
+
+    def _set_grammar(self, grammar):
+        self._grammar = grammar
+
+    grammar = property(lambda self: self._grammar, _set_grammar,
+                       doc="The grammar which processed this recognition,"
+                           " if any.")
+
+    def _set_rule(self, rule):
+        self._rule = rule
+
+    rule = property(lambda self: self._rule, _set_rule,
+                    doc="The rule that matched this recognition, if any.")

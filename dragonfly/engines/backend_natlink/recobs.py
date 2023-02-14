@@ -38,33 +38,6 @@ class NatlinkRecObsManager(RecObsManagerBase):
         RecObsManagerBase.__init__(self, engine)
         self._grammar = None
 
-        # Define a flag for limiting the number of notify_recognition()
-        # calls to one per utterance / mimic call. This is necessary to
-        # guarantee that observers are notified *before* rule processing and
-        # are still notified about dictation and other grammar recognitions
-        # via the special NatlinkRecObsGrammar grammar.
-        self._complete_flag = False
-
-    def notify_begin(self):
-        super(NatlinkRecObsManager, self).notify_begin()
-        self._complete_flag = False
-
-    def notify_recognition(self, words, rule, root, results):
-        if self._complete_flag:
-            return
-
-        super(NatlinkRecObsManager, self).notify_recognition(words, rule,
-                                                             root, results)
-
-    def notify_post_recognition(self, words, rule, root, results):
-        if self._complete_flag:
-            return
-
-        super(NatlinkRecObsManager, self).notify_post_recognition(
-            words, rule, root, results
-        )
-        self._complete_flag = True
-
     def _activate(self):
         if not self._grammar:
             self._grammar = NatlinkRecObsGrammar(self)
@@ -99,8 +72,7 @@ class NatlinkRecObsGrammar(Grammar):
                            " recognition: %s" % (words,))
 
     def process_recognition_other(self, words, results):
-        self._manager.notify_recognition(words, None, None, results)
-        self._manager.notify_post_recognition(words, None, None, results)
+        self._manager.notify_recognition(words, results)
 
     def process_recognition_failure(self, results):
         self._manager.notify_failure(results)

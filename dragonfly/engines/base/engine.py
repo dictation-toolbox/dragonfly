@@ -217,7 +217,7 @@ class EngineBase(object):
 
     def do_recognition(self, begin_callback=None, recognition_callback=None,
                        failure_callback=None, end_callback=None,
-                       post_recognition_callback=None, *args, **kwargs):
+                       *args, **kwargs):
         """
         Recognize speech in a loop until interrupted or :meth:`disconnect`
         is called.
@@ -240,15 +240,11 @@ class EngineBase(object):
             ends, either successfully (after calling the recognition
             callback) or in failure (after calling the failure callback).
         :type end_callback: callable | None
-        :param post_recognition_callback: optional function to be called
-            after all rule processing has completed.
-        :type post_recognition_callback: callable | None
         """
         # Import locally to avoid cycles.
         from dragonfly.grammar.recobs_callbacks import (
             register_beginning_callback, register_recognition_callback,
-            register_failure_callback, register_ending_callback,
-            register_post_recognition_callback
+            register_failure_callback, register_ending_callback
         )
 
         if begin_callback:
@@ -259,8 +255,6 @@ class EngineBase(object):
             register_failure_callback(failure_callback)
         if end_callback:
             register_ending_callback(end_callback)
-        if post_recognition_callback:
-            register_post_recognition_callback(post_recognition_callback)
 
         # Call _do_recognition() to start recognizing.
         self._do_recognition(*args, **kwargs)
@@ -293,12 +287,48 @@ class EngineBase(object):
         if window is None:
             from dragonfly.windows.window import Window
             window = Window.get_foreground()
+
+        # Disable recognition observers for the duration.
+        self.disable_recognition_observers()
         for grammar in self.grammars:
-            # Prevent 'notify_begin()' from being called.
-            if grammar.name == "_recobs_grammar":
-                continue
             grammar.process_begin(window.executable, window.title,
                                   window.handle)
+        self.enable_recognition_observers()
+
+    def dispatch_recognition_other(self, grammar, words, results):
+        """
+            Dispatch recognition data for a grammar to all other grammars
+            with a ``process_recognition_other`` method.
+
+        """
+        # Get a list of all grammar wrappers.
+        wrappers = self._grammar_wrappers.copy().values()
+
+        # Raise an error if the specified grammar was not loaded.
+        wrapper_key = id(grammar)
+        if wrapper_key not in self._grammar_wrappers:
+            raise EngineError("Grammar %s never loaded." % grammar)
+
+        # Attempt to call process_recognition_other() for each appropriate
+        #  grammar.
+        # Note: This is how recognition observers work.
+        if wrapper_key in wrappers: wrappers.pop(wrapper_key)
+        for wrapper in wrappers:
+            wrapper.recognition_other_callback(words, results)
+
+    def dispatch_recognition_failure(self, results):
+        """
+            Dispatch results data to all grammars with a
+            ``process_recognition_failure`` method.
+
+        """
+        # Get a list of all grammar wrappers.
+        wrappers = self._grammar_wrappers.copy().values()
+
+        # Attempt to call process_recognition_failure() for each grammar.
+        # Note: This is how recognition observers work.
+        for wrapper in wrappers:
+            wrapper.recognition_failure_callback(results)
 
     @classmethod
     def _get_words_rules(cls, words, rule_id):

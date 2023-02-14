@@ -32,8 +32,13 @@ except ImportError:
     # Fallback on the deprecated function.
     from inspect import getargspec
 
-#---------------------------------------------------------------------------
 
+# Note: This module cannot import from dragonfly without causing import
+#  cycles.  Hence, the *RecObsGrammar classes must be implemented separately
+#  for each engine back-end.
+
+
+#---------------------------------------------------------------------------
 
 class RecObsManagerBase(object):
 
@@ -101,10 +106,9 @@ class RecObsManagerBase(object):
     def notify_begin(self):
         self._process_observer_callbacks("on_begin", [])
 
-    def notify_recognition(self, words, rule, node, results):
+    def notify_recognition(self, words, results):
         self._process_observer_callbacks("on_recognition", ["words"],
-                                         words=words, rule=rule, node=node,
-                                         results=results)
+                                         words=words, results=results)
         self.notify_end(results)
 
     def notify_failure(self, results):
@@ -113,11 +117,6 @@ class RecObsManagerBase(object):
 
     def notify_end(self, results):
         self._process_observer_callbacks("on_end", [], results=results)
-
-    def notify_post_recognition(self, words, rule, node, results):
-        self._process_observer_callbacks("on_post_recognition", ["words"],
-                                         words=words, rule=rule, node=node,
-                                         results=results)
 
     def _activate(self):
         raise NotImplementedError(str(self))

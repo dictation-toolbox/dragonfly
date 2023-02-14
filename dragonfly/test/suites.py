@@ -124,7 +124,7 @@ engine_tests_dict = {
         "test_language_en_number",
 
         # Note: Kaldi cannot handle the special characters in this file.
-        "test_dictation",
+        # "test_dictation",
     ] + common_names,
 
     "text": [

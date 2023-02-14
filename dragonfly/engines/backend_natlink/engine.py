@@ -205,8 +205,7 @@ class NatlinkEngine(EngineBase):
                         % (self, grammar.name))
 
         grammar_object = self.natlink.GramObj()
-        wrapper = GrammarWrapper(grammar, grammar_object, self,
-                                 self._recognition_observer_manager)
+        wrapper = GrammarWrapper(grammar, grammar_object, self)
         grammar_object.setBeginCallback(wrapper.begin_callback)
         grammar_object.setResultsCallback(wrapper.results_callback)
         grammar_object.setHypothesisCallback(None)
@@ -416,8 +415,8 @@ class GrammarWrapper(GrammarWrapperBase):
     # always report accurate rule IDs.
     _dictated_word_guesses_enabled = True
 
-    def __init__(self, grammar, grammar_object, engine, recobs_manager):
-        GrammarWrapperBase.__init__(self, grammar, engine, recobs_manager)
+    def __init__(self, grammar, grammar_object, engine):
+        GrammarWrapperBase.__init__(self, grammar, engine)
         self.grammar_object = grammar_object
         self.rule_names = None
         self.active_rules_set = set()
@@ -462,47 +461,16 @@ class GrammarWrapper(GrammarWrapperBase):
         grammar_object = self.grammar_object
         grammar_object.deactivate(rule_name)
 
-    def _decode_grammar_rules(self, state, words, results, *args):
-        # Iterate through this grammar's rules, attempting to decode each.
-        # If successful, call that rule's method for processing the
-        # recognition and return.
-        for rule in self.grammar.rules:
-            if not (rule.active and rule.exported): continue
-            state.initialize_decoding()
-            for _ in rule.decode(state):
-                if state.finished():
-                    self._retain_audio(words, results, rule.name)
-                    root = state.build_parse_tree()
-
-                    # Notify observers using the manager *before*
-                    # processing.
-                    # TODO Use words="other" instead, with a special
-                    # recobs grammar wrapper at index 0.
-                    notify_args = (words, rule, root, results)
-                    self.recobs_manager.notify_recognition(
-                        *notify_args
-                    )
-                    try:
-                        rule.process_recognition(root)
-                    except Exception as e:
-                        self._log.exception("Failed to process rule "
-                                            "'%s': %s" % (rule.name, e))
-                    self.recobs_manager.notify_post_recognition(
-                        *notify_args
-                    )
-                    return True
-        return False
-
     def results_callback(self, words, results):
         self._log.debug("Grammar %s: received recognition %r."
                         % (self.grammar.name, words))
 
         if words == "other":
             result_words = tuple(map_word(w) for w in results.getWords(0))
-            self.process_special_results(words, result_words, results)
+            self.recognition_other_callback(result_words, results)
             return
         elif words == "reject":
-            self.process_special_results(words, None, results)
+            self.recognition_failure_callback(results)
             return
 
         # If the words argument was not "other" or "reject", then
@@ -511,14 +479,28 @@ class GrammarWrapper(GrammarWrapperBase):
         words_rules = tuple((map_word(w), r) for w, r in words)
         words = tuple(w for w, r in words_rules)
 
-        # Process this recognition.
-        if self.process_results(words_rules, self.rule_names, results):
+        # Process this recognition without dispatching results to other
+        #  grammars; Natlink handles this for us perfectly.
+        if self.process_results(words_rules, self.rule_names, results,
+                                dispatch_other=False):
             return
 
         # Failed to decode recognition.
         self._log.error("Grammar %s: failed to decode recognition %r."
                         % (self.grammar._name, words))
 
+    def _process_final_rule(self, state, words, results, dispatch_other,
+                            rule, *args):
+        # Retain audio, if appropriate.
+        self._retain_audio(words, results, rule.name)
+
+        # Call the base class method.
+        GrammarWrapperBase._process_final_rule(self, state, words, results,
+                                               dispatch_other, rule, *args)
+
+    # TODO Extract the retain audio feature into an example command module.
+    #  A grammar with a `process_recognition_other' function should be able
+    #  to handle this without issue.
     def _retain_audio(self, words, results, rule_name):
         # Only write audio data and metadata if the directory exists.
         retain_dir = self.engine._retain_dir

@@ -80,11 +80,10 @@ class CallbackRecognitionObserver(RecognitionObserver):
         """"""
         self._process_recognition_event("on_begin", [])
 
-    def on_recognition(self, words, rule, node, results):
+    def on_recognition(self, words, results):
         """"""
         self._process_recognition_event("on_recognition", ["words"],
-                                        words=words, rule=rule, node=node,
-                                        results=results)
+                                        words=words, results=results)
 
     def on_failure(self, results):
         """"""
@@ -93,12 +92,6 @@ class CallbackRecognitionObserver(RecognitionObserver):
     def on_end(self, results):
         """"""
         self._process_recognition_event("on_end", [], results=results)
-
-    def on_post_recognition(self, words, rule, node, results):
-        """"""
-        self._process_recognition_event("on_post_recognition", ["words"],
-                                        words=words, rule=rule, node=node,
-                                        results=results)
 
 
 def register_beginning_callback(function):
@@ -161,19 +154,3 @@ def register_ending_callback(function):
     :rtype: CallbackRecognitionObserver
     """
     return CallbackRecognitionObserver("on_end", function)
-
-
-def register_post_recognition_callback(function):
-    """
-    Register a callback function to be called after all rule processing
-    has completed after recognition success.
-
-    The :class:`CallbackRecognitionObserver` object returned from this
-    function can be used to unregister the callback function.
-
-    :param function: callback function
-    :type function: callable
-    :returns: recognition observer
-    :rtype: CallbackRecognitionObserver
-    """
-    return CallbackRecognitionObserver("on_post_recognition", function)
