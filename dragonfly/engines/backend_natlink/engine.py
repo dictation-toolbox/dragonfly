@@ -436,8 +436,7 @@ class GrammarWrapper(GrammarWrapperBase):
             message = "Exception occurred during process_begin() call."
             self._log.exception(message)
 
-        # Activate each rule.  This is done separately to guarantee that
-        #  grammar rules are active for the current window.
+        # Ensure that active rules are active for the current window.
         self.beginning = False
         for rule_name in self.active_rules_set:
             self.activate_rule(rule_name)
@@ -445,7 +444,7 @@ class GrammarWrapper(GrammarWrapperBase):
     def activate_rule(self, rule_name):
         self.active_rules_set.add(rule_name)
 
-        # Rule activation is delayed
+        # Rule activation is delayed.
         if self.beginning: return
 
         # Activate the rule for the current window.
@@ -462,8 +461,8 @@ class GrammarWrapper(GrammarWrapperBase):
         grammar_object.deactivate(rule_name)
 
     def results_callback(self, words, results):
-        self._log.debug("Grammar %s: received recognition %r."
-                        % (self.grammar.name, words))
+        self._log.debug("Grammar %s: received recognition %r.",
+                        self.grammar.name, words)
 
         if words == "other":
             result_words = tuple(map_word(w) for w in results.getWords(0))
@@ -477,7 +476,6 @@ class GrammarWrapper(GrammarWrapperBase):
         #  it is a sequence of (word, rule_id) 2-tuples.  Convert this
         #  into a tuple of unicode objects.
         words_rules = tuple((map_word(w), r) for w, r in words)
-        words = tuple(w for w, r in words_rules)
 
         # Process this recognition without dispatching results to other
         #  grammars; Natlink handles this for us perfectly.
@@ -486,8 +484,9 @@ class GrammarWrapper(GrammarWrapperBase):
             return
 
         # Failed to decode recognition.
-        self._log.error("Grammar %s: failed to decode recognition %r."
-                        % (self.grammar._name, words))
+        words = tuple(w for w, r in words_rules)
+        self._log.error("Grammar %s: failed to decode recognition %r.",
+                        self.grammar._name, words)
 
     def _process_final_rule(self, state, words, results, dispatch_other,
                             rule, *args):
@@ -532,4 +531,4 @@ class GrammarWrapper(GrammarWrapperBase):
                             self.grammar.name, rule_name, text
                         ]) + '\n')
             except:
-                self.engine._log.exception("Exception retaining audio")
+                self._log.exception("Exception retaining audio")

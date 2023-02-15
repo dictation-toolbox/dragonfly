@@ -95,13 +95,13 @@ class RecObsManagerBase(object):
                     func_kwargs = {k: v for (k, v) in func_kwargs.items()
                                    if k in arg_names or k in required_names}
 
-            # Call the callback function, catching and logging exceptions.
+            # Invoke the callback function, catching and logging exceptions.
             try:
                 func(**func_kwargs)
             except Exception as e:
-                self._log.exception("Exception during %s()"
-                                    " method of recognition observer %s: %s"
-                                    % (cb_name, observer, e))
+                self._log.exception("Exception during %s() method of"
+                                    " recognition observer %s: %s",
+                                    cb_name, observer, e)
 
     def notify_begin(self):
         self._process_observer_callbacks("on_begin", [])

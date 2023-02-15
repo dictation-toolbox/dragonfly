@@ -98,10 +98,7 @@ class EngineBase(object):
     def grammars(self):
         """ Grammars loaded into this engine. """
         # Return a list of each GrammarWrapper's Grammar object.
-        return list(map(
-            lambda w: w.grammar,
-            self._grammar_wrappers.values()
-        ))
+        return [w.grammar for w in self._grammar_wrappers.values()]
 
     def connect(self):
         """ Connect to back-end SR engine. """
@@ -266,7 +263,8 @@ class EngineBase(object):
 
         This method should be implemented by engine sub-classes.
         """
-        raise NotImplementedError("Engine %s not implemented." % self)
+        raise NotImplementedError("Virtual method not implemented for"
+                                  " engine %s." % self)
 
     def process_grammars_context(self, window=None):
         """
@@ -334,20 +332,23 @@ class EngineBase(object):
     def _get_words_rules(cls, words, rule_id):
         # Construct and return a sequence of (word, rule_id) 2-tuples.
         # Convert any binary words to Unicode.
+        encoding = locale.getpreferredencoding()
         result = []
         for word in words:
             if isinstance(word, six.binary_type):
-                word = word.decode(locale.getpreferredencoding())
+                word = word.decode(encoding)
             result.append((word, rule_id))
         return tuple(result)
 
     def mimic(self, words):
         """ Mimic a recognition of the given *words*. """
-        raise NotImplementedError("Engine %s not implemented." % self)
+        raise NotImplementedError("Virtual method not implemented for"
+                                  " engine %s." % self)
 
     def speak(self, text):
         """ Speak the given *text* using text-to-speech. """
-        raise NotImplementedError("Engine %s not implemented." % self)
+        raise NotImplementedError("Virtual method not implemented for"
+                                  " engine %s." % self)
 
     @property
     def language(self):
@@ -397,8 +398,8 @@ class EngineBase(object):
                      }
 
     def _get_language(self):
-        raise NotImplementedError("Engine %s not implemented." % self)
-
+        raise NotImplementedError("Virtual method not implemented for"
+                                  " engine %s." % self)
     @property
     def quoted_words_support(self):
         """

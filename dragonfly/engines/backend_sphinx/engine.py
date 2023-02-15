@@ -54,8 +54,8 @@ class UnknownWordError(Exception):
 
 
 def _map_to_str(text, encoding=locale.getpreferredencoding()):
-    # Translate unicode/bytes to whatever str is in this version of
-    # Python. Decoder methods seem to require str objects.
+    # Decoder methods require *str* objects, so translate unicode/bytes to
+    #  whatever *str* is in this version of Python.
     if not isinstance(text, string_types):
         text = str(text)
     if PY2 and isinstance(text, text_type):
@@ -135,6 +135,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             "CHANNELS",
             "RATE",
             "SAMPLE_WIDTH",
+            "FORMAT",
             "BUFFER_SIZE",
         ]
 
@@ -187,6 +188,12 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         while len(self._audio_buffers) > 0:
             self._audio_buffers.pop(0)
 
+        # Unload all grammars.
+        # Note: copy() is used here because unloading removes items from the
+        #  grammar wrapper dictionary.
+        for wrapper in self._grammar_wrappers.copy().values():
+            wrapper.grammar.unload()
+
         # Reset variables.
         self._grammar_count = 0
         self._doing_recognition = False
@@ -203,7 +210,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         This method effectively unloads all loaded grammars.
         """
-        # If the engine is currently recognising, instruct it to free engine
+        # If the engine is currently recognizing, instruct it to free engine
         #  resources in the next iteration of the recognition loop.
         #  Otherwise, free engine resources now.
         if self._doing_recognition: self._deferred_disconnect = True
@@ -729,7 +736,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if not self._decoder:
             self.connect()
 
-        # Start recognising from the microphone in a loop.
+        # Start recognizing from the microphone in a loop.
         # If disconnect is called while this loop is running, free engine
         #  resources and stop.
         recorder = self._recorder

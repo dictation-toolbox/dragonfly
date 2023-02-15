@@ -226,11 +226,8 @@ class PatchedRepeat(jsgf.Repeat):
     """
     def compile(self, ignore_tags=False):
         super(PatchedRepeat, self).compile()
-        compiled = self.child.compile(ignore_tags)
-        if self.tag and not ignore_tags:
-            return "(%s)[%s]*%s" % (compiled, compiled, self.tag)
-        else:
-            return "(%s)[%s]*" % (compiled, compiled)
+        compiled = self.child.compile()
+        return "(%s)[%s]*" % (compiled, compiled)
 
 
 class SphinxJSGFCompiler(JSGFCompiler):

@@ -306,8 +306,6 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
             raise MimicFailure("Invalid mimic input %r: %s." % (words, e))
 
         kaldi_rules_activity = self._compute_kaldi_rules_activity()
-        self.prepare_for_recognition()  # Redundant?
-
         recognition = self._parse_recognition(output, mimic=True)
         if not recognition.kaldi_rule:
             recognition.fail(mimic=True)

@@ -117,8 +117,8 @@ class GrammarWrapperBase(object):
             root = state.build_parse_tree()
             rule.process_recognition(root)
         except Exception as e:
-            self._log.exception("Failed to process rule %r: %s", rule.name,
-                                e)
+            self._log.exception("Failed to process rule %r: %s",
+                                rule.name, e)
 
     def recognition_other_callback(self, words, results):
         func = getattr(self.grammar, "process_recognition_other", None)
@@ -149,5 +149,7 @@ class GrammarWrapperBase(object):
         arg_names, kwargs_names = argspec[0], argspec[2]
         if not kwargs_names:
             kwargs = { k: v for (k, v) in kwargs.items() if k in arg_names }
-
-        return func(**kwargs)
+        try:
+            return func(**kwargs)
+        except Exception as e:
+            self._log.exception("Grammar callback failed with error: %s", e)

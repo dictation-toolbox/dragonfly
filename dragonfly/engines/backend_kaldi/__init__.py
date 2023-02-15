@@ -45,7 +45,7 @@ def is_engine_available(**kwargs):
 
     if struct.calcsize("P") == 4:  # 32-bit
         _log.warning("The Python environment is 32-bit.  Kaldi requires a "
-                     "64-bit python environment.")
+                     "64-bit Python environment.")
         return False
 
     if sys.version_info.major < 3 or sys.version_info.minor < 6:

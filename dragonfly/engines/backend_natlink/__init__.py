@@ -53,13 +53,13 @@ def is_engine_available(**kwargs):
 
     platform_name = platform.system()
     if platform_name != 'Windows':
-        _log.warning("%s is not supported by the Natlink engine backend",
+        _log.warning("%s is not supported by the Natlink engine backend.",
                      platform_name)
         return False
 
     if struct.calcsize("P") == 8:  # 64-bit
-        _log.warning("The python environment is 64-bit. Natlink requires a "
-                     "32-bit python environment")
+        _log.warning("The Python environment is 64-bit.  Natlink requires a"
+                     " 32-bit Python environment.")
         return False
 
     # Attempt to import natlink.
