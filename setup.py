@@ -20,8 +20,9 @@
 
 import os.path
 import re
-from setuptools import setup, find_packages, Command
+import sys
 
+from setuptools import setup, find_packages, Command
 
 #---------------------------------------------------------------------------
 # Gather version from distribution file.
@@ -63,11 +64,38 @@ class test(Command):
 
     def run(self):
         from dragonfly.test.suites import run_pytest_suite
-        print("Test suite running for engine '%s'" % self.test_suite)
-        result = run_pytest_suite(self.test_suite, self.pytest_options)
+        test_suite = self.test_suite
+
+        # If a Natlink PYD file exists in the current working directory, we
+        #  attempt to import and use it to test Natlink.  This is easier
+        #  than reinstalling different versions of the program.
+        if test_suite == "natlink":
+            self._try_local_natlink_pyd()
+
+        print("Test suite running for engine '%s'" % test_suite)
+        result = run_pytest_suite(test_suite, self.pytest_options)
 
         # Exit using pytest's return code.
         exit(int(result))
+
+    def _try_local_natlink_pyd(self):
+        natlink = None
+        try:
+            if os.path.exists("natlink.pyd"):
+                print("Attempting to import local natlink.pyd file for"
+                      " testing.")
+                import natlink
+            elif os.path.exists("_natlink_core.pyd"):
+                print("Attempting to import local _natlink_core.pyd file"
+                      " for testing.")
+                import _natlink_core as natlink
+        except ImportError as e:
+            print("Could not import file: %s" % e)
+            print("Falling back on the installed version of Natlink.\n")
+
+        # If a local PYD file exists and was imported successfully, add the
+        #  module to sys.modules.
+        if natlink: sys.modules["natlink"] = natlink
 
 
 #---------------------------------------------------------------------------
