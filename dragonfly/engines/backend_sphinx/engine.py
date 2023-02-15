@@ -177,6 +177,20 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Set the AudioRecorder instance's config object.
         self._recorder.config = self.config
 
+    def disconnect(self):
+        """
+        Deallocate the CMU Sphinx decoder and any other resources used by
+        it.  If the engine is currently recognizing, the recognition loop
+        will be terminated first.
+
+        This method unloads all loaded grammars.
+        """
+        # If the engine is currently recognizing, instruct it to free engine
+        #  resources in the next iteration of the recognition loop.
+        #  Otherwise, free engine resources now.
+        if self._doing_recognition: self._deferred_disconnect = True
+        else:                       self._free_engine_resources()
+
     def _free_engine_resources(self):
         """
         Internal method for freeing the resources used by the engine.
@@ -203,20 +217,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Deallocate the decoder.
         self._decoder = None
 
-    def disconnect(self):
-        """
-        Deallocate the CMU Sphinx decoder and any other resources used by
-        it.  If the engine is currently recognizing, the recognition loop
-        will be terminated first.
-
-        This method unloads all loaded grammars.
-        """
-        # If the engine is currently recognizing, instruct it to free engine
-        #  resources in the next iteration of the recognition loop.
-        #  Otherwise, free engine resources now.
-        if self._doing_recognition: self._deferred_disconnect = True
-        else:                       self._free_engine_resources()
-
     #-----------------------------------------------------------------------
     # Multiplexing timer methods.
 
@@ -234,40 +234,99 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                                                       repeating)
 
     #-----------------------------------------------------------------------
-    # Methods for working with grammars.
-
-    def check_valid_word(self, word):
-        """
-        Check if a word is in the current Sphinx pronunciation dictionary.
-
-        :rtype: bool
-        """
-        if not self._decoder:
-            self.connect()
-
-        word = _map_to_str(word)
-        return bool(self._decoder.lookup_word(word.lower()))
-
-    def _validate_words(self, words, search_type):
-        unknown_words = []
-
-        # Use 'set' to de-duplicate the 'words' list.
-        for word in set(words):
-            if not self.check_valid_word(word):
-                unknown_words.append(word)
-
-        if unknown_words:
-            # Sort the word list before using it.
-            unknown_words.sort()
-            raise UnknownWordError(
-                "%s used words not found in the pronunciation dictionary: "
-                "%s" % (search_type, ", ".join(unknown_words))
-            )
+    # Methods for administrating grammar wrappers.
 
     def _build_grammar_wrapper(self, grammar):
         search_name = "%d" % self._grammar_count
         self._grammar_count += 1
         return GrammarWrapper(grammar, self, search_name)
+
+    #-----------------------------------------------------------------------
+    # Methods for working with grammars.
+
+    def _load_grammar(self, grammar):
+        """ Load the given *grammar* and return a wrapper. """
+        self._log.debug("Engine %s: loading grammar %s."
+                        % (self, grammar.name))
+        wrapper = self._build_grammar_wrapper(grammar)
+
+        # Attempt to set the grammar search.
+        try:
+            self._set_grammar(wrapper, False)
+        except Exception as e:
+            self._log.exception("Failed to load grammar %s: %s."
+                                % (grammar, e))
+            raise EngineError("Failed to load grammar %s: %s."
+                              % (grammar, e))
+
+        # Set the grammar wrapper's search name as valid and return the
+        # wrapper.
+        self._valid_searches.add(wrapper.search_name)
+        return wrapper
+
+    def _unload_grammar(self, grammar, wrapper):
+        try:
+            # Unset the search names for the grammar.
+            self._unset_search(wrapper.search_name)
+        except Exception as e:
+            self._log.exception("Failed to unload grammar %s: %s."
+                                % (grammar, e))
+
+    def update_list(self, lst, grammar):
+        wrapper = self._get_grammar_wrapper(grammar)
+        if not wrapper:
+            return
+
+        # Unfortunately there is no way to update lists for Pocket Sphinx
+        # without reloading the grammar, so we'll update the list's JSGF
+        # rule and reload.
+        wrapper.update_list(lst)
+
+        # Reload the grammar.
+        try:
+            self._set_grammar(wrapper, False)
+        except Exception as e:
+            self._log.exception("Failed to update list %s: %s."
+                                % (lst, e))
+
+    def activate_grammar(self, grammar):
+        self._log.debug("Activating grammar %s." % grammar.name)
+
+    def deactivate_grammar(self, grammar):
+        self._log.debug("Deactivating grammar %s." % grammar.name)
+
+    def activate_rule(self, rule, grammar):
+        self._log.debug("Activating rule %s in grammar %s."
+                        % (rule.name, grammar.name))
+        wrapper = self._get_grammar_wrapper(grammar)
+        if not wrapper:
+            return
+        try:
+            wrapper.enable_rule(rule.name)
+            self._set_grammar(wrapper, False, True)
+        except Exception as e:
+            self._log.exception("Failed to activate grammar %s: %s."
+                                % (grammar, e))
+
+    def deactivate_rule(self, rule, grammar):
+        self._log.debug("Deactivating rule %s in grammar %s."
+                        % (rule.name, grammar.name))
+        wrapper = self._get_grammar_wrapper(grammar)
+        if not wrapper:
+            return
+        try:
+            wrapper.disable_rule(rule.name)
+            self._set_grammar(wrapper, False, True)
+        except Exception as e:
+            self._log.exception("Failed to activate grammar %s: %s."
+                                % (grammar, e))
+
+    def set_exclusiveness(self, grammar, exclusive):
+        wrapper = self._get_grammar_wrapper(grammar)
+        if not wrapper:
+            return
+
+        wrapper.exclusive = exclusive
 
     def _set_grammar(self, wrapper, activate, partial=False):
         if not wrapper:
@@ -334,155 +393,102 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Set the default search.
         self._decoder.active_search = self._default_search_name
 
-    def _load_grammar(self, grammar):
-        """ Load the given *grammar* and return a wrapper. """
-        self._log.debug("Engine %s: loading grammar %s."
-                        % (self, grammar.name))
-        wrapper = self._build_grammar_wrapper(grammar)
+    def check_valid_word(self, word):
+        """
+        Check if a word is in the current Sphinx pronunciation dictionary.
 
-        # Attempt to set the grammar search.
-        try:
-            self._set_grammar(wrapper, False)
-        except Exception as e:
-            self._log.exception("Failed to load grammar %s: %s."
-                                % (grammar, e))
-            raise EngineError("Failed to load grammar %s: %s."
-                              % (grammar, e))
+        :rtype: bool
+        """
+        if not self._decoder:
+            self.connect()
 
-        # Set the grammar wrapper's search name as valid and return the
-        # wrapper.
-        self._valid_searches.add(wrapper.search_name)
-        return wrapper
-
-    def _unload_grammar(self, grammar, wrapper):
-        try:
-            # Unset the search names for the grammar.
-            self._unset_search(wrapper.search_name)
-        except Exception as e:
-            self._log.exception("Failed to unload grammar %s: %s."
-                                % (grammar, e))
-
-    def activate_grammar(self, grammar):
-        self._log.debug("Activating grammar %s." % grammar.name)
-
-    def deactivate_grammar(self, grammar):
-        self._log.debug("Deactivating grammar %s." % grammar.name)
-
-    def activate_rule(self, rule, grammar):
-        self._log.debug("Activating rule %s in grammar %s."
-                        % (rule.name, grammar.name))
-        wrapper = self._get_grammar_wrapper(grammar)
-        if not wrapper:
-            return
-        try:
-            wrapper.enable_rule(rule.name)
-            self._set_grammar(wrapper, False, True)
-        except Exception as e:
-            self._log.exception("Failed to activate grammar %s: %s."
-                                % (grammar, e))
-
-    def deactivate_rule(self, rule, grammar):
-        self._log.debug("Deactivating rule %s in grammar %s."
-                        % (rule.name, grammar.name))
-        wrapper = self._get_grammar_wrapper(grammar)
-        if not wrapper:
-            return
-        try:
-            wrapper.disable_rule(rule.name)
-            self._set_grammar(wrapper, False, True)
-        except Exception as e:
-            self._log.exception("Failed to activate grammar %s: %s."
-                                % (grammar, e))
-
-    def update_list(self, lst, grammar):
-        wrapper = self._get_grammar_wrapper(grammar)
-        if not wrapper:
-            return
-
-        # Unfortunately there is no way to update lists for Pocket Sphinx
-        # without reloading the grammar, so we'll update the list's JSGF
-        # rule and reload.
-        wrapper.update_list(lst)
-
-        # Reload the grammar.
-        try:
-            self._set_grammar(wrapper, False)
-        except Exception as e:
-            self._log.exception("Failed to update list %s: %s."
-                                % (lst, e))
-
-    def set_exclusiveness(self, grammar, exclusive):
-        wrapper = self._get_grammar_wrapper(grammar)
-        if not wrapper:
-            return
-
-        wrapper.exclusive = exclusive
+        word = _map_to_str(word)
+        return bool(self._decoder.lookup_word(word.lower()))
 
     #------------------------------------------------------------------------
     # Recognition methods.
 
-    @property
-    def recognising(self):
+    def _do_recognition(self):
         """
-        Whether the engine is currently recognising speech.
+        Start recognizing from the default recording device until stopped by
+        a keyboard interrupt or a call to :meth:`disconnect`.
 
-        To stop recognition, use :meth:`disconnect`.
-
-        :rtype: bool
+        To configure audio input settings, modify the engine's ``CHANNELS``,
+        ``RATE``, ``SAMPLE_WIDTH`` ``FORMAT`` and/or ``BUFFER_SIZE``
+        configuration options.
         """
-        return self._recorder.recording or self._doing_recognition
+        if not self._decoder:
+            self.connect()
 
-    def _get_best_hypothesis(self, hypotheses):
+        # Start recognizing from the microphone in a loop.
+        # If disconnect is called while this loop is running, free engine
+        #  resources and stop.
+        recorder = self._recorder
+        recorder.start()
+        try:
+            self._doing_recognition = True
+            while self._doing_recognition:
+                for buf in recorder.get_buffers():
+                    self.process_buffer(buf)
+                    if self._deferred_disconnect:
+                        self._free_engine_resources()
+                        break
+        finally:
+            self._doing_recognition = False
+            self._recorder.stop()
+
+    def mimic(self, words):
+        """ Mimic a recognition of the given *words* """
+        # The *words* argument should be a string or iterable.
+        # Words are put into lowercase for consistency.
+        if isinstance(words, string_types):
+            text = words.lower()
+        elif iter(words):
+            text = " ".join([w.lower() for w in words])
+        else:
+            raise TypeError("%r is not a string or other iterable object"
+                            % words)
+
+        # Fail on empty input.
+        if not words:
+            raise MimicFailure("Invalid mimic input %r" % words)
+
+        # Process the words as if they were spoken.
+        self._mimicking = True
+        try:
+            self._speech_start_callback()
+            hyp = MimickedHypothesis(text, 0, 0)
+            result = self._hypothesis_callback(hyp)
+        finally:
+            self._mimicking = False
+
+        if not result:
+            raise MimicFailure("No matching rule found for words %s."
+                               % words)
+
+    def process_buffer(self, buf):
         """
-        Take a list of hypotheses and return the most likely one.
+        Recognize speech from an audio buffer.
 
-        If there was no most likely hypothesis, a null hypothesis is
-        returned.
+        This method is meant to be called sequentially with buffers from an
+        audio source, such as a microphone or wave file.
 
-        :param hypotheses: iterable
-        :return: Hypothesis object
+        This method will do nothing if :meth:`connect` has not been called.
+
+        :param buf: audio buffer
+        :type buf: str
         """
-        # Get all distinct, non-null hypotheses.
-        hypotheses = {hyp.hypstr: hyp for hyp in hypotheses
-                      if len(hyp.hypstr) > 0}
+        if not self._decoder:
+            return
 
-        # Return early if zero or one distinct hypotheses exist.
-        if   len(hypotheses) == 0: return self._null_hypothesis
-        elif len(hypotheses) == 1: return hypotheses.popitem()[1]
+        # Keep a list of buffers for possible reprocessing later on.
+        self._audio_buffers.append(buf)
 
-        # Decide between non-null hypotheses using a Pocket Sphinx search
-        #  with each hypothesis as a grammar rule.
-        # Note: There is no need to validate words here because each literal
-        #  comes from a Pocket Sphinx hypothesis.
-        grammar = RootGrammar()
-        grammar.language_name = self.language
-        i = 0
-        for _, hypothesis in hypotheses.items():
-            text = hypothesis.hypstr
-            grammar.add_rule(PublicRule("rule%d" % i, Literal(text)))
-            i += 1
-        compiled_jsgf = grammar.compile_grammar()
+        # Call the timer callback.
+        self.call_timer_callback()
 
-        # Store the current search name.
-        prior_search_name = self._decoder.active_search
-
-        # Set a temporary JSGF search and reprocess the audio.  We should
-        #  get a hypothesis.  If we don't, use a null hypothesis.
-        self._decoder.end_utterance()
-        self._decoder.set_jsgf_string("_temp", _map_to_str(compiled_jsgf))
-        self._decoder.active_search = "_temp"
-        hyp = self._decoder.batch_process(self._audio_buffers,
-                                          use_callbacks=False)
-        if not hyp: hyp = self._null_hypothesis
-
-        # Switch back to the previous search and deallocate the temporary
-        #  one.
-        self._decoder.end_utterance()
-        self._decoder.active_search = prior_search_name
-        self._decoder.unset_search("_temp")
-
-        # Return the appropriate hypothesis.
-        return hypotheses.get(hyp.hypstr, self._null_hypothesis)
+        # Process the audio buffer.
+        self._decoder.process_audio(buf)
 
     def _speech_start_callback(self):
         # Get context info.
@@ -625,29 +631,57 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Return whether processing occurred.
         return result
 
-    def process_buffer(self, buf):
+    def _get_best_hypothesis(self, hypotheses):
         """
-        Recognize speech from an audio buffer.
+        Take a list of hypotheses and return the most likely one.
 
-        This method is meant to be called sequentially with buffers from an
-        audio source, such as a microphone or wave file.
+        If there was no most likely hypothesis, a null hypothesis is
+        returned.
 
-        This method will do nothing if :meth:`connect` has not been called.
-
-        :param buf: audio buffer
-        :type buf: str
+        :param hypotheses: iterable
+        :return: Hypothesis object
         """
-        if not self._decoder:
-            return
+        # Get all distinct, non-null hypotheses.
+        hypotheses = {hyp.hypstr: hyp for hyp in hypotheses
+                      if len(hyp.hypstr) > 0}
 
-        # Keep a list of buffers for possible reprocessing later on.
-        self._audio_buffers.append(buf)
+        # Return early if zero or one distinct hypotheses exist.
+        if   len(hypotheses) == 0: return self._null_hypothesis
+        elif len(hypotheses) == 1: return hypotheses.popitem()[1]
 
-        # Call the timer callback.
-        self.call_timer_callback()
+        # Decide between non-null hypotheses using a Pocket Sphinx search
+        #  with each hypothesis as a grammar rule.
+        # Note: There is no need to validate words here because each literal
+        #  comes from a Pocket Sphinx hypothesis.
+        grammar = RootGrammar()
+        grammar.language_name = self.language
+        i = 0
+        for _, hypothesis in hypotheses.items():
+            text = hypothesis.hypstr
+            grammar.add_rule(PublicRule("rule%d" % i, Literal(text)))
+            i += 1
+        compiled_jsgf = grammar.compile_grammar()
 
-        # Process the audio buffer.
-        self._decoder.process_audio(buf)
+        # Store the current search name.
+        prior_search_name = self._decoder.active_search
+
+        # Set a temporary JSGF search and reprocess the audio.  We should
+        #  get a hypothesis.  If we don't, use a null hypothesis.
+        self._decoder.end_utterance()
+        self._decoder.set_jsgf_string("_temp", _map_to_str(compiled_jsgf))
+        self._decoder.active_search = "_temp"
+        hyp = self._decoder.batch_process(self._audio_buffers,
+                                          use_callbacks=False)
+        if not hyp: hyp = self._null_hypothesis
+
+        # Switch back to the previous search and deallocate the temporary
+        #  one.
+        self._decoder.end_utterance()
+        self._decoder.active_search = prior_search_name
+        self._decoder.unset_search("_temp")
+
+        # Return the appropriate hypothesis.
+        return hypotheses.get(hyp.hypstr, self._null_hypothesis)
 
     def process_wave_file(self, path):
         """
@@ -725,64 +759,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         if not obs.complete:
             self._log.warning("Speech start/end wasn't detected in the wave"
                               " file!  Try changing -vad_* decoder params.")
-
-    def _do_recognition(self):
-        """
-        Start recognizing from the default recording device until stopped by
-        a keyboard interrupt or a call to :meth:`disconnect`.
-
-        To configure audio input settings, modify the engine's ``CHANNELS``,
-        ``RATE``, ``SAMPLE_WIDTH`` ``FORMAT`` and/or ``BUFFER_SIZE``
-        configuration options.
-        """
-        if not self._decoder:
-            self.connect()
-
-        # Start recognizing from the microphone in a loop.
-        # If disconnect is called while this loop is running, free engine
-        #  resources and stop.
-        recorder = self._recorder
-        recorder.start()
-        try:
-            self._doing_recognition = True
-            while self._doing_recognition:
-                for buf in recorder.get_buffers():
-                    self.process_buffer(buf)
-                    if self._deferred_disconnect:
-                        self._free_engine_resources()
-                        break
-        finally:
-            self._doing_recognition = False
-            self._recorder.stop()
-
-    def mimic(self, words):
-        """ Mimic a recognition of the given *words* """
-        # The *words* argument should be a string or iterable.
-        # Words are put into lowercase for consistency.
-        if isinstance(words, string_types):
-            text = words.lower()
-        elif iter(words):
-            text = " ".join([w.lower() for w in words])
-        else:
-            raise TypeError("%r is not a string or other iterable object"
-                            % words)
-
-        # Fail on empty input.
-        if not words:
-            raise MimicFailure("Invalid mimic input %r" % words)
-
-        # Process the words as if they were spoken.
-        self._mimicking = True
-        try:
-            self._speech_start_callback()
-            hyp = MimickedHypothesis(text, 0, 0)
-            result = self._hypothesis_callback(hyp)
-        finally:
-            self._mimicking = False
-
-        if not result:
-            raise MimicFailure("No matching rule found for words %s."
-                               % words)
 
     #-----------------------------------------------------------------------
     # Miscellaneous methods.
