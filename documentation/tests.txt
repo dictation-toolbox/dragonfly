@@ -37,18 +37,20 @@ package.
 Running the test suite
 ============================================================================
 
-This section contains instructions on how to run dragonfly's test suite with
-the SR engine backends.
+This section contains instructions on how to run Dragonfly's test
+suite with the speech recognition (SR) engine backends.
 
-Most tests were written with an English model andvocabulary in mind, so they
-will not pass if English words are not in the SR engine's vocabulary. The
-only exception to this is the text-input ("text") backend.
+Most tests were written with an English model and vocabulary in mind,
+so they will not pass if the SR engine cannot recognize English words.
+The only exception to this is the text-input ("text") backend, which
+should handle whatever words it is given.
 
 
-Using DNS
+Using Dragon NaturallySpeaking
 ----------------------------------------------------------------------------
 
-Follow the following steps to run the test suite for the DNS backend:
+Follow the following steps to run the test suite for the Dragon
+NaturallySpeaking (DNS) backend:
 
  #. Start DNS.  (And ensure that NatLink is also automatically started.)
  #. Extract the Dragonfly source code in a directory ``<dir>``.
@@ -66,24 +68,33 @@ Follow the following steps to run the test suite for the DNS backend:
         python setup.py test --test-suite=natlink
 
 
-Different tests need to be run for different DNS versions. The natlink test
-suite will attempt to run the correct tests for the version of DNS you are
-using.
+Different tests need to be run for different DNS versions.  The
+Natlink test suite will attempt to run the correct tests for the
+version of DNS you are using.
 
-These tests may fail with certain DNS versions, models and/or vocabularies.
-It is possible for the test suite to fail even though everything still
-works in command modules loaded by ``natlinkmain``. This is a natlink issue.
+These tests may fail with certain DNS versions, models and/or
+vocabularies.  Please note that it is possible for the test suite to
+fail even though everything still works in command modules loaded by
+``natlinkmain``.  The doctest for Dragonfly Lists, for instance, fails
+on DNS version 15.
 
-It is not feasible to test dragonfly with all DNS configurations.
-Please get in touch if the tests fail for you **and** specific dragonfly
-functionality doesn't work in natlink command modules (i.e. ``.py`` files in
-the ``MacroSystem`` folder).
+It is not feasible to test Dragonfly with all DNS configurations.
+Please get in touch if the tests fail for you **and** specific
+Dragonfly functionality doesn't work in natlink command modules
+(i.e. ``.py`` files in the ``MacroSystem`` folder).
+
+Dragonfly's test code will try to use *natlink.pyd* or
+*_natlink_core.pyd* files for testing, if they exist in the Dragonfly
+source code directory alongside *setup.py*.  If neither file exists,
+or if neither is usable, the test code will fallback on the installed
+natlink module.
 
 
-Using WSR
+Using Windows Speech Recognition
 ----------------------------------------------------------------------------
 
-Follow the following steps to run the test suite for the WSR backend:
+Follow the following steps to run the test suite for the Windows Speech
+Recognition (WSR) backend:
 
  #. Start WSR.
  #. Wake WSR up, so that it is *not* in sleeping state, and then turn the
@@ -105,17 +116,18 @@ Follow the following steps to run the test suite for the WSR backend:
         python setup.py test --test-suite=sapi5
 
 
-You can also run the test suite for the in process engine class. It has no
-GUI for the moment. Run the tests with the following command:
+This test suite may be run using the in-process engine class, too.
+No GUI appears for this engine.  The tests are run with the following
+command:
 
     .. code:: shell
 
         python setup.py test --test-suite=sapi5inproc
 
 
-Some SAPI5 engine tests will fail intermittently, particularly with the
-shared process engine class (``"sapi5"`` / ``"sapi5shared"``). There is not
-much we can do about this.
+Some SAPI 5 engine tests will fail intermittently, particularly with
+the shared process engine class (``"sapi5"`` / ``"sapi5shared"``).
+There is not much we can do about this.
 
 
 Using the Kaldi engine
@@ -185,6 +197,6 @@ Follow the following steps to run the test suite for the "text" backend:
         python setup.py test
 
 
-This is the default test suite for dragonfly and has no additional
-dependencies. The ``--test-suite`` argument does not need to be specified
-in this case.
+This is the default test suite for Dragonfly and has no additional
+dependencies.  The ``--test-suite`` argument does not need to be
+specified in this case.
