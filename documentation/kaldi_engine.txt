@@ -3,29 +3,32 @@
 Kaldi engine back-end
 ============================================================================
 
-This version of dragonfly contains an engine implementation using the
-free, open source, cross-platform Kaldi speech recognition toolkit. You
-can read more about the Kaldi project on the `Kaldi project site
-<https://kaldi-asr.org/>`_.
+The Kaldi engine implementation uses the free, open source, Kaldi speech
+recognition toolkit.  You can read more about the Kaldi project on the
+`Kaldi project site <https://kaldi-asr.org/>`_.
 
 This backend relies greatly on the `kaldi-active-grammar
 <https://github.com/daanzu/kaldi-active-grammar>`_ library, which
-extends Kaldi's standard decoding for use in a dragonfly-style
+extends Kaldi's standard decoding for use in a Dragonfly-style
 environment, allowing combining many dynamic grammars that can be set
-active/inactive based on contexts in real-time. It also provides basic
+active/inactive based on contexts in real-time.  It also provides basic
 infrastructure for compiling, recognizing, and parsing grammars with
-Kaldi, plus a compatible model. For more information, see its page.
+Kaldi, plus a compatible model.  For more information, see its page.
 
-Both this backend and kaldi-active-grammar are under **active
-development** by `@daanzu <https://github.com/daanzu>`_.
-Kaldi-backend-specific issues, suggestions, and feature requests are
-welcome & encouraged, but are probably better sent to the
-`kaldi-active-grammar repository
-<https://github.com/daanzu/kaldi-active-grammar>`_. If you value this
-work and want to encourage development of a free, open source,
-cross-platform engine for dragonfly as a competitive alternative to
-commercial offerings, kaldi-active-grammar accepts donations (not
-affiliated with the dragonfly project itself).
+Both this backend and kaldi-active-grammar are under development by
+David Zurow (`@daanzu <https://github.com/daanzu>`_).
+Kaldi-backend-specific issues, suggestions, and feature requests are welcome
+& encouraged, but are probably better sent to the `kaldi-active-grammar
+repository <https://github.com/daanzu/kaldi-active-grammar>`_.  If you value
+this work and want to encourage development of a free, open source engine
+for Dragonfly as a competitive alternative to commercial offerings,
+kaldi-active-grammar accepts donations (not affiliated with the Dragonfly
+project itself).
+
+The Kaldi backend may be used on Windows, macOS, Linux.  Dragonfly has
+good support for desktop enviroments on each of these operating
+systems.  As other sections of the documentation mention, Dragonfly
+does not support Wayland.
 
 Please note that Kaldi Active Grammar is licensed under the GNU Affero
 General Public License v3 (AGPL-3.0-or-later).  This has an effect on
@@ -36,42 +39,48 @@ engine back-end.
 
 * `Setup`_
 * `Engine Configuration`_
-* `Cross-platform`_
 * `User Lexicon`_
 * `Grammar/Rule/Element Weights`_
 * `Retaining Audio and/or Recognition Metadata`_
 * `Alternative Dictation`_
+* `Limitations & Future Work`_
+* `Engine API`_
 
 
 Setup
 ----------------------------------------------------------------------------
 
-Want to get started **quickly & easily on Windows**? A self-contained,
+Want to get started **quickly & easily on Windows**?  A self-contained,
 portable, batteries-included (python & libraries & model) distribution
-of kaldi-active-grammar + dragonfly is available at the
+of kaldi-active-grammar + Dragonfly is available at the
 `kaldi-active-grammar project releases page
 <https://github.com/daanzu/kaldi-active-grammar/releases>`_.
 Otherwise...
 
 **Requirements:**
 
-* Python 3.6+; *64-bit required!*
-* OS: Windows/Linux/MacOS all supported (see `Cross-platform`_)
-* Only supports Kaldi left-biphone models, specifically *nnet3 chain* models, with specific modifications
-* ~1GB+ disk space for model plus temporary storage and cache, depending on your grammar complexity
-* ~500MB+ RAM for model and grammars, depending on your model and grammar complexity
-* Python package dependencies (which should be installed automatically by following the instructions below):
-  * `kaldi-active-grammar <https://github.com/daanzu/kaldi-active-grammar>`_
-  * `sounddevice <https://python-sounddevice.readthedocs.io>`_
-  * `webrtcvad <https://github.com/wiseman/py-webrtcvad>`_
+ * Python 3.6+; *64-bit required!*
+ * OS: Windows/Linux/MacOS all supported
+ * Only supports Kaldi left-biphone models, specifically *nnet3 chain*
+   models, with specific modifications
+ * ~1GB+ disk space for model plus temporary storage and cache,
+   depending on your grammar complexity
+ * ~500MB+ RAM for model and grammars, depending on your model and
+   grammar complexity
+ * Python package dependencies (which should be installed automatically
+   by following the instructions below):
+
+   * `kaldi-active-grammar <https://github.com/daanzu/kaldi-active-grammar>`_
+   * `sounddevice <https://python-sounddevice.readthedocs.io>`_
+   * `webrtcvad <https://github.com/wiseman/py-webrtcvad>`_
 
 **Note for Linux:** You may need the ``portaudio`` headers to be
 installed in order to be able to install/compile the ``sounddevice``
-Python package. Under ``apt``-based distributions, you can get them by
-running ``sudo apt install portaudio19-dev``. You may also need to make
+Python package.  Under ``apt``-based distributions, you can get them by
+running ``sudo apt install portaudio19-dev``.  You may also need to make
 your user account a member of the ``audio`` group to be able to access
-your microphone. Do this by running ``usermod -a -G audio
-account_name_here``.
+your microphone.  Do this by running ``usermod -a -G audio
+<account_name>``.
 
 Installing the correct versions of the Python dependencies can be most
 easily done by installing the ``kaldi`` sub-package of ``dragonfly``
@@ -79,8 +88,8 @@ using::
 
   pip install 'dragonfly[kaldi]'
 
-If you are installing to *develop* dragonfly, use the following instead
-(from your dragonfly git repository)::
+If you are installing to *develop* Dragonfly, use the following instead
+(from your Dragonfly git repository)::
 
   pip install -e '.[kaldi]'
 
@@ -88,15 +97,15 @@ If you are installing to *develop* dragonfly, use the following instead
 package, make sure you're using a 64-bit Python, and update your ``pip``
 by executing ``pip install --upgrade pip``.
 
-You will also need a **model** to use. You can download a `compatible
+You will also need a **model** to use.  You can download a `compatible
 general English Kaldi nnet3 chain model
 <https://github.com/daanzu/kaldi-active-grammar/releases>`_
 from `kaldi-active-grammar
-<https://github.com/daanzu/kaldi-active-grammar>`_. Unzip it into a
+<https://github.com/daanzu/kaldi-active-grammar>`_.  Unzip it into a
 directory within the directory containing your grammar modules.
 
 **Note for Linux:** Before proceeding, you'll need to install the
-``wmctrl``, ``xdotool`` and ``xsel`` programs. Under ``apt``-based
+``wmctrl``, ``xdotool`` and ``xsel`` programs.  Under ``apt``-based
 distributions, you can get them by running::
 
   sudo apt install wmctrl xdotool xsel
@@ -107,25 +116,25 @@ variable.
 Once the dependencies and model are installed, you're ready to go!
 
 Getting Started
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+............................................................................
 
 **A simple, single-file, standalone demo/example** can be found in the
 `dragonfly/examples/kaldi_demo.py
 <https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_demo.py>`_
-script. Simply run it from the directory containing the above model (or
+script.  Simply run it from the directory containing the above model (or
 modify the configuration paths in the file) using::
 
     python path/to/kaldi_demo.py
 
 For more structured and long-term use, you'll want to use a **module
-loader**. Copy the `dragonfly/examples/kaldi_module_loader_plus.py
+loader**.  Copy the `dragonfly/examples/kaldi_module_loader_plus.py
 <https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_module_loader_plus.py>`_
 script into the folder with your grammar modules and run it using::
 
   python kaldi_module_loader_plus.py
 
 This file is the equivalent to the 'core' directory that NatLink uses to
-load grammar modules. When run, it will scan the directory it's in for files
+load grammar modules.  When run, it will scan the directory it's in for files
 beginning with ``_`` and ending with ``.py``, then try to load them as
 command-modules.
 
@@ -136,9 +145,9 @@ A more basic loader is in `dragonfly/examples/kaldi_module_loader.py
 <https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/kaldi_module_loader.py>`_.
 
 Updating To A New Version
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+............................................................................
 
-When updating to a new version of dragonfly, you should always rerun
+When updating to a new version of Dragonfly, you should always rerun
 ``pip install 'dragonfly[kaldi]'`` (or ``pip install '.[kaldi]'``, etc.) to
 make sure you get the required version of kaldi_active_grammar.
 
@@ -148,7 +157,7 @@ Engine Configuration
 
 This engine can be configured by passing (optional) keyword arguments to
 the ``get_engine()`` function, which passes them to the
-:class:`KaldiEngine` constructor (documented below). For example:
+:class:`KaldiEngine` constructor (documented below).  For example:
 
 .. code:: Python
 
@@ -193,113 +202,113 @@ The engine can also be configured via the :ref:`command-line interface
 
 * ``model_dir`` (``str|None``) -- Directory containing model.
 
-* ``tmp_dir`` (``str|None``) -- Directory to use for temporary storage and
-  cache (used for caching during and between executions but safe to
-  delete).
+* ``tmp_dir`` (``str|None``) -- Directory to use for temporary storage
+  and cache (used for caching during and between executions but safe
+  to delete).
 
-* ``audio_input_device`` (``int|str|None|False``) -- Microphone PortAudio input
-  device: the default of ``None`` chooses the default input device, or ``False``
-  disables microphone input. To see a list of available input devices and their
-  corresponding indexes an names, call ``get_engine('kaldi').print_mic_list()``.
-  To select a specific device, pass an ``int`` representing the index number of
-  the device, or pass a ``str`` representing (part of) the name of the device.
-  If a string is given, the device is selected which contains all
-  space-separated parts in the right order. Each device string contains the name
-  of the corresponding host API in the end. The string comparison is
-  case-insensitive. The string match must be unique.
+* ``audio_input_device`` (``int|str|None|False``) -- Microphone
+  PortAudio input device: the default of ``None`` chooses the default
+  input device, or ``False`` disables microphone input.  To see a list
+  of available input devices and their corresponding indexes an names,
+  call ``get_engine('kaldi').print_mic_list()``.  To select a specific
+  device, pass an ``int`` representing the index number of the device,
+  or pass a ``str`` representing (part of) the name of the device.  If
+  a string is given, the device is selected which contains all
+  space-separated parts in the right order.  Each device string
+  contains the name of the corresponding host API in the end.  The
+  string comparison is case-insensitive.  The string match must be
+  unique.
 
-* ``audio_auto_reconnect`` (``bool``) -- Whether to automatically reconnect the
-  audio device if it appears to have stopped (by not returning any audio data
-  for some period of time).
+* ``audio_auto_reconnect`` (``bool``) -- Whether to automatically
+  reconnect the audio device if it appears to have stopped (by not
+  returning any audio data for some period of time).
 
-* ``audio_reconnect_callback`` (``callable|None``) -- Callable to be called
-  every time the audio system attempts to reconnect (automatically or manually).
-  It must take exactly one positional argument, which is the ``MicAudio``
-  object.
+* ``audio_reconnect_callback`` (``callable|None``) -- Callable to be
+  called every time the audio system attempts to reconnect
+  (automatically or manually).  It must take exactly one positional
+  argument, which is the ``MicAudio`` object.
 
 * ``retain_dir`` (``str|None``) -- Retains recognized audio and/or
   metadata in the given directory, saving audio to
-  ``retain_[timestamp].wav`` file and metadata to ``retain.tsv``. What is
-  automatically retained it is determined by ``retain_audio`` and
-  ``retain_metadata``. If both are ``False`` but this is set, you can
-  actively choose to retain a given recognition. See below for more
-  information.
+  ``retain_[timestamp].wav`` file and metadata to ``retain.tsv``.
+  What is automatically retained it is determined by ``retain_audio``
+  and ``retain_metadata``.  If both are ``False`` but this is set, you
+  can actively choose to retain a given recognition.  See below for
+  more information.
 
 * ``retain_audio`` (``bool|None``) -- Whether to retain audio data for
-  all recognitions. If ``True``, then requires ``retain_dir`` to be set.
-  If ``None``, then defaults to ``True`` if ``retain_dir`` is set to
-  ``True``. See below for more information.
+  all recognitions. If ``True``, then requires ``retain_dir`` to be
+  set.  If ``None``, then defaults to ``True`` if ``retain_dir`` is
+  set to ``True``. See below for more information.
 
-* ``retain_metadata`` (``bool|None``) -- Whether to retain metadata for
-  all recognitions. If ``True``, then requires ``retain_dir`` to be set.
-  If ``None``, then defaults to ``True`` if ``retain_dir`` is set to
-  ``True``. See below for more information.
+* ``retain_metadata`` (``bool|None``) -- Whether to retain metadata
+  for all recognitions.  If ``True``, then requires ``retain_dir`` to
+  be set.  If ``None``, then defaults to ``True`` if ``retain_dir`` is
+  set to ``True``. See below for more information.
 
 * ``retain_approval_func`` (``Callable``) -- If retaining is enabled,
   this is called upon each recognition, to determine whether or not to
-  retain it. It must accept as a parameter the
+  retain it.  It must accept as a parameter the
   :class:`dragonfly.engines.backend_kaldi.audio.AudioStoreEntry` under
-  consideration, and return a ``bool`` (``True`` to retain). This is
-  useful for ignoring recognitions that tend to be noise, perhaps contain
-  sensitive content, etc.
+  consideration, and return a ``bool`` (``True`` to retain).  This is
+  useful for ignoring recognitions that tend to be noise, perhaps
+  contain sensitive content, etc.
 
-* ``vad_aggressiveness`` (``int``) -- Aggressiveness of the Voice Activity
-  Detector: an integer between ``0`` and ``3``, where ``0`` is the least
-  aggressive about filtering out non-speech, and ``3`` is the most
-  aggressive.
+* ``vad_aggressiveness`` (``int``) -- Aggressiveness of the Voice
+  Activity Detector: an integer between ``0`` and ``3``, where ``0``
+  is the least aggressive about filtering out non-speech, and ``3`` is
+  the most aggressive.
 
-* ``vad_padding_start_ms`` (``int``) -- Approximate length of padding/debouncing (in milliseconds) at
-  beginning of each utterance for the Voice Activity Detector. Smaller
-  values result in lower latency recognition (faster reactions), but possibly higher
+* ``vad_padding_start_ms`` (``int``) -- Approximate length of
+  padding/debouncing (in milliseconds) at beginning of each utterance
+  for the Voice Activity Detector.  Smaller values result in lower
+  latency recognition (faster reactions), but possibly higher
   likelihood of false positives at beginning of utterances, and more
-  importantly higher possibility of not capturing the entire beginning of
-  utterances.
+  importantly higher possibility of not capturing the entire beginning
+  of utterances.
 
-* ``vad_padding_end_ms`` (``int``) -- Approximate length of silence (in milliseconds) at
-  ending of each utterance for the Voice Activity Detector. Smaller
-  values result in lower latency recognition (faster reactions), but possibly higher
-  likelihood of false negatives at ending of utterances.
+* ``vad_padding_end_ms`` (``int``) -- Approximate length of silence
+  (in milliseconds) at ending of each utterance for the Voice Activity
+  Detector.  Smaller values result in lower latency recognition
+  (faster reactions), but possibly higher likelihood of false
+  negatives at ending of utterances.
 
-* ``vad_complex_padding_end_ms`` (``int|None``) -- If not None, the Voice Activity Detector
-  behaves differently for utterances that are complex (usually meaning inside
-  dictation), using this value instead of ``vad_padding_end_ms``, so you can
-  attain longer utterances to take advantage of context to improve recognition
-  quality.
+* ``vad_complex_padding_end_ms`` (``int|None``) -- If not None, the
+  Voice Activity Detector behaves differently for utterances that are
+  complex (usually meaning inside dictation), using this value instead
+  of ``vad_padding_end_ms``, so you can attain longer utterances to
+  take advantage of context to improve recognition quality.
 
 * ``auto_add_to_user_lexicon`` (``bool``) -- Enables automatically
-  adding unknown words to the `User Lexicon`_. This will only work if you have
-  additional required packages installed. This will only work locally, unless
-  you also enable ``allow_online_pronunciations``.
+  adding unknown words to the `User Lexicon`_.  This will only work if
+  you have additional required packages installed.  This will only
+  work locally, unless you also enable
+  ``allow_online_pronunciations``.
 
 * ``allow_online_pronunciations`` (``bool``) -- Enables online
   pronunciation generation for unknown words, if you have also enabled
-  ``auto_add_to_user_lexicon``, and you have the required packages installed.
+  ``auto_add_to_user_lexicon``, and you have the required packages
+  installed.
 
 * ``lazy_compilation`` (``bool``) -- Enables deferred grammar/rule
-  compilation, which then allows parallel compilation up to your number
-  of cores, for a large speed up loading uncached.
+  compilation, which then allows parallel compilation up to your
+  number of cores, for a large speed up loading uncached.
 
 * ``invalidate_cache`` (``bool``) -- Enables invalidating the engine's
   cache prior to initialization, possibly for debugging.
 
 * ``expected_error_rate_threshold`` (``float|None``) -- Threshold of
   "confidence" in the recognition, as measured in estimated error rate
-  (between 0 and ~1 where 0 is perfect), above which the recognition is
-  ignored. Setting this may be helpful for ignoring "bad" recognitions,
-  possibly around ``0.1`` depending on personal preference.
+  (between 0 and ~1 where 0 is perfect), above which the recognition
+  is ignored.  Setting this may be helpful for ignoring "bad"
+  recognitions, possibly around ``0.1`` depending on personal
+  preference.
 
-* ``alternative_dictation`` (``callable|None``) -- Enables alternative an
-  dictation model/engine and chooses the provider. Possible values:
+* ``alternative_dictation`` (``callable|None``) -- Enables alternative
+  an dictation model/engine and chooses the provider. Possible values:
 
   * ``None`` -- Disabled
-  * a Python ``callable`` -- See `Alternative Dictation`_ section below
-
-
-Cross-platform
-----------------------------------------------------------------------------
-
-This Dragonfly engine implementation, and Kaldi itself, can run
-on multiple platforms, including architectures other than x86.
+  * a Python ``callable`` -- See `Alternative Dictation`_ section below.
 
 
 User Lexicon
@@ -308,7 +317,7 @@ User Lexicon
 Kaldi uses pronunciation dictionaries to lookup phonetic representations
 for words in grammars & language models in order to recognize them. The
 default model comes with a large dictionary, but obviously cannot
-include all possible words. There are multiple ways of handling this.
+include all possible words.  There are multiple ways of handling this.
 
 **Ignoring unknown words:** If you use words in your grammars that are
 *not* in the dictionary, a message similar to the following will be
@@ -317,16 +326,16 @@ printed::
   Word not in lexicon (will not be recognized): 'notaword'
 
 These messages are only warnings, and the engine will continue to load
-your grammars and run. However, the unknown words will effectively be
+your grammars and run.  However, the unknown words will effectively be
 impossible to be recognized, so the rules using them will not function
-as intended. To fix this, try changing the words in your grammars by
+as intended.  To fix this, try changing the words in your grammars by
 splitting up the words or using to similar words, e.g. changing
 "natlink" to "nat link".
 
 **Automatically adding words to User Lexicon:** Set the engine parameter
-``auto_add_to_user_lexicon=True`` to enable. If an unknown word is
+``auto_add_to_user_lexicon=True`` to enable.  If an unknown word is
 encountered while loading a grammar, its pronunciation is predicted
-based on its spelling. This uses either a local library, or a free cloud
+based on its spelling.  This uses either a local library, or a free cloud
 service if the library is not installed.
 
 The local library (*g2p_en*) can be installed by running the following on
@@ -335,7 +344,7 @@ the command line::
   pip install g2p_en==2.0.0
 
 Note that the dependencies for this library can be difficult to install, in
-which case it is recommended to use the cloud service instead. Set the
+which case it is recommended to use the cloud service instead.  Set the
 engine parameter ``allow_online_pronunciations=True`` to enable it.
 
 **Manually editing User Lexicon:** You can add a word without specifying
@@ -349,8 +358,8 @@ Or you can add a word with a specified pronunciation::
   python -m kaldi_active_grammar add_word cromulent "K R OW M Y UW L AH N T"
 
 You can also directly edit your ``user_lexicon.txt`` file, which is
-located in the model directory. You may add words (with pronunciation!)
-or modify or remove words that you have already added. The format is
+located in the model directory.  You may add words (with pronunciation!)
+or modify or remove words that you have already added.  The format is
 simple and whitespace-based::
 
   cromulent k r A m j V l V n t
@@ -365,7 +374,7 @@ phone set (with or without stress), but the model and
 When hand-crafting pronunciations, you can look online for examples.
 Also, for X-SAMPA pronunciations, you can look in the model's
 ``lexicon.txt`` file, which lists all of its words and their
-pronunciations (in X-SAMPA). Look for words with similar sounds to
+pronunciations (in X-SAMPA).  Look for words with similar sounds to
 what you are speaking.
 
 To empty your user lexicon, you can simply delete ``user_lexicon.txt``,
@@ -375,15 +384,16 @@ or run::
 
 **Preserving Your User Lexicon:** When changing models, you can (and
 probably should) copy your ``user_lexicon.txt`` file from your old model
-directory to the new one. This will let you keep your additions.
+directory to the new one.  This will let you keep your additions.
 
 Also, if there is a ``user_lexicon.txt`` file in the current working
 directory of your initial loader script, its contents will be
 automatically added to the ``user_lexicon.txt`` in the active model when
 it is loaded.
 
+
 User Lexicon and Dictation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+............................................................................
 
 **New pronunciations for existing words that are already in the
 dictation language model** will not be recognized during dictation
@@ -399,19 +409,21 @@ during dictation elements specifically at all currently.
 **However**, you can achieve a similar result for both of these
 weaknesses with the following: create a rule that recognizes a
 repetition of alternates between normal dictation and a special rule
-that recognizes all of your special terminology. An example of this can
+that recognizes all of your special terminology.  An example of this can
 be seen in `this dictation grammar
 <https://github.com/daanzu/kaldi-grammar-simple/blob/master/_dictation.py>`_.
 This technique can also help mitigate dictation **recognizing the wrong
 of similar sounding words** by emphasizing the word you want to be
 recognized, possibly with the addition of a weight parameter.
 
-**Experimental:** You can avoid the above issues by using this engine's "user
-dictation" feature. This also allows you to have separate "spoken" and "written
-forms" of terms in dictation. Do so by adding any words you want added/modified
-to the user dictation list (identical spoken and written form) or dictlist
-(different spoken and written forms), and using the ``UserDictation`` element in
-your grammars (in place of the standard dragonfly ``Dictation`` element)::
+**Experimental:** You can avoid the above issues by using this
+engine's "user dictation" feature.  This also allows you to have
+separate "spoken" and "written forms" of terms in dictation.  Do so
+by adding any words you want added/modified to the user dictation
+list (identical spoken and written form) or dictlist (different
+spoken and written forms), and using the ``UserDictation`` element in
+your grammars (in place of the standard dragonfly ``Dictation``
+element)::
 
     from dragonfly import get_engine, MappingRule, Function
     from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
@@ -426,6 +438,7 @@ your grammars (in place of the standard dragonfly ``Dictation`` element)::
 
 Grammar/Rule/Element Weights
 ----------------------------------------------------------------------------
+
 Grammars, rules, and/or elements can have a weight specified, where
 those with higher weight value are more likely to be recognized,
 compared to their peers, for an ambiguous recognition. This can be used
@@ -469,13 +482,15 @@ The metadata is saved `TSV
 <https://en.wikipedia.org/wiki/Tab-separated_values>`__ format, with
 fields in the following order:
 
-* ``audio_data``: file name of the audio file for the recognition
-* ``grammar_name``: name of the recognized grammar
-* ``rule_name``: name of the recognized rule
-* ``text``: text of the recognition
-* ``likelihood``: the engine's estimated confidence of the recognition (not very reliable)
-* ``tag``: a single text tag, described below
-* ``has_dictation``: whether the recognition contained (in part) a dictation element
+ * ``audio_data``: file name of the audio file for the recognition
+ * ``grammar_name``: name of the recognized grammar
+ * ``rule_name``: name of the recognized rule
+ * ``text``: text of the recognition
+ * ``likelihood``: the engine's estimated confidence of the
+   recognition (not very reliable)
+ * ``tag``: a single text tag, described below
+ * ``has_dictation``: whether the recognition contained (in part) a
+   dictation element
 
 **Tag:** You can mark the previous recognition with a single text tag to
 be stored in the metadata. For example, mark it as incorrect with a rule
@@ -485,7 +500,7 @@ containing::
 
 Or, you can mark it specifically to be saved, even if ``retain_audio``
 is ``False`` and recognitions are not normally saved, as long as
-``retain_dir`` is set. This also demonstrates that ``.set()`` can be
+``retain_dir`` is set.  This also demonstrates that ``.set()`` can be
 chained to tag it at the same time::
 
   "action corrected": Function(lambda: engines.get_engine().audio_store[0].set('tag', 'corrected').set('force_save', True))
@@ -503,34 +518,35 @@ this for higher dictation accuracy (at the possible cost of higher
 latency or what would otherwise cause lower command accuracy), dictating
 in another language, or some other reason. You can use one of:
 
-* an alternative Kaldi model
-* an alternative local speech recognition engine
-* a cloud speech recognition engine
+ * an alternative Kaldi model
+ * an alternative local speech recognition engine
+ * a cloud speech recognition engine
 
 **Note:** This feature is completely optional and disabled by default!
 
 You can enable this by setting the ``alternative_dictation`` engine
 option. Valid options:
 
-* A ``callable`` object: Any external engine. The callable must accept at
-  least one argument (for the audio data) and any keyword arguments. The
-  audio data is passed in standard Linear16 (``int``) PCM encoding. The
-  callable should return the recognized text.
+ * A ``callable`` object: Any external engine. The callable must
+   accept at least one argument (for the audio data) and any keyword
+   arguments.  The audio data is passed in standard Linear16 (``int``)
+   PCM encoding.  The callable should return the recognized text.
+
 
 Using Alternative Dictation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+............................................................................
 
 To use alternative dictation, you *must both* pass the
 ``alternative_dictation`` option *and* use a specialized ``Dictation``
-element. The standard dragonfly ``Dictation`` does not support
-alternative dictation. Instead, this backend provides two subclasses of
-it: ``AlternativeDictation`` and ``DefaultDictation``. These two subclasses both
-support alternative dictation; they differ only in whether they do
-alternative dictation by default.
+element.  The standard dragonfly ``Dictation`` does not support
+alternative dictation.  Instead, this backend provides two subclasses
+of it: ``AlternativeDictation`` and ``DefaultDictation``.  These two
+subclasses both support alternative dictation; they differ only in
+whether they do alternative dictation by default.
 
 ``AlternativeDictation`` and ``DefaultDictation`` can be used as
-follows. Assume we are defining a variable ``element`` that is used by
-the code::
+follows.  Assume we are defining a variable ``element`` that is used
+by the code::
 
   class TestDictationRule(MappingRule):
     mapping = { "dictate <text>": Text("%(text)s") }
@@ -575,13 +591,13 @@ Please let me know if anything is a significant problem for you.
 
 
 Known Issues
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+............................................................................
 
 * Entirely new words added to the user lexicon will not be recognized
-  during dictation elements specifically at all currently. You can get
-  around this by constructing a rule that alternates between a dictation
-  element and a mapping rule containing your new words, as demonstrated
-  `here
+  during dictation elements specifically at all currently.  You can
+  get around this by constructing a rule that alternates between a
+  dictation element and a mapping rule containing your new words, as
+  demonstrated `here
   <https://github.com/daanzu/kaldi-grammar-simple/blob/e96b4432f93f445b1e8fc8bf9dc1f0145a89d456/_dictation.py#L38>`_.
 
 * Dragonfly :class:`Lists` and :class:`DictLists` function as normal.
@@ -591,35 +607,34 @@ Known Issues
 
 
 Dictation Formatting & Punctuation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+............................................................................
 
 The native dictation only provides recognitions as unformatted lowercase
-text without punctuation. Improving this generally is multifaceted and
-complex. However, the *alternative dictation* feature can avoid this
+text without punctuation.  Improving this generally is multifaceted and
+complex.  However, the *alternative dictation* feature can avoid this
 problem by using the formatting & punctuation applied by a cloud
 provider.
 
 
 Models: Other Languages, Other Sizes, & Training
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+............................................................................
 
 The ``kaldi-active-grammar`` library currently only supplies a single
-general English model. Many standard Kaldi models (of varying quality)
-are available online for various languages. Although such standard Kaldi
+general English model.  Many standard Kaldi models (of varying quality)
+are available online for various languages.  Although such standard Kaldi
 models must be first modified to work with this framework, the process
 is not difficult and could be automated (future work).
 
 There are also various sizes of Kaldi model, with a trade-off between
-size/speed and accuracy. Generally, the smaller and faster the model,
-the lower the accuracy. The included model is relatively large. Let me
+size/speed and accuracy.  Generally, the smaller and faster the model,
+the lower the accuracy.  The included model is relatively large.  Let me
 know if you need a smaller one.
 
-Training (personalizing) Kaldi models is possible but complicated. In
+Training (personalizing) Kaldi models is possible but complicated.  In
 addition to requiring many steps using a specialized software
-environment, training these models currently requires using a GPU for an
-extended period. This may be a case where providing a service for
+environment, training these models currently requires using a GPU for
+an extended period.  This may be a case where providing a service for
 training is more feasible.
-
 
 
 Engine API

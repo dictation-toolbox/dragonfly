@@ -6,25 +6,27 @@ Text-input engine back-end
 The text-input engine is a convenient, always available implementation
 designed to be used via the :meth:`engine.mimic` method.
 
-To initialise the text-input engine, do the following::
+To initialize the text-input engine, do the following::
 
     get_engine("text")
 
-Note that :meth:`dragonfly.engines.get_engine` called without ``"text"``
-will **never** initialise the text-input engine. This is because real speech
-recognition backends should be returned from the function by default.
+Note that :meth:`dragonfly.engines.get_engine` called without
+``"text"`` will **never** initialize the text-input engine.  This is
+because real speech recognition backends should be returned from the
+function by default.
 
-All dragonfly elements and rule classes should be supported. `executable`,
-`title`, and `handle` keyword arguments may optionally be passed to
-:meth:`engine.mimic` to simulate a particular foreground window.
+All dragonfly elements and rule classes should be
+supported. `executable`, `title`, and `handle` keyword arguments may
+optionally be passed to :meth:`engine.mimic` to simulate a particular
+foreground window.
 
 
 Engine Configuration
 ----------------------------------------------------------------------------
 
 Dragonfly's :ref:`command-line interface <RefCLI>` can be used to test
-command modules with the text-input engine. Below are a few use cases for
-this engine:
+command modules with the text-input engine.  Below are a few use cases
+for this engine:
 
 .. code:: shell
 
@@ -36,7 +38,7 @@ this engine:
    # Example 2:
    # Initialize the text-input engine back-end and load a command module
    # for browser commands and recognize from stdin with a processing delay
-   # of 2 seconds. This allows testing context-specific browser commands.
+   # of 2 seconds.  This allows testing context-specific browser commands.
    python -m dragonfly test _browser.py --delay 2
 
    # Example 3:
