@@ -124,7 +124,7 @@ class TextInputEngine(EngineBase):
         interrupted or :meth:`disconnect` is called.
 
         :param delay: time in seconds to delay before mimicking each
-            command. This is useful for testing contexts.
+            command.  This is useful for testing context-specific commands.
         """
         self.connect()
         try:

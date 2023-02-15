@@ -258,10 +258,11 @@ class EngineBase(object):
 
     def _do_recognition(self, *args, **kwargs):
         """
-        Recognize speech in a loop until interrupted or :meth:`disconnect`
-        is called.
+            Recognize speech in a loop until interrupted or
+            :meth:`disconnect` is called.
 
-        This method should be implemented by engine sub-classes.
+            This method should be implemented by each engine.
+
         """
         raise NotImplementedError("Virtual method not implemented for"
                                   " engine %s." % self)
@@ -272,13 +273,20 @@ class EngineBase(object):
 
             This must be done preemptively for some SR engine back-ends,
             such as WSR, that don't apply context changes upon/after the
-            utterance start has been detected. The WSR engine should call
-            this automatically whenever the foreground application (or its
-            title) changes. The user may want to call this manually to
-            update when custom contexts.
+            utterance start has been detected.  The WSR engine calls this
+            automatically whenever the foreground application (or its
+            title) changes.
 
             The *window* parameter is optional window information, which can
             be passed in as an optimization if it has already been gathered.
+
+            The user may wish to call this method to update if custom
+            contexts are used.
+
+            .. note ::
+
+               This method does not trigger the *on_begin()* methods of
+               recognition observers.
 
         """
 

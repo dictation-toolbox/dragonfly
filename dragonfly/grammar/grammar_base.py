@@ -123,9 +123,7 @@ class Grammar(object):
 
     @property
     def rule_names(self):
-        """
-        List of grammar's rule names.
-        """
+        """ List of grammar's rule names. """
         result = []
         for rule in self._rules:
             result.append(rule.name)
@@ -178,9 +176,10 @@ class Grammar(object):
             Contexts can be modified at any time, but will only be checked
             when :meth:`process_begin` is called.
 
-            :param context: context within which to be active.  If *None*,
-                the grammar will always be active.
-            :type context: Context|None
+            Arguments:
+             - *context* -- the context within which to be active.  If
+               *None*, the grammar will always be active.
+
         """
         if not (isinstance(context, Context) or context is None):
             raise TypeError("context must be either a Context object or "
@@ -197,23 +196,25 @@ class Grammar(object):
 
     def add_rule(self, rule):
         """
-        Add a rule to this grammar.
+            Add a rule to this grammar.
 
-        The following rules apply when adding rules into grammars:
+            The following rules apply when adding rules into grammars:
 
-        #. Rules **cannot** be added to grammars that are currently loaded.
-        #. Two or more rules with the same name are **not** allowed.
+             #. Rules **cannot** be added to grammars that are currently
+                loaded.
+             #. Two or more rules with the same name are **not** allowed.
 
-        .. warning::
+            Arguments:
+             - *rule* -- the Dragonfly rule to add.
 
-           Note that while adding the same ``Rule`` object to more than one
-           grammar is allowed, it is **not** recommended! This is because
-           the context and active/enabled states of these rules will not
-           function correctly if used. It is better to use *separate*
-           ``Rule`` instances for each grammar instead.
+            .. warning::
 
-        :param rule: Dragonfly rule
-        :type rule: Rule
+               Note that while adding the same ``Rule`` object to more than
+               one grammar is allowed, it is **not** recommended!  This is
+               because the context and active/enabled states of these rules
+               will not function correctly if used.  It is better to use
+               *separate* ``Rule`` instances for each grammar instead.
+
         """
         self._log_load.debug("Grammar %s: adding rule %s.",
                              self._name, rule.name)
@@ -242,12 +243,14 @@ class Grammar(object):
 
     def remove_rule(self, rule):
         """
-        Remove a rule from this grammar.
+            Remove a rule from this grammar.
 
-        Rules **cannot** be removed from grammars that are currently loaded.
+            Rules **cannot** be removed from grammars that are currently
+            loaded.
 
-        :param rule: Dragonfly rule
-        :type rule: Rule
+            Arguments:
+             - *rule* -- the Dragonfly rule to remove.
+
         """
         self._log_load.debug("Grammar %s: removing rule %s.",
                              self._name, rule.name)
@@ -266,12 +269,13 @@ class Grammar(object):
 
     def add_list(self, lst):
         """
-        Add a list to this grammar.
+            Add a list to this grammar.
 
-        Lists **cannot** be added to grammars that are currently loaded.
+            Lists **cannot** be added to grammars that are currently loaded.
 
-        :param lst: Dragonfly list
-        :type lst: ListBase
+            Arguments:
+             - *lst* -- the Dragonfly list to add.
+
         """
         self._log_load.debug("Grammar %s: adding list %s.",
                              self._name, lst.name)
@@ -296,12 +300,14 @@ class Grammar(object):
 
     def remove_list(self, lst):
         """
-        Remove a list from this grammar.
+            Remove a list from this grammar.
 
-        Lists **cannot** be removed from grammars that are currently loaded.
+            Lists **cannot** be removed from grammars that are currently
+            loaded.
 
-        :param lst: Dragonfly list
-        :type lst: ListBase
+            Arguments:
+             - *lst* -- the Dragonfly list to remove.
+
         """
         self._log_load.debug("Grammar %s: removing list %s.",
                              self._name, lst.name)

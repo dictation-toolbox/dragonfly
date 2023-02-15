@@ -98,25 +98,28 @@ Recognition callbacks with results objects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The last three methods mentioned above can define an optional ``results``
-parameter, the value of which differs between each SR engine back-end:
+parameter.  The type of results objects differs between each SR engine
+back-end:
 
 =======================   ===========================================
 SR engine back-end        Type of ``results`` objects
 =======================   ===========================================
 Dragon/Natlink            ``ResObj`` [*]_
 Kaldi                     ``Recognition`` [*]_
-CMU Pocket Sphinx         ``None``
-WSR/SAPI 5                ``ISpeechRecoResultDispatch`` [*]_ [*]_
-Text input ("text")       ``None``
+CMU Pocket Sphinx         ``Results`` [*]_
+WSR/SAPI 5                ``ISpeechRecoResultDispatch`` [*]_
+Text input ("text")       ``Results`` [*]_
 =======================   ===========================================
 
-.. [*] See the `natlink.txt`_ file for info on ``ResObj``.
-.. [*] See :ref:`Kaldi documentation section <RefKaldiEngineResultsClass>`.
+.. [*] See the `natlink.txt`_ file for information on ``ResObj``.
+.. [*] See the relevant :ref:`Kaldi engine documentation section
+       <RefKaldiEngineResultsClass>` for more information.
+.. [*] See the relevant :ref:`Sphinx engine documentation section
+       <RefSphinxEngineResultsClass>` for more information.
 .. [*] See the SAPI 5 documentation on `ISpeechRecoResultDispatch`_
        for how to use it.
-.. [*] SAPI 5 does not yield results objects for other grammars, so
-       ``process_recognition_other()`` callbacks will return ``None``
-       instead.
+.. [*] See the relevant :ref:`Text engine documentation section
+       <RefTextEngineResultsClass>` for more information.
 
 
 Grammar class

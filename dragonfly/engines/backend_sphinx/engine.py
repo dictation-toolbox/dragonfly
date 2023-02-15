@@ -206,9 +206,10 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
     def disconnect(self):
         """
         Deallocate the CMU Sphinx decoder and any other resources used by
-        it.
+        it.  If the engine is currently recognizing, the recognition loop
+        will be terminated first.
 
-        This method effectively unloads all loaded grammars.
+        This method unloads all loaded grammars.
         """
         # If the engine is currently recognizing, instruct it to free engine
         #  resources in the next iteration of the recognition loop.
@@ -226,8 +227,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         .. note::
 
-           Timers will not run unless the engine is recognising audio in a
-           loop.
+           Timers only run when the engine is processing audio.
 
         """
         return super(SphinxEngine, self).create_timer(callback, interval,
@@ -627,10 +627,12 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
     def process_buffer(self, buf):
         """
-        Recognise speech from an audio buffer.
+        Recognize speech from an audio buffer.
 
-        This method is meant to be called in sequence for multiple audio
-        buffers. It will do nothing if :meth:`connect` hasn't been called.
+        This method is meant to be called sequentially with buffers from an
+        audio source, such as a microphone or wave file.
+
+        This method will do nothing if :meth:`connect` has not been called.
 
         :param buf: audio buffer
         :type buf: str
@@ -649,7 +651,7 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
     def process_wave_file(self, path):
         """
-        Recognise speech from a wave file and return the recognition
+        Recognize speech from a wave file and return the recognition
         results.
 
         This method checks that the wave file is valid. It raises an error
@@ -726,11 +728,11 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
     def _do_recognition(self):
         """
-        Start recognising from the default recording device until
-        :meth:`disconnect` is called.
+        Start recognizing from the default recording device until stopped by
+        a keyboard interrupt or a call to :meth:`disconnect`.
 
         To configure audio input settings, modify the engine's ``CHANNELS``,
-        ``RATE``, ``SAMPLE_WIDTH`` and/or ``BUFFER_SIZE``
+        ``RATE``, ``SAMPLE_WIDTH`` ``FORMAT`` and/or ``BUFFER_SIZE``
         configuration options.
         """
         if not self._decoder:

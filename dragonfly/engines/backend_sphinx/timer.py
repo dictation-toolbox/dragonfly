@@ -30,24 +30,22 @@ from dragonfly.engines.base import DelegateTimerManager
 
 class SphinxTimerManager(DelegateTimerManager):
     """
-    Timer manager for the CMU Pocket Sphinx engine.
+        Timer manager for the CMU Pocket Sphinx engine.
 
-    This class allows running timer functions if the engine is currently
-    processing audio via one of three engine processing methods:
+        This class allows running timer functions if the engine is
+        currently processing audio via one of three engine processing
+        methods:
 
-    - :meth:`process_buffer`
-    - :meth:`process_wave_file`
-    - :meth:`do_recognition`
+         - :meth:`process_buffer`
+         - :meth:`process_wave_file`
+         - :meth:`do_recognition`
 
-    Timer functions will run whether or not recognition is paused
-    (i.e. in sleep mode).
+        .. note ::
 
-    **Note**: long-running timers will block dragonfly from processing what
-    was said, so be careful with how you use them! Audio frames will not
-    normally be dropped because of timers, long-running or otherwise.
+           Long-running timers will block Dragonfly from processing what
+           was said, so be careful how you use them!
 
-    Normal threads can be used instead of timers if desirable. This is
-    because the main recognition loop is done in Python rather than in C/C++
-    code, so there are no unusual multi-threading limitations.
+           Audio frames will not normally be dropped because of timers,
+           long-running or otherwise.
 
     """
