@@ -40,6 +40,9 @@ If you are installing to *develop* Dragonfly, use the following instead::
 
   pip install -e '.[sphinx]'
 
+**Note for Windows:** This engine backend does not currently support Python
+version 3.10 or higher on Windows.
+
 
 **Note for Linux:** You may need the ``portaudio`` headers to be
 installed in order to be able to install/compile the ``sounddevice``
