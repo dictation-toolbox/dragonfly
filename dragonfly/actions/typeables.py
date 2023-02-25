@@ -276,27 +276,28 @@ typeables.update({
     "backspace":        Typeable(code=key_symbols.BACK, name='backspace'),
     "delete":           Typeable(code=key_symbols.DELETE, name='delete'),
     "del":              Typeable(code=key_symbols.DELETE, name='del'),
-
     # Main modifier keys
     "shift":            Typeable(code=key_symbols.SHIFT, name='shift'),
     "control":          Typeable(code=key_symbols.CONTROL, name='control'),
     "ctrl":             Typeable(code=key_symbols.CONTROL, name='ctrl'),
     "alt":              Typeable(code=key_symbols.ALT, name='alt'),
-    "command":          Typeable(code=key_symbols.COMMAND, name='command'),
+    "win":              Typeable(code=key_symbols.LSUPER, name='win'),
+    "cmd":              Typeable(code=key_symbols.LSUPER, name='cmd'),
+    "super":            Typeable(code=key_symbols.LSUPER, name='super'),
 
     # Right modifier keys
     "rshift":           Typeable(code=key_symbols.RSHIFT, name='rshift'),
     "rcontrol":         Typeable(code=key_symbols.RCONTROL, name='rcontrol'),
     "rctrl":            Typeable(code=key_symbols.RCONTROL, name='rctrl'),
     "ralt":             Typeable(code=key_symbols.RALT, name='ralt'),
-    "rcommand":         Typeable(code=key_symbols.RCOMMAND, name='rcommand'),
+    "rwin":             Typeable(code=key_symbols.RSUPER, name='rwin'),
+    "rcmd":             Typeable(code=key_symbols.RSUPER, name='rcmd'),
+    "rsuper":           Typeable(code=key_symbols.RSUPER, name='rsuper'),
 
     # Special keys
     "escape":           Typeable(code=key_symbols.ESCAPE, name='escape'),
     "insert":           Typeable(code=key_symbols.INSERT, name='insert'),
     "pause":            Typeable(code=key_symbols.PAUSE, name='pause'),
-    "win":              Typeable(code=key_symbols.LSUPER, name='win'),
-    "rwin":             Typeable(code=key_symbols.RSUPER, name='rwin'),
     "apps":             Typeable(code=key_symbols.APPS, name='apps'),
     "popup":            Typeable(code=key_symbols.APPS, name='popup'),
     "snapshot":         Typeable(code=key_symbols.SNAPSHOT, name='snapshot'),

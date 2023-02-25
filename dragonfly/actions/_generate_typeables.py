@@ -135,17 +135,17 @@ key_map = (
     ("Main modifier keys", 1, [
         (vkey,   "key_symbols.SHIFT",              "shift"),
         (vkey,   "key_symbols.CONTROL",            "control ctrl"),
-        (vkey,   "key_symbols.ALT",                "alt")]),
+        (vkey,   "key_symbols.ALT",                "alt"),
+        (vkey,   "key_symbols.LSUPER",             "win cmd super")]),
     ("Right modifier keys", 1, [
         (vkey,   "key_symbols.RSHIFT",             "rshift"),
         (vkey,   "key_symbols.RCONTROL",           "rcontrol rctrl"),
-        (vkey,   "key_symbols.RALT",               "ralt")]),
+        (vkey,   "key_symbols.RALT",               "ralt"),
+        (vkey,   "key_symbols.RSUPER",             "rwin rcmd rsuper")]),
     ("Special keys", 1, [
         (vkey,   "key_symbols.ESCAPE",             "escape"),
         (vkey,   "key_symbols.INSERT",             "insert"),
         (vkey,   "key_symbols.PAUSE",              "pause"),
-        (vkey,   "key_symbols.LSUPER",             "win"),
-        (vkey,   "key_symbols.RSUPER",             "rwin"),
         (vkey,   "key_symbols.APPS",               "apps popup"),
         (vkey,   "key_symbols.SNAPSHOT",           "snapshot printscreen")]),
     ("Lock keys", 1, [

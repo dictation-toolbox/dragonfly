@@ -70,13 +70,11 @@ class BasePynputKeySymbols(BaseKeySymbols):
     SHIFT = virtual_keys.shift
     CONTROL = virtual_keys.ctrl
     ALT = virtual_keys.alt
-    COMMAND = virtual_keys.cmd
 
     # Right modifier keys
     RSHIFT = virtual_keys.shift_r
     RCONTROL = virtual_keys.ctrl_r
     RALT = virtual_keys.alt_r
-    RCOMMAND = virtual_keys.cmd_r
 
     # Special keys
     ESCAPE = virtual_keys.esc
