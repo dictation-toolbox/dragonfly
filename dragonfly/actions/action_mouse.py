@@ -24,7 +24,7 @@ Mouse action
 
 This section describes the :class:`Mouse` action object.  This type of
 action is used for controlling the mouse cursor and clicking mouse
-button.
+buttons.
 
 Below you'll find some simple examples of :class:`Mouse` usage, followed
 by a detailed description of the available mouse events.
@@ -105,9 +105,9 @@ Mouse button-press action:
 
  - *keyname* -- Specifies which mouse button to click:
 
-    - ``left`` -- left mouse button key
+    - ``left`` -- left (primary) mouse button key
     - ``middle`` -- middle mouse button key
-    - ``right`` -- right mouse button key
+    - ``right`` -- right (secondary) mouse button key
     - ``four`` -- fourth mouse button key
     - ``five`` -- fifth mouse button key
     - ``wheelup`` -- mouse wheel up
@@ -169,6 +169,13 @@ On MacOS, double-click and triple-click can only be simulated via
    #  triple-click respectively, will not work properly on macOS:
    #Mouse("left, left").execute()
    #Mouse("left, left, left").execute()
+
+A further caveat to be aware of is that the :class:`Mouse` action object
+will, when sending mouse events, always treat the *left* mouse button as
+primary and the *right* mouse button as secondary.  This means that any
+system setting for switching the primary and secondary mouse buttons (meant
+for left-handed users) will not affect which buttons are pressed when a
+:class:`Mouse` action object is executed.
 
 
 .. _RefNatlinkMouseInput:
