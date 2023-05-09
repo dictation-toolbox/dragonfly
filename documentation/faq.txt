@@ -527,7 +527,8 @@ used under `Wayland`_::
   NotImplementedError: Keyboard support is not implemented for this platform!
 
 Wayland users are recommended to either, `switch to X11`_, or to use Windows
-or macOS instead.
+or macOS instead.  You might also consider using `numen`_, a different voice
+control system with excellent Linux support.
 
 If you are using X11 and still see this message, it means that the
 :code:`DISPLAY` environment variable has not been set.
@@ -567,6 +568,7 @@ touch:
 .. _dragonfly/examples: https://github.com/dictation-toolbox/dragonfly/tree/master/dragonfly/examples
 .. _fork: https://en.wikipedia.org/wiki/Fork_(software_development)
 .. _new issue: https://github.com/dictation-toolbox/dragonfly/issues/new
+.. _numen: https://numenvoice.org/
 .. _original project: https://github.com/t4ngo/dragonfly
 .. _python-modernize: https://pypi.org/project/modernize/
 .. _switch to X11: https://askubuntu.com/questions/961304/how-do-you-switch-from-wayland-back-to-xorg-in-ubuntu-17-10

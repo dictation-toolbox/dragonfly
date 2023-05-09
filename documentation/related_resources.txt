@@ -156,6 +156,10 @@ to its users nevertheless:
    --- Nicholas Riley's scripts for using Dragon Medical under Windows 7
    in VMware Fusion as a dictation buffer for OS X
 
+ * `Numen Voice Control https://numenvoice.org/`_
+   --- John Gebbie's voice control system for computing without a keyboard
+   on Linux
+
  * `Getting Started with Eye Tracking <http://handsfreecoding.org/2014/11/16/getting-started-with-eye-tracking/>`_
    --- James Stout's hands-free coding blog post on using eye tracking with
    dragonfly
