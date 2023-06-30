@@ -89,9 +89,9 @@ import copy
 import inspect
 import logging
 
+from six import PY2, string_types
 
 # --------------------------------------------------------------------------
-from six import string_types
 
 
 class Context(object):
@@ -389,8 +389,8 @@ class FuncContext(Context):
         self._function = function
         self._defaults = defaults
         self._str = "%s, defaults: %s" % (self._function, self._defaults)
-
-        (args, _, varkw, defaults) = inspect.getargspec(self._function)
+        getargspec = inspect.getargspec if PY2 else inspect.getfullargspec
+        (args, _, varkw, defaults) = getargspec(self._function)[0:4]
         if varkw:  self._filter_keywords = False
         else:      self._filter_keywords = True
         self._valid_keywords = set(args)
