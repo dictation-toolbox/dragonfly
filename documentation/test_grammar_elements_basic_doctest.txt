@@ -244,6 +244,14 @@ Usage::
     [u'hello', True, u'goodbye']
     >>> test_empty.recognize("hello empty goodbye")
     RecognitionFailure
+    >>> empty_seq = Sequence([Literal("hello"),
+    ...                       Alternative([Literal("gorgeous"),
+    ...                                    Empty()])])
+    >>> test_empty = ElementTester(empty_seq)
+    >>> test_empty.recognize("hello")
+    [u'hello', True]
+    >>> test_empty.recognize("hello gorgeous")
+    [u'hello', u'gorgeous']
 
 
 Impossible element class
