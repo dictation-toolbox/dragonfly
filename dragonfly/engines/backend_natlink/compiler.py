@@ -122,7 +122,9 @@ class NatlinkCompiler(CompilerBase):
         compiler.add_list("_empty_list")
 
     def _compile_empty(self, element, compiler):
-        pass
+        compiler.start_optional()
+        compiler.add_list("_empty_list")
+        compiler.end_optional()
 
 
 #===========================================================================
