@@ -152,7 +152,7 @@ setup(
           "sphinx": [
                      "sounddevice == 0.3.*",
                      "sphinxwrapper >= 1.3.0",
-                     "pyjsgf >= 1.7.0",
+                     "pyjsgf == 1.9.*",
                     ],
           "kaldi": [
                     # NOTE: Remember to also update engine.py to the same version!
