@@ -486,6 +486,13 @@ class WordParserFactory(object):
 #===========================================================================
 
 class WordFormatter(object):
+    """
+        Dictation word formatter class.
+
+        This is the main class to use for formatting dictation words from
+        DNS.
+
+    """
 
     _log = logging.getLogger("dictation.formatter")
 

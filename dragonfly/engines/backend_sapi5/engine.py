@@ -47,7 +47,6 @@ from dragonfly.windows.window  import Window
 from dragonfly.engines.base    import (EngineBase, EngineError,
                                        MimicFailure, DelegateTimerManager,
                                        DelegateTimerManagerInterface,
-                                       DictationContainerBase,
                                        GrammarWrapperBase)
 from dragonfly.engines.backend_sapi5.speaker   import Sapi5Speaker
 from dragonfly.engines.backend_sapi5.compiler  import Sapi5Compiler
@@ -92,7 +91,6 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
 
     _name = "sapi5shared"
     recognizer_dispatch_name = "SAPI.SpSharedRecognizer"
-    DictationContainer = DictationContainerBase
 
     #-----------------------------------------------------------------------
 
@@ -225,7 +223,6 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
                                                       constants.SGSDisabled)
             wrapper.handle.State = wrapper.state_before_exclusive
         # grammar_handle.SetGrammarState(constants.SPGS_EXCLUSIVE)
-
 
     #-----------------------------------------------------------------------
     # Miscellaneous methods.

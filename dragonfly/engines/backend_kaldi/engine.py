@@ -37,7 +37,6 @@ from dragonfly.engines.base    import (EngineBase,
                                        MimicFailure,
                                        DelegateTimerManager,
                                        DelegateTimerManagerInterface,
-                                       DictationContainerBase,
                                        GrammarWrapperBase)
 from dragonfly.engines.backend_kaldi.audio      import (MicAudio, VADAudio,
                                                         AudioStore,
@@ -61,11 +60,11 @@ nan = float('nan')
 
 #===========================================================================
 
+# noinspection PyAttributeOutsideInit
 class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
     """ Speech recognition engine back-end for Kaldi recognizer. """
 
     _name = "kaldi"
-    DictationContainer = DictationContainerBase
     # NOTE: Remember to also update setup.py to the same version!
     _required_kag_version = "3.1.0"
 
@@ -97,7 +96,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         kag_version = Version(kaldi_active_grammar.__version__)
         if not ((kag_version >= required_kag_version) and (kag_version.release[0:2] == required_kag_version.release[0:2])):
             self._log.error("%s: Incompatible kaldi_active_grammar version %s! Expected ~= %s!" % (self, kag_version, required_kag_version))
-            self._log.error("See https://dragonfly2.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
+            self._log.error("See https://dragonfly.readthedocs.io/en/latest/kaldi_engine.html#updating-to-a-new-version")
             if not os.environ.get('DRAGONFLY_DEVELOP'):
                 raise EngineError("Incompatible kaldi_active_grammar version")
 
@@ -480,11 +479,12 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         self._ignore_current_phrase = True
         return True
 
-    saving_adaptation_state = property(lambda self: self._saving_adaptation_state,
-        doc="Whether or not the engine is currently automatically saving adaptation state between utterances.")
-    @saving_adaptation_state.setter
-    def saving_adaptation_state(self, value):
+    def _set_saving_adaptation_state(self, value):
         self._saving_adaptation_state = value
+
+    saving_adaptation_state = property(lambda self: self._saving_adaptation_state,
+                                       fset=_set_saving_adaptation_state,
+        doc="Whether or not the engine is currently automatically saving adaptation state between utterances.")
 
     def start_saving_adaptation_state(self):
         """ Enable automatic saving of adaptation state between utterances, which may improve recognition accuracy in the short term, but is not stored between runs. """
@@ -640,6 +640,7 @@ class Recognition(object):
         self.confidence = nan
         self.acceptable = None
         self.finalized = False
+        self.mimic = False
 
     @classmethod
     def construct_empty(cls, engine):

@@ -62,7 +62,7 @@ On macOS and Linux, the :class:`PlaySound` action object uses the
 to play specified wave files.  This package may be installed by
 running the following command: ::
 
-    $ pip install 'dragonfly2[playsound]'
+    $ pip install 'dragonfly[playsound]'
 
 The *name* parameter is an alias for *file* on these platforms.
 

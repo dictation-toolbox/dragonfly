@@ -93,7 +93,7 @@ def get_engine(name=None, **kwargs):
 
     # Check if there is an already initialized engine *and* custom engine
     #  initialization arguments.  This is not allowed.
-    if engine and kwargs is not None and len(kwargs) > 0:
+    if engine and len(kwargs) > 0:
         message = ("Error: Passing get_engine arguments to an engine "
                    "that has already been initialized, hence these "
                    "arguments are ignored.")

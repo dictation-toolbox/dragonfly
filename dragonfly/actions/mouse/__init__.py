@@ -22,7 +22,6 @@
 This module initializes the mouse interface for the current platform.
 """
 
-import os
 import sys
 
 from dragonfly._platform_checks import IS_X11

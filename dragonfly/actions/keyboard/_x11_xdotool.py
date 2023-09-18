@@ -17,7 +17,6 @@
 
 # This keyboard implementation is based on Aenea's x11_xdotool.py file.
 
-import logging
 import os
 import subprocess
 
@@ -27,8 +26,6 @@ from dragonfly.actions.keyboard._x11_base import (BaseX11Keyboard,
 
 class XdotoolKeyboard(BaseX11Keyboard):
     """Static class for typing keys with xdotool."""
-
-    _log = logging.getLogger("keyboard")
 
     # xdotool command
     xdotool = "xdotool"

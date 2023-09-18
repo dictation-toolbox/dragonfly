@@ -22,11 +22,9 @@
 This module initializes the keyboard interface for the current platform.
 """
 
-import os
 import sys
 
 from dragonfly._platform_checks import IS_X11
-
 
 # Import the keyboard classes for the current platform.
 if sys.platform == "win32":

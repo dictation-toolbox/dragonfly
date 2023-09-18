@@ -43,6 +43,8 @@ class RuleTestGrammar(Grammar):
         if name is None:
             name = self.__class__.__name__
         Grammar.__init__(self, name=name, engine=engine, context=context)
+        self._recognized_node = None
+        self._recognized_extras = None
 
     def recognize(self, words):
         if isinstance(words, string_types):

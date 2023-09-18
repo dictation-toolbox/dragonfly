@@ -319,8 +319,7 @@ class NatlinkEngine(EngineBase):
             #. Mimic is not limited to one element per word as seen with
                proper nouns from DNS. For example, "Buffalo Bills" can be
                passed as one word.
-            #. Mimic can handle by the extra formatting by DNS built-in
-               commands.
+            #. Mimic can handle extra formatting in DNS built-in commands.
             #. Mimic is case sensitive.
 
         """

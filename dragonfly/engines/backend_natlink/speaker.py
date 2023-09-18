@@ -35,7 +35,7 @@ class NatlinkSpeaker(SpeakerBase):
     This speaker class uses the text-to-speech functionality embedded into
     Dragon NaturallySpeaking (DNS).
 
-    It is available only on Microsoft Windows and requires (DNS) and Natlink
+    It is available only on Microsoft Windows and requires DNS and Natlink
     to be installed on the system.
     """
 

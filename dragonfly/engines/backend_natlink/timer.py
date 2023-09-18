@@ -45,7 +45,7 @@ class NatlinkTimerManager(TimerManagerBase):
     :meth:`engine.connect` must be called before using timers with this
     manager.
 
-    **Note**: long-running timers will block dragonfly from processing
+    **Note**: Long-running timers will block dragonfly from processing
     what was said, so be careful with how you use them!
     """
 

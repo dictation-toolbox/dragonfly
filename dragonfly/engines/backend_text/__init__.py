@@ -32,12 +32,12 @@ _log = logging.getLogger("engine.text")
 _engine = None
 
 
-def is_engine_available():
+def is_engine_available(**kwargs):
     """ Check whether the engine is available. """
     return True
 
 
-def get_engine():
+def get_engine(**kwargs):
     """ Retrieve the back-end engine object. """
     global _engine
     if not _engine:

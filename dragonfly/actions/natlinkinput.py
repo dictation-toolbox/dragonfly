@@ -26,7 +26,6 @@ for simulating keyboard and mouse events via NatSpeak.
 """
 
 import logging
-from ctypes import sizeof, pointer
 
 import win32con
 
@@ -45,8 +44,6 @@ def send_input_array_natlink(input_array):
     # Take the same argument as the equivalent SendInput function.
     length = len(input_array)
     if length == 0: return True
-    size = sizeof(input_array[0])
-    ptr = pointer(input_array)
 
     # Translate each input struct into a tuple that can be processed by
     #  NatSpeak.  Return False if any incompatible event is found.
@@ -78,7 +75,7 @@ def send_input_array_natlink(input_array):
         input_list.append(event)
 
     # Attempt to send input via Natlink.
-    connected = None
+    retry = False
     try:
         natlink.playEvents(input_list)
     except natlink.NatError as err:
@@ -87,13 +84,13 @@ def send_input_array_natlink(input_array):
         if (str(err) == "Calling playEvents is not allowed before"
                         " calling natConnect"):
             natlink.natConnect()
-            connected = True
+            retry = True
         else:
             _log.exception("Exception sending input via Natlink: %s", err)
             return False
 
     # Retry, and disconnect afterward, if necessary.
-    if connected:
+    if retry:
         try:
             natlink.playEvents(input_list)
         except natlink.NatError as err:

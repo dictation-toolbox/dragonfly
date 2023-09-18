@@ -17,8 +17,6 @@ value.
 
 import doctest
 from dragonfly                          import *
-from dragonfly.test.infrastructure      import RecognitionFailure
-from dragonfly.test.element_testcase    import ElementTestCase
 from dragonfly.test.element_tester      import ElementTester
 
 

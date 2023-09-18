@@ -35,8 +35,7 @@ from pocketsphinx   import Hypothesis
 import dragonfly.engines
 from dragonfly.windows.window                         import Window
 from dragonfly.engines.base                           import (EngineBase, EngineError, MimicFailure,
-                                                              DelegateTimerManagerInterface,
-                                                              DictationContainerBase)
+                                                              DelegateTimerManagerInterface)
 from dragonfly.engines.backend_sphinx.compiler         import SphinxJSGFCompiler
 from dragonfly.engines.backend_sphinx.grammar_wrapper  import GrammarWrapper
 from dragonfly.engines.backend_sphinx.misc             import (EngineConfig,
@@ -71,7 +70,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
     """ Speech recognition engine back-end for CMU Pocket Sphinx. """
 
     _name = "sphinx"
-    DictationContainer = DictationContainerBase
 
     def __init__(self):
         EngineBase.__init__(self)
@@ -234,21 +232,15 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
                                                       repeating)
 
     #-----------------------------------------------------------------------
-    # Methods for administrating grammar wrappers.
-
-    def _build_grammar_wrapper(self, grammar):
-        search_name = "%d" % self._grammar_count
-        self._grammar_count += 1
-        return GrammarWrapper(grammar, self, search_name)
-
-    #-----------------------------------------------------------------------
     # Methods for working with grammars.
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar* and return a wrapper. """
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
-        wrapper = self._build_grammar_wrapper(grammar)
+        search_name = "%d" % self._grammar_count
+        self._grammar_count += 1
+        wrapper = GrammarWrapper(grammar, self, search_name)
 
         # Attempt to set the grammar search.
         try:
@@ -259,9 +251,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             raise EngineError("Failed to load grammar %s: %s."
                               % (grammar, e))
 
-        # Set the grammar wrapper's search name as valid and return the
-        # wrapper.
-        self._valid_searches.add(wrapper.search_name)
+        # Set the grammar's search name as valid and return.
+        self._valid_searches.add(search_name)
         return wrapper
 
     def _unload_grammar(self, grammar, wrapper):
@@ -824,7 +815,6 @@ class Results(object):
 
     rule = property(lambda self: self._rule, _set_rule,
                     doc="The rule that matched this recognition, if any.")
-
 
     audio_buffers = property(lambda self: self._audio_buffers,
                              doc="The audio for this recognition, if any.")

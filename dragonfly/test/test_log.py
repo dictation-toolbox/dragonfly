@@ -119,17 +119,8 @@ class LogTestCase(unittest.TestCase):
                     "grammar.load (ERROR): test_filtering - error"]
         self.assertEqual(self._error.lines, expected)
 
-    def _new_lines(self):
-        filename = None
-        if not hasattr(self, "_previous_line_count"):
-            self._previous_line_count = 0
-        lines = open(filename).readlines()
-        new_lines = lines[self._previous_line_count:]
-        self._previous_line_count = len(lines)
-        return new_lines
-
-
 #===========================================================================
+
 
 if __name__ == "__main__":
     unittest.main()

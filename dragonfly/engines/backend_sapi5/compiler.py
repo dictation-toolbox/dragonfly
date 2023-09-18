@@ -41,6 +41,7 @@ def collection_iter(collection):
     for index in range(0, collection.Count):
         yield collection.Item(index)
 
+
 _trace_level=0
 def trace_compile(func):
     return func
@@ -152,11 +153,11 @@ class Sapi5Compiler(CompilerBase):
     @trace_compile
     def _compile_optional(self, element, src_state, dst_state, grammar, grammar_handle):
         self.compile_element(element.children[0], src_state, dst_state, grammar, grammar_handle)
-        src_state.AddWordTransition(dst_state, '')#None)
+        src_state.AddWordTransition(dst_state, '')
 
     @trace_compile
     def _compile_literal(self, element, src_state, dst_state, grammar, grammar_handle):
-        src_state.AddWordTransition(dst_state, " ".join(element._words))
+        src_state.AddWordTransition(dst_state, " ".join(element.words))
 
     @trace_compile
     def _compile_rule_ref(self, element, src_state, dst_state, grammar, grammar_handle):

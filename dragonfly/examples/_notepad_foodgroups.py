@@ -63,7 +63,6 @@ class FoodGroupRule(CompoundRule):
 
               # Unquoted food words.
               # Comment these mappings if using the quoted words.
-              "an orange":                      "fruit",
               "(a Granny Smith | an) apple":    "fruit",
               "an orange":                      "fruit",
               "a hamburger":                    "meat",

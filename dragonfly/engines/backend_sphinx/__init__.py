@@ -37,7 +37,7 @@ _log = logging.getLogger("engine.sphinx")
 _engine = None
 
 
-def is_engine_available():
+def is_engine_available(**kwargs):
     """ Check whether the Sphinx engine is available. """
     if _engine:
         return True
@@ -57,7 +57,7 @@ def is_engine_available():
     return True
 
 
-def get_engine():
+def get_engine(**kwargs):
     """ Retrieve the Sphinx back-end engine object. """
     global _engine
     if not _engine:

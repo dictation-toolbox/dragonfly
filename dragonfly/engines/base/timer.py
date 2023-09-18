@@ -273,8 +273,6 @@ class DelegateTimerManager(TimerManagerBase):
 
     Engines using this class should implement the methods in
     :class:`DelegateManagerInterface`.
-
-    This class is used by the SAPI 5 engine.
     """
 
     def __init__(self, interval, engine):

@@ -55,6 +55,7 @@ def trace_compile(func):
         return ret
     return dec
 
+
 InternalGrammar = collections.namedtuple('InternalGrammar', 'name')
 InternalRule = collections.namedtuple('InternalRule', 'name gstring')
 

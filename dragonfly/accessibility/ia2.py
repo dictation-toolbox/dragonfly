@@ -31,6 +31,7 @@ class Controller(object):
         # TODO Replace with a completely synchronous queue (size 0).
         self._closure_queue = queue.Queue(1)
         self._focus_queue = []
+        self._shutdown_event = threading.Event()
 
     def _update_focus(self, event):
         # Add event to a queue for later processing. IAccessible2 functions can
@@ -78,7 +79,7 @@ class Controller(object):
                                              pyia2.EVENT_OBJECT_FOCUS)
 
         # Perform all IAccessible2 operations as they are enqueued.
-        while not self.shutdown_event.is_set():
+        while not self._shutdown_event.is_set():
             pyia2.Registry.iter_loop(0.01)
 
             # Process events.
@@ -112,13 +113,13 @@ class Controller(object):
         pyia2.Registry.clearListeners()
 
     def start(self):
-        self.shutdown_event = threading.Event()
+        self._shutdown_event.clear()
         thread = threading.Thread(target=self._start_blocking)
         thread.setDaemon(True)
         thread.start()
 
     def stop(self):
-        self.shutdown_event.set()
+        self._shutdown_event.set()
 
     def run_sync(self, closure):
         capture = self.Capture(closure)

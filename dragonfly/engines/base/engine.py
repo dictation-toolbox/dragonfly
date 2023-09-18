@@ -30,6 +30,7 @@ import logging
 import six
 
 from dragonfly.engines.base.timer import Timer
+from dragonfly.engines.base.dictation import DictationContainerBase
 import dragonfly.engines
 
 
@@ -64,6 +65,7 @@ class EngineBase(object):
     _log = logging.getLogger("engine")
     _name = "base"
     _timer_manager = None
+    DictationContainer = DictationContainerBase
 
     #-----------------------------------------------------------------------
 
@@ -121,13 +123,6 @@ class EngineBase(object):
         """ Create and return a timer using the specified callback and
             repeat interval. """
         return Timer(callback, interval, self._timer_manager, repeating)
-
-    #-----------------------------------------------------------------------
-    # Methods for administrating grammar wrappers.
-
-    def _build_grammar_wrapper(self, grammar):
-        raise NotImplementedError("Virtual method not implemented for"
-                                  " engine %s." % self)
 
     #-----------------------------------------------------------------------
     # Methods for working with grammars.
@@ -207,7 +202,6 @@ class EngineBase(object):
 
     def disable_recognition_observers(self):
         self._recognition_observer_manager.disable()
-
 
     #-----------------------------------------------------------------------
     #  Miscellaneous methods.

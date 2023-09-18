@@ -150,8 +150,8 @@ class Win32Window(BaseWindow):
 
     @property
     def is_maximized(self):
-        # IsZoomed() is not available from win32gui for some reason.
-        # So we use the function directly.
+        # Note: IsZoomed() is not available from win32gui for some reason,
+        #  so we use the function directly.
         return bool(windll.user32.IsZoomed(self._handle))
 
     def _win32gui_show_window(state):

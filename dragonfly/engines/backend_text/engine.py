@@ -27,7 +27,6 @@ import dragonfly.engines
 from dragonfly.engines.base                  import (EngineBase,
                                                      MimicFailure,
                                                      ThreadedTimerManager,
-                                                     DictationContainerBase,
                                                      GrammarWrapperBase)
 from dragonfly.engines.backend_text.recobs   import TextRecObsManager
 from dragonfly.windows.window                import Window
@@ -39,7 +38,6 @@ class TextInputEngine(EngineBase):
     """Text-input Engine class. """
 
     _name = "text"
-    DictationContainer = DictationContainerBase
 
     #-----------------------------------------------------------------------
 
@@ -58,7 +56,7 @@ class TextInputEngine(EngineBase):
         self._grammar_wrappers.clear()
         self._connected = False
 
-    # -----------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     # Methods for administrating timers.
 
     def create_timer(self, callback, interval, repeating=True):
@@ -72,17 +70,14 @@ class TextInputEngine(EngineBase):
         """
         return EngineBase.create_timer(self, callback, interval, repeating)
 
-    # -----------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     # Methods for working with grammars.
-
-    def _build_grammar_wrapper(self, grammar):
-        return GrammarWrapper(grammar, self)
 
     def _load_grammar(self, grammar):
         """ Load the given *grammar* and return a wrapper. """
         self._log.debug("Engine %s: loading grammar %s."
                         % (self, grammar.name))
-        return self._build_grammar_wrapper(grammar)
+        return GrammarWrapper(grammar, self)
 
     def _unload_grammar(self, grammar, wrapper):
         # No engine-specific unloading required.
@@ -115,7 +110,7 @@ class TextInputEngine(EngineBase):
 
         wrapper.exclusive = exclusive
 
-    # -----------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     # Miscellaneous methods.
 
     def _do_recognition(self, delay=0):
