@@ -2,8 +2,7 @@ Dragonfly
 =========
 
 |Docs Status|
-|Join Gitter chat|
-|Join Matrix chat|
+|Join Matrix/Gitter chat|
 
 .. contents:: Contents
 
@@ -200,7 +199,5 @@ which lists various sources.
 
 .. |Docs Status| image:: https://readthedocs.org/projects/dragonfly/badge/?version=latest&style=flat
    :target: https://dragonfly.readthedocs.io
-.. |Join Gitter chat| image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/dictation-toolbox/dragonfly
-.. |Join Matrix chat| image:: https://img.shields.io/matrix/dragonfly2:matrix.org.svg?label=%5Bmatrix%5D
-   :target: https://app.element.io/#/room/#dictation-toolbox_dragonfly:gitter.im
+.. |Join Matrix/Gitter chat| image:: https://img.shields.io/matrix/dragonfly2:matrix.org.svg?label=%5BMatrix%20chat%5D
+   :target: https://app.gitter.im/#/room/#dragonfly2:matrix.org
