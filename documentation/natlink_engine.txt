@@ -73,5 +73,8 @@ Engine API
 .. automodule:: dragonfly.engines.backend_natlink.dictation
    :members:
 
+.. automodule:: dragonfly.engines.backend_natlink.dictation_format
+   :members:
+
 .. automodule:: dragonfly.engines.backend_natlink.timer
    :members:

@@ -22,8 +22,8 @@
 Dictation formatting for Natlink
 ============================================================================
 
-This module implements dictation formatting for the Natlink and Dragon
-NaturallySpeaking engine.
+The classes in this module implement dictation formatting for the Natlink
+and Dragon NaturallySpeaking engine.
 
 """
 
