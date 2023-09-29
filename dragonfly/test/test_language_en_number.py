@@ -27,16 +27,17 @@ Test suite for English language Integer and Digits classes
 from dragonfly.test.infrastructure      import RecognitionFailure
 from dragonfly.test.element_testcase    import ElementTestCase
 from dragonfly.language.base.integer    import Integer
+from dragonfly.language.base.digits     import Digits
+from dragonfly.language.en.number       import IntegerContent
+from dragonfly.language.en.number       import DigitsContent
+from dragonfly.language.en.short_number import ShortIntegerContent
 
 
 #---------------------------------------------------------------------------
-# Note: IntegerContent is imported locally in this file to avoid the
-# language loader being initialised too early when run with Python 3.x.
 
 class IntegerTestCase(ElementTestCase):
     """ Verify various integers between 0 and 10**12. """
     def _build_element(self):
-        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=0, max=10**12 - 1)
     input_output = [
                     ("zero",       0),
@@ -69,7 +70,6 @@ class IntegerTestCase(ElementTestCase):
 class Limit3to14TestCase(ElementTestCase):
     """ Verify integer limits of range 3 -- 14. """
     def _build_element(self):
-        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=3, max=14)
     input_output = [
                     ("oh",         RecognitionFailure),
@@ -99,7 +99,6 @@ class Limit3to14TestCase(ElementTestCase):
 class Limit23to47TestCase(ElementTestCase):
     """ Verify integer limits of range 23 -- 47. """
     def _build_element(self):
-        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=23, max=47)
     input_output = [
                     ("twenty two",        RecognitionFailure),
@@ -112,7 +111,6 @@ class Limit23to47TestCase(ElementTestCase):
 class Limit230to350TestCase(ElementTestCase):
     """ Verify integer limits of range 230 -- 350. """
     def _build_element(self):
-        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=230, max=350)
     input_output = [
                     ("two hundred twenty nine",     RecognitionFailure),
@@ -130,7 +128,6 @@ class Limit230to350TestCase(ElementTestCase):
 class Limit351TestCase(ElementTestCase):
     """ Verify integer limits of range up to 351. """
     def _build_element(self):
-        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=230, max=351)
     input_output = [
                     ("three hundred forty nine",    349),
@@ -143,7 +140,6 @@ class Limit351TestCase(ElementTestCase):
 class Limit352TestCase(ElementTestCase):
     """ Verify integer limits of range up to 352. """
     def _build_element(self):
-        from dragonfly.language.en.number       import IntegerContent
         return Integer(content=IntegerContent, min=230, max=352)
     input_output = [
                     ("three hundred forty nine",    349),
@@ -154,10 +150,67 @@ class Limit352TestCase(ElementTestCase):
                    ]
 
 
+class DigitsTestCase(ElementTestCase):
+    """ Verify that digits between 0 and 10 can be recognized. """
+    def _build_element(self):
+        return Digits(content=DigitsContent, min=1, max=6)
+    input_output = [
+                    ("zero",                                           [0]),
+                    ("oh",                                             [0]),
+                    ("one",                                            [1]),
+                    ("two",                                            [2]),
+                    ("three",                                          [3]),
+                    ("four",                                           [4]),
+                    ("five",                                           [5]),
+                    ("six",                                            [6]),
+                    ("seven",                                          [7]),
+                    ("eight",                                          [8]),
+                    ("nine",                                           [9]),
+                    ("one zero",                                    [1, 0]),
+                    ("ten",                             RecognitionFailure),
+                    ("three four",                                  [3, 4]),
+                    ("thirty five",                     RecognitionFailure),
+                    ("one zero zero",                            [1, 0, 0]),
+                    ("one hundred",                     RecognitionFailure),
+                    ("three one four one five",            [3, 1, 4, 1, 5]),
+                    ("nine two six five three",            [9, 2, 6, 5, 3]),
+                    ("five eight nine seven",                 [5, 8, 9, 7]),
+                    ("one two three four five six",     RecognitionFailure),
+                   ]
+
+
+class DigitsAsIntTestCase(ElementTestCase):
+    """ Verify that Digits used with as_int=True gives correct values. """
+    def _build_element(self):
+        return Digits(content=DigitsContent, min=1, max=6, as_int=True)
+    input_output = [
+                    ("zero",                                             0),
+                    ("oh",                                               0),
+                    ("one",                                              1),
+                    ("two",                                              2),
+                    ("three",                                            3),
+                    ("four",                                             4),
+                    ("five",                                             5),
+                    ("six",                                              6),
+                    ("seven",                                            7),
+                    ("eight",                                            8),
+                    ("nine",                                             9),
+                    ("one zero",                                        10),
+                    ("ten",                             RecognitionFailure),
+                    ("three four",                                      34),
+                    ("thirty four",                     RecognitionFailure),
+                    ("one zero zero",                                  100),
+                    ("one hundred",                     RecognitionFailure),
+                    ("three one four one five",                      31415),
+                    ("nine two six five three",                      92653),
+                    ("five eight nine seven",                         5897),
+                    ("one two three four five six",     RecognitionFailure),
+                   ]
+
+
 class ShortIntegerTestCase(ElementTestCase):
     """ Verify line integer class working as expected """
     def _build_element(self):
-        from dragonfly.language.en.short_number       import ShortIntegerContent
         return Integer(content=ShortIntegerContent, min=0, max=10000000)
     input_output = [
                     ("one",                           1),
