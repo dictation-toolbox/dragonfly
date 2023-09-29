@@ -37,13 +37,16 @@ class Digits(Repetition):
     _content = None
     _digit_name = "_digit"
 
-    def __init__(self, name=None, min=1, max=12, as_int=False, default=None):
-        if not self._content:
+    def __init__(self, name=None, min=1, max=12, as_int=False,
+                 default=None, content=None):
+        if content:
+            self._content = content
+        elif not self._content:
             self.__class__._content = language.DigitsContent
         self._digits = self._content.digits
 
         self._as_int = as_int
-        if self._as_int: self._base = len(self._digits) - 1
+        if self._as_int: self._base = len(self._digits)
 
         pairs = []
         for value, word in enumerate(self._digits):
@@ -80,7 +83,7 @@ class Digits(Repetition):
             for d in digits:
                 value *= self._base
                 value += d
-            return d
+            return value
         else:
             return digits
 

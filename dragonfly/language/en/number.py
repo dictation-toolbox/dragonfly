@@ -112,5 +112,5 @@ class IntegerContent(IntegerContentBase):
                 int_100s, int_100big, int_1000s, int_1000000s]
 
 class DigitsContent(DigitsContentBase):
-    digits = [("zero", "oh"), "one", ("two", "too", "to"), "three",
-              "four", "five", "six", "seven", "eight", "nine"]
+    digits = [("zero", "oh"), "one", "two", "three", "four",
+              "five", "six", "seven", "eight", "nine"]
