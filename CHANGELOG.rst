@@ -8,13 +8,39 @@ The format is based on `Keep a Changelog`_ using the
 `Semantic Versioning`_ as of version 0.7.0_.
 
 Note: this project had no release versions between 0.6.6b1_ and
-0.7.0_. Notable changes made between these versions are documented in the
-commit history and will be placed under headings in this file over time.
+0.7.0_. Notable changes made between these versions, and before them, are
+documented in the commit history.
 
-`1.0.0-rc1`_  - 2022-12-31
---------------------------
+Unreleased_
+-----------
 
-This is the first release candidate for Dragonfly version 1.0.0.
+Added
+~~~~~
+- Add two example command modules under *dragonfly/examples*.
+
+Changed
+~~~~~~~
+- Make all engine back-ends pass recognition results objects on to grammar
+  callback functions with a *results* parameter.
+- Reallow multiple engine options per "-o" CLI argument.
+
+Fixed
+~~~~~
+- Fix Natlink support for recognizing quoted words.
+- Fix a *FuncContext* class error affecting Python 3.11 users.
+- Fix a Natlink engine compiler error affecting proper recognition of the
+  *Empty* element.
+- Make all engine back-ends support grammar callback functions.
+
+Removed
+~~~~~~~
+- Remove recognition observer event *on_post_recognition()*.
+- Remove the CMU Pocket Sphinx engine's key phrases feature.
+- Remove two aliases of the *do_recognition()* engine method.
+
+
+`1.0.0-rc1`_ - 2022-12-31
+-------------------------
 
 Added
 ~~~~~
@@ -37,8 +63,8 @@ Fixed
   unloaded.
 - Fix an encoding-related error in the Literal element class.
 - Fix an error in the Optional element class.
-- Fix a macOS-specific bug with the Mouse action class that prevents double
-  clicking, triple clicking and scrolling on that platform.
+- Fix a bug preventing double clicking, triple clicking and scrolling with
+  the Mouse action class on macOS.
 - Fix problems with the *dragonfly.accessibility* regex requirement.
 - Make the Natlink engine back-end work with newer versions of Natlink.
 
@@ -1224,50 +1250,30 @@ Fixed
   (thanks `@comodoro`_).
 * Fix issues with dragonfly's monitor list and class.
 
-2016
-----
-
-TODO
-
-2015
-----
-
-TODO
-
-2014
-----
-
-TODO
 
 0.6.6b1_ - 2009-04-13
 ---------------------
 
-TODO
 
 0.6.5_ - 2009-04-08
 -------------------
 
-TODO
 
 0.6.4_ - 2009-02-01
 -------------------
 
-TODO
 
 `0.6.4-rc3`_ - 2008-12-06
 -------------------------
 
-TODO
 
 `0.6.4-rc2`_ - 2008-12-02
 -------------------------
 
-TODO
 
 `0.6.4-rc1`_ - 2008-11-12
 -------------------------
 
-TODO
 
 0.6.1_ - 2008-10-18
 -------------------
