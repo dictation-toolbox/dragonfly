@@ -3,22 +3,49 @@
 Natlink and DNS engine back-end
 ============================================================================
 
-Dragonfly uses Natlink to communicate with Dragon.  The latest versions of
-Natlink are available from `SourceForge
-<https://sourceforge.net/projects/natlink/files/natlink/natlink4.2/>`__.
-All versions in the 4.X range should work with Dragonfly.  Please see the
-`Natlink install instructions
-<https://qh.antenna.nl/unimacro/installation/index.html>`__ on
-*qh.antenna.nl* for how to install Natlink on your machine and configure it.
+The Dragonfly library may be used with Nuance's Dragon NaturallySpeaking
+(DNS) speech recognition software for Microsoft Windows.   Dragonfly
+interacts with DNS through another piece of software called Natlink.
 
-Dragonfly and Natlink support Dragon versions up to 15 (latest). The
+This is the engine of choice on Microsoft Windows.
+
+
+Requirements and Installation
+----------------------------------------------------------------------------
+
+There are three requirements for using Dragonfly's Natlink/DNS engine
+back-end: Dragon NaturallySpeaking for Windows, Natlink and a 32-bit Python
+installation.
+
+Dragon NaturallySpeaking, or simply Dragon, is available for purchase from
+Nuance Communications, Inc.  For the latest version, see
+`www.nuance.com/dragon.html <https://www.nuance.com/dragon.html>`__.
+Natlink and Dragonfly support Dragon versions up to 16, the latest.  The
 *Individual* editions of *Dragon* are recommended, although other editions
-such as *Home* will also work.
+such as *Home* will also work.  Editions of Dragon for macOS are not
+compatible with Natlink or Dragonfly.
 
-Python version 2.7 (32-bit) is required to use this engine back-end.  This
-is because, at the time of writing (September '22), Natlink does not have
-stable support for Python version 3.  Dragonfly will continue to retain
-support for Python version 2.7 regardless, since it is not difficult.
+Natlink is available for download from GitHub and SourceForge.  The required
+version depends on which version of Python is installed.  If you are using
+Python 2, please download and install one of the older versions of Natlink,
+available from the project's `SourceForge page
+<https://sourceforge.net/projects/natlink/files/natlink/natlink4.2/>`__.
+If you are using Python 3, please download and install one of the newer
+versions of Natlink, available from the project's `GitHub releases page
+<https://github.com/dictation-toolbox/natlink/releases>`__.
+
+Please see the `Natlink install instructions
+<https://qh.antenna.nl/unimacro/installation/index.html>`__ on
+*qh.antenna.nl* for how to install Natlink on your machine and configure
+it.
+
+A 32-bit Python installation is required to use this engine back-end.  This
+is because Natlink does not work with 64-bit Python.  This limitation is
+unlikely to be overcome.
+
+
+Post-install Use
+----------------------------------------------------------------------------
 
 Once Natlink is up and running, Dragonfly command-modules can be
 treated as any other Natlink macro files.  Natlink automatically
@@ -38,6 +65,9 @@ e.g. *_notepad_example.py*.
 Don't forget to turn the microphone off and on again after placing new
 command-modules in the Natlink directory, because otherwise Natlink does
 not immediately see the new file.
+
+The Natlink/DNS engine may also be used via the :ref:`command-line interface
+<RefCLI>`.
 
 
 Engine Configuration
