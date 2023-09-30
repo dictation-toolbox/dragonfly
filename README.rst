@@ -33,11 +33,11 @@ This project is a fork of the original
 
 Dragonfly currently supports the following speech recognition engines:
 
--  *Dragon*, a product of *Nuance*. All versions up to 15 (the latest)
+-  *Dragon*, a product of *Nuance*. All versions up to 16 (the latest)
    should be supported. *Home*, *Professional Individual* and previous
-   similar editions of *Dragon* are supported. Other editions may work too
+   similar editions of *Dragon* are supported.  Other editions may work too.
 -  *Windows Speech Recognition* (WSR), included with Microsoft Windows
-   Vista, Windows 7+, and freely available for Windows XP
+   Vista, Windows 7+, and freely available for Windows XP.
 -  *Kaldi*, open source (AGPL) and multi-platform.
 -  *CMU Pocket Sphinx*, open source and multi-platform.
 

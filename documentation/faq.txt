@@ -36,11 +36,11 @@ Which speech recognition software and operating systems are supported?
 Dragonfly supports the following speech recognition (SR) engines:
 
 * :ref:`Dragon <RefNatlinkEngine>`, a product of *Nuance*. All versions up
-  to 15 (the latest) are supported. *Home*, *Professional Individual* and
+  to 16 (the latest) are supported. *Home*, *Professional Individual* and
   previous similar editions of *Dragon* are supported. Other editions may
-  work too
+  work too.
 * :ref:`Windows Speech Recognition <RefSapi5Engine>` (WSR), included with
-  Microsoft Windows Vista, Windows 7+, and freely available for Windows XP
+  Microsoft Windows Vista, Windows 7+, and freely available for Windows XP.
 * :ref:`Kaldi <RefKaldiEngine>`
 * :ref:`CMU Pocket Sphinx <RefSphinxEngine>`
 
@@ -55,6 +55,8 @@ Windows                              DNS, WSR, Kaldi, Sphinx
 Linux                                Kaldi, Sphinx
 macOS                                Kaldi, Sphinx
 ================================     =======================
+
+Please note that editions of Dragon for macOS are not supported.
 
 Windows-only speech recognition software (DNS and WSR) may be used to
 control Linux or macOS machines via `Aenea`_, a client-server library for
