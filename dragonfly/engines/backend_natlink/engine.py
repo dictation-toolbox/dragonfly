@@ -450,7 +450,7 @@ class GrammarWrapper(GrammarWrapperBase):
         grammar_object = self.grammar_object
         try:
             grammar_object.activate(rule_name, self.hwnd)
-        except self.natlink.NatError:
+        except self.engine.natlink.NatError:
             grammar_object.deactivate(rule_name)
             grammar_object.activate(rule_name, self.hwnd)
 
