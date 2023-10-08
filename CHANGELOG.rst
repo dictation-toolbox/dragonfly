@@ -26,10 +26,14 @@ Changed
 
 Fixed
 ~~~~~
+- Add missing *content* constructor parameter to the *Digits* element class.
 - Fix Natlink support for recognizing quoted words.
 - Fix a *FuncContext* class error affecting Python 3.11 users.
-- Fix a Natlink engine compiler error affecting proper recognition of the
-  *Empty* element.
+- Fix a Natlink engine error affecting proper recognition of the *Empty*
+  element.
+- Fix a Natlink engine error affecting the use of grammar and rule contexts
+  in certain cases.
+- Fix an error in the *Digits* element class' *value()* method.
 - Make all engine back-ends support grammar callback functions.
 
 Removed
