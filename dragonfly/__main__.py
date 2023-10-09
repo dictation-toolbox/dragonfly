@@ -81,14 +81,22 @@ def _load_cmd_modules(args):
     # Load each specified command module.  Errors during loading will be
     #  caught and logged.
     return_code = 0
+    modules = []
     for f in files:
-        module_ = CommandModule(f)
-        module_.load()
-        if not module_.loaded:
+        module = CommandModule(f)
+        module.load()
+        modules.append(module)
+        if not module.loaded:
             return_code = 1
 
-    # Return the overall success of module loading.
-    return return_code
+    # Return the overall success of module loading and the list of modules
+    #  we attempted to load.
+    return return_code, modules
+
+
+def _unload_cmd_modules(modules):
+    # Unload command modules previously loaded.
+    for module in modules: module.unload()
 
 
 def _load_cmd_module_dirs(args):
@@ -96,14 +104,22 @@ def _load_cmd_module_dirs(args):
     #  loading will be caught and logged.
     recursive = args.recursive
     return_code = 0
+    module_dirs = []
     for d in args.module_dirs:
-        module_directory = CommandModuleDirectory(d, recursive=recursive)
-        module_directory.load()
-        if not module_directory.loaded:
+        module_dir = CommandModuleDirectory(d, recursive=recursive)
+        module_dir.load()
+        module_dirs.append(module_dir)
+        if not module_dir.loaded:
             return_code = 1
 
-    # Return the overall success of module loading.
-    return return_code
+    # Return the overall success of module loading and the list of module
+    #  directories we attempted to load.
+    return return_code, module_dirs
+
+
+def _unload_cmd_module_dirs(module_dirs):
+    # Unload command module directories previously loaded.
+    for module_dir in module_dirs: module_dir.unload()
 
 
 def _on_begin():
@@ -155,10 +171,11 @@ def cli_cmd_test(args):
         # Load each command module. Errors during loading will be caught and
         # logged. Use the overall success of module loading and/or mimic
         # calls as the return code.
-        return_code = _load_cmd_modules(args)
+        return_code, modules = _load_cmd_modules(args)
 
         # Return early if --no-input was specified.
         if args.no_input:
+            _unload_cmd_modules(modules)
             return return_code
 
         # Get the number of seconds to delay between each mimic() call
@@ -192,6 +209,9 @@ def cli_cmd_test(args):
         except KeyboardInterrupt:
             pass
 
+        # Unload previously loaded command modules.
+        _unload_cmd_modules(modules)
+
     # Return the success of this command.
     return return_code
 
@@ -210,13 +230,15 @@ def cli_cmd_load(args):
     # or a keyboard interrupt.
     LOG.debug("Recognizing with engine '%s'", args.engine)
     with engine.connection():
-        return_code = _load_cmd_modules(args)
+        return_code, modules = _load_cmd_modules(args)
 
         # Return early if --no-input was specified.
         if args.no_input:
+            _unload_cmd_modules(modules)
             return return_code
 
         _do_recognition(engine, args)
+        _unload_cmd_modules(modules)
 
     # Return the success of module loading.
     return return_code
@@ -239,13 +261,15 @@ def cli_cmd_load_directory(args):
         if args.recursive:
             LOG.info("Loading command modules in sub-directories as "
                      "specified (recursive mode).")
-        return_code = _load_cmd_module_dirs(args)
+        return_code, module_dirs = _load_cmd_module_dirs(args)
 
         # Return early if --no-input was specified.
         if args.no_input:
+            _unload_cmd_module_dirs(module_dirs)
             return return_code
 
         _do_recognition(engine, args)
+        _unload_cmd_module_dirs(module_dirs)
 
     # Return the success of module loading.
     return return_code
