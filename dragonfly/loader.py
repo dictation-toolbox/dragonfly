@@ -86,6 +86,15 @@ class CommandModule(object):
         if not self._loaded: return
         self._log.info("%s: Unloading module: '%s'", self, self._path)
 
+        # If the module has a top-level 'unload' function, call it.
+        unload_func = getattr(sys.modules[self._name], 'unload', None)
+        if unload_func:
+            try:
+                unload_func()
+            except Exception as e:
+                self._log.exception("%s: Error calling module function "
+                                    " 'unload': %s", self, e)
+
         # Unload the module.
         del sys.modules[self._name]
 
