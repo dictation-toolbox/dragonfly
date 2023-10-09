@@ -24,14 +24,18 @@ Command module loading classes
 
 """
 
-import os.path
 import logging
+import os.path
+import sys
 
-import six
+if sys.version_info <= (3, 5):
+    import imp
+else:
+    import importlib.util
+
 
 # --------------------------------------------------------------------------
 # Command module class; wraps a single command-module.
-
 
 class CommandModule(object):
 
@@ -39,7 +43,7 @@ class CommandModule(object):
 
     def __init__(self, path):
         self._path = os.path.abspath(path)
-        self._namespace = None
+        self._name = os.path.basename(path).split('.')[0]
         self._loaded = False
 
     def __repr__(self):
@@ -51,28 +55,41 @@ class CommandModule(object):
         return self._loaded
 
     def load(self):
+        if self._loaded: return
         self._log.info("%s: Loading module: '%s'", self, self._path)
 
-        # Prepare namespace in which to execute the
-        namespace = {"__file__": self._path}
-
-        # Attempt to execute the module; handle any exceptions.
+        # Attempt to load and execute the module; handle any exceptions.
+        # Use *imp* for Python versions 3.5 and below; use *importlib.util*
+        #  for versions 3.6 and above.
         try:
-            # pylint: disable=exec-used
-            # Read from the file in binary mode to avoid decoding issues.
-            with open(self._path, "rb") as f:
-                contents = f.read()
-            exec(compile(contents, self._path, 'exec'), namespace)
+            name = self._name
+            if sys.version_info <= (3, 5):
+                import_dirs = [os.path.dirname(self._path)]
+                file, pathname, description = imp.find_module(name,
+                                                              import_dirs)
+                with file:
+                    imp.load_module(name, file, pathname, description)
+            else:
+                spec = importlib.util.spec_from_file_location(name,
+                                                              self._path)
+                module = importlib.util.module_from_spec(spec)
+                sys.modules[name] = module
+                spec.loader.exec_module(module)
         except Exception as e:
             self._log.exception("%s: Error loading module: %s", self, e)
             self._loaded = False
             return
 
         self._loaded = True
-        self._namespace = namespace
 
     def unload(self):
+        if not self._loaded: return
         self._log.info("%s: Unloading module: '%s'", self, self._path)
+
+        # Unload the module.
+        del sys.modules[self._name]
+
+        self._loaded = False
 
     def check_freshness(self):
         pass
