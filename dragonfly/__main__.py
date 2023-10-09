@@ -30,6 +30,7 @@ import six
 
 from dragonfly import get_engine, MimicFailure, EngineError
 from dragonfly.loader import CommandModule, CommandModuleDirectory
+from dragonfly.log import setup_log
 
 LOG = logging.getLogger("command")
 
@@ -37,12 +38,17 @@ LOG = logging.getLogger("command")
 #---------------------------------------------------------------------------
 # CLI helper functions.
 
-def _set_logging_level(args):
-    if args.quiet:
-        args.log_level = "WARNING"
+def _setup_logging(args):
+    # Use the specified logging defaults.
+    if args.log_level == "DFLY":
+        setup_log()  # Use Dragonfly defaults.
+    else:
+        logging.basicConfig(level=getattr(logging, args.log_level))
 
-    # Set up logging with the specified logging level.
-    logging.basicConfig(level=getattr(logging, args.log_level))
+    # Suppress loader-related informational messages.
+    if args.quiet:
+        for logger_name in ("command", "module", "directory"):
+            logging.getLogger(logger_name).setLevel(logging.WARNING)
 
 
 def _init_engine(args):
@@ -156,8 +162,8 @@ def _do_recognition(engine, args):
 # Main CLI functions.
 
 def cli_cmd_test(args):
-    # Set the logging level.
-    _set_logging_level(args)
+    # Setup logging.
+    _setup_logging(args)
 
     # Initialise the specified engine. Return early if there was an error.
     engine = _init_engine(args)
@@ -217,8 +223,8 @@ def cli_cmd_test(args):
 
 
 def cli_cmd_load(args):
-    # Set the logging level.
-    _set_logging_level(args)
+    # Setup logging.
+    _setup_logging(args)
 
     # Initialise the specified engine. Return early if there was an error.
     engine = _init_engine(args)
@@ -245,8 +251,8 @@ def cli_cmd_load(args):
 
 
 def cli_cmd_load_directory(args):
-    # Set the logging level.
-    _set_logging_level(args)
+    # Setup logging.
+    _setup_logging(args)
 
     # Initialise the specified engine. Return early if there was an error.
     engine = _init_engine(args)
@@ -400,14 +406,14 @@ def make_arg_parser():
              "reading input from stdin or recognizing speech."
     )
     log_level_argument = _build_argument(
-        "-l", "--log-level", default="INFO",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        help="Log level to use."
+        "-l", "--log-level", default="DFLY",
+        choices=["DFLY", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Logging defaults/level to use. By default, Dragonfly's "
+              "setup_log() function is called."
     )
     quiet_argument = _build_argument(
         "-q", "--quiet", default=False, action="store_true",
-        help="Equivalent to '-l WARNING' -- suppresses INFO and DEBUG "
-             "logging."
+        help="Suppress loader-related informational messages."
     )
 
     # Create the parser for the "test" command.
