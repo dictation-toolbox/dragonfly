@@ -276,11 +276,14 @@ typeables.update({
     "backspace":        Typeable(code=key_symbols.BACK, name='backspace'),
     "delete":           Typeable(code=key_symbols.DELETE, name='delete'),
     "del":              Typeable(code=key_symbols.DELETE, name='del'),
+
     # Main modifier keys
     "shift":            Typeable(code=key_symbols.SHIFT, name='shift'),
     "control":          Typeable(code=key_symbols.CONTROL, name='control'),
     "ctrl":             Typeable(code=key_symbols.CONTROL, name='ctrl'),
     "alt":              Typeable(code=key_symbols.ALT, name='alt'),
+    "option":           Typeable(code=key_symbols.ALT, name='option'),
+    "meta":             Typeable(code=key_symbols.ALT, name='meta'),
     "win":              Typeable(code=key_symbols.LSUPER, name='win'),
     "cmd":              Typeable(code=key_symbols.LSUPER, name='cmd'),
     "super":            Typeable(code=key_symbols.LSUPER, name='super'),
@@ -290,6 +293,8 @@ typeables.update({
     "rcontrol":         Typeable(code=key_symbols.RCONTROL, name='rcontrol'),
     "rctrl":            Typeable(code=key_symbols.RCONTROL, name='rctrl'),
     "ralt":             Typeable(code=key_symbols.RALT, name='ralt'),
+    "roption":          Typeable(code=key_symbols.RALT, name='roption'),
+    "rmeta":            Typeable(code=key_symbols.RALT, name='rmeta'),
     "rwin":             Typeable(code=key_symbols.RSUPER, name='rwin'),
     "rcmd":             Typeable(code=key_symbols.RSUPER, name='rcmd'),
     "rsuper":           Typeable(code=key_symbols.RSUPER, name='rsuper'),
