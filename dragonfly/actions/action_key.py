@@ -62,6 +62,10 @@ that only *keyname* is required; the other fields are optional.
     - ``c`` -- control key
     - ``s`` -- shift key
     - ``w`` -- Windows key
+    - ``O`` -- Option key (Mac alias of the Alt key)
+    - ``M`` -- Meta key (X11 alias of the Alt key)
+    - ``C`` -- Command key (Mac alias of the Windows key)
+    - ``S`` -- Super key  (X11 alias of the Windows key)
 
  - *keyname* --
    Name of the keystroke.  Valid names are listed in
@@ -135,9 +139,12 @@ Key names
    ``?`` or ``question``, ``=`` or ``equal`` or ``equals``
  - Whitespace and editing keys: ``enter``, ``tab``, ``space``,
    ``backspace``, ``delete`` or ``del``
- - Main modifier keys: ``shift``, ``control`` or ``ctrl``, ``alt``
- - Right modifier keys: ``rshift``, ``rcontrol`` or ``rctrl``, ``ralt``
- - Special keys: ``escape``, ``insert``, ``pause``, ``win``, ``rwin``,
+ - Main modifier keys: ``shift``, ``control`` or ``ctrl``,
+   ``alt`` or ``option`` or ``meta``, ``win`` or ``cmd`` or ``super``
+ - Right modifier keys: ``rshift``, ``rcontrol`` or ``rctrl``,
+   ``ralt`` or ``roption`` or ``rmeta``,
+   ``rwin`` or ``rcmd`` or ``rsuper``
+ - Special keys: ``escape``, ``insert``, ``pause``,
    ``apps`` or ``popup``, ``snapshot`` or ``printscreen``
  - Lock keys: ``scrolllock``, ``numlock``, ``capslock``
  - Navigation keys: ``up``, ``down``, ``left``, ``right``,
@@ -332,7 +339,17 @@ class Key(BaseKeyboardAction):
         'c': typeables["control"],
         's': typeables["shift"],
         'w': typeables["win"],
-        }
+
+        # Additional prefixes for the Alt key, which is called the Option
+        # key on Apple macs and (sometimes) the Meta key on X11.
+        'O': typeables["alt"],
+        'M': typeables["alt"],
+
+        # Additional prefixes for the Windows key, which is called the
+        #  Command key on Apple Macs and the Super key on X11.
+        'C': typeables["win"],
+        'S': typeables["win"],
+    }
     interval_factor = 0.01
     interval_default = 0.0
 
