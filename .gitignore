@@ -24,6 +24,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+pip-wheel-metadata/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -63,6 +64,9 @@ target/
 # Emacs
 *\#
 
+# Vim
+*.swp
+
 # Rope
 .ropeproject/
 
@@ -74,3 +78,6 @@ target/
 .project
 .pydevproject
 .settings
+
+# Kaldi Active Grammar
+kaldi_model
