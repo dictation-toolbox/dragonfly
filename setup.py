@@ -141,7 +141,8 @@ setup(
 
       extras_require={
           "test": [
-                   "pytest == 3.9.*",
+                   "pytest == 3.9.*;python_version<'3.8'",
+                   "pytest == 7.4.*;python_version>='3.8'",
                   ],
           "accessibility": [
                             "comtypes;platform_system=='Windows'",
