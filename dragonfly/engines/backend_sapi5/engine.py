@@ -33,9 +33,8 @@ import os.path
 
 import pythoncom
 from datetime         import datetime
-from ctypes           import Structure, c_long, c_int, c_uint, pointer
-from ctypes           import windll, WinError, WINFUNCTYPE
-from ctypes.wintypes  import DWORD, HANDLE, HWND, LONG
+from ctypes           import c_int, pointer, windll, WinError, WINFUNCTYPE
+from ctypes.wintypes  import MSG, POINT, DWORD, HANDLE, HWND, LONG
 
 import win32con
 from six                       import string_types, integer_types
@@ -54,18 +53,6 @@ from dragonfly.engines.backend_sapi5.recobs    import Sapi5RecObsManager
 
 
 #===========================================================================
-
-class POINT(Structure):
-    _fields_ = [('x', c_long),
-                ('y', c_long)]
-
-class MSG(Structure):
-    _fields_ = [('hwnd', c_int),
-                ('message', c_uint),
-                ('wParam', c_int),
-                ('lParam', c_int),
-                ('time', c_int),
-                ('pt', POINT)]
 
 
 class MimicObserver(RecognitionObserver):
