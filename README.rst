@@ -160,7 +160,7 @@ directory:
 
 .. code:: shell
 
-    python setup.py install
+    pip install -e .
 
 If pip fails to install *dragonfly* or any of its required or extra
 dependencies, then you may need to upgrade pip with the following command:
@@ -168,6 +168,14 @@ dependencies, then you may need to upgrade pip with the following command:
 .. code:: shell
 
     pip install --upgrade pip
+
+To build the dragonfly python package, run these commands in the projects root directory.  
+
+.. code:: shell
+
+    pip install build  
+    Python -m build
+
 
 
 Speech recognition engine back-ends
