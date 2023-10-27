@@ -98,8 +98,7 @@ class TimerThread(Thread):
         self._stop_timer()
 
     def run(self):
-        while not self._stop_event.is_set():
-            time.sleep(1)
+        while not self._stop_event.wait(1000): pass
         self._stop_timer()
 
 
@@ -139,6 +138,7 @@ class NatlinkEngine(EngineBase):
         self._grammar_count = 0
         self._recognition_observer_manager = NatlinkRecObsManager(self)
         self._timer_manager = NatlinkTimerManager(0.02, self)
+        self._natlink_thread_safety = False  # The Natlink default.
         self._timer_thread = None
         self._retain_dir = None
         self._speaker = NatlinkSpeaker()
@@ -150,24 +150,26 @@ class NatlinkEngine(EngineBase):
 
     def apply_threading_fix(self):
         """
-        Start a thread and engine timer internally to allow Python threads
-        to work properly while connected to natlink. The fix is only applied
-        once, successive calls have no effect.
+        Apply a workaround that permits essentially normal use of threads
+        while Natlink is in operation.
 
-        This method is called automatically when :meth:`connect` is called
-        or when a grammar is loaded for the first time.
+        This method emulates ``natConnect(True)`` behavior when running
+        under NatSpeak.exe, or when calling :meth:`connect` with ``False``.
+        The engine calls this method automatically, when appropriate.
         """
-        # Start a thread and engine timer to allow Python threads to work
-        # properly while connected to Natlink.
-        # Only start the thread if one isn't already active.
-        if self._timer_thread is None:
+        if not (self._natlink_thread_safety or self._timer_thread):
             self._timer_thread = TimerThread(self)
             self._timer_thread.start()
 
-    def connect(self):
-        """ Connect to natlink with Python threading support enabled. """
-        self.natlink.natConnect(True)
-        self.apply_threading_fix()
+    def connect(self, bUseThreads=True):
+        """ Connect to natlink. """
+        # Connect to natlink with thread safety enabled.
+        self.natlink.natConnect(bUseThreads)
+        self._natlink_thread_safety = bUseThreads
+
+        # Call apply_threading_fix(), if necessary.
+        if not bUseThreads:
+            self.apply_threading_fix()
 
     def disconnect(self):
         """ Disconnect from natlink. """
@@ -195,6 +197,7 @@ class NatlinkEngine(EngineBase):
 
         # Finally disconnect from natlink.
         self.natlink.natDisconnect()
+        self._natlink_thread_safety = False
 
     # -----------------------------------------------------------------------
     # Methods for working with grammars.
@@ -246,8 +249,9 @@ class NatlinkEngine(EngineBase):
                 raise EngineError("Failed to load grammar %s: %s."
                                   % (grammar, e))
 
-        # Apply the threading fix if it hasn't been applied yet.
-        self.apply_threading_fix()
+        # Call apply_threading_fix(), if necessary.
+        if not self._natlink_thread_safety:
+            self.apply_threading_fix()
 
         # Return the grammar wrapper.
         return wrapper
