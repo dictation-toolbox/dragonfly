@@ -248,25 +248,23 @@ via Natlink.  This allows one to make use of Dragon NaturallySpeaking's
 ability to control applications running in elevated mode, i.e.,
 administrative applications.
 
-This feature is disabled by default, primarily because modifier keys are not
-always held down when simulated this way.  To (globally) enable the feature
-anyway, run the following code, or add it into one of your command
-modules: ::
+This feature is disabled by default because it comes with a number of
+caveats.  They are as follows:
+
+ * Modifier keys are not always held down when simulated this way.
+ * Certain applications do not accept input simulated this way.
+ * Unicode character keystrokes (if enabled) cannot be simulated this way.
+   Such keystrokes will always be sent normally, via SendInput.
+
+To (globally) enable the feature anyway, run the following code, or add it
+into one of your command modules: ::
 
    from dragonfly.actions.keyboard import Keyboard
    Keyboard.try_natlink = True
 
-In order for this to work, Natlink must be available and Dragon
+In order for this feature to work, Natlink must be available and Dragon
 NaturallySpeaking must be running.  Dragonfly will fallback on the default
 keyboard implementation for Windows if it is unable to send input via
-Natlink.
-
-The following keyboard events cannot be sent via Natlink and will always be
-sent normally:
-
- * Unicode character keystrokes (if enabled)
-
-As noted above, modifier keys are not always held down when simulated via
 Natlink.
 
 This feature may be enabled for mouse input events too.  See

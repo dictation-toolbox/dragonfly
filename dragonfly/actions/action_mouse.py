@@ -188,22 +188,25 @@ events via Natlink.  This allows one to make use of Dragon
 NaturallySpeaking's ability to control applications running in elevated
 mode, i.e., administrative applications.
 
-This feature is disabled by default, primary because some events cannot be
-simulated this way (see below).  To (globally) enable this feature anyway,
-run the following code, or add it into one of your command modules: ::
+This feature is disabled by default because it comes with a number of
+caveats.  They are as follows:
+
+ * Modifier keys are not always held down when simulated this way, meaning
+   that actions for clicking while holding control, alt or shift are not
+   guaranteed to work.
+ * Certain applications do not accept input simulated this way.
+ * Events for mouse buttons *four* and *four*, and for scroll wheel events
+   (*wheelup*, *wheeldown*, etc.) cannot be simulated this way.
+
+To (globally) enable this feature anyway, run the following code, or add it
+into one of your command modules: ::
 
    from dragonfly.actions.mouse import ButtonEvent
    ButtonEvent.try_natlink = True
 
-In order for this to work, Natlink must be available and Dragon
+In order for this feature to work, Natlink must be available and Dragon
 NaturallySpeaking must be running.  Dragonfly will fallback on the default
 mouse implementation for Windows if it is unable to send input via Natlink.
-
-The following mouse events cannot be sent via Natlink and will always be
-sent normally:
-
- * Button *four* and *five* events
- * Scroll wheel events (*wheelup*, *wheeldown*, etc.)
 
 
 Mouse class reference
