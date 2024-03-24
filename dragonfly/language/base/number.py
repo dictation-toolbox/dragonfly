@@ -22,6 +22,8 @@
 Number language element class
 ============================================================================
 
+TODO Add proper documentation and examples for Number and NumberRef.
+
 """
 
 from dragonfly.grammar.elements       import (Alternative, Repetition,

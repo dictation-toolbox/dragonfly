@@ -142,6 +142,9 @@ pip:
 
     pip install dragonfly
 
+
+### TODO Update this section to mention release candidates and link to both RTD stable/latest builds ###
+
 If you are installing this on Linux, you will also need to install the
 `wmctrl <https://www.freedesktop.org/wiki/Software/wmctrl/>`__, `xdotool
 <https://www.semicomplete.com/projects/xdotool/>`__ and `xsel

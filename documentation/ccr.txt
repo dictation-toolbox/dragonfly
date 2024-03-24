@@ -23,12 +23,7 @@ a few projects using dragonfly which make writing CCR rules easier:
   (`documentation <https://dragonfluid.readthedocs.io>`__)
   --- dragonfluid has drop-in replacements for dragonfly's element, grammar
   and rule classes that support CCR. The documentation has more information
-  on this. You should be able to use `dragonfluid` with `dragonfly2` by
-  installing it without dependencies:
-
-  .. code:: shell
-
-     pip install --no-deps dragonfluid
+  on this.
 
 - `dragonfly-scripts
   <https://github.com/dictation-toolbox/dragonfly-scripts/>`__

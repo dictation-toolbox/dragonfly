@@ -1,5 +1,25 @@
+#
+# This file is part of Dragonfly.
+# (c) Copyright 2019 by Dane Finlay
+# Licensed under the LGPL.
+#
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   Lesser General Public License for more details.
+#
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
+#   <http://www.gnu.org/licenses/>.
+#
+
 """
-Example script for recognising speech from a wave file using the CMU Pocket
+Example script for recognizing speech from a wave file using the CMU Pocket
 Sphinx dragonfly engine.
 
 """
@@ -23,7 +43,7 @@ def main():
     engine = get_engine("sphinx")
 
     # Voice activity detection config values may need to be adjusted to
-    # recognise speech. Do this by changing the decoder's config.
+    # recognize speech.  Do this by changing the decoder's config.
     # Note that these values represent a number of audio frames, not time
     # intervals.
     # For example:

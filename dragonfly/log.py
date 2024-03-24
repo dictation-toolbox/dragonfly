@@ -183,7 +183,7 @@ _stderr_filters = {}
 _file_filters = {}
 
 
-def setup_log(use_stderr=True, use_file=True, use_stdout=False):
+def setup_log(use_stderr=True, use_file=False, use_stdout=False):
     """
     Setup Dragonfly's logging infrastructure with sane defaults.
 

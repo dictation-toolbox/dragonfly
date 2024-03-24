@@ -674,6 +674,8 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         # Return the appropriate hypothesis.
         return hypotheses.get(hyp.hypstr, self._null_hypothesis)
 
+    # TODO I want to integrate this into an example command module.
+    # It is a good example of how to use process_buffer().
     def process_wave_file(self, path):
         """
         Recognize speech from a wave file and return the recognition

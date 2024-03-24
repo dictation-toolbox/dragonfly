@@ -40,8 +40,7 @@ Please see the `Natlink install instructions
 it.
 
 A 32-bit Python installation is required to use this engine back-end.  This
-is because Natlink does not work with 64-bit Python.  This limitation is
-unlikely to be overcome.
+is because Natlink does not work with 64-bit Python.
 
 
 Post-install Use

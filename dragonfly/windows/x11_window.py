@@ -1,21 +1,25 @@
-# This file was part of Aenea
 #
-# Aenea is free software: you can redistribute it and/or modify it under
-# the terms of version 3 of the GNU Lesser General Public License as
-# published by the Free Software Foundation.
+# This file is part of Dragonfly.
+# (c) Copyright 2019, 2020 by Dane Finlay
+# Licensed under the LGPL.
 #
-# Aenea is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-# License for more details.
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
 #
-# You should have received a copy of the GNU Lesser General Public
-# License along with Aenea.  If not, see <http://www.gnu.org/licenses/>.
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   Lesser General Public License for more details.
 #
-# Copyright (2014) Alex Roper
-# Alex Roper <alex@aroper.net>
-
-# Heavily modified from Aenea's xdotool implementation for X11.
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
+#   <http://www.gnu.org/licenses/>.
+#
+# This file uses parts of Aenea, copyright (2014) Alex Roper, also licensed
+# under the GNU Lesser General Public License.
+#
 
 """
 Window class for X11
@@ -452,6 +456,7 @@ class X11Window(BaseWindow):
                                                  self.id])
 
     def _toggle_maximize(self, is_maximized):
+        # TODO Try to do this with the xdotool 'windowstate' command.
         # Use wmctrl to add or remove the maximized window properties from
         # the window's _NET_WM_STATE set.
         # Note: this should be possible with xprop, but is not supported.

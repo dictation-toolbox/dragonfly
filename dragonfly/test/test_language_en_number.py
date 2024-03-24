@@ -229,6 +229,7 @@ class ShortIntegerTestCase(ElementTestCase):
                     ("two two two",                   222),
                     ("seven hundred",                 700),
                     ("thousand",                      1000),
+                    ("one oh twenty seven",           1027),
                     ("seventeen hundred",             1700),
                     ("seventeen hundred fifty three", 1753),
                     ("seventeen fifty three",         1753),

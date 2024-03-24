@@ -132,9 +132,7 @@ class Sapi5SharedEngine(EngineBase, DelegateTimerManagerInterface):
         #  the grammar wrapper object for managing this grammar.
         context = self._recognizer.CreateRecoContext()
 
-        # TODO Once audio retention is made modular, this block will need
-        #  to be exposed as an engine option "retain_audio".  Otherwise,
-        #  as I understand it, audio retention won't work.
+        # Enable audio retention, if appropriate.
         if self._retain_dir:
             context.RetainedAudio = constants.SRAORetainAudio
 

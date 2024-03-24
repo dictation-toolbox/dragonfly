@@ -25,7 +25,7 @@ from six                              import binary_type
 
 from dragonfly.actions.keyboard._base import (BaseKeyboard, BaseTypeable,
                                               BaseKeySymbols)
-
+# TODO Cleanup this file a little.
 
 KEY_TRANSLATION = {
     # Dragonfly references character keys as characters internally.

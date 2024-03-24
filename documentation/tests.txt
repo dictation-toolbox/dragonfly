@@ -125,11 +125,6 @@ command:
         python setup.py test --test-suite=sapi5inproc
 
 
-Some SAPI 5 engine tests will fail intermittently, particularly with
-the shared process engine class (``"sapi5"`` / ``"sapi5shared"``).
-There is not much we can do about this.
-
-
 Using the Kaldi engine
 ----------------------------------------------------------------------------
 

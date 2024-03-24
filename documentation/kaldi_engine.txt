@@ -110,8 +110,8 @@ distributions, you can get them by running::
 
   sudo apt install wmctrl xdotool xsel
 
-You may also need to manually set the ``DISPLAY`` environment
-variable.
+Dragonfly only supports the X window system (X11) on Linux.  You may also
+need to manually set the ``DISPLAY`` environment variable.
 
 Once the dependencies and model are installed, you're ready to go!
 
