@@ -27,10 +27,11 @@ This helper function allows for a compact notation of input string tests::
 
     >>> from dragonfly.engines.backend_natlink.dictation_format import WordFormatter
     >>> from six import string_types
-    >>> def format_dictation_dns11(input):
+    >>> def format_dictation_dns11(input, spoken_form=False):
     ...     if isinstance(input, string_types):
     ...         input = input.split()
-    ...     return WordFormatter(parser=WordParserDns11()).format_dictation(input)
+    ...     wf = WordFormatter(parser=WordParserDns11())
+    ...     return wf.format_dictation(input, spoken_form)
     >>> format_dictation_dns11("hello world")
     u'hello world'
 
@@ -183,3 +184,23 @@ and ".", are formatted correctly::
     u'What is the point of that?'
     >>> format_dictation_dns11(".\point\point")
     u'.'
+
+The spoken form of words is given instead of the written form, if
+specified::
+
+    >>> format_dictation_dns11(["custom written\\\\custom spoken"], True)
+    u'custom spoken'
+    >>> format_dictation_dns11(["custom written\\\\custom spoken",
+    ...                         "\\all-caps\\all caps",
+    ...                         "custom written\\\\custom spoken",
+    ...                         "\\cap\\cap",
+    ...                         "custom written\\\\custom spoken"], True)
+    u'custom spoken all caps custom spoken cap custom spoken'
+    >>> format_dictation_dns11(["custom written\\\\custom spoken",
+    ...                         "\\caps-on\\caps on",
+    ...                         "custom written\\\\custom spoken",
+    ...                         "\\all-caps-on\\all caps on",
+    ...                         "custom written\\\\custom spoken",
+    ...                         "\\all-caps-off\\all caps off",
+    ...                         "custom written\\\\custom spoken"], True)
+    u'custom spoken caps on custom spoken all caps on custom spoken all caps off custom spoken'
