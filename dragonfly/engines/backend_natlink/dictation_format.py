@@ -510,7 +510,8 @@ class WordFormatter(object):
     # Main formatting methods.
     # pylint: disable=bad-indentation,too-many-branches,line-too-long
 
-    def format_dictation(self, input_words):
+    def format_dictation(self, input_words, spoken_form=False):
+        """ Format input words. """
         if isinstance(input_words, string_types):
             raise ValueError("Argument input_words must be a sequence of"
                              " words, but received a single string: {0!r}"
@@ -519,14 +520,18 @@ class WordFormatter(object):
         formatted_words = []
         for input_word in input_words:
             word = self.parser.parse_input(input_word)
-            formatted_words.append(self.apply_formatting(word))
+            if spoken_form:
+                formatted_words.append(word.spoken)
+            else:
+                formatted_words.append(self.apply_formatting(word))
             new_state = self.update_state(word)
             self._log.debug("Processing %s, formatted output: %r,"
                             " %s -> %s",
                             word, formatted_words[-1],  self.state,
                             new_state)
             self.state = new_state
-        return u"".join(formatted_words)
+        delimiter = u" " if spoken_form else u""
+        return delimiter.join(formatted_words)
 
     def apply_formatting(self, word):
         state = self.state
