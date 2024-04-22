@@ -208,14 +208,12 @@ class NatlinkEngine(EngineBase):
                         % (self, grammar.name))
 
         grammar_object = self.natlink.GramObj()
-        wrapper = GrammarWrapper(grammar, grammar_object, self)
+        c = NatlinkCompiler()
+        (compiled_grammar, rule_names) = c.compile_grammar(grammar)
+        wrapper = GrammarWrapper(grammar, grammar_object, self, rule_names)
         grammar_object.setBeginCallback(wrapper.begin_callback)
         grammar_object.setResultsCallback(wrapper.results_callback)
         grammar_object.setHypothesisCallback(None)
-
-        c = NatlinkCompiler()
-        (compiled_grammar, rule_names) = c.compile_grammar(grammar)
-        wrapper.rule_names = rule_names
 
         all_results = (hasattr(grammar, "process_recognition_other")
                        or hasattr(grammar, "process_recognition_failure"))
@@ -414,17 +412,17 @@ class NatlinkEngine(EngineBase):
 
 class GrammarWrapper(GrammarWrapperBase):
 
-    # Enable guessing at which words were dictated, since DNS does not
-    # always report accurate rule IDs.
-    _dictated_word_guesses_enabled = True
-
-    def __init__(self, grammar, grammar_object, engine):
+    def __init__(self, grammar, grammar_object, engine, rule_names):
         GrammarWrapperBase.__init__(self, grammar, engine)
         self.grammar_object = grammar_object
-        self.rule_names = None
+        self.rule_names = rule_names
         self.active_rules_set = set()
         self.hwnd = 0
         self.beginning = False
+
+        # Set whether to guess at which words were dictated, since DNS does
+        #  not always report accurate rule IDs.
+        self._dictated_word_guesses_enabled = "dgndictation" in rule_names
 
     def begin_callback(self, module_info):
         self.beginning = True
