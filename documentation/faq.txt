@@ -298,7 +298,9 @@ On the command-line::
 
   python -m dragonfly load -e sapi5shared _notepad_example.py
 
-You may experience problems using Dragonfly and WSR this way.
+You may experience problems using Dragonfly and WSR this way, however.  The
+in-process recognizer (sapi5inproc) is more stable than the shared
+recognizer (sapi5shared).
 
 
 Is there an easy way to check which speech recognition engine is in use?
@@ -463,13 +465,54 @@ For more information, please see Microsoft's own documentation:
 How to use Dragonfly actions with administrative applications on Windows?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It is not normally possible to interact with applications running in
-elevated mode.  The recommended way to do so is to use Dragon's built-in
-commands, which can interact with such applications.
+It is normally not possible to use Dragonfly to interact with applications
+running in elevated mode.  This is a security feature of the Windows
+operating system.  Luckily, there are a few ways around this.  They are
+listed below.
+
+1. Use Dragon's built-in commands instead
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+If you're using Dragon, this is the simplest way.  Dragon's built-in
+commands can control administrative applications.  No additional
+configuration is required.
+
+
+2. Load your command modules from an elevated process
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+If you are not using Dragon, or if you want to use your own commands instead
+of the built-in ones, you can load them from an elevated Python process.
+This requires administrative access to the machine you're on.
+
+The procedure for loading command modules from an elevated process is as
+follows:
+
+ #. Download or find locally the module loader script for your preferred
+    Dragonfly engine.  If you use Dragon and Natlink, this is
+    the `dfly-loader-natlink.py`_ example script.
+ #. Locate the folder containing your command module files.
+ #. Place the module loader script into this folder.
+ #. Open a command prompt window as administrator.
+ #. Navigate to your command module files folder and run
+    ``python.exe dfly-loader-natlink.py`` or equivalent.
+
+Dragonfly's :ref:`command-line interface <RefCLI>` may be used to load your
+command module files instead of a loader script.  The effect is the same.
+
+Please note that, if you're using Dragon, your command module files should
+be moved into a separate folder first, so that they aren't loaded normally
+by Natlink.  If they are loaded normally, your voice commands may not affect
+administrative applications.
+
+
+3. Send keyboard and mouse events via Natlink to Dragon
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 The :code:`Key`, :code:`Text` and :code:`Mouse` action classes may be
 configured to send input events via Natlink to Dragon.  To enable this
-feature, run the following code, or add it into one of your command modules:
+feature, run the following code, or add it into one of your command module
+files:
 
   .. code-block:: python
 
@@ -483,12 +526,8 @@ feature, run the following code, or add it into one of your command modules:
 
 
 Please note that there are a few caveats with this input mechanism.  They
-are discussed `here` and `here`.
-
-
-If you are not using Dragon, or if you want to use your own commands instead
-of the built-ins, try running the appropriate command-module loader script
-in `dragonfly/examples`_ as the administrator.
+are discussed :ref:`here <RefNatlinkKeyboardInput>` and
+:ref:`here <RefNatlinkMouseInput>`.
 
 
 Why aren't Dragonfly's input actions working on my Linux system?
@@ -529,11 +568,7 @@ If your question isn't listed above, then there are a few ways to get in
 touch:
 
 * Open a `new issue`_ on GitHub.
-* Join one of Dragonfly's chat channels:
-
-  * `Gitter channel`_
-  * `Matrix channel`_
-
+* Join Dragonfly's `Matrix chat channel`_.
 * Ask your question on the `Dragonfly mailing list`_.
 * Send an email to Dane Finlay, the project maintainer, at
   `dane@danefinlay.net`_.
@@ -544,9 +579,8 @@ touch:
 .. _Aenea: https://github.com/dictation-toolbox/aenea
 .. _dane@danefinlay.net: mailto:dane@danefinlay.net
 .. _Dragonfly mailing list: https://groups.google.com/forum/#!forum/dragonflyspeech
-.. _Gitter Channel: https://gitter.im/dictation-toolbox/dragonfly
 .. _High DPI Desktop Application Development on Windows: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
-.. _Matrix channel: https://app.element.io/#/room/#dictation-toolbox_dragonfly:gitter.im
+.. _Matrix chat channel: https://app.element.io/#/room/#dictation-toolbox_dragonfly:gitter.im
 .. _Natlink Troubleshooting page: https://qh.antenna.nl/unimacro/installation/installforpython27/problemswithinstallation.html
 .. _Python 2-3 code porting guide: https://docs.python.org/3/howto/pyporting.html
 .. _Setting the default DPI awareness for a process: https://docs.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
@@ -560,3 +594,4 @@ touch:
 .. _switch to X11: https://askubuntu.com/questions/961304/how-do-you-switch-from-wayland-back-to-xorg-in-ubuntu-17-10
 .. _wmctrl: https://www.freedesktop.org/wiki/Software/wmctrl/
 .. _xdotool: https://www.semicomplete.com/projects/xdotool
+.. _dfly-loader-natlink.py: https://github.com/dictation-toolbox/dragonfly/blob/master/dragonfly/examples/dfly-loader-natlink.py
