@@ -1129,6 +1129,12 @@ class Dictation(ElementBase):
             Dictation("formattedtext").apply(str_func)
             Dictation("snake_text").lower().replace(" ", "_")
             Dictation("camelText").camel()
+
+        If you are using Dragon/Natlink and want the spoken form of the
+        dictated words instead of the written form, this can be achieved by
+        passing ``False`` when calling the ``format()`` method of the
+        ``NatlinkDictationContainer`` object given as this element's value.
+
     """
 
     # pylint: disable=redefined-builtin
