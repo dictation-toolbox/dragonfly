@@ -123,7 +123,7 @@ setup(
                         "setuptools >= 40.0.0",
                         "packaging >= 19.0",
                         "six",
-                        "lark-parser == 0.8.*",
+                        "lark-parser >= 0.8.0",
 
                         # Windows-only dependencies.
                         "pywin32;platform_system=='Windows'",
