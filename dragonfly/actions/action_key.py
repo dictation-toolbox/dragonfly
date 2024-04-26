@@ -193,6 +193,33 @@ with the *l* key: ::
     Key("w-l").execute()
 
 
+Adding additional key names
+............................................................................
+
+Technically, the :class:`Key` action allows emulation of any key defined in
+Dragonfly's special ``typeables`` dictionary.  Additional mappings may be
+added to this dictionary at any time.
+
+For example, the following code may be used on Windows to map the special
+start application keys to "startapp1" and "startapp2" respectively:
+
+.. code:: python
+
+   from dragonfly import Typeable, typeables
+   typeables["startapp1"] = Typeable(code=0xb6)
+   typeables["startapp2"] = Typeable(code=0xb7)
+
+The :class:`Key` action can then be used to emulate these keys:
+
+.. code:: python
+
+   action = Key("startapp1, startapp2")
+   action.execute()
+
+By default, these keys open explorer.exe at "This PC" and the calculator
+app respectively.
+
+
 .. _RefUnicodeCharacterKeystrokesKey:
 
 Unicode Character Keystrokes (Key)
