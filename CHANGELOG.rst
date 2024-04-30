@@ -12,6 +12,33 @@ Note: this project had no release versions between 0.6.6b1_ and
 documented in the commit history.
 
 
+Unreleased_
+-----------
+
+Added
+~~~~~
+- Add new Key action aliases and names for typing the Windows and Alt
+  modifier keys.
+- Add optional *spoken_form* parameters for formatting Dragon's dictation
+  words using the spoken form instead.
+
+Changed
+~~~~~~~
+- Change the CommandModule class to import command module files instead of
+  compiling them directly.
+- Change the CommandModule class' unload function to invoke top-level unload
+  functions like the Natlink loader does.
+- Make the logging output of Dragonfly's CLI commands more sane.
+- Make some optimizations to the Natlink engine.
+
+Fixed
+~~~~~
+- Fix an issue with the SAPI 5 engine's mimic method on 64-bit Python.
+- Fix an issue with the Kaldi engine where unloading a grammar causes an
+  error.
+- Fix some problematic package requirements.
+
+
 `1.0.0-rc2`_ - 2023-10-08
 -------------------------
 
