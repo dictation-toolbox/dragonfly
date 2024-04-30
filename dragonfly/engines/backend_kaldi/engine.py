@@ -251,6 +251,13 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
         return wrapper
 
+    def unload_grammar(self, grammar):
+        # If disconnected, do nothing.
+        if self._decoder is None:
+            return
+
+        EngineBase.unload_grammar(self, grammar)
+
     def _unload_grammar(self, grammar, wrapper):
         """ Unload the given *grammar*. """
         self._log.debug("Unloading grammar %s." % grammar.name)
