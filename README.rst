@@ -9,6 +9,12 @@ Dragonfly
 Introduction
 ----------------------------------------------------------------------------
 
+This project is a fork of the original
+`t4ngo/dragonfly <https://github.com/t4ngo/dragonfly>`__ project.
+
+This project is known as Dragonfly2 on the PyPI repository, but for
+purposes of functionality, it is referred to as Dragonfly below.
+
 Dragonfly is a speech recognition framework for Python that makes it
 convenient to create custom commands to use with speech recognition
 software. It was written to make it very easy for Python macros, scripts,
@@ -27,9 +33,6 @@ framework is cross-platform, working on Windows, macOS and Linux (X11 only).
 See the `actions sub-package documentation
 <https://dragonfly.readthedocs.io/en/latest/actions.html>`__
 for more information, including code examples.
-
-This project is a fork of the original
-`t4ngo/dragonfly <https://github.com/t4ngo/dragonfly>`__ project.
 
 Dragonfly currently supports the following speech recognition engines:
 
@@ -140,7 +143,7 @@ pip:
 
 .. code:: shell
 
-    pip install dragonfly
+    pip install dragonfly2
 
 
 ### TODO Update this section to mention release candidates and link to both RTD stable/latest builds ###
