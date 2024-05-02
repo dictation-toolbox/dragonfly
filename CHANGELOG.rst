@@ -66,13 +66,17 @@ Fixed
 
 Removed
 ~~~~~~~
-- Remove recognition observer event *on_post_recognition()*.
+- Remove recognition observer event *on_post_recognition()* in favour of
+  the *Grammar.process_recognition()* callback.
 - Remove the CMU Pocket Sphinx engine's key phrases feature.
 - Remove two aliases of the *do_recognition()* engine method.
 
 
 `1.0.0-rc1`_ - 2022-12-31
 -------------------------
+
+This is the first release published on PyPI under the *dragonfly*
+distribution name since version 0.6.5.
 
 Added
 ~~~~~
