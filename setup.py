@@ -29,14 +29,25 @@ from setuptools import setup, find_packages, Command
 
 directory = os.path.abspath(os.path.dirname(__file__))
 path = os.path.join(directory, "version.txt")
-version_string = open(path).readline()
+with open(path) as f:
+    version_string = f.readline()
 match = re.match(r"\s*(?P<rel>(?P<ver>\d+\.\d+)(?:\.\S+)*)\s*", version_string)
 version = match.group("ver")
 release = match.group("rel")
 
 #---------------------------------------------------------------------------
+# Gather test requirements from the 'test_requirements.txt' file.
+# This is to allow installing test requirements with the following command:
+# pip install dragonfly[test].
+
+def read(name):
+    with open(os.path.join(os.path.dirname(__file__), name)) as f:
+        return f.read()
+
+test_requirements = read("test_requirements.txt").split("\n")[:-1]
+
+#---------------------------------------------------------------------------
 # Override the 'test' command to use pytest instead.
-# Test requirements are located in the 'test_requirements.txt' file.
 
 class test(Command):
     description = 'run unit tests and doctests after in-place build'
@@ -97,13 +108,8 @@ class test(Command):
         #  module to sys.modules.
         if natlink: sys.modules["natlink"] = natlink
 
-
 #---------------------------------------------------------------------------
 # Set up package.
-
-def read(*names):
-    return open(os.path.join(os.path.dirname(__file__), *names)).read()
-
 
 setup(
       name             = "dragonfly",
@@ -140,10 +146,7 @@ setup(
                        ],
 
       extras_require={
-          "test": [
-                   "pytest == 3.9.*;python_version<'3.8'",
-                   "pytest == 7.4.*;python_version>='3.8'",
-                  ],
+          "test": test_requirements,
           "accessibility": [
                             "comtypes;platform_system=='Windows'",
                             "enum34;python_version<'3.4'",
