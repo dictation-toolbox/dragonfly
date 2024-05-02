@@ -378,7 +378,7 @@ def make_arg_parser():
     )
     no_input_argument = _build_argument(
         "-n", "--no-input", default=False, action="store_true",
-        help="Whether to load command modules and exit without "
+        help="Whether to load command modules and then exit without "
              "reading input from stdin or recognizing speech."
     )
     log_level_argument = _build_argument(
@@ -466,7 +466,8 @@ def make_arg_parser():
 
 
 def main():
-    # Parse the arguments and get the relevant function.
+    # Parse the arguments and get the relevant function. Exit if the command
+    # is not implemented.
     args = make_arg_parser().parse_args()
 
     def not_implemented(_):
@@ -475,9 +476,10 @@ def main():
 
     func = _COMMAND_MAP.get(args.command, not_implemented)
 
-    # Call the command function and return the exit code.
-    return func(args)
+    # Call the function and exit using the result.
+    return_code = func(args)
+    exit(return_code)
 
 
 if __name__ == '__main__':
-    exit(main())
+    main()

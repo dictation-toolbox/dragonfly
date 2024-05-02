@@ -169,7 +169,7 @@ class DarwinWindow(BaseWindow):
     def _get_window_module(self):
         script = '''
         global module
-        set module to "msng"
+        set module to ""
         try
             tell application "System Events" to tell application process id %s
                 set module to name

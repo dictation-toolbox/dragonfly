@@ -1,13 +1,9 @@
 
-.. _RefLanguage:
-
-Language sub-package
+Spoken Language Support
 ============================================================================
 
 This section documents Dragonfly's support for spoken languages.
 
-TODO Move engine-specific sections into the relevant engine pages.
-TODO Document the languages Split this file and the documentation for dragonfly.language.
 
 Languages with speech recognition engine support
 ----------------------------------------------------------------------------
@@ -31,18 +27,59 @@ U.S. English and U.K. English will both yield :code:`"en"` and be treated as
 the same language, even though there are some differences.
 
 
+Languages supported by Dragon
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following languages are supported by *Dragon Professional Individual*
+version 15 [#f1]_:
+
+* English (multiple variants)
+* Dutch
+* French
+* German
+* Italian
+* Spanish
+
+Please check the linked Nuance knowledgebase page for the languages
+supported by other versions and editions of Dragon.
+
+
+Languages supported by Windows Speech Recognition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following languages are supported by Windows Speech Recognition (WSR) as
+of 2016 [#f2]_:
+
+* English (U.S.) (*)
+* English (U.K.)
+* Chinese (Simplified) (*)
+* Chinese (Traditional)
+* French (France)
+* German (Germany)
+* Japanese
+* Spanish (Spain)
+
+\* Successfully tested.
+
+Microsoft does not appear to be documenting the languages available for WSR
+any more, which is why the provided citation for this section is an
+archive.org link. Currently, the best way to find out if your language is
+supported is to look for available speech models in the Windows language
+settings: **Settings** > **Time & Language** > **Language**.
+
+
 Languages supported by CMU Pocket Sphinx
-----------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The CMU Pocket Sphinx engine documentation page has a section on
 :ref:`spoken language support <RefSphinxSpokenLanguageSupport>`. There are
 CMU Pocket Sphinx models and dictionaries available from Source Forge for
 the following languages [#f3]_:
 
-* English (U.S.)
+* English (U.S.) (*)
 * English (Indian)
 * Catalan
-* Chinese (Mandarin)
+* Chinese (Mandarin) (*)
 * Dutch
 * French
 * German
@@ -51,14 +88,16 @@ the following languages [#f3]_:
 * Italian
 * Kazakh
 * Portuguese
-* Russian
+* Russian (*)
 * Spanish
+
+\* Successfully tested.
 
 English (U.S.) is the default language used by the CMU Pocket Sphinx engine.
 
 
 Languages supported by Kaldi
-----------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following languages are supported by the :ref:`RefKaldiEngine`:
 
@@ -97,7 +136,7 @@ English has additional time, date and character related classes.
 
 
 Language classes reference
-----------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: dragonfly.language.en.short_number
    :members:

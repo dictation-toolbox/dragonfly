@@ -71,32 +71,18 @@ class DgnImported(RuleRef):
         state.decode_attempt(self)
 
         # Check that at least one word has been dictated, otherwise fail.
-        rule1 = state.rule()  # actual rule name
-        rule2 = self.imported_name  # expected rule name
-        guessing = state.dictated_word_guesses
-        if not guessing and rule1 != rule2 or rule1 is None:
+        if state.rule() != self.imported_name:
             state.decode_failure(self)
             return
 
-        # Check if guessing which words are dictated words is necessary.
-        if rule1 == rule2:
-            guessing = False
-
         # Determine how many words have been dictated.
         count = 1
-        while state.rule(count) == rule1:
+        while state.rule(count) == self.imported_name:
             count += 1
 
         # Yield possible states where the number of dictated words
         # gobbled is decreased by 1 between yields.
-        # If guessing, be conservative instead and gobble as few of
-        # the next words as possible, since they may not be dictated
-        # words.
-        if not guessing:
-            deltas = range(count, 0, -1)
-        else:
-            deltas = range(1, count + 1, 1)
-        for i in deltas:
+        for i in range(count, 0, -1):
             state.next(i)
             state.decode_success(self)
             yield state

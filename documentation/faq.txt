@@ -41,9 +41,8 @@ Dragonfly supports the following speech recognition (SR) engines:
   work too.
 * :ref:`Windows Speech Recognition <RefSapi5Engine>` (WSR), included with
   Microsoft Windows Vista, Windows 7+, and freely available for Windows XP.
-* :ref:`Kaldi <RefKaldiEngine>`, open source (AGPL) and multi-platform.
-* :ref:`CMU Pocket Sphinx <RefSphinxEngine>`, open source and
-  multi-platform.
+* :ref:`Kaldi <RefKaldiEngine>`
+* :ref:`CMU Pocket Sphinx <RefSphinxEngine>`
 
 Dragonfly has cross platform support for Windows, macOS and Linux
 (X11-only).  The following table shows which engines are available on which
@@ -66,7 +65,9 @@ using Dragonfly voice macros on remote hosts.
 Dragonfly's X11 support is dependent on the external *xdotool*, *wmctrl*
 and *xsel* programs.  These programs are available for most Linux
 distributions.  They are also available for other operating systems, such as
-FreeBSD.
+FreeBSD.  At present, since *xdotool* is not available for it, Dragonfly
+will not work properly in a Cygwin environment.
+
 
 Where can I find examples Dragonfly command modules?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,9 +81,9 @@ example command modules in `dragonfly/examples`_.
 What is the difference between dragonfly and dragonfly2?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The names *dragonfly* and *dragonfly2* are two distribution names for the
-same package.  They are now synonymous as of version 1.0.0 of the library.
-Prior to that version, *dragonfly2* was the distribution name since 2008.
+*Dragonfly* is the `original project`_ written by Christo Butcher.  It is no
+longer maintained.  *Dragonfly2* is a `fork`_ of Dragonfly that uses a
+different *distribution* name.
 
 It is important to note that the *import name* is still "dragonfly":
 
@@ -90,8 +91,15 @@ It is important to note that the *import name* is still "dragonfly":
 
    from dragonfly import Grammar, MappingRule, Key, Text, Mouse, Dictation
 
-Dragonfly2 started out as a backwards-compatible continuation of the
-original project written by Christo Butcher.
+Dragonfly2 is intended to be backwards-compatible continuation of the
+original project.  Many problems are fixed in this version.  It supports
+alternative speech recognition engine backends (e.g. the
+:ref:`Kaldi engine <RefKaldiEngine>`), works with Python 3 and has
+cross-support for macOS and the X Window System (X11).  Dragonfly2 also has
+some new features not found in the old version.
+
+See the :ref:`changelog <RefChangelog>` for the full list of changes between
+the two versions.
 
 
 How can I use older Dragonfly scripts written for Python 2.7?
@@ -119,6 +127,19 @@ end:
   Python 3.
 
 The `Python 2-3 code porting guide`_ may also be of interest.
+
+A number of older Dragonfly command modules also include the following code:
+
+.. code-block:: python
+
+   try:
+       import pkg_resources
+       pkg_resources.require("dragonfly >= 0.6.5")
+   except ImportError:
+       pass
+
+Since the distribution name has been changed to *dragonfly2*,
+:code:`dragonfly` will need to be replaced with :code:`dragonfly2`.
 
 
 Where are some good resources on learning Python?

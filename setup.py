@@ -36,8 +36,7 @@ release = match.group("rel")
 
 #---------------------------------------------------------------------------
 # Override the 'test' command to use pytest instead.
-# Test requirements are specified later in this file, in the *extras_require*
-# dictionary.
+# Test requirements are located in the 'test_requirements.txt' file.
 
 class test(Command):
     description = 'run unit tests and doctests after in-place build'
@@ -190,9 +189,6 @@ setup(
                    "Programming Language :: Python :: 3.8",
                    "Programming Language :: Python :: 3.9",
                    "Programming Language :: Python :: 3.10",
-                   "Programming Language :: Python :: 3.11",
-                   "Programming Language :: Python :: 3.12",
-                   "Programming Language :: Python :: 3.13",
                    "Programming Language :: Python :: Implementation :: CPython",
                    "Topic :: Multimedia :: Sound/Audio :: Speech",
                    "Topic :: Software Development :: Libraries :: Python Modules",

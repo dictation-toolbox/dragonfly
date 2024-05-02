@@ -178,7 +178,7 @@ class NatlinkEngine(EngineBase):
         for grammar in self.grammars:
             grammar.unload()
 
-        # Close the waitForSpeech() dialog box if it is active for this
+        # Close the the waitForSpeech() dialog box if it is active for this
         # process.
         from dragonfly import Window
         target_title = "Natlink / Python Subsystem"
