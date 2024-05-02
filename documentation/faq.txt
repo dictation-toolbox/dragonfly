@@ -139,6 +139,38 @@ the following resources from might be of use:
 * `Latest Python documentation <https://docs.python.org>`__
 
 
+.. _RefFAQSupportEngineX:
+
+Will Dragonfly add support for speech recognition engine X?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We are not considering the addition of new Dragonfly engine implementations.
+The main reason for this is that Dragonfly requires a very specific type of
+speech recognition engine to work.  It must be one which supports each of
+the following features:
+
+1. definition of voice commands in a grammar format
+2. efficient and dynamic activation and deactivation of (parts of) grammars
+   at the beginning of an utterance
+3. in-speech transition between dictated prose (dictation mode), loaded
+   voice commands (command mode) and vice versa
+
+Each Dragonfly engine supports features one and two.  All engines support
+feature three except the CMU Pocket Sphinx engine.  However, Sphinx is
+only limited in that dictated prose must be spoken in separate utterances.
+
+These three requirements have effectively ruled out Dragonfly support for
+most speech recognition engines that users have asked about in the past.
+
+Even if a new speech recognition engine comes along that supports the above
+features, we will probably not accept an engine implementation for it
+because Dragonfly already has very good engine implementations.
+
+We may make an exception for new implementations meant to replace current,
+deprecated ones.  However, none of Dragonfly's current engines really need
+replacing.
+
+
 API Questions
 ----------------------------------------------------------------------------
 
@@ -318,6 +350,61 @@ prints the name of the current engine if one has been initialized:
        print("Engine name: %r" % engine.name)
    else:
        print("No engine has been initialized.")
+
+
+Can I implement my own custom Dragonfly engine?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes, this is possible.  Although Dragonfly is :ref:`not accepting new engine
+implementations <RefFAQSupportEngineX>`, you can write one externally,
+register it and use it like any of the in-package engines.
+
+Implementing a custom Dragonfly engine is a complex task.  It is
+recommended that you start with a copy of the text-input engine source code
+and make alterations with reference to the code of other engines.  The
+text-input engine source code may be consulted via the source code links on
+:ref:`this page <RefTextEngine>`.
+
+If you want to customise say, the Natlink engine, start with the code (or
+classes) for that engine instead.
+
+Once you have implemented the required engine methods and classes, you'll
+need to register an engine instance with the special
+``register_engine_init`` function:
+
+.. code-block:: python
+
+   from dragonfly.engines import register_engine_init
+   my_engine = MyEngine()
+   register_engine_init(my_engine)
+
+Your engine instance will then be returned by Dragonfly's ``get_engine()``
+function, when it is invoked:
+
+.. code-block:: python
+
+   >>> from dragonfly.engines import get_engine
+   >>> get_engine()
+   MyEngine()
+
+Your engine implementation should now be useable.  Please note, however,
+that you won't be able to use it with Dragonfly's :ref:`RefCLI` or test
+suite without a few modifications.
+
+In order to use your engine with these facilities, an instance of your
+engine must be registered and have a unique name *before* the
+``get_engine()`` function is invoked by them.  In addition, if you want to
+test your implementation against Dragonfly's test suite in a clone of the
+git repo, you will need to add an entry to the special
+``engine_tests_dict``:
+
+.. code-block:: python
+
+   # Do this in setup.py around line 59 or in an imported module.
+   from dragonfly.test.suites import engine_tests_dict
+   my_engine_tests = engine_tests_dict['text'][:]
+   my_engine_tests.remove('test_engine_text')  # Replace with test_engine_<name>.
+   engine_tests_dict[my_engine.name] = my_engine_tests
 
 
 Troubleshooting Questions
