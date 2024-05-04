@@ -165,31 +165,10 @@ the following resources from might be of use:
 Will Dragonfly add support for speech recognition engine X?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We are not considering the addition of new Dragonfly engine implementations.
-The main reason for this is that Dragonfly requires a very specific type of
-speech recognition engine to work.  It must be one which supports each of
-the following features:
-
-1. definition of voice commands in a grammar format
-2. efficient and dynamic activation and deactivation of (parts of) grammars
-   at the beginning of an utterance
-3. in-speech transition between dictated prose (dictation mode), loaded
-   voice commands (command mode) and vice versa
-
-Each Dragonfly engine supports features one and two.  All engines support
-feature three except the CMU Pocket Sphinx engine.  However, Sphinx is
-only limited in that dictated prose must be spoken in separate utterances.
-
-These three requirements have effectively ruled out Dragonfly support for
-most speech recognition engines that users have asked about in the past.
-
-Even if a new speech recognition engine comes along that supports the above
-features, we will probably not accept an engine implementation for it
-because Dragonfly already has very good engine implementations.
-
-We may make an exception for new implementations meant to replace current,
-deprecated ones.  However, none of Dragonfly's current engines really need
-replacing.
+The answer is 'it depends.'  No new engine implementations are currently
+under development.  Contribution of new implementations is welcome, provided
+certain criteria are met.  Please see :ref:`RefContributingNewEngines` for
+more information.
 
 
 API Questions
@@ -373,12 +352,11 @@ prints the name of the current engine if one has been initialized:
        print("No engine has been initialized.")
 
 
-Can I implement my own custom Dragonfly engine?
+Can I implement my own custom Dragonfly engine externally?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Yes, this is possible.  Although Dragonfly is :ref:`not accepting new engine
-implementations <RefFAQSupportEngineX>`, you can write one externally,
-register it and use it like any of the in-package engines.
+Yes, you can write a Dragonfly engine implementation externally and use it
+like any of the in-package engines.
 
 Implementing a custom Dragonfly engine is a complex task.  It is
 recommended that you start with a copy of the text-input engine source code

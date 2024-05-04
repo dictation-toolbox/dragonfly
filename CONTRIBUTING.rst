@@ -1,3 +1,5 @@
+.. _RefContributing:
+
 Contributing
 ============
 
@@ -74,6 +76,56 @@ integers (e.g. for ``IntegerRef``) and time/date formats.
 
 Other languages such as German and Dutch only have mappings for using
 ``IntegerRef`` (and similar) elements.
+
+
+.. _RefContributingNewEngines:
+
+Contributing New Speech Recognition Engines
+-------------------------------------------
+
+Introduction and Criteria
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Contribution of new Dragonfly speech recognition engine implementations is
+welcome, provided certain criteria are met.  New implementations must:
+
+ * be as functional as the current engines
+ * have some significant advantage over the current engines, perhaps in
+   terms of accuracy, speed, CPU/memory requirements and/or platform support
+ * have a willing maintainer or require little maintenance
+
+Before setting out to implement a new Dragonfly engine, please know that
+it is difficult to achieve the first criterion on functionality.
+Dragonfly's feature set requires a very specific type of speech recognition
+engine.  Namely, it must be one which supports each of the following
+features:
+
+ 1. definition of voice commands in a grammar format
+ 2. efficient and dynamic activation and deactivation of (parts of) grammars
+    at the beginning of an utterance
+ 3. in-speech transition between dictated prose (dictation mode), loaded
+    voice commands (command mode) and vice versa
+
+Each Dragonfly engine supports features one and two.  All engines support
+feature three except the CMU Pocket Sphinx engine.  However, Sphinx is
+only limited in that dictated prose must be spoken in separate utterances.
+
+These three requirements have effectively ruled out Dragonfly support for
+most speech recognition engines that users have asked about in the past.
+This is not meant to discourage those wishing to contribute new
+implementations, it is simply a fact.
+
+As for the second and third criteria listed above, they are fairly
+self-explanatory.  There is no sense in contributing a new engine that
+brings nothing new to the table and this library's maintainer does not wish
+to substantially increase the effort needed to keep things working.
+
+.. _RefContributingNewEngineGuide:
+
+New SR Engine Guide
+~~~~~~~~~~~~~~~~~~~
+
+TODO
 
 
 .. Links.
