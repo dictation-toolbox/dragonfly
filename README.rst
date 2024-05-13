@@ -140,7 +140,18 @@ pip:
 
 .. code:: shell
 
-    pip install dragonfly
+    pip install dragonfly2
+
+If you wish to install the latest release candidate for version 1.0.0,
+please run the following command instead:
+
+.. code:: shell
+
+    pip install dragonfly2==1.0.0-rc2
+
+These versions are more up-to-date and have fewer requirements.  The
+documentation for them is available at `Read the Docs (latest)
+<http://dragonfly2.readthedocs.org/en/latest/>`_.
 
 If you are installing this on Linux, you will also need to install the
 `wmctrl <https://www.freedesktop.org/wiki/Software/wmctrl/>`__, `xdotool
