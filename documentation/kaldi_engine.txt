@@ -16,8 +16,8 @@ active/inactive based on contexts in real-time. It also provides basic
 infrastructure for compiling, recognizing, and parsing grammars with
 Kaldi, plus a compatible model. For more information, see its page.
 
-Both this backend and kaldi-active-grammar are under **active
-development** by `@daanzu <https://github.com/daanzu>`_.
+Both this backend and kaldi-active-grammar have been developed by
+David Zurow (`@daanzu <https://github.com/daanzu>`_).
 Kaldi-backend-specific issues, suggestions, and feature requests are
 welcome & encouraged, but are probably better sent to the
 `kaldi-active-grammar repository
