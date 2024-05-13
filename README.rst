@@ -27,7 +27,7 @@ Dragonfly contains its own powerful framework for defining and executing
 actions. It includes actions for text input and key-stroke simulation. This
 framework is cross-platform, working on Windows, macOS and Linux (X11 only).
 See the `actions sub-package documentation
-<https://dragonfly2.readthedocs.io/en/latest/actions.html>`__
+<https://dragonfly2.readthedocs.io/en/stable/actions.html>`__
 for more information, including code examples.
 
 This project is a fork of the original
@@ -47,11 +47,11 @@ Documentation and FAQ
 ----------------------------------------------------------------------------
 
 Dragonfly's documentation is available online at `Read the
-Docs <http://dragonfly2.readthedocs.org/en/latest/>`__. The changes in
+Docs <http://dragonfly2.readthedocs.org/en/stable/>`__. The changes in
 each release are listed in the project's `changelog
 <https://github.com/dictation-toolbox/dragonfly/blob/master/CHANGELOG.rst>`__.
 Dragonfly's FAQ is available in the documentation `here
-<https://dragonfly2.readthedocs.io/en/latest/faq.html>`__.
+<https://dragonfly2.readthedocs.io/en/stable/faq.html>`__.
 There are also a number of Dragonfly-related questions on `Stackoverflow
 <http://stackoverflow.com/questions/tagged/python-dragonfly>`_, although
 many of them are related to issues resolved in the latest version of
@@ -129,7 +129,7 @@ cause the control and S keys to be pressed.
 
 The example aboves don't show any of Dragonfly's exciting features, such as
 dynamic speech elements. To learn more about these, please take a look at
-`Dragonfly's online docs <http://dragonfly2.readthedocs.org/en/latest/>`__.
+`Dragonfly's online docs <http://dragonfly2.readthedocs.org/en/stable/>`__.
 
 Installation
 ----------------------------------------------------------------------------
@@ -147,6 +147,17 @@ upload releases to PyPI.org, but everything can still be imported using
 :code:`pkg_resources.require("dragonfly >= 0.6.5")`, you will need to either
 replace :code:`dragonfly` with :code:`dragonfly2` or remove lines like this
 altogether.
+
+If you wish to install the latest release candidate for version 1.0.0,
+please run the following command instead:
+
+.. code:: shell
+
+    pip install dragonfly2==1.0.0-rc2
+
+These versions are more up-to-date and have fewer requirements.  The
+documentation for them is available at `Read the Docs (latest)
+<http://dragonfly2.readthedocs.org/en/latest/>`_.
 
 If you are installing this on Linux, you will also need to install the
 `wmctrl <https://www.freedesktop.org/wiki/Software/wmctrl/>`__, `xdotool
@@ -192,15 +203,15 @@ Each Dragonfly speech recognition engine back-end and its requirements are
 documented separately:
 
 * `Natlink and DNS engine
-  <http://dragonfly2.readthedocs.org/en/latest/natlink_engine.html>`_
+  <http://dragonfly2.readthedocs.org/en/stable/natlink_engine.html>`_
 * `SAPI 5 and WSR engine
-  <http://dragonfly2.readthedocs.org/en/latest/sapi5_engine.html>`_
+  <http://dragonfly2.readthedocs.org/en/stable/sapi5_engine.html>`_
 * `Kaldi engine
-  <http://dragonfly2.readthedocs.org/en/latest/kaldi_engine.html>`_
+  <http://dragonfly2.readthedocs.org/en/stable/kaldi_engine.html>`_
 * `CMU Pocket Sphinx engine
-  <http://dragonfly2.readthedocs.org/en/latest/sphinx_engine.html>`_
+  <http://dragonfly2.readthedocs.org/en/stable/sphinx_engine.html>`_
 * `Text-input engine
-  <http://dragonfly2.readthedocs.org/en/latest/text_engine.html>`_
+  <http://dragonfly2.readthedocs.org/en/stable/text_engine.html>`_
 
 
 Existing command modules
