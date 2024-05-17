@@ -26,8 +26,6 @@ import os
 
 from sphinxwrapper import DefaultConfig
 
-from dragonfly import RecognitionObserver
-
 
 def get_decoder_config_object():
     """ Get the default Sphinx decoder object for the engine. """
@@ -42,14 +40,14 @@ def get_decoder_config_object():
     # Descriptions for VAD config options were retrieved from:
     # https://cmusphinx.github.io/doc/sphinxbase/fe_8h_source.html
 
-    # Number of silence frames to keep after from speech to silence.
-    decoder_config.set_int("-vad_postspeech", 30)
+    # Number of speech frames to trigger vad from silence to speech.
+    decoder_config.set_int("-vad_startspeech", 10)
 
     # Number of speech frames to keep before silence to speech.
     decoder_config.set_int("-vad_prespeech", 20)
 
-    # Number of speech frames to trigger vad from silence to speech.
-    decoder_config.set_int("-vad_startspeech", 10)
+    # Number of silence frames to keep after from speech to silence.
+    decoder_config.set_int("-vad_postspeech", 30)
 
     # Threshold for decision between noise and silence frames. Log-ratio
     # between signal level and noise level.
@@ -74,30 +72,3 @@ class EngineConfig(object):
     FORMAT = 'int16'
     RATE = 16000              # 16kHz sample rate
     BUFFER_SIZE = 1024        # Audio buffer size
-
-
-class WaveRecognitionObserver(RecognitionObserver):
-    """ Observer class used in :meth:`SphinxEngine.process_wave_file`. """
-    def __init__(self, engine):
-        RecognitionObserver.__init__(self)
-        self.words = ""
-        self.complete = None
-        self.engine = engine
-
-    def on_start(self):
-        self.complete = False
-
-    def on_recognition(self, words):
-        self.complete = True
-        self.words = words
-
-    def on_failure(self):
-        self.complete = True
-        self.words = ""
-
-    def __enter__(self):
-        self.register()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.unregister()

@@ -22,10 +22,8 @@
 Engine class for CMU Pocket Sphinx
 """
 
-import contextlib
 import locale
 import os
-import wave
 
 from six            import binary_type, text_type, string_types, PY2
 from jsgf           import RootGrammar, PublicRule, Literal
@@ -38,9 +36,8 @@ from dragonfly.engines.base                           import (EngineBase, Engine
                                                               DelegateTimerManagerInterface)
 from dragonfly.engines.backend_sphinx.compiler         import SphinxJSGFCompiler
 from dragonfly.engines.backend_sphinx.grammar_wrapper  import GrammarWrapper
-from dragonfly.engines.backend_sphinx.misc             import (EngineConfig,
-                                                               WaveRecognitionObserver,
-                                                               get_decoder_config_object)
+from dragonfly.engines.backend_sphinx.misc           import (EngineConfig,
+                                                             get_decoder_config_object)
 from dragonfly.engines.backend_sphinx.recobs           import SphinxRecObsManager
 from dragonfly.engines.backend_sphinx.recording        import AudioRecorder
 from dragonfly.engines.backend_sphinx.timer            import SphinxTimerManager
@@ -673,83 +670,6 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
 
         # Return the appropriate hypothesis.
         return hypotheses.get(hyp.hypstr, self._null_hypothesis)
-
-    def process_wave_file(self, path):
-        """
-        Recognize speech from a wave file and return the recognition
-        results.
-
-        This method checks that the wave file is valid. It raises an error
-        if the file doesn't exist, if it can't be read or if the relevant
-        WAV header parameters do not match those in the engine configuration.
-
-        The wave file must use the same sample width, sample rate and number
-        of channels that the acoustic model uses.
-
-        If the file is valid, :meth:`process_buffer` is then used to process
-        the audio.
-
-        Multiple utterances are supported.
-
-        :param path: wave file path
-        :raises: IOError | OSError | ValueError
-        :returns: recognition results
-        :rtype: generator
-        """
-        if not self._decoder:
-            self.connect()
-
-        # Check that path is a valid file.
-        if not os.path.isfile(path):
-            raise IOError("%r is not a file. Please use a different file"
-                          " path." % (path,))
-
-        # Get required audio configuration from the engine config.
-        channels, sample_width, rate, chunk = (
-            self.config.CHANNELS,
-            self.config.SAMPLE_WIDTH,
-            self.config.RATE,
-            self.config.BUFFER_SIZE
-        )
-
-        # Open the wave file. Use contextlib to make sure that the file is
-        # closed whether errors are raised or not.
-        # Also register a custom recognition observer for the duration.
-        obs = WaveRecognitionObserver(self)
-        with contextlib.closing(wave.open(path, "rb")) as wf, obs as obs:
-            # Validate the wave file's header.
-            if wf.getnchannels() != channels:
-                message = ("WAV file '%s' should use %d channel(s), not %d!"
-                           % (path, channels, wf.getnchannels()))
-            elif wf.getsampwidth() != sample_width:
-                message = ("WAV file '%s' should use sample width %d, not "
-                           "%d!" % (path, sample_width, wf.getsampwidth()))
-            elif wf.getframerate() != rate:
-                message = ("WAV file '%s' should use sample rate %d, not "
-                           "%d!" % (path, rate, wf.getframerate()))
-            else:
-                message = None
-
-            if message:
-                raise ValueError(message)
-
-            # Use process_buffer to process each buffer.
-            for x in range(0, int(wf.getnframes() / chunk) + 1):
-                data = wf.readframes(chunk)
-                if not data:
-                    break
-
-                self.process_buffer(data)
-
-                # Get the results from the observer.
-                if obs.words:
-                    yield obs.words
-                    obs.words = ""
-
-        # Log a warning if speech start or end weren't detected.
-        if not obs.complete:
-            self._log.warning("Speech start/end wasn't detected in the wave"
-                              " file!  Try changing -vad_* decoder params.")
 
     #-----------------------------------------------------------------------
     # Miscellaneous methods.
