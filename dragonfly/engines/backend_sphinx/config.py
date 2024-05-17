@@ -19,7 +19,7 @@
 #
 
 """
-Miscellaneous classes and functions used by the engine.
+Configuration classes and functions used by the engine.
 """
 
 import os

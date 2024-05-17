@@ -36,8 +36,8 @@ from dragonfly.engines.base                           import (EngineBase, Engine
                                                               DelegateTimerManagerInterface)
 from dragonfly.engines.backend_sphinx.compiler         import SphinxJSGFCompiler
 from dragonfly.engines.backend_sphinx.grammar_wrapper  import GrammarWrapper
-from dragonfly.engines.backend_sphinx.misc           import (EngineConfig,
-                                                             get_decoder_config_object)
+from dragonfly.engines.backend_sphinx.config           import (EngineConfig,
+                                                               get_decoder_config_object)
 from dragonfly.engines.backend_sphinx.recobs           import SphinxRecObsManager
 from dragonfly.engines.backend_sphinx.recording        import AudioRecorder
 from dragonfly.engines.backend_sphinx.timer            import SphinxTimerManager
