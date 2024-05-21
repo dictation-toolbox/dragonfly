@@ -22,4 +22,4 @@
 from .number       import    IntegerContent, DigitsContent
 from .short_number import    ShortIntegerContent
 from .calendar     import   (AbsoluteDate, RelativeDate, Date,
-                            MilitaryTime, Time)
+                             TwelveHourTime, MilitaryTime, Time)

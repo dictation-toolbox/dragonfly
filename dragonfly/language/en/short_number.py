@@ -1,9 +1,31 @@
+#
+# This file is part of Dragonfly.
+# (c) Copyright 2019, 2020 by Mike Roberts
+# Licensed under the LGPL.
+#
+#   Dragonfly is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   Dragonfly is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   Lesser General Public License for more details.
+#
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with Dragonfly.  If not, see
+#   <http://www.gnu.org/licenses/>.
+#
 
-'''
+"""
 ShortIntegerRef
 ============================================================================
 
-:class:`ShortIntegerRef` is a modified version of :class:`IntegerRef` which allows for greater flexibility in the way that numbers may be pronounced, allowing for words like "hundred" to be dropped. This may be particularly useful when navigating files by line or page number.
+:class:`ShortIntegerRef` is a modified version of :class:`IntegerRef` which
+allows for greater flexibility in the way that numbers may be pronounced,
+allowing for words like \"hundred\" to be dropped.  This may be particularly
+useful when navigating files by line or page number.
 
 Some examples of allowed pronunciations:
 
@@ -32,12 +54,14 @@ seventeen five three                  1753
 four thousand                         4000
 ================================     ======
 
-The class works in the same way as :class:`IntegerRef`, by adding the following as an extra.
+The class works in the same way as :class:`IntegerRef`, by adding the
+following as an extra:
 
 .. code:: python
 
-   ShortIntegerRef("name", 0, 1000),
-'''
+   ShortIntegerRef(\"name\", 0, 1000),
+
+"""
 
 from dragonfly.language.base.integer_internal  import (CollectionIntBuilder,
                                                        MagnitudeIntBuilder,
