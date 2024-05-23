@@ -73,25 +73,21 @@ class RecognitionObserver(object):
         detected.
         """
 
-    def on_recognition(self, words, rule, node, results):
+    def on_recognition(self, words, results=None):
         """
         Method called when speech successfully decoded to a grammar rule or
         to dictation.
 
-        This is called *before* grammar rule processing (i.e.
-        ``Rule.process_recognition()``).
+        This is called *before* grammar rule processing, i.e., before
+        ``Rule.process_recognition()``.
 
         :param words: recognized words
         :type words: tuple
-        :param rule: *optional* recognized rule
-        :type rule: Rule
-        :param node: *optional* parse tree node
-        :type node: Node
         :param results: *optional* engine recognition results object
         :type results: :ref:`engine-specific type<RefGrammarCallbackResultsTypes>`
         """
 
-    def on_failure(self, results):
+    def on_failure(self, results=None):
         """
         Method called when speech failed to decode to a grammar rule or to
         dictation.
@@ -100,7 +96,7 @@ class RecognitionObserver(object):
         :type results: :ref:`engine-specific type<RefGrammarCallbackResultsTypes>`
         """
 
-    def on_end(self, results):
+    def on_end(self, results=None):
         """
         Method called when speech ends, either with a successful
         recognition (after ``on_recognition``) or in failure (after
@@ -146,7 +142,7 @@ class RecognitionHistory(list, RecognitionObserver):
         """"""
         self._complete = False
 
-    def on_recognition(self, words):
+    def on_recognition(self, words, results=None):
         """"""
         self._complete = True
         self.append(self._recognition_to_item(words))
