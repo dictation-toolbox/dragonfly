@@ -56,16 +56,7 @@ class NatlinkDictationContainer(DictationContainerBase):
         DictationContainerBase.__init__(self, words=unicode_words,
                                         methods=methods)
 
-    def format(self, use_spoken=False):
-        """
-        Format and return this dictation.
-
-        Arguments:
-         - *use_spoken* (*bool*, default: *False*) --
-           whether to use the spoken form of dictated words in the result
-           instead of the written form
-
-        """
+    def format(self, spoken_form=False):
         formatter = WordFormatter()
-        formatted = formatter.format_dictation(self._words, use_spoken)
+        formatted = formatter.format_dictation(self._words, spoken_form)
         return self.apply_methods(formatted)

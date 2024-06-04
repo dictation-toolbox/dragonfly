@@ -236,8 +236,17 @@ class DictationContainerBase(object):
         """ Sequence of the words forming this dictation. """
         return self._words
 
-    def format(self):
-        """ Format and return this dictation as a Unicode object. """
+    def format(self, spoken_form=False):
+        """
+        Format and return this dictation as a string.
+
+        Arguments:
+         - *spoken_form* (*bool*, default: *False*) --
+           whether to use the spoken form of dictated words in the result
+           instead of the written form.  Only has an effect if using the
+           Natlink/DNS engine back-end
+
+        """
         return self.apply_methods(u" ".join(self._words))
 
     def apply_methods(self, joined_words):
