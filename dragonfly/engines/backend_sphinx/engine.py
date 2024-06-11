@@ -361,6 +361,9 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         wrapper.set_search = False
 
     def _unset_search(self, name):
+        if not self._decoder:
+            return
+
         # Unset a Pocket Sphinx search with the given name.
         # Do NOT unset the default search; this will cause a segfault!
         if name == self._default_search_name:
@@ -375,6 +378,9 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         self._set_default_search()
 
     def _set_default_search(self):
+        if not self._decoder:
+            return
+
         # Ensure we're not processing.
         self._decoder.end_utterance()
 
@@ -385,10 +391,13 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         """
         Check if a word is in the current Sphinx pronunciation dictionary.
 
+        This method must be called after :meth:`connect`.
+
         :rtype: bool
         """
         if not self._decoder:
-            self.connect()
+            raise EngineError("Calling check_valid_word is not allowed"
+                              " before calling connect")
 
         word = _map_to_str(word)
         return bool(self._decoder.lookup_word(word.lower()))
@@ -426,7 +435,11 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
             self._recorder.stop()
 
     def mimic(self, words):
-        """ Mimic a recognition of the given *words* """
+        """ Mimic a recognition of the given *words*. """
+        if not self._decoder:
+            raise EngineError("Calling mimic is not allowed before calling"
+                              " connect")
+
         # The *words* argument should be a string or iterable.
         # Words are put into lowercase for consistency.
         if isinstance(words, string_types):
@@ -461,13 +474,14 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         This method is meant to be called sequentially with buffers from an
         audio source, such as a microphone or wave file.
 
-        This method will do nothing if :meth:`connect` has not been called.
+        This method must be called after :meth:`connect`.
 
         :param buf: audio buffer
         :type buf: str
         """
         if not self._decoder:
-            return
+            raise EngineError("Calling process_buffer is not allowed"
+                              " before calling connect")
 
         # Keep a list of buffers for possible reprocessing later on.
         self._audio_buffers.append(buf)
@@ -553,9 +567,9 @@ class SphinxEngine(EngineBase, DelegateTimerManagerInterface):
         lm_hypothesis = hyp
 
         # Get the hypothesis for each active grammar.
-        # If this is a regular recognition, switch to each gramar search and
-        #  re-process the audio to obtain a closer match.  Otherwise, use
-        #  the mimicked words for each grammar's hypothesis.
+        # If this is a regular recognition, switch to each grammar search
+        #  and re-process the audio to obtain a closer match.  Otherwise,
+        #  use the mimicked words for each grammar's hypothesis.
         hypotheses = {}
         for wrapper in wrappers:
             if not self._mimicking:

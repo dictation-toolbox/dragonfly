@@ -303,7 +303,6 @@ class SphinxJSGFCompiler(JSGFCompiler):
 
         return jsgf.NamedRuleRef("_impossible")
 
-    # TODO Change this to allow dictation elements to work.
     def _compile_dictation(self, element, *args, **kwargs):
         return self.compile_element(
             elements_.Impossible(), *args, **kwargs
