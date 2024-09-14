@@ -163,7 +163,8 @@ class BaseClipboard(object):
         """
             Context manager for synchronizing local and system clipboard
             changes.  This takes the same arguments as the
-            :meth:`wait_for_change` method.
+            :meth:`wait_for_change` method.  A ``RuntimeError`` is raised if
+            the system clipboard does not change.
 
             Arguments:
              - *timeout* (float) -- timeout in seconds.
@@ -197,8 +198,13 @@ class BaseClipboard(object):
             # Yield for clipboard operations.
             yield
         finally:
-            # Wait for the system clipboard to change.
-            cls.wait_for_change(timeout, step, formats, initial_clipboard)
+            # Wait for the system clipboard to change, raising an error on
+            #  failure.
+            changed = cls.wait_for_change(timeout, step, formats,
+                                          initial_clipboard)
+            if not changed:
+                message = "Timed out waiting for clipboard to change"
+                raise RuntimeError(message)
 
     #-----------------------------------------------------------------------
 

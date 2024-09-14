@@ -225,9 +225,13 @@ class Win32Clipboard(BaseClipboard):
             # Yield for clipboard operations.
             yield
         finally:
-            # Wait for the system clipboard to change.
-            cls._wait_for_change(timeout, step, formats, initial_clipboard,
-                                 seq_no)
+            # Wait for the system clipboard to change, raising an error on
+            #  failure.
+            changed = cls._wait_for_change(timeout, step, formats,
+                                           initial_clipboard, seq_no)
+            if not changed:
+                message = "Timed out waiting for clipboard to change"
+                raise RuntimeError(message)
 
     #-----------------------------------------------------------------------
 
