@@ -217,7 +217,7 @@ class Win32Clipboard(BaseClipboard):
     @classmethod
     @contextlib.contextmanager
     def synchronized_changes(cls, timeout, step=0.001, formats=None,
-                             initial_clipboard=None, raise_exception_on_timeout=False):
+                             initial_clipboard=None):
         seq_no = win32clipboard.GetClipboardSequenceNumber()
         if formats and not initial_clipboard:
             initial_clipboard = cls(from_system=True)
@@ -225,10 +225,13 @@ class Win32Clipboard(BaseClipboard):
             # Yield for clipboard operations.
             yield
         finally:
-            # Wait for the system clipboard to change.
-            if not cls._wait_for_change(timeout, step, formats, initial_clipboard,
-                                 seq_no) and raise_exception_on_timeout:
-                raise TimeoutError("Timed out waiting for clipboard to change.")
+            # Wait for the system clipboard to change, raising an error on
+            #  failure.
+            changed = cls._wait_for_change(timeout, step, formats,
+                                           initial_clipboard, seq_no)
+            if not changed:
+                message = "Timed out waiting for clipboard to change"
+                raise RuntimeError(message)
 
     #-----------------------------------------------------------------------
 
