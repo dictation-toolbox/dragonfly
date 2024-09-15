@@ -33,7 +33,11 @@ import os
 import re
 import time
 
-from six import text_type, binary_type, integer_types
+from six import PY2, text_type, binary_type, integer_types
+
+# Import our TimeoutError substitute for Python 2, needed below.
+if PY2:
+    from dragonfly.error import TimeoutError
 
 
 #===========================================================================
@@ -163,7 +167,7 @@ class BaseClipboard(object):
         """
             Context manager for synchronizing local and system clipboard
             changes.  This takes the same arguments as the
-            :meth:`wait_for_change` method.  A ``RuntimeError`` is raised if
+            :meth:`wait_for_change` method.  A ``TimeoutError`` is raised if
             the system clipboard does not change.
 
             Arguments:
@@ -204,7 +208,7 @@ class BaseClipboard(object):
                                           initial_clipboard)
             if not changed:
                 message = "Timed out waiting for clipboard to change"
-                raise RuntimeError(message)
+                raise TimeoutError(message)
 
     #-----------------------------------------------------------------------
 

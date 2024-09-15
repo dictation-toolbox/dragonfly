@@ -34,13 +34,18 @@ import sys
 import threading
 import time
 
-from six                              import integer_types, reraise
+from six                              import PY2, integer_types, reraise
 
 import pywintypes
 import win32clipboard
 import win32con
 
 from dragonfly.windows.base_clipboard import BaseClipboard
+
+# Import our TimeoutError substitute for Python 2, needed below.
+if PY2:
+    from dragonfly.error import TimeoutError
+
 
 #===========================================================================
 
@@ -231,7 +236,7 @@ class Win32Clipboard(BaseClipboard):
                                            initial_clipboard, seq_no)
             if not changed:
                 message = "Timed out waiting for clipboard to change"
-                raise RuntimeError(message)
+                raise TimeoutError(message)
 
     #-----------------------------------------------------------------------
 

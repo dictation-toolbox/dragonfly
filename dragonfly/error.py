@@ -24,5 +24,11 @@ class DragonflyError(Exception):
     pass
 
 
+# Used by the clipboard classes in Python 2.
+# Python 3 has its own TimeoutError class.
+class TimeoutError(Exception):
+    pass
+
+
 class GrammarError(Exception):
     pass

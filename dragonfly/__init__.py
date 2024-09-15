@@ -25,6 +25,8 @@ import sys
 #---------------------------------------------------------------------------
 from .config            import Config, Section, Item
 from .error             import DragonflyError, GrammarError
+if sys.version_info[0] == 2:  # Don't override the Python 3 class.
+    from .error         import TimeoutError
 
 #---------------------------------------------------------------------------
 from .engines           import (get_engine, EngineError, MimicFailure,
