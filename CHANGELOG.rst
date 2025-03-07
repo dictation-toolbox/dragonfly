@@ -26,18 +26,25 @@ Changed
 ~~~~~~~
 - Change the CommandModule class to import command module files instead of
   compiling them directly.
-- Change the CommandModule class' unload function to invoke top-level unload
-  functions like the Natlink loader does.
+- Change the CommandModule class' optional unload method to invoke top-level
+  unload functions like the Natlink loader does.
 - Make the logging output of Dragonfly's CLI commands more sane.
 - Make some optimizations to the Natlink engine.
+- Rename the engines.backend_sphinx.misc module to config.
 
 Fixed
 ~~~~~
+- Add missing error on timeout for the Clipboard.synchronized_changes()
+  method (thanks `@gkuegler`_ ).
 - Fix an issue with the SAPI 5 engine's mimic method on 64-bit Python.
 - Fix an issue with the Kaldi engine where unloading a grammar causes an
   error.
 - Fix some problematic package requirements.
 
+Removed
+~~~~~~~
+- Move the SphinxEngine.process_wave_file() method into the example module
+  sphinx_wave_transcriber.py.
 
 `1.0.0-rc2`_ - 2023-10-08
 -------------------------
@@ -1389,6 +1396,7 @@ This release is the first in the Git version control system.
 .. _@dasnessie: https://github.com/dasnessie
 .. _@dmakarov: https://github.com/dmakarov
 .. _@dusty-phillips: https://github.com/dusty-phillips
+.. _@gkuegler: https://github.com/gkuegler
 .. _@kb100: https://github.com/kb100
 .. _@lexxish: https://github.com/lexxish
 .. _@mrob95: https://github.com/mrob95
