@@ -278,6 +278,7 @@ administrative applications.
 This feature is disabled by default because it comes with a number of
 caveats.  They are as follows:
 
+ * It does not work with Dragon 16, the latest version.
  * Modifier keys are not always held down when simulated this way.
  * Certain applications do not accept input simulated this way.
  * Unicode character keystrokes (if enabled) cannot be simulated this way.

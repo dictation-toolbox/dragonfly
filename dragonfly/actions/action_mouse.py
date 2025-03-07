@@ -191,6 +191,7 @@ mode, i.e., administrative applications.
 This feature is disabled by default because it comes with a number of
 caveats.  They are as follows:
 
+ * It does not work with Dragon 16, the latest version.
  * Modifier keys are not always held down when simulated this way, meaning
    that actions for clicking while holding control, alt or shift are not
    guaranteed to work.
