@@ -30,6 +30,7 @@ Changed
   functions like the Natlink loader does.
 - Make the logging output of Dragonfly's CLI commands more sane.
 - Make some optimizations to the Natlink engine.
+- Rename the engines.backend_sphinx.misc module to config.
 
 Fixed
 ~~~~~
@@ -38,6 +39,10 @@ Fixed
   error.
 - Fix some problematic package requirements.
 
+Removed
+~~~~~~~
+- Move the SphinxEngine.process_wave_file() method into the example module
+  sphinx_wave_transcriber.py.
 
 `1.0.0-rc2`_ - 2023-10-08
 -------------------------
