@@ -125,8 +125,68 @@ to substantially increase the effort needed to keep things working.
 New SR Engine Guide
 ~~~~~~~~~~~~~~~~~~~
 
-TODO
+This section is meant to help the reader get started with implementing a new
+speech recognition engine backend for Dragonfly.
 
+Implementing a custom Dragonfly engine is a complex task.  It is
+recommended that you start with a copy of the text-input engine source code
+and make alterations with reference to the code of other engines.  The
+source code may be consulted on GitHub or via the ReadTheDocs source code
+links.
+
+The various ``EngineBase`` virtual methods should all be implemented by your
+new engine sub-class.  It should also have a unique name.  You can give it
+one by overriding the ``_name`` class member in your engine sub-class.
+
+If you want to customise say, the Natlink engine, start with the code (or
+classes) for that engine instead.
+
+Once you have implemented the required engine methods and classes, you will
+need to initialize and register an engine instance with the special
+``register_engine_init()`` function:
+
+.. code-block:: python
+
+   from dragonfly.engines import register_engine_init
+   my_engine = MyEngine()
+   register_engine_init(my_engine)
+
+Your engine instance will then be returned by Dragonfly's ``get_engine()``
+function, when it is invoked:
+
+.. code-block:: python
+
+   >>> from dragonfly.engines import get_engine
+   >>> get_engine()
+   MyEngine()
+
+Please note that, if you make your new engine available this way, it will
+not be useable with Dragonfly's Command-line Interface (CLI).  If you would
+like to use the CLI, or if you intend to submit your new engine for
+inclusion in this library, you should instead modify the ``get_engine()``
+function itself to retrieve and initialize your new engine.  Please see the
+function's source code and documentation for how to do this.
+
+Your engine implementation should now be useable.  If you would like to test
+your implementation against Dragonfly's test suite in a clone of the Git
+repo, you will need to add an entry to the special ``engine_tests_dict``
+dictionary in *setup.py*, at around line 59:
+
+.. code-block:: python
+
+   from dragonfly.test.suites import engine_tests_dict
+
+   # Reuse the text-input engine's test suite for your new engine.
+   name = 'myengine'
+   my_engine_tests = engine_tests_dict['text'][:]
+   my_engine_tests.remove('test_engine_text')
+   my_engine_tests.append('test_engine_' + name)  # myengine test file.
+   engine_tests_dict[name] = my_engine_tests
+
+Please be aware that engines submitted for inclusion must test successfully
+against Dragonfly's test suite.  In addition, engine-specific requirements
+must be *optional* extras, specified in *setup.py*.  The library must still
+be functional without these requirements installed.
 
 .. Links.
 .. _Read the docs: https://readthedocs.org/
