@@ -34,6 +34,10 @@ Community
 The following resources are used by the Dragonfly community and speech
 recognition users/developers:
 
+ * `Gitter chat room <https://app.gitter.im/#/room/#dragonfly2:matrix.org>`__
+  (also `bridged to Matrix <https://matrix.to/#/#dragonfly2:matrix.org>`__)
+  --- Real-time chat and historical discussions about Dragonfly
+
  * `Dragonfly Speech Google Group
    <https://groups.google.com/forum/#!forum/dragonflyspeech>`_
 
