@@ -54,9 +54,12 @@ each release are listed in the project's `changelog
 Dragonfly's FAQ is available in the documentation `here
 <https://dragonfly.readthedocs.io/en/latest/faq.html>`__.
 There are also a number of Dragonfly-related questions on `Stackoverflow
-<http://stackoverflow.com/questions/tagged/python-dragonfly>`_, although
+<http://stackoverflow.com/questions/tagged/python-dragonfly>`__, although
 many of them are related to issues resolved in the latest version of
-Dragonfly.
+Dragonfly. Real-time chat and historical discussions about Dragonfly can be
+found in the `Gitter chat room
+<https://app.gitter.im/#/room/#dragonfly2:matrix.org>`__ (also `bridged to
+Matrix <https://matrix.to/#/#dragonfly2:matrix.org>`__).
 
 
 CompoundRule Usage example

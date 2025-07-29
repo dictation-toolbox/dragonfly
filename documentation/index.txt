@@ -24,9 +24,6 @@ framework is cross-platform, working on Windows, macOS and Linux (X11 only).
 See the :ref:`actions sub-package documentation <RefActions>` for more
 information, including code examples.
 
-This project is a fork of the original
-`t4ngo/dragonfly <https://github.com/t4ngo/dragonfly>`__ project.
-
 Dragonfly currently supports the following speech recognition engines:
 
  - :ref:`Dragon <RefNatlinkEngine>`, a product of *Nuance*. All versions up
@@ -39,25 +36,24 @@ Dragonfly currently supports the following speech recognition engines:
  - :ref:`CMU Pocket Sphinx <RefSphinxEngine>`, open source and multi-
    platform.
 
-Dragonfly's documentation is available online at
-`Read the Docs <http://dragonfly.readthedocs.org/en/latest/>`_.
+Dragonfly's documentation is available online at `Read the
+Docs <http://dragonfly.readthedocs.org/en/latest/>`__.
 Dragonfly's FAQ is available in the documentation :ref:`here <RefFAQ>`.
 There are also a number of Dragonfly-related questions on `Stackoverflow
-<http://stackoverflow.com/questions/tagged/python-dragonfly>`_, although
+<http://stackoverflow.com/questions/tagged/python-dragonfly>`__, although
 many of them are related to issues resolved in the latest version of
-Dragonfly.
+Dragonfly. Real-time chat and historical discussions about Dragonfly can be
+found in the `Gitter chat room
+<https://app.gitter.im/#/room/#dragonfly2:matrix.org>`__ (also `bridged to
+Matrix <https://matrix.to/#/#dragonfly2:matrix.org>`__).
 
-Dragonfly's mailing list/discussion group is available at
-`Google Groups
-<https://groups.google.com/forum/#!forum/dragonflyspeech>`_.
 
-
-CompoundRule usage example
+CompoundRule Usage example
 ----------------------------------------------------------------------------
 
-A very simple example of Dragonfly usage is to create a static 
-voice command with a callback that will be called when the 
-command is spoken.  This is done as follows:
+A very simple example of Dragonfly usage is to create a static voice
+command with a callback that will be called when the command is spoken.
+This is done as follows:
 
 ..  code-block:: python
 
