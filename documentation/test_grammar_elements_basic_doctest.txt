@@ -178,7 +178,7 @@ Basic usage::
 Exact number of repetitions::
 
     >>> seq = Sequence([Literal("hello"), Literal("world")])
-    >>> rep = Repetition(seq, min=3, max=None, optimize=False)
+    >>> rep = Repetition(seq, min=3, max=3, optimize=False)
     >>> test_rep = ElementTester(rep)
     >>> test_rep.recognize("hello world")
     RecognitionFailure
@@ -189,12 +189,12 @@ Exact number of repetitions::
     >>> test_rep.recognize("hello world hello world hello world hello world")
     RecognitionFailure
 
-min must be less than max::
+min must be less than or equal to max::
 
-    >>> rep = Repetition(Literal("hello"), min=3, max=3, optimize=False)
+    >>> rep = Repetition(Literal("hello"), min=4, max=3, optimize=False)
     Traceback (most recent call last):
       ...
-    AssertionError: min must be less than max
+    AssertionError: min must be less than or equal to max
 
 
 Modifier element class
