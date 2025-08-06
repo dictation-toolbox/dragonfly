@@ -567,29 +567,37 @@ class Repetition(Sequence):
            the child element of this element
          - *min* (*int*, default: *1*) --
            the minimum number of times that the child element must
-           be recognized; may be 0
+           be recognized (inclusive); may be 0
          - *max* (*int*, default: *None*) --
            the maximum number of times that the child element must
-           be recognized; if *None*, the child element must be recognized
-           exactly *min* times (i.e. *max = min + 1*)
+           be recognized (exclusive!); if *None*, the child element must be
+           recognized exactly *min* times (i.e. *max = min + 1*)
          - *name* (*str*, default: *None*) --
            the name of this element
          - *default* (*object*, default: *None*) --
            the default value used if this element is optional and wasn't
            spoken
          - *optimize* (*bool*, default: *True*) --
-           whether the engine's compiler should compile the element
+           whether the engine's compiler should attempt to compile the element
            optimally
 
-        For a recognition to match, at least one of the child elements
-        must match the recognition.  The first matching child is
-        used.  Child elements are searched in the order they are given
-        in the *children* constructor argument.
+        For a recognition to match, the child element must be recognized at
+        least *min* times and strictly less than *max* times.
 
-        If the *optimize* argument is set to *True*, the compiler will
-        ignore the *min* and *max* limits to reduce grammar complexity. If
-        the number of repetitions recognized is more than the *max* value,
-        the rule will fail to match.
+        Examples:
+         - *Repetition(child, min=2, max=5)* -- child 2, 3, or 4 times
+         - *Repetition(child, min=0, max=3)* -- child 0, 1, or 2 times
+         - *Repetition(child, max=3)* -- child 1 or 2 times
+         - *Repetition(child, min=1, max=2)* -- child exactly once
+         - *Repetition(child, min=1)* -- child exactly once
+         - *Repetition(child)* -- child exactly once
+
+        If the *optimize* argument is set to *True*, the engine's compiler may
+        attempt to ignore the *min* and *max* limits to reduce grammar
+        complexity. Not all engines support this, and some engines may only
+        support some rule structures. Regardless, if the number of repetitions
+        recognized is less than the *min* value -- or equal to or more than the
+        *max* value -- the rule will still fail to match.
 
     """
 

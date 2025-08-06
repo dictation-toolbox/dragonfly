@@ -60,6 +60,15 @@ Or use the Makefile on other systems:
 
    $ make html
 
+Or, if you have the `uv <https://docs.astral.sh/uv/>`_ tool installed, you can
+disregard the above commands, and simply run one of the following commands from
+the *documentation/* folder:
+
+.. code:: shell
+
+   $ uv run --no-project --with-requirements requirements.txt -- make.bat html
+   $ uv run --no-project --with-requirements requirements.txt -- make html
+
 If there were no errors during the build process, open the
 *build/html/index.html* file in a web browser. Make changes, rebuild the
 documentation and reload the doc page(s) in your browser as you go.
