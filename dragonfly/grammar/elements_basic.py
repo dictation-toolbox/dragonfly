@@ -570,8 +570,8 @@ class Repetition(Sequence):
            be recognized (inclusive); may be 0
          - *max* (*int*, default: *None*) --
            the maximum number of times that the child element must
-           be recognized (exclusive!); if *None*, the child element must be
-           recognized exactly *min* times (i.e. *max = min + 1*)
+           be recognized (inclusive); if *None*, the child element may be
+           recognized up to *min + 1* times (i.e. *max = min + 1*)
          - *name* (*str*, default: *None*) --
            the name of this element
          - *default* (*object*, default: *None*) --
@@ -585,11 +585,11 @@ class Repetition(Sequence):
         least *min* times and strictly less than *max* times.
 
         Examples:
-         - *Repetition(child, min=2, max=5)* -- child 2, 3, or 4 times
-         - *Repetition(child, min=0, max=3)* -- child 0, 1, or 2 times
-         - *Repetition(child, max=3)* -- child 1 or 2 times
-         - *Repetition(child, min=1, max=2)* -- child exactly once
-         - *Repetition(child, min=1)* -- child exactly once
+         - *Repetition(child, min=2, max=4)* -- child 2, 3, or 4 times
+         - *Repetition(child, min=0, max=2)* -- child 0, 1, or 2 times
+         - *Repetition(child, max=2)* -- child 1 or 2 times
+         - *Repetition(child, min=1, max=1)* -- child exactly once
+         - *Repetition(child, min=1)* -- child 1 or 2 times
          - *Repetition(child)* -- child exactly once
 
         If the *optimize* argument is set to *True*, the engine's compiler may
@@ -610,7 +610,7 @@ class Repetition(Sequence):
                             " ElementBase instance." % self)
         assert isinstance(min, six.integer_types)
         assert max is None or isinstance(max, six.integer_types)
-        assert max is None or min < max, "min must be less than max"
+        assert max is None or min <= max, "min must be less than or equal to max"
 
         self._child = child
         self._min = min
@@ -618,7 +618,7 @@ class Repetition(Sequence):
         else:           self._max = max
         self._optimize = optimize
 
-        optional_length = self._max - self._min - 1
+        optional_length = self._max - self._min
         if optional_length > 0:
             element = Optional(child)
             for index in range(optional_length-1):
@@ -644,8 +644,8 @@ class Repetition(Sequence):
     max = property(
         lambda self: self._max,
         doc="The maximum number of times that the child element must be "
-        "recognized; if *None*, the child element must be "
-        "recognized exactly *min* times (i.e. *max = min + 1*). "
+        "recognized; if *None*, the child element may be "
+        "recognized up to *min + 1* times (i.e. *max = min + 1*). "
         "(Read-only)"
     )
 

@@ -24,6 +24,8 @@ elements.
 
 """
 
+from six import integer_types
+
 from dragonfly.language.loader   import language
 from dragonfly.grammar.elements  import (Alternative, Sequence, Optional,
                                          Compound, ListRef, RuleWrap)
@@ -59,6 +61,15 @@ class Integer(Alternative):
             #  we set it by retrieving the current speaker language content.
             self._set_content(language.IntegerContent)
         self._builders = self._content.builders
+
+        assert isinstance(min, integer_types), "min must be a number"
+        assert isinstance(max, integer_types), "max must be a number"
+        assert min <= max, "min must be less than or equal to max"
+
+        # Make the *max* argument behave inclusively.
+        # Note: This is an easier change than modifying the internal integer
+        #  classes.
+        max = max + 1
 
         self._min = min; self._max = max
         children = self._build_children(min, max)
