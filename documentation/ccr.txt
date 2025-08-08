@@ -7,7 +7,8 @@ Continous Command Recognition (CCR)
 One of dragonfly's most powerful features is continuous command recognition
 (CCR), that is commands that can be spoken together without pausing. This is
 done through use of a :class:`dragonfly.grammar.element_basic.Repetition`
-rule element. There is a mini-demo of continuous command recognition
+or :class:`dragonfly.grammar.element_basic.OneOrMore` rule element. There is
+a mini-demo of continuous command recognition
 `on YouTube <https://www.youtube.com/watch?v=g3c5H7sAbBQ>`__. There are also
 a few projects using dragonfly which make writing CCR rules easier:
 

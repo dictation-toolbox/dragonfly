@@ -40,10 +40,10 @@ from .grammar.rule_basic         import BasicRule
 from .grammar.rule_compound      import CompoundRule
 from .grammar.rule_mapping       import MappingRule
 from .grammar.elements  import (ElementBase, Sequence, Alternative,
-                                Optional, Repetition, Literal,
+                                Optional, Repetition, OneOrMore, Literal,
                                 ListRef, DictListRef, Dictation, Modifier,
-                                RuleRef, RuleWrap, Compound, Choice,
-                                Empty, Impossible)
+                                RuleRef, RuleWrap, Compound, Choice, Empty,
+                                Impossible)
 
 from .grammar.context   import Context, AppContext, FuncContext
 from .grammar.list      import ListBase, List, DictList

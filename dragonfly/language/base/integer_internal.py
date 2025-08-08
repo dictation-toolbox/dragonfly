@@ -36,6 +36,11 @@ from dragonfly.grammar.list      import List
 
 #---------------------------------------------------------------------------
 # Numeric element builder classes.
+#
+# Note: The classes in this file treat the *max* argument as exclusive,
+#  meaning that build_element() methods will return element trees for
+#  recognizing integers up to max - 1.
+
 
 class IntBuilderBase(object):
 

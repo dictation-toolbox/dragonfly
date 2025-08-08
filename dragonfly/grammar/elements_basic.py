@@ -36,6 +36,8 @@ classes:
    wrapper around a child element which makes the child element optional
  - :class:`Repetition` --
    repetition of a child element
+ - :class:`OneOrMore` --
+   one or more repetitions of a child element
  - :class:`Literal` --
    literal word which must be said exactly by the speaker as given
  - :class:`RuleRef` --
@@ -570,34 +572,34 @@ class Repetition(Sequence):
            be recognized (inclusive); may be 0
          - *max* (*int*, default: *None*) --
            the maximum number of times that the child element must
-           be recognized (exclusive!); if *None*, the child element must be
-           recognized exactly *min* times (i.e. *max = min + 1*)
+           be recognized (inclusive); if *None*, the child element may be
+           recognized up to *min + 1* times (i.e. *max = min + 1*)
          - *name* (*str*, default: *None*) --
            the name of this element
          - *default* (*object*, default: *None*) --
            the default value used if this element is optional and wasn't
            spoken
          - *optimize* (*bool*, default: *True*) --
-           whether the engine's compiler should attempt to compile the element
-           optimally
+           whether the engine's compiler should attempt to compile the
+           element optimally
 
         For a recognition to match, the child element must be recognized at
-        least *min* times and strictly less than *max* times.
+        least *min* times and strictly less than or equal to *max* times.
 
         Examples:
-         - *Repetition(child, min=2, max=5)* -- child 2, 3, or 4 times
-         - *Repetition(child, min=0, max=3)* -- child 0, 1, or 2 times
-         - *Repetition(child, max=3)* -- child 1 or 2 times
-         - *Repetition(child, min=1, max=2)* -- child exactly once
-         - *Repetition(child, min=1)* -- child exactly once
-         - *Repetition(child)* -- child exactly once
+         - *Repetition(child, min=2, max=4)* -- child 2, 3, or 4 times
+         - *Repetition(child, min=0, max=2)* -- child 0, 1, or 2 times
+         - *Repetition(child, max=2)* -- child 1 or 2 times
+         - *Repetition(child, min=1, max=1)* -- child exactly once
+         - *Repetition(child, min=1)* -- child 1 or 2 times
+         - *Repetition(child)* -- child 1 or 2 times
 
-        If the *optimize* argument is set to *True*, the engine's compiler may
-        attempt to ignore the *min* and *max* limits to reduce grammar
+        If the *optimize* argument is set to *True*, the engine's compiler
+        may attempt to ignore the *min* and *max* limits to reduce grammar
         complexity. Not all engines support this, and some engines may only
-        support some rule structures. Regardless, if the number of repetitions
-        recognized is less than the *min* value -- or equal to or more than the
-        *max* value -- the rule will still fail to match.
+        support some rule structures. Regardless, if the number of
+        repetitions recognized is less than the *min* value -- or equal to
+        or more than the *max* value -- the rule will still fail to match.
 
     """
 
@@ -610,7 +612,7 @@ class Repetition(Sequence):
                             " ElementBase instance." % self)
         assert isinstance(min, six.integer_types)
         assert max is None or isinstance(max, six.integer_types)
-        assert max is None or min < max, "min must be less than max"
+        assert max is None or min <= max, "min must be less than or equal to max"
 
         self._child = child
         self._min = min
@@ -618,7 +620,7 @@ class Repetition(Sequence):
         else:           self._max = max
         self._optimize = optimize
 
-        optional_length = self._max - self._min - 1
+        optional_length = self._max - self._min
         if optional_length > 0:
             element = Optional(child)
             for index in range(optional_length-1):
@@ -644,8 +646,8 @@ class Repetition(Sequence):
     max = property(
         lambda self: self._max,
         doc="The maximum number of times that the child element must be "
-        "recognized; if *None*, the child element must be "
-        "recognized exactly *min* times (i.e. *max = min + 1*). "
+        "recognized; if *None*, the child element may be "
+        "recognized up to *min + 1* times (i.e. *max = min + 1*). "
         "(Read-only)"
     )
 
@@ -715,6 +717,42 @@ class Repetition(Sequence):
         """
         repetitions = self.get_repetitions(node)
         return [r.value() for r in repetitions]
+
+
+#---------------------------------------------------------------------------
+
+class OneOrMore(Repetition):
+    """
+        Element class representing one or more repetitions of one child
+        element.
+
+        Constructor arguments:
+         - *child* (*ElementBase*) --
+           the child element of this element
+         - *name* (*str*, default: *None*) --
+           the name of this element
+         - *default* (*object*, default: *None*) --
+           the default value used if this element is optional and wasn't
+           spoken
+
+        This class is a sub-class of :class:`Repetition`.  For a recognition
+        to match, the child element must be recognized one or more times --
+        i.e. Kleene plus behavior.
+
+        **Note**: If more than sixteen repetitions of the child element are
+        given, this element class will fail to match the recognition and
+        cause an error.  In the event that this occurs, the *default_max*
+        class member should be increased to match a larger number of
+        repetitions.
+
+    """
+
+    #: Default *max* parameter to pass to the Repetition superclass.
+    default_max = 16
+
+    def __init__(self, child, name=None, default=None):
+        Repetition.__init__(self, child, min=1, max=self.default_max,
+                            name=name, default=default, optimize=True)
 
 
 #---------------------------------------------------------------------------
