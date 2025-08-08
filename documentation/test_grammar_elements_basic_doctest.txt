@@ -197,6 +197,39 @@ min must be less than or equal to max::
     AssertionError: min must be less than or equal to max
 
 
+OneOrMore element classes
+============================================================================
+
+Basic usage::
+
+    >>> # OneOrMore is given a dragonfly element, in this case a Sequence.
+    >>> seq = Sequence([Literal("hello"), Literal("world")])
+    >>> # OneOrMore is a type of Repetition element.
+    >>> rep = OneOrMore(seq)
+    >>> test_rep = ElementTester(rep)
+    >>> test_rep.recognize("hello world")
+    [[u'hello', u'world']]
+    >>> test_rep.recognize("hello world hello world")
+    [[u'hello', u'world'], [u'hello', u'world']]
+    >>> # Incomplete recognitions result in recognition failure.
+    >>> test_rep.recognize("hello universe")
+    RecognitionFailure
+    >>> test_rep.recognize("hello world hello universe")
+    RecognitionFailure
+
+Large number of repetitions::
+
+    >>> # Too many recognitions also result in recognition failure.
+    >>> test_rep.recognize(" ".join(["hello world"] * 17))
+    RecognitionFailure
+    >>> # Further repetitions may be matched by adjusting the class member.
+    >>> OneOrMore.default_max = 20
+    >>> rep = OneOrMore(seq)
+    >>> test_rep = ElementTester(rep)
+    >>> test_rep.recognize(" ".join(["hello world"] * 17))
+    [[u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world'], [u'hello', u'world']]
+
+
 Modifier element class
 ============================================================================
 
