@@ -207,6 +207,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         if self._doing_recognition:
             self._deferred_disconnect = True
         else:
+            self._log.info("Disconnecting from Kaldi engine.")
             if self._audio:
                 self._audio.destroy()
             if self.audio_store:
@@ -455,6 +456,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
                     self._log.exception("Error stopping audio")
             if self._deferred_disconnect:
                 self.disconnect()
+            self._log.info("No longer listening." + (" (Timed out)" if timed_out else ""))
 
         return not timed_out
 
