@@ -1227,7 +1227,8 @@ class Dictation(ElementBase):
 class Modifier(Alternative):
     """
         Element allowing direct modification of the output of another
-        element at recognition time.
+        element at recognition time. Keeps the same name and default value
+        as the original (given/child) element.
 
         Constructor arguments:
             - *element* (*Element*) -- The element to be recognised, e.g.
