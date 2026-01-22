@@ -41,17 +41,19 @@ from dragonfly.engines.backend_kaldi.dictation import (AlternativeDictation,
 
 _trace_level=0
 def trace_compile(func):
-    return func
-    def dec(self, element, src_state, dst_state, grammar, fst):
+    """ Decorator to debug trace compilation of elements. """
+    return func  # Disable this tracing
+    def dec(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         global _trace_level
-        s = '%s %s: compiling %s' % (grammar.name, '==='*_trace_level, element)
+        output = grammar._log_load.error if False else six.print_
+        s = '%s %s: compiling %s' % (kaldi_rule.name, '==='*_trace_level, element)
         l = 140-len(s)
         s += ' '*l + '| %-20s %s -> %s' % (id(fst), src_state, dst_state)
-        grammar._log_load.error(s)
+        output(s)
         _trace_level+=1
-        ret = func(self, element, src_state, dst_state, grammar, fst)
+        ret = func(self, element, src_state, dst_state, grammar, kaldi_rule, fst)
         _trace_level-=1
-        grammar._log_load.error('%s %s: compiling %s.' % (grammar.name, '...'*_trace_level, element))
+        output('%s %s: compiling %s' % (kaldi_rule.name, '...'*_trace_level, element))
         return ret
     return dec
 
@@ -217,7 +219,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     _eps_like_nonterms = frozenset()  # Dictation is non-empty now ('#nonterm:dictation', '#nonterm:dictation_cloud')
 
     def compile_element(self, element, *args, **kwargs):
-        """Compile element in FST (from src_state to dst_state) and return result."""
+        """ Compile element in FST (connecting from src_state to dst_state) and return result (always None currently). """
         # Look for a compiler method to handle the given element.
         for element_type, compiler in self.element_compilers:
             if isinstance(element, element_type):
@@ -229,50 +231,58 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     def _compile_sequence(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
         children = element.children
-        # Optimize for special lengths
         if len(children) == 0:
             fst.add_arc(src_state, dst_state, None)
             return
 
-        elif len(children) == 1:
-            return self.compile_element(children[0], src_state, dst_state, grammar, kaldi_rule, fst)
+        # Handle Repetition (with optimize) elements differently as a special case with back arc loop.
+        if isinstance(element, elements_.Repetition) and element.optimize:
+            # NOTE: We are relying on how Repetition.__init__() constructs children. If that changes, we need to revisit this logic.
+            #   There are three possible cases based on the boolean value of (element.min > 0) and (optional_length > 0). Both being zero is disallowed by Repetition.__init__().
+            #   Assert: element.children[0] is element._child XOR (element.min == 0 AND element.children[0] is the Optional element constructed by constructor for optional_length).
+            #   Case 1: element.min > 0 AND optional_length > 0     ==> children = [child] * min + [optional_element]
+            #   Case 2: element.min == 0 AND optional_length > 0    ==> children = [optional_element]
+            #   Case 3: element.min > 0 AND optional_length == 0    ==> children = [child] * min
+            assert (element.children[0] is element._child) != (element.min == 0), "Unexpected Repetition element structure. Check logic for unexpected changes."
+            is_min_0_special_case = (element.min == 0)
 
-        else:  # len(children) >= 2:
-            # Handle Repetition elements differently as a special case
-            is_repetition = isinstance(element, elements_.Repetition)
-            if is_repetition and element.optimize:
-                # Repetition...
-                # Insert new states, so back arc only affects child
-                s1 = fst.add_state()
-                s2 = fst.add_state()
-                fst.add_arc(src_state, s1, None)
-                # NOTE: to avoid creating an un-decodable epsilon loop, we must not allow an all-epsilon child here (compile_graph_agf should check this)
-                self.compile_element(children[0], s1, s2, grammar, kaldi_rule, fst)
-                if not fst.has_eps_path(s1, s2, self._eps_like_nonterms):
-                    fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # Back arc, uses eps_disambig ('#0')
+            # Insert new states, so back arc only affects child (this is necessary in some cases, and when not necessary it will get optimized out later by openfst)
+            s1 = fst.add_state()
+            s2 = fst.add_state()
+            fst.add_arc(src_state, s1, None)
+            # We compile the raw child here because when element.min == 0, children[0] isn't the child but rather an Optional element constructed by Repetition.__init__()
+            self.compile_element(element._child, s1, s2, grammar, kaldi_rule, fst)
+            # NOTE: To avoid creating an un-decodable epsilon loop, we must not allow an all-epsilon child to have a back arc here (compile_graph_agf should check this later)
+            if not fst.has_eps_path(s1, s2, self._eps_like_nonterms):
+                fst.add_arc(s2, s1, fst.eps_disambig, fst.eps)  # Back arc, uses eps_disambig ('#0')
+                fst.add_arc(s2, dst_state, None)
+                if is_min_0_special_case:
+                    fst.add_arc(src_state, dst_state, None)  # Jump-forward arc to allow zero repetitions
+                return
+
+            # Cannot do optimize path, because of epsilon loop, so finish up by falling through to Sequence path below
+            self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string; "
+                "falling back to inefficient non-optimize path. "
+                "(This is usually not that bad, but could cause performance and memory issues for very large grammars.)" % self)
+            # TODO: We know what it was constructed as, so we could just compile it directly without processing all of the constructed elements.
+            # If is_min_0_special_case, the above-compiled child must be discarded, in order for us to use the Sequence path, so fall through and begin fresh.
+            # Otherwise, we can keep it, so set up the below Sequence path to continue onward.
+            if not is_min_0_special_case:
+                # We already compiled the first child above, which is children[0], so we keep it and use it, setting up the Sequence path to continue with the rest
+                children = children[1:]
+                if not children:
+                    # No remaining children, so just finish up and done
                     fst.add_arc(s2, dst_state, None)
                     return
+                src_state = s2
 
-                else:
-                    # Cannot do optimize path, because of epsilon loop, so finish up with Sequence path
-                    self._log.warning("%s: Cannot optimize Repetition element, because its child element can match empty string;"
-                        " falling back to inefficient non-optimize path. (this is not that bad)" % self)
-                    states = [src_state, s2] + [fst.add_state() for i in range(len(children)-2)] + [dst_state]
-                    for i, child in enumerate(children[1:], start=1):
-                        s1 = states[i]
-                        s2 = states[i + 1]
-                        self.compile_element(child, s1, s2, grammar, kaldi_rule, fst)
-                    return
-
-            else:
-                # Sequence, not Repetition...
-                # Insert new states for individual children elements
-                states = [src_state] + [fst.add_state() for i in range(len(children)-1)] + [dst_state]
-                for i, child in enumerate(children):
-                    s1 = states[i]
-                    s2 = states[i + 1]
-                    self.compile_element(child, s1, s2, grammar, kaldi_rule, fst)
-                return
+        # Sequence, or treating as a Sequence...
+        # Insert new states for individual children elements
+        states = [src_state] + [fst.add_state() for i in range(len(children)-1)] + [dst_state]
+        for i, child in enumerate(children):
+            s1 = states[i]
+            s2 = states[i + 1]
+            self.compile_element(child, s1, s2, grammar, kaldi_rule, fst)
 
     # @trace_compile
     def _compile_alternative(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
@@ -352,7 +362,7 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
     # @trace_compile
     def _compile_empty(self, element, src_state, dst_state, grammar, kaldi_rule, fst):
         src_state = self.add_weight_linkage(src_state, dst_state, self.get_weight(element), fst)
-        fst.add_arc(src_state, dst_state, WFST.eps)
+        fst.add_arc(src_state, dst_state, None)
 
     #-----------------------------------------------------------------------
     # Utility methods.
