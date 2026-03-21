@@ -63,9 +63,9 @@ try:
 except ImportError:
     pass
 
-# Define spoken language test files. All of them work with the natlink and
-# text engines. The English tests should work with sapi5 and sphinx by
-# default.
+# Define spoken language test files that run across the natlink and text
+# engines. Backend-specific suites add any extra semantic coverage
+# separately.
 language_names = [
     "test_language_de_number",
     "test_language_en_number",
@@ -130,6 +130,7 @@ engine_tests_dict = {
     "text": [
         "test_engine_text",
         "test_dictation",
+        "test_language_en_calendar",
     ] + common_names + language_names,
 
     "natlink": natlink_names,

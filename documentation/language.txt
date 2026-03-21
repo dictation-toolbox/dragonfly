@@ -120,6 +120,10 @@ has a sub-package under :attr:`dragonfly.language`. The current engine
 language will be used to load the language-specific content classes in these
 sub-packages.
 
+The :class:`Integer`, :class:`IntegerRef` and :class:`ShortIntegerRef`
+classes use inclusive numeric ranges. For example,
+``IntegerRef("heading", 1, 6)`` recognizes the integers 1 through 6.
+
 This functionality is **optional**. Languages other than those listed below
 can still be used if the speech recognition supports them.
 

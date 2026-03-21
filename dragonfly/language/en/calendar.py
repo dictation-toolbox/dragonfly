@@ -94,11 +94,11 @@ class Year(Alternative):
 
     """
     alts = [
-            IntegerRef("year", 2000, 2100),
+            IntegerRef("year", 2000, 2099),
             Compound(
                      spec="<century> <year>",
-                     extras=[Integer("century", 19, 21),
-                             IntegerRef("year", 10, 100)],
+                     extras=[Integer("century", 19, 20),
+                             IntegerRef("year", 10, 99)],
                      value_func=lambda n, e: e["century"] * 100 + e["year"]
                     ),
            ]
@@ -117,7 +117,7 @@ class AbsoluteDate(Compound):
     """
 
     spec = "(<day> <month> | <month> <day>) [<year>]"
-    extras = [IntegerRef("day", 1, 32), Month("month"), Year("year")]
+    extras = [IntegerRef("day", 1, 31), Month("month"), Year("year")]
 
     def __init__(self, name):
         Compound.__init__(self, name=name, spec=self.spec,
@@ -157,7 +157,7 @@ class RelativeDate(Alternative):
                        "tomorrow":     +1,
                        "in <n> days":  +1,
                       }
-            extras = [IntegerRef("n", 1, 100)]
+            extras = [IntegerRef("n", 1, 99)]
             Choice.__init__(self, name=None, choices=choices, extras=extras)
 
         def value(self, node):
@@ -234,10 +234,10 @@ class TwelveHourTime(Compound):
 
     spec = "<hour> [(<zero> <min_1_10> | <min_10_60>)] <am_pm>"
     extras = [
-              Integer("zero", 0, 1),
-              Integer("hour", 1, 13),
-              IntegerRef("min_1_10", 1, 10),
-              IntegerRef("min_10_60", 10, 60),
+              Integer("zero", 0, 0),
+              Integer("hour", 1, 12),
+              IntegerRef("min_1_10", 1, 9),
+              IntegerRef("min_10_60", 10, 59),
               Choice("am_pm", {
                   "AM | a.m.": "AM",
                   "PM | p.m.": "PM",
@@ -278,11 +278,11 @@ class MilitaryTime(Compound):
     spec = ("(<zero_oh> | <zero_oh> <hour_0_10> | <hour_10_24>)"
             " (hundred | <zero_oh> <min_1_10> | <min_10_60>) [hours]")
     extras = [
-              Integer("zero_oh", 0, 1),
-              Integer("hour_0_10", 1, 10),
-              Integer("hour_10_24", 10, 24),
-              IntegerRef("min_1_10", 1, 10),
-              IntegerRef("min_10_60", 10, 60),
+              Integer("zero_oh", 0, 0),
+              Integer("hour_0_10", 1, 9),
+              Integer("hour_10_24", 10, 23),
+              IntegerRef("min_1_10", 1, 9),
+              IntegerRef("min_10_60", 10, 59),
              ]
 
     def __init__(self, name):
@@ -324,4 +324,3 @@ class Time(Alternative):
         Alternative.__init__(self, name=name, children=self.alts)
 
 #---------------------------------------------------------------------------
-

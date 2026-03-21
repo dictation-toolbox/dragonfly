@@ -36,6 +36,11 @@ from dragonfly.grammar.list      import  List
 # Base class for integer element classes.
 
 class Integer(Alternative):
+    """
+        Element recognizing a spoken integer between *min* and *max*,
+        inclusive.
+
+    """
 
     _content = None
 
@@ -66,13 +71,13 @@ class Integer(Alternative):
         assert isinstance(max, integer_types), "max must be a number"
         assert min <= max, "min must be less than or equal to max"
 
-        # Make the *max* argument behave inclusively.
-        # Note: This is an easier change than modifying the internal integer
-        #  classes.
-        max = max + 1
+        # The public API treats *max* inclusively. The internal builders
+        # still use an exclusive upper bound.
+        internal_max = max + 1
 
-        self._min = min; self._max = max
-        children = self._build_children(min, max)
+        self._min = min
+        self._max = max
+        children = self._build_children(min, internal_max)
         Alternative.__init__(self, children, name=name, default=default)
 
     #-----------------------------------------------------------------------
@@ -101,12 +106,14 @@ class Integer(Alternative):
 # Integer reference class.
 
 class IntegerRef(RuleWrap):
+    """Reference wrapper for :class:`Integer`."""
 
     def __init__(self, name, min, max, default=None):
         element = Integer(None, min, max)
         RuleWrap.__init__(self, name, element, default=default)
 
 class ShortIntegerRef(RuleWrap):
+    """Reference wrapper for short-form :class:`Integer` values."""
 
     def __init__(self, name, min, max, default=None):
         element = Integer(None, min, max, content=language.ShortIntegerContent)

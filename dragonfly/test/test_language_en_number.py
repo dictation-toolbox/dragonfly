@@ -27,6 +27,7 @@ Test suite for English language Integer and Digits classes
 from dragonfly.test.infrastructure      import RecognitionFailure
 from dragonfly.test.element_testcase    import ElementTestCase
 from dragonfly.language.base.integer    import Integer
+from dragonfly.language.base.number     import Number
 from dragonfly.language.base.digits     import Digits
 from dragonfly.language.en.number       import IntegerContent
 from dragonfly.language.en.number       import DigitsContent
@@ -63,7 +64,19 @@ class IntegerTestCase(ElementTestCase):
                     ("nineteen",  19),
                     ("seventy four hundred",    7400),
                     ("seventy four thousand",  74000),
-                    ("two hundred and thirty four thousand five hundred sixty seven", 234567),
+                   ("two hundred and thirty four thousand five hundred sixty seven", 234567),
+                   ]
+
+
+class Limit1to2TestCase(ElementTestCase):
+    """ Verify integer limits of range 1 -- 2. """
+    def _build_element(self):
+        return Integer(content=IntegerContent, min=1, max=2)
+    input_output = [
+                    ("zero",      RecognitionFailure),
+                    ("one",       1),
+                    ("two",       2),
+                    ("three",     RecognitionFailure),
                    ]
 
 
@@ -147,6 +160,22 @@ class Limit351TestCase(ElementTestCase):
                     ("three hundred fifty zero",    RecognitionFailure),
                     ("three hundred fifty one",     351),
                     ("three hundred fifty two",     RecognitionFailure),
+                   ]
+
+
+class NumberSeriesRegressionTestCase(ElementTestCase):
+    """ Verify Number rejects three-digit series chunks. """
+    def _build_element(self):
+        previous_content = Integer._content
+        Integer._set_content(IntegerContent)
+        try:
+            return Number("number")
+        finally:
+            Integer._content = previous_content
+    input_output = [
+                    ("ninety nine ninety nine", 9999),
+                    ("one hundred zero one", RecognitionFailure),
+                    ("one hundred one hundred", RecognitionFailure),
                    ]
 
 

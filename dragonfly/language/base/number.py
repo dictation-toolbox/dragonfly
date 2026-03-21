@@ -40,17 +40,16 @@ class Number(Alternative):
 
     def __init__(self, name=None, zero=False, default=None):
         name = str(name)
-        int_name = "_Number_int_" + name
         if zero:  int_min = 0
         else:     int_min = 1
         single = Integer(None, int_min, self._int_max)
 
-        ser_name = "_Number_ser_" + name
-        item = Integer(None, 0, 100)
+        # Number.value() concatenates one- and two-digit chunks only.
+        item = Integer(None, 0, 99)
         if zero:
             series = Repetition(item, 1, self._ser_len)
         else:
-            first = Integer(None, 1, 100)
+            first = Integer(None, 1, 99)
             repetition = Repetition(item, 0, self._ser_len - 1)
             series = Sequence([first, repetition])
 

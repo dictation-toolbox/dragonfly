@@ -686,7 +686,7 @@ class Repetition(Sequence):
                     % (self, element.actor))
             repetitions.append(element)
 
-        if self._max - self._min > 1:
+        if self._max - self._min > 0:
             optional = node.children[-1]
             while optional.children:
                 child = optional.children[0]

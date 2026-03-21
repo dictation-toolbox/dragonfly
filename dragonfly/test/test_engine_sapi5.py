@@ -114,7 +114,7 @@ class TestEngineSapi5(unittest.TestCase):
         assert results == (False, False)
 
         # Test Integer element recognitions
-        test_int = ElementTester(Integer(min=1, max=100))
+        test_int = ElementTester(Integer(min=1, max=99))
         assert test_int.recognize("seven") == 7
         results = test_recobs.waiting, test_recobs.words
         assert results == (False, (u'seven',))
