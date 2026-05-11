@@ -360,6 +360,7 @@ class WordParserDns11(WordParserBase):
         "open paren":       WordFlags("no_space_after"),
         "close paren":      WordFlags("no_space_before"),
         "slash":            WordFlags("no_space_after", "no_space_before"),
+        "z":                WordFlags("no_space_before"),
 
         # below are two examples of Dragon custom vocabulary with formatting
         # these would have to be added to the Dragon vocabulary for users to use them
