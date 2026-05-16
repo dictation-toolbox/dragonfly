@@ -624,7 +624,7 @@ class Repetition(Sequence):
             for index in range(optional_length-1):
                 element = Optional(Sequence([child, element]))
 
-            if self._min >= 1:
+            if self._min > 0:
                 children = [child] * self._min + [element]
             else:
                 children = [element]
