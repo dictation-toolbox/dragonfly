@@ -33,6 +33,12 @@ Repetition class
 .. autoclass:: dragonfly.grammar.elements_basic.Repetition
    :members: dependencies, gstring, decode, value, children, get_repetitions
 
+OneOrMore class
+----------------------------------------------------------------------------
+.. autoclass:: dragonfly.grammar.elements_basic.OneOrMore
+   :members: dependencies, gstring, decode, value, children,
+	     get_repetitions, default_max
+
 Literal class
 ----------------------------------------------------------------------------
 .. autoclass:: dragonfly.grammar.elements_basic.Literal

@@ -67,10 +67,10 @@ class IntegerTestCase(ElementTestCase):
                    ]
 
 
-class Limit3to14TestCase(ElementTestCase):
-    """ Verify integer limits of range 3 -- 14. """
+class Limit3to13TestCase(ElementTestCase):
+    """ Verify integer limits of range 3 -- 13. """
     def _build_element(self):
-        return Integer(content=IntegerContent, min=3, max=14)
+        return Integer(content=IntegerContent, min=3, max=13)
     input_output = [
                     ("oh",         RecognitionFailure),
                     ("zero",       RecognitionFailure),
@@ -96,10 +96,10 @@ class Limit3to14TestCase(ElementTestCase):
                    ]
 
 
-class Limit23to47TestCase(ElementTestCase):
-    """ Verify integer limits of range 23 -- 47. """
+class Limit23to46TestCase(ElementTestCase):
+    """ Verify integer limits of range 23 -- 46. """
     def _build_element(self):
-        return Integer(content=IntegerContent, min=23, max=47)
+        return Integer(content=IntegerContent, min=23, max=46)
     input_output = [
                     ("twenty two",        RecognitionFailure),
                     ("twenty three",      23),
@@ -108,10 +108,10 @@ class Limit23to47TestCase(ElementTestCase):
                    ]
 
 
-class Limit230to350TestCase(ElementTestCase):
-    """ Verify integer limits of range 230 -- 350. """
+class Limit230to349TestCase(ElementTestCase):
+    """ Verify integer limits of range 230 -- 349. """
     def _build_element(self):
-        return Integer(content=IntegerContent, min=230, max=350)
+        return Integer(content=IntegerContent, min=230, max=349)
     input_output = [
                     ("two hundred twenty nine",     RecognitionFailure),
                     ("two hundred thirty",          230),
@@ -125,10 +125,10 @@ class Limit230to350TestCase(ElementTestCase):
                    ]
 
 
-class Limit351TestCase(ElementTestCase):
-    """ Verify integer limits of range up to 351. """
+class Limit350TestCase(ElementTestCase):
+    """ Verify integer limits of range up to 350. """
     def _build_element(self):
-        return Integer(content=IntegerContent, min=230, max=351)
+        return Integer(content=IntegerContent, min=230, max=350)
     input_output = [
                     ("three hundred forty nine",    349),
                     ("three hundred fifty",         350),
@@ -137,10 +137,10 @@ class Limit351TestCase(ElementTestCase):
                    ]
 
 
-class Limit352TestCase(ElementTestCase):
-    """ Verify integer limits of range up to 352. """
+class Limit351TestCase(ElementTestCase):
+    """ Verify integer limits of range up to 351. """
     def _build_element(self):
-        return Integer(content=IntegerContent, min=230, max=352)
+        return Integer(content=IntegerContent, min=230, max=351)
     input_output = [
                     ("three hundred forty nine",    349),
                     ("three hundred fifty",         350),
@@ -153,7 +153,7 @@ class Limit352TestCase(ElementTestCase):
 class DigitsTestCase(ElementTestCase):
     """ Verify that digits between 0 and 10 can be recognized. """
     def _build_element(self):
-        return Digits(content=DigitsContent, min=1, max=6)
+        return Digits(content=DigitsContent, min=1, max=5)
     input_output = [
                     ("zero",                                           [0]),
                     ("oh",                                             [0]),
@@ -182,7 +182,7 @@ class DigitsTestCase(ElementTestCase):
 class DigitsAsIntTestCase(ElementTestCase):
     """ Verify that Digits used with as_int=True gives correct values. """
     def _build_element(self):
-        return Digits(content=DigitsContent, min=1, max=6, as_int=True)
+        return Digits(content=DigitsContent, min=1, max=5, as_int=True)
     input_output = [
                     ("zero",                                             0),
                     ("oh",                                               0),

@@ -45,6 +45,7 @@ Sequence        = basic_.Sequence
 Alternative     = basic_.Alternative
 Optional        = basic_.Optional
 Repetition      = basic_.Repetition
+OneOrMore       = basic_.OneOrMore
 Literal         = basic_.Literal
 RuleRef         = basic_.RuleRef
 Rule            = basic_.RuleRef        # For backwards compatibility.
