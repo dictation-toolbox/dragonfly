@@ -32,6 +32,12 @@ from six import integer_types
 #===========================================================================
 
 class Point(object):
+    """
+    Two-dimensional point with floating-point coordinates.
+
+    The class provides small geometry helpers used throughout Dragonfly's
+    window and monitor toolkits.
+    """
 
     #-----------------------------------------------------------------------
     # Methods for initialization, copying, and introspection.

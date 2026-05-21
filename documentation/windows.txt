@@ -11,6 +11,7 @@ Contents of Dragonfly's windows sub-package:
 .. toctree::
    :maxdepth: 2
 
+   geometry_classes
    clipboard
    monitor_classes
    window_classes

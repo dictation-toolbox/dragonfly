@@ -135,11 +135,88 @@ The following languages are supported:
 English has additional time, date and character related classes.
 
 
+Numeric language elements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dragonfly exposes a small public numeric language API through the
+:mod:`dragonfly.language` package. These classes use the current speech
+recognition engine language to load the right spoken-number content.
+
+Use the direct element classes when building grammars inline:
+
+* :class:`Integer` for bounded spoken integers.
+* :class:`Digits` for sequences of spoken digits.
+* :class:`Number` for larger spoken numbers and number series.
+
+Use the ``*Ref`` variants when you want Dragonfly to wrap those elements in
+named private rules for use as command extras:
+
+* :class:`IntegerRef`
+* :class:`ShortIntegerRef`
+* :class:`DigitsRef`
+* :class:`NumberRef`
+
+:class:`ShortIntegerRef` uses a more permissive short-number grammar when a
+language implements it and otherwise falls back to normal integer
+pronunciations for that language.
+
+
 Language classes reference
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: dragonfly.language.en.short_number
+Integer class
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. autoclass:: dragonfly.language.Integer
    :members:
+
+
+IntegerRef class
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. autoclass:: dragonfly.language.IntegerRef
+   :members:
+
+
+ShortIntegerRef class
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. autoclass:: dragonfly.language.ShortIntegerRef
+   :members:
+
+
+Digits class
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. autoclass:: dragonfly.language.Digits
+   :members:
+
+
+DigitsRef class
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. autoclass:: dragonfly.language.DigitsRef
+   :members:
+
+
+Number class
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. autoclass:: dragonfly.language.Number
+   :members:
+
+
+NumberRef class
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. autoclass:: dragonfly.language.NumberRef
+   :members:
+
+
+Short number pronunciation notes
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. automodule:: dragonfly.language.en.short_number
 
 
 .. rubric:: References

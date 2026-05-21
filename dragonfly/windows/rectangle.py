@@ -30,6 +30,14 @@ from dragonfly.windows.point import Point
 # Rectangle class.
 
 class Rectangle(Point):
+    """
+    Axis-aligned rectangle represented by an origin point and size.
+
+    Rectangle inherits the position handling from
+    :class:`~dragonfly.windows.point.Point` and adds width, height,
+    centre-point, and containment helpers used by the window and monitor
+    APIs.
+    """
 
     #-----------------------------------------------------------------------
     # Methods for initialization, copying, and introspection.

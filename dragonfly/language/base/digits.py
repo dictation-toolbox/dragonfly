@@ -33,6 +33,12 @@ from dragonfly.grammar.elements  import (Alternative, Repetition, Compound,
 # Base class for digit-series element classes.
 
 class Digits(Repetition):
+    """
+    Language-aware element for a spoken series of digits.
+
+    The recognized value can be returned either as a list of digit values or
+    combined into an integer via the ``as_int`` argument.
+    """
 
     _content = None
     _digit_name = "_digit"
@@ -92,6 +98,7 @@ class Digits(Repetition):
 # Digits reference class.
 
 class DigitsRef(RuleWrap):
+    """Named rule wrapper around :class:`Digits` for use in rule extras."""
 
     def __init__(self, name=None, min=1, max=12, as_int=True, default=None):
         element = Digits(name=None, min=min, max=max, as_int=as_int)

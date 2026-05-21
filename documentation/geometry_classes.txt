@@ -1,0 +1,20 @@
+Geometry classes
+============================================================================
+
+Dragonfly's window and monitor APIs use a pair of small geometry classes to
+represent points, bounds and movement calculations across supported
+platforms.
+
+
+Point class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.windows.point.Point
+   :members:
+
+
+Rectangle class
+----------------------------------------------------------------------------
+
+.. autoclass:: dragonfly.windows.rectangle.Rectangle
+   :members:

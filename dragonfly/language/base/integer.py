@@ -34,6 +34,13 @@ from dragonfly.grammar.list      import  List
 # Base class for integer element classes.
 
 class Integer(Alternative):
+    """
+    Language-aware element for spoken integers within a numeric range.
+
+    The active speech recognition engine language determines which spoken
+    forms are available unless a specific content implementation is passed
+    explicitly.
+    """
 
     _content = None
 
@@ -90,12 +97,19 @@ class Integer(Alternative):
 # Integer reference class.
 
 class IntegerRef(RuleWrap):
+    """Named rule wrapper around :class:`Integer` for use in rule extras."""
 
     def __init__(self, name, min, max, default=None):
         element = Integer(None, min, max)
         RuleWrap.__init__(self, name, element, default=default)
 
 class ShortIntegerRef(RuleWrap):
+    """
+    Variant of :class:`IntegerRef` that accepts shorter spoken forms.
+
+    This uses language-specific short-number content when available and
+    otherwise falls back to the standard integer content for the language.
+    """
 
     def __init__(self, name, min, max, default=None):
         element = Integer(None, min, max, content=language.ShortIntegerContent)

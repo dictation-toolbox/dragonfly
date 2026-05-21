@@ -34,6 +34,13 @@ from dragonfly.language.base.integer  import Integer
 # Number class.
 
 class Number(Alternative):
+    """
+    Language-aware element for spoken whole numbers and number series.
+
+    This combines the current language's integer content into a higher-level
+    element that can interpret a single number or a spoken series of smaller
+    numbers as one value.
+    """
 
     _int_max = 1000000
     _ser_len = 8
@@ -81,6 +88,7 @@ class Number(Alternative):
 # Number reference class.
 
 class NumberRef(RuleWrap):
+    """Named rule wrapper around :class:`Number` for use in rule extras."""
 
     def __init__(self, name=None, zero=False, default=None):
         element = Number(None, zero=zero)

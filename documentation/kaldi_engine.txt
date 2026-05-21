@@ -197,6 +197,7 @@ The engine can also be configured via the :ref:`command-line interface
 
 
 .. autofunction:: dragonfly.engines.backend_kaldi.engine.KaldiEngine
+   :no-index:
 
 **Arguments (all optional):**
 
