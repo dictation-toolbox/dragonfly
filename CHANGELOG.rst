@@ -28,6 +28,8 @@ Changed
   compiling them directly.
 - Change the CommandModule class' optional unload method to invoke top-level
   unload functions like the Natlink loader does.
+- Prefer the Windows UI Automation accessibility backend on Windows and keep
+  IAccessible2 as a fallback when UIA cannot be initialized.
 - Make the logging output of Dragonfly's CLI commands more sane.
 - Make some optimizations to the Natlink engine.
 - Rename the engines.backend_sphinx.misc module to config.

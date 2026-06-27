@@ -16,11 +16,24 @@ command::
 Windows
 ----------------------------------------------------------------------------
 
-To use this API on Windows, install `pyia2
-<https://github.com/illinois-dres-aitg/pyia2>`__. To use this with Chrome,
-you may also need to register an additional 64-bit IAccessible2 DLL which
-can be obtained `here
+On Windows, Dragonfly now prefers Microsoft's UI Automation (UIA) API for
+accessibility text operations. The base ``dragonfly[accessibility]`` extra
+installs the ``comtypes`` dependency used for this path.
+
+If UIA cannot be initialized, Dragonfly falls back to the older
+IAccessible2-based implementation. To use that fallback path, install
+`pyia2 <https://github.com/illinois-dres-aitg/pyia2>`__. To use the IA2 path
+with Chrome, you may also need to register an additional 64-bit
+IAccessible2 DLL which can be obtained `here
 <https://github.com/ThePacielloGroup/aviewer/blob/Develop/package/IAccessible2Proxy64bit.dll>`__.
+
+Application support still depends on the target application exposing
+accessible text, caret and range information in a usable way. Tools such as
+`Accessibility Insights for Windows
+<https://accessibilityinsights.io/docs/en/windows/overview>`__ can help
+inspect what a given application exposes. Chromium-based applications may
+also require a temporary launch flag such as ``--force-renderer-accessibility``
+before their page content appears in the UIA tree.
 
 X11 (Linux)
 ----------------------------------------------------------------------------
