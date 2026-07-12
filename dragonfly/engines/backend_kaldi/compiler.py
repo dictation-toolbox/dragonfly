@@ -1,4 +1,4 @@
-﻿#
+#
 # This file is part of Dragonfly.
 # (c) Copyright 2019 by David Zurow
 # Licensed under the LGPL.
@@ -195,11 +195,18 @@ class KaldiCompiler(CompilerBase, KaldiAGCompiler):
         return (outer_src_state, dst_state)
 
     def unload_grammar(self, grammar, rules, engine):
-        for rule in rules:
-            kaldi_rule = self.kaldi_rule_by_rule_dict[rule]
+        if isinstance(rules, dict):
+            items = list(rules.items())
+        else:
+            items = [(rule, self.kaldi_rule_by_rule_dict.get(rule)) for rule in rules]
+
+        for rule, kaldi_rule in items:
+            if kaldi_rule is None:
+                continue
             # Unload kaldi_rule: destroy() handles KaldiAGCompiler stuff; we must handle ours
             kaldi_rule.destroy()
-            del self.kaldi_rule_by_rule_dict[rule]
+            if self.kaldi_rule_by_rule_dict.get(rule) is kaldi_rule:
+                del self.kaldi_rule_by_rule_dict[rule]
             for kaldi_rules_set in self.kaldi_rules_by_listreflist_dict.values():
                 kaldi_rules_set.discard(kaldi_rule)
             # NOTE: the kaldi_rule_by_rule_dict we returned from compile_grammar() is not updated, but it should be dropped upon unload anyway!
