@@ -262,7 +262,8 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         """ Unload the given *grammar*. """
         self._log.debug("Unloading grammar %s." % grammar.name)
         def unload():
-            self._compiler.unload_grammar(grammar, wrapper.kaldi_rule_by_rule_dict, self)
+            rules = wrapper.kaldi_rule_by_rule_dict
+            self._compiler.unload_grammar(grammar, rules, self)
         if self._in_phrase:
             self._loadunload_queue.append(unload)
         else:
