@@ -31,12 +31,24 @@ from dragonfly.language.base.integer  import Integer
 
 
 #---------------------------------------------------------------------------
+
+class StringInt(int):
+    def __new__(cls, value, string_value):
+        obj = super(StringInt, cls).__new__(cls, value)
+        obj.string_value = string_value
+        return obj
+
+    def __str__(self):
+        return self.string_value
+
+
+#---------------------------------------------------------------------------
 # Number class.
 
 class Number(Alternative):
 
     _int_max = 1000000
-    _ser_len = 8
+    _ser_len = 32
 
     def __init__(self, name=None, zero=False, default=None):
         name = str(name)
@@ -54,7 +66,7 @@ class Number(Alternative):
             repetition = Repetition(item, 0, self._ser_len - 1)
             series = Sequence([first, repetition])
 
-        children = [single, series]
+        children = [series, single]
         Alternative.__init__(self, children, name=name, default=default)
 
     def value(self, node):
@@ -73,6 +85,9 @@ class Number(Alternative):
                 else:          factor = 100
                 value *= factor
                 value += item
+
+            string_value = "".join(str(item) for item in items)
+            value = StringInt(value, string_value)
 
         return value
 
