@@ -66,7 +66,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
 
     _name = "kaldi"
     # NOTE: Remember to also update setup.py to the same version!
-    _required_kag_version = "3.2.0"
+    _required_kag_version = "3.1.0"
 
     #-----------------------------------------------------------------------
 

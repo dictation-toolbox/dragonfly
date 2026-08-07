@@ -128,7 +128,10 @@ setup(
                         "setuptools >= 40.0.0",
                         "packaging >= 19.0",
                         "six",
-                        "lark-parser >= 0.8.0",
+                        # Use the renamed package on modern Python versions,
+                        # while keeping compatibility with older versions.
+                        "lark>=1.0.0;python_version>='3.8'",
+                        "lark-parser>=0.8.0;python_version<'3.8'",
 
                         # Windows-only dependencies.
                         "pywin32;platform_system=='Windows'",
@@ -160,7 +163,7 @@ setup(
                     ],
           "kaldi": [
                     # NOTE: Remember to also update engine.py to the same version!
-                    "kaldi-active-grammar ~= 3.2.0",
+                    "kaldi-active-grammar ~= 3.1.0",
                     "sounddevice == 0.3.*",
                     "webrtcvad-wheels == 2.0.*",
                    ],
