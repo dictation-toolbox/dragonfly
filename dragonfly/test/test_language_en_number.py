@@ -243,3 +243,48 @@ class ShortIntegerTestCase(ElementTestCase):
                     ("two hundred and thirty four thousand five hundred sixty seven", 234567),
                     ("five million two hundred and thirty four thousand five hundred sixty seven", 5234567),
                    ]
+
+
+class NumberTestCase(ElementTestCase):
+    """ Verify the Number element class """
+    def _build_element(self):
+        from dragonfly.language.base.number import Number
+        return Number(None, zero=True)
+    input_output = [
+                    ("zero",                  0),
+                    ("zero one one",          11),
+                    ("zero ninety",           90),
+                    ("one zero one one",      1011),
+                    ("one one zero one one",  11011),
+                    ("one one one zero one",  11101),
+                    ("one thousand",          1000),
+                    ("eight zero zero five five five zero one nine nine", 8005550199),
+                   ]
+
+
+class NumberStrTestCase(ElementTestCase):
+    """ Verify that str() of the parsed Number preserves leading zeros """
+    def _build_element(self):
+        from dragonfly.language.base.number import Number
+        return Number(None, zero=True)
+
+    def test_element(self):
+        element = self.element
+        from dragonfly.test.element_tester import ElementTester
+        tester = ElementTester(element)
+
+        input_expected_str = [
+            ("zero",                  "0"),
+            ("zero one one",          "011"),
+            ("zero ninety",           "090"),
+            ("one zero one one",      "1011"),
+            ("one one zero one one",  "11011"),
+            ("one one one zero one",  "11101"),
+            ("one thousand",          "1000"),
+            ("eight zero zero five five five zero one nine nine", "8005550199"),
+            ("one two three four five six seven eight nine zero one two three four five six", "1234567890123456"),
+        ]
+        for words, expected_str in input_expected_str:
+            val = tester.recognize(words)
+            self.assertEqual(str(val), expected_str)
+
