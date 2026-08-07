@@ -30,6 +30,8 @@ Changed
   unload functions like the Natlink loader does.
 - Use ``lark`` on Python 3.8+ and keep ``lark-parser`` for older Python
   versions.
+- Bump the supported ``kaldi-active-grammar`` line to 3.2.x so the
+  ``dragonfly[kaldi]`` extra installs the updated dependency set.
 - Make the logging output of Dragonfly's CLI commands more sane.
 - Make some optimizations to the Natlink engine.
 - Rename the engines.backend_sphinx.misc module to config.
