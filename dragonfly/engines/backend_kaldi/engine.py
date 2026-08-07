@@ -1,4 +1,4 @@
-﻿#
+#
 # This file is part of Dragonfly.
 # (c) Copyright 2019 by David Zurow
 # Licensed under the LGPL.
@@ -262,7 +262,7 @@ class KaldiEngine(EngineBase, DelegateTimerManagerInterface):
         """ Unload the given *grammar*. """
         self._log.debug("Unloading grammar %s." % grammar.name)
         def unload():
-            rules = list(wrapper.kaldi_rule_by_rule_dict.keys())
+            rules = wrapper.kaldi_rule_by_rule_dict
             self._compiler.unload_grammar(grammar, rules, self)
         if self._in_phrase:
             self._loadunload_queue.append(unload)
